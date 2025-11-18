@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: loyalty_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: loyalty_user
+      POSTGRES_PASSWORD: loyalty_password
+      POSTGRES_DB: loyalty_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: loyalty_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@loyalty.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:

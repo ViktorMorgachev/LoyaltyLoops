@@ -1,5 +1,8 @@
 package io.loyaltyloop.server
 
+import io.loyaltyloop.server.database.DatabaseFactory
+import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.routes.authRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -15,7 +18,13 @@ fun main() {
 }
 
 fun Application.module() {
-    // Настраиваем JSON сериализацию
+
+
+    DatabaseFactory.init(environment.config)
+
+    // Создаем экземпляр репозитория
+    val userRepository = UserRepository() // <--- Создали
+
     install(ContentNegotiation) {
         json(Json {
             prettyPrint = true
@@ -26,12 +35,10 @@ fun Application.module() {
 
     routing {
         get("/") {
-            call.respondText("LoyaltyLoop Backend is ALIVE! 🚀")
+            call.respondText("LoyaltyLoop Backend is ALIVE! 🐘")
         }
 
-        get("/health") {
-            // Возвращаем JSON статус
-            call.respond(mapOf("status" to "OK", "version" to "0.0.1"))
-        }
+        // Подключаем наши новые маршруты
+        authRoutes(userRepository)
     }
 }

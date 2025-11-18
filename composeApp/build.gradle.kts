@@ -33,6 +33,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.koin.android)
         }
 
         commonMain.dependencies {
