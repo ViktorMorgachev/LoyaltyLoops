@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LoyaltyLoop</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_subtitle">Вход для клиентов и партнеров</string>
+    <string name="auth_phone_label">Ваш номер телефона</string>
+    <string name="auth_btn_next">Продолжить</string>
+    <string name="auth_enter_code">Введите код из СМС (1111)</string>
+
+    <!-- Errors -->
+    <string name="error_network">Ошибка сети</string>
+</resources>

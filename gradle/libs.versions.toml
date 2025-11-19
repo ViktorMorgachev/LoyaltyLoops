@@ -2,7 +2,7 @@
 # Core
 kotlin = "2.0.0"
 agp = "8.3.1"
-compose-plugin = "1.6.10"
+compose-plugin = "1.6.11"
 androidx-activityCompose = "1.9.0"
 
 # Server
@@ -33,6 +33,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 
 # --- ANDROID SPECIFIC ---
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
+androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-plugin" }
 
 # --- SERVER ---
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }

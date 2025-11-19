@@ -29,12 +29,19 @@ kotlin {
     }
 
     sourceSets {
+        // --- ЗДЕСЬ МЫ УБРАЛИ getByName("main") ---
+        // KMP сам найдет ресурсы, не нужно их прописывать вручную здесь.
 
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
 
+            // Движок превью (важно для отображения @Preview)
+            implementation(compose.uiTooling)
+
+            // Ресурсы (важно для запуска на Android)
+            implementation(compose.components.resources)
         }
 
         commonMain.dependencies {
@@ -44,7 +51,10 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+
+            // Основная библиотека ресурсов
             implementation(compose.components.resources)
+            // Аннотации для превью
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.voyager.navigator)
@@ -73,4 +83,8 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
+    // Если вдруг понадобятся специфичные Android настройки ресурсов,
+    // они пишутся здесь, в блоке android { sourceSets { ... } },
+    // но сейчас они нам НЕ НУЖНЫ.
 }
