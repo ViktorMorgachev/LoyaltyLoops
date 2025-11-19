@@ -34,6 +34,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+
         }
 
         commonMain.dependencies {
@@ -47,6 +48,8 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.koin)
             implementation(libs.koin.compose)
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)

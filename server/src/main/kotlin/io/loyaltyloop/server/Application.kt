@@ -5,16 +5,14 @@ import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.routes.authRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 
-fun main() {
-    embeddedServer(Netty, port = 8080, host = "0.0.0.0", module = Application::module)
-        .start(wait = true)
+fun main(args: Array<String>) {
+    // EngineMain автоматически ищет application.conf и загружает его
+    io.ktor.server.netty.EngineMain.main(args)
 }
 
 fun Application.module() {

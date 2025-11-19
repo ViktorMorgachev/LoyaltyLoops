@@ -6,29 +6,46 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.shared.models.UserDto
+import io.loyaltyloop.shared.models.AuthResponse
+import io.loyaltyloop.shared.models.SendCodeRequest
+import io.loyaltyloop.shared.models.VerifyCodeRequest
 
 fun Route.authRoutes(repository: UserRepository) {
 
     route("/auth") {
 
-        // POST: http://localhost:8080/auth/register
-        // Тело: JSON с данными пользователя
-        post("/register") {
-            try {
-                val user = call.receive<UserDto>() // Ktor сам превратит JSON в объект
-                repository.createUser(user)
-                call.respond(HttpStatusCode.Created, "User created!")
-            } catch (e: Exception) {
-                call.respond(HttpStatusCode.BadRequest, "Error: ${e.localizedMessage}")
+        post("/send-code") {
+            val request = call.receive<SendCodeRequest>()
+            // Тут мы бы подключили SMS-шлюз.
+            // Пока просто логируем.
+            println("SMS для ${request.phone}: 1111")
+            call.respond(HttpStatusCode.OK, "Code sent")
+        }
+
+        post("/login") {
+            val request = call.receive<VerifyCodeRequest>()
+
+            // ХАРДКОД для MVP: Код всегда 1111
+            if (request.code == "1111") {
+
+                // Проверяем, есть ли юзер в базе?
+                // (Для MVP пока просто создаем нового или возвращаем фейк)
+                // В реальности тут будет поиск в БД
+
+                val token = "fake_jwt_token_${System.currentTimeMillis()}"
+                val userId = "user_${request.phone}"
+
+                val response = AuthResponse(
+                    token = token,
+                    userId = userId,
+                    isNewUser = true // Допустим, он новый
+                )
+
+                call.respond(response)
+            } else {
+                call.respond(HttpStatusCode.Unauthorized, "Неверный код")
             }
         }
 
-        // GET: http://localhost:8080/auth/users
-        // Получить список всех
-        get("/users") {
-            val users = repository.getAllUsers()
-            call.respond(users)
-        }
     }
 }
