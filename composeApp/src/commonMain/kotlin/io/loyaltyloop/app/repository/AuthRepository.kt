@@ -25,4 +25,24 @@ class AuthRepository(private val client: HttpClient) {
             return "Ошибка: ${e.message}"
         }
     }
+
+    suspend fun login(phone: String, code: String): Result<String> {
+        return try {
+            val request = io.loyaltyloop.shared.models.VerifyCodeRequest(phone, code)
+
+            val response = client.post("/auth/login") {
+                contentType(ContentType.Application.Json)
+                setBody(request)
+            }
+
+            if (response.status.value in 200..299) {
+                // В реальности мы тут сохраним токен
+                Result.success("Успешный вход!")
+            } else {
+                Result.failure(Exception("Неверный код"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

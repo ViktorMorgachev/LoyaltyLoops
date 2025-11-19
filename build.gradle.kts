@@ -1,3 +1,4 @@
+import io.gitlab.arturbosch.detekt.extensions.DetektExtension
 plugins {
     // Просто объявляем плагины, но не применяем (apply false)
     alias(libs.plugins.androidApplication) apply false
@@ -9,4 +10,17 @@ plugins {
     alias(libs.plugins.ktor) apply false
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.sqlDelight) apply false
+    alias(libs.plugins.detekt) apply false
+}
+
+allprojects {
+    // Применяем плагин
+    apply(plugin = "io.gitlab.arturbosch.detekt")
+
+    // 2. ИСПОЛЬЗУЕМ ЯВНУЮ КОНФИГУРАЦИЮ
+    extensions.configure<DetektExtension> {
+        toolVersion = "1.23.6"
+        config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+        buildUponDefaultConfig = true
+    }
 }

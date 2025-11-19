@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Country(
-    val code: String,   // ISO код (KG)
-    val nameRu: String, // Имя
-    val phonePrefix: String, // +996
-    val mask: String,   // Визуальная маска (для UI)
+    val code: String,
+    val nameRu: String,
+    val phonePrefix: String,
+    val mask: String,
     val flagEmoji: String
 ) {
     KYRGYZSTAN("KG", "Кыргызстан", "+996", "### ### ###", "🇰🇬"),
@@ -15,12 +15,29 @@ enum class Country(
     UZBEKISTAN("UZ", "Узбекистан", "+998", "## ### ## ##", "🇺🇿"),
     BELARUS("BY", "Беларусь", "+375", "## ### ## ##", "🇧🇾");
 
-    // Метод для очистки номера (убираем пробелы и скобки)
+    // Функция для получения чистого номера (без пробелов и скобок)
     fun getFullNumber(rawInput: String): String {
         return phonePrefix + rawInput.filter { it.isDigit() }
+    }
+
+    // --- ВОТ ЭТА ФУНКЦИЯ, КОТОРОЙ НЕ ХВАТАЛО ---
+    fun isValidNumber(phoneInput: String): Boolean {
+        // Оставляем только цифры
+        val cleanPhone = phoneInput.filter { it.isDigit() }
+
+        // Проверяем длину "тела" номера (без кода страны)
+        val expectedLength = when(this) {
+            KYRGYZSTAN -> 9   // 996 (555 123 456)
+            UZBEKISTAN -> 9   // 998 (90 123 45 67)
+            BELARUS -> 9      // 375 (29 123 45 67)
+            KAZAKHSTAN -> 10  // 7 (777 123 45 67)
+        }
+
+        return cleanPhone.length == expectedLength
     }
 
     companion object {
         fun default() = KYRGYZSTAN
     }
 }
+

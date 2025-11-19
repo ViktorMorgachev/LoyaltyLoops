@@ -3,6 +3,9 @@ package io.loyaltyloop.app.features.auth
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -11,6 +14,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import io.loyaltyloop.app.ui.components.OtpTextField
 import io.loyaltyloop.app.ui.theme.LoyaltyTheme
 import io.loyaltyloop.shared.models.Country
 import org.jetbrains.compose.resources.stringResource
@@ -23,15 +27,15 @@ class LoginScreen : Screen {
         val viewModel = getScreenModel<LoginScreenModel>()
         val state by viewModel.state.collectAsState()
 
-        // Передаем состояние и действия в чистую UI функцию
         LoginScreenContent(
             state = state,
             onPhoneChanged = viewModel::onPhoneChanged,
-            onCountryClicked = {
-                val nextIndex = (state.selectedCountry.ordinal + 1) % Country.entries.size
-                viewModel.onCountrySelected(Country.entries[nextIndex])
-            },
-            onNextClicked = viewModel::onSendCodeClicked
+            onCountryClicked = { /* ... */ },
+            onNextClicked = viewModel::onSendCodeClicked,
+
+            // Подключаем новые методы
+            onOtpChanged = viewModel::onCodeChanged,
+            onBackClicked = viewModel::onBackClicked
         )
     }
 }
@@ -45,9 +49,19 @@ fun LoginScreenContent(
     state: LoginState,
     onPhoneChanged: (String) -> Unit,
     onCountryClicked: () -> Unit,
-    onNextClicked: () -> Unit
+    onNextClicked: () -> Unit,
+    onOtpChanged: (String) -> Unit, // <-- Новый
+    onBackClicked: () -> Unit       // <-- Новый
 ) {
     Scaffold(
+        topBar = {
+            // Показываем кнопку назад только на шаге 2
+            if (state.step == LoginStep.EnterCode) {
+                IconButton(onClick = onBackClicked) {
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                }
+            }
+        },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
@@ -56,24 +70,19 @@ fun LoginScreenContent(
                 .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            // verticalArrangement = Arrangement.Center // <-- Убираем центрирование, чтобы клавиатура не закрывала
         ) {
-            // Используем ресурсы!
+            Spacer(modifier = Modifier.height(40.dp)) // Отступ сверху
+
             Text(
                 text = stringResource(Res.string.auth_title),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary
             )
-            Text(
-                text = stringResource(Res.string.auth_subtitle),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-            )
 
             Spacer(modifier = Modifier.height(48.dp))
 
             if (state.step == LoginStep.EnterPhone) {
-                // Встраиваем блок ввода
                 PhoneInputCard(
                     state = state,
                     onPhoneChanged = onPhoneChanged,
@@ -81,7 +90,31 @@ fun LoginScreenContent(
                     onNextClicked = onNextClicked
                 )
             } else {
-                Text(stringResource(Res.string.auth_enter_code))
+                // --- ЭКРАН ВВОДА КОДА ---
+                Text(
+                    text = stringResource(Res.string.auth_enter_code),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Наш кастомный компонент
+                OtpTextField(
+                    otpText = state.otpInput,
+                    onOtpTextChange = onOtpChanged
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                if (state.isLoading) {
+                    CircularProgressIndicator()
+                } else {
+                    Text(
+                        text = "Отправить повторно через 00:${state.timerSeconds.toString().padStart(2, '0')}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
             }
         }
     }
@@ -137,32 +170,41 @@ fun PhoneInputCard(
 
 @Preview
 @Composable
-fun LoginScreenPreview() {
+fun LoginPhonePreview() {
     LoyaltyTheme {
         LoginScreenContent(
             state = LoginState(
                 phoneInput = "555 123",
-                selectedCountry = Country.KYRGYZSTAN
+                selectedCountry = Country.KYRGYZSTAN,
+                step = LoginStep.EnterPhone
             ),
             onPhoneChanged = {},
             onCountryClicked = {},
-            onNextClicked = {}
+            onNextClicked = {},
+            onOtpChanged = {},
+            onBackClicked = {}
         )
     }
 }
 
 @Preview
 @Composable
-fun DarkLoginScreenPreview() {
-    LoyaltyTheme(useDarkTheme = true) {
+fun LoginOtpPreview() {
+    LoyaltyTheme {
         LoginScreenContent(
             state = LoginState(
-                phoneInput = "777 000",
-                selectedCountry = Country.KAZAKHSTAN
+                phoneInput = "555 123",
+                selectedCountry = Country.KYRGYZSTAN,
+                step = LoginStep.EnterCode, // <-- Показываем второй шаг
+                otpInput = "12", // <-- Имитируем, что 2 цифры уже введены
+                timerSeconds = 59
             ),
             onPhoneChanged = {},
             onCountryClicked = {},
-            onNextClicked = {}
+            onNextClicked = {},
+            onOtpChanged = {},
+            onBackClicked = {}
         )
     }
 }
+
