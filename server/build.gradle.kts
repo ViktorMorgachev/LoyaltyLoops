@@ -21,8 +21,13 @@ dependencies {
     implementation(libs.ktor.server.core)
     implementation(libs.ktor.server.netty)
     implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.serialization.json)
+    implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.cors)
     implementation(libs.logback)
+
 
     // Database (пока просто добавим библиотеки, настроим позже)
     implementation(libs.exposed.core)
@@ -30,4 +35,15 @@ dependencies {
     implementation(libs.exposed.jdbc)
     implementation(libs.postgresql.driver)
     implementation(libs.hikaricp)
+
+
+    // 1. Логирование
+    implementation(libs.ktor.server.call.logging)
+
+    // 2. Тесты (обрати внимание на testImplementation)
+    testImplementation(kotlin("test"))
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.h2.database)
+    testImplementation(libs.ktor.client.content.negotiation)
+    testImplementation(libs.ktor.serialization.kotlinx.json)
 }

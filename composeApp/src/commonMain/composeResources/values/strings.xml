@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LoyaltyLoop</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_subtitle">Вход для клиентов и партнеров</string>
+    <string name="auth_phone_label">Ваш номер телефона</string>
+    <string name="auth_btn_next">Продолжить</string>
+    <string name="auth_enter_code">Введите код из СМС</string>
+    <string name="auth_resend_btn">Отправить код повторно</string>
+    <string name="auth_resend_timer">Отправить повторно через</string>
+    <string name="profile_loading">Загрузка...</string>
+    <string name="profile_error_load">Ошибка загрузки</string>
+
+    <!-- Ошибки -->
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_server">Сервис временно недоступен</string>
+    <string name="error_session_expired">Сессия истекла, войдите снова</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+    <string name="err_invalid_email">Некорректный формат Email</string>
+    <string name="error_profile_loading">Не удалось загрузить профиль</string>
+    <string name="btn_retry">Повторить</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Давайте знакомиться!</string>
+    <string name="onboarding_subtitle">Заполните данные, чтобы получать именные бонусы</string>
+    <string name="field_firstname">Имя *</string>
+    <string name="field_lastname">Фамилия</string>
+    <string name="field_email">Email (для восстановления доступа)</string>
+    <string name="btn_save">Сохранить и войти</string>
+    <string name="onboarding_why_info">Ваше имя будет отображаться у кассира для приветствия и начисления бонусов.</string>
+    <string name="err_field_required">Это поле обязательно</string>
+    <string name="err_invalid_phone_format">Неверный формат номера</string>
+
+    <!-- Role Selection -->
+    <string name="role_select_title">Выберите режим</string>
+    <string name="role_client_title">Я Покупатель</string>
+    <string name="role_client_desc">Хочу копить бонусы и получать скидки</string>
+    <string name="role_partner_title">Я Владелец бизнеса</string>
+    <string name="role_partner_desc">Хочу запустить систему лояльности</string>
+    <string name="role_cashier_title">Я Сотрудник</string>
+    <string name="role_cashier_desc">Хочу работать с терминалом</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workspaces_title">Мои рабочие места</string>
+    <string name="profile_role_owner">Владелец</string>
+    <string name="profile_role_cashier">Кассир</string>
+    <string name="profile_btn_logout">Выйти из аккаунта</string>
+    <string name="profile_section_general">Основное</string>
+    <string name="profile_section_business">Бизнес и Карьера</string>
+
+    <string name="profile_item_language">Язык приложения</string>
+    <string name="profile_item_support">Поддержка</string>
+
+    <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
+    <string name="profile_desc_create_business">Для владельцев заведений</string>
+
+    <string name="profile_btn_join_team">Ввести инвайт-код</string>
+    <string name="profile_desc_join_team">Для сотрудников</string>
+
+    <string name="profile_version">Версия %s</string>
+    <!-- Profile Roles -->
+    <string name="profile_role_admin">Администратор Платформы</string>
+    <string name="profile_role_manager">Менеджер Платформы</string>
+
+    <!-- Profile Sections -->
+    <string name="profile_header_workspaces">Мои рабочие места</string>
+    <string name="profile_header_actions">Возможности</string>
+
+</resources>

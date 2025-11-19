@@ -4,11 +4,24 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.ktor.server.config.*
+import io.loyaltyloop.server.database.tables.CashiersTable
+import io.loyaltyloop.server.database.tables.LoyaltyCardTable
+import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
+import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.RefreshTokensTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.StdOutSqlLogger
+import org.jetbrains.exposed.sql.addLogger
+import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.sql.ResultSet
+
 
 object DatabaseFactory {
 
@@ -34,10 +47,69 @@ object DatabaseFactory {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(UsersTable)
+            SchemaUtils.create( UsersTable,
+                PartnersTable,
+                TradingPointsTable,
+                CashiersTable,
+                LoyaltyCardTable,
+                RefreshTokensTable,
+                LoyaltySettingsTable,
+                LoyaltyTiersTable,
+                SystemStaffTable
+            )
+        }
+    }
+
+    suspend fun ping(): Boolean {
+        return try {
+            // Пытаемся выполнить легкий запрос
+            dbQuery {
+                // exec выполняет "сырой" SQL
+                TransactionManager.current().exec("SELECT 1") { rs: ResultSet ->
+                    rs.next() // Просто проверяем, что что-то вернулось
+                }
+            }
+            true // Если не вылетело исключение - база жива
+        } catch (e: Exception) {
+            println("Database Ping Failed: ${e.message}")
+            false
+        }
+    }
+
+    // 2. Точка входа для Тестов (принимает строки напрямую)
+    fun connect(driver: String, url: String, user: String, pass: String) {
+        val hikariConfig = HikariConfig().apply {
+            driverClassName = driver
+            jdbcUrl = url
+            username = user
+            password = pass
+            maximumPoolSize = 3
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            validate()
+        }
+
+        val dataSource = HikariDataSource(hikariConfig)
+        Database.connect(dataSource)
+
+        transaction {
+            SchemaUtils.create(
+                UsersTable,
+                PartnersTable,
+                TradingPointsTable,
+                CashiersTable,
+                LoyaltyCardTable,
+                LoyaltySettingsTable, // <-- Убедись, что новые таблицы здесь
+                LoyaltyTiersTable     // <-- И эта тоже
+            )
         }
     }
 
     suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) { block() }
+        newSuspendedTransaction(Dispatchers.IO) {
+            // --- ВКЛЮЧАЕМ ЛОГИ SQL ---
+          //  addLogger(StdOutSqlLogger)
+            // ------------------------
+            block()
+        }
 }

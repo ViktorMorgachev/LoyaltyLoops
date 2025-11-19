@@ -29,11 +29,19 @@ kotlin {
     }
 
     sourceSets {
+        // --- ЗДЕСЬ МЫ УБРАЛИ getByName("main") ---
+        // KMP сам найдет ресурсы, не нужно их прописывать вручную здесь.
 
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
             implementation(libs.koin.android)
+
+            // Движок превью (важно для отображения @Preview)
+            implementation(compose.uiTooling)
+
+            // Ресурсы (важно для запуска на Android)
+            implementation(compose.components.resources)
         }
 
         commonMain.dependencies {
@@ -43,14 +51,30 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
+
+            implementation(libs.kermit)
+            // Основная библиотека ресурсов
             implementation(compose.components.resources)
+            implementation(compose.materialIconsExtended)
+            // Аннотации для превью
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.tab.navigator)
+            implementation(libs.voyager.koin)
+            implementation(libs.voyager.transitions)
             implementation(libs.koin.compose)
             implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.logging)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+
+            implementation(libs.ktor.client.auth) // Для рефреша токенов
+            implementation(libs.multiplatform.settings)
+            implementation(libs.qrose)
+            implementation(libs.kotlinx.datetime)
+
         }
 
         iosMain.dependencies {
@@ -70,4 +94,8 @@ android {
         versionCode = 1
         versionName = "1.0"
     }
+
+    // Если вдруг понадобятся специфичные Android настройки ресурсов,
+    // они пишутся здесь, в блоке android { sourceSets { ... } },
+    // но сейчас они нам НЕ НУЖНЫ.
 }
