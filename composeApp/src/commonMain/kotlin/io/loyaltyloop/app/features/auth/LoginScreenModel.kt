@@ -77,7 +77,7 @@ class LoginScreenModel(
 
     private fun onSendCodeClicked(isResend: Boolean = false) {
         screenModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
+            _state.value = _state.value.copy(isLoading = true, step = LoginStep.EnterCode)
 
             val country = state.value.selectedCountry
             val fullNumber = country.phonePrefix + state.value.phoneInput
@@ -118,48 +118,6 @@ class LoginScreenModel(
 
     fun onCountrySelected(country: Country) {
         _state.value = _state.value.copy(selectedCountry = country)
-    }
-
-    // Шаг 1: Отправка СМС
-    fun onSendCodeClicked() {
-        screenModelScope.launch {
-            // 1. Старт загрузки, сброс ошибок
-            _state.value = _state.value.copy(isLoading = true)
-
-            val country = state.value.selectedCountry
-            val fullNumber = country.phonePrefix + state.value.phoneInput
-
-            log.write("Requesting code for: $fullNumber")
-
-            val result = repository.sendCode(fullNumber)
-
-            result.onSuccess { debugCode ->
-                log.write("Code received: $debugCode")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    step = LoginStep.EnterCode,
-                    timerSeconds = 60
-                )
-                startTimer()
-
-            }.onFailure { error ->
-                log.write("Failed", LogType.Error, error)
-
-                val errorText = when(error) {
-                    is ClientException -> UiText.DynamicString(error.errorMessage)
-                    is NetworkException -> UiText.Resource(Res.string.error_network)
-                    is ServerException -> UiText.Resource(Res.string.error_server)
-                    else -> UiText.Resource(Res.string.error_unknown)
-                }
-
-                _events.send(LoginEvent.ShowError(errorText))
-
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    otpInput = ""
-                )
-            }
-        }
     }
 
     // Шаг 2: Ввод кода (цифра за цифрой)

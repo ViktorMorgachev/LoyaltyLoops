@@ -3,12 +3,18 @@ package io.loyaltyloop.server.database.tables
 
 import org.jetbrains.exposed.sql.Table
 
-
 object UsersTable : Table("users") {
     val id = varchar("id", 50)
     val phoneNumber = varchar("phone_number", 20).uniqueIndex()
     val countryCode = varchar("country_code", 4)
     val createdAt = long("created_at")
+
+    // --- НОВЫЕ ПОЛЯ ---
+    val firstName = varchar("first_name", 50).nullable()
+    val lastName = varchar("last_name", 50).nullable()
+    val email = varchar("email", 100).nullable()
+    val language = varchar("language", 5).default("ru") // "ru", "en", "ky"
+    // ------------------
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -13,13 +13,16 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
+import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.HealthResponse
 import org.slf4j.event.*
 
@@ -90,6 +93,19 @@ fun Application.module() {
         }
     }
 
+    install(StatusPages) {
+        exception<Throwable> { call, cause ->
+            // Логируем в консоль сервера
+            cause.printStackTrace()
+
+            // Отдаем клиенту JSON с причиной
+            call.respond(
+                HttpStatusCode.InternalServerError,
+                ApiMessage("Server Error: ${cause.localizedMessage}")
+            )
+        }
+    }
+
     routing {
         get("/health") {
             // 1. Делаем реальный пинг
@@ -114,5 +130,6 @@ fun Application.module() {
 
         // Подключаем наши новые маршруты
         authRoutes(userRepository, tokenService, otpService)
+        clientRoutes(userRepository)
     }
 }

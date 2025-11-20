@@ -8,6 +8,7 @@ import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
@@ -18,7 +19,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 class UserRepository {
@@ -30,6 +31,26 @@ class UserRepository {
             it[phoneNumber] = dto.phoneNumber
             it[countryCode] = dto.countryCode
             it[createdAt] = System.currentTimeMillis()
+            it[language] = dto.language
+        }
+    }
+
+    // Обновление профиля
+    suspend fun updateUserProfile(userId: String, request: UpdateProfileRequest) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) { dto->
+            dto[firstName] = request.firstName
+            dto[lastName] = request.lastName
+            dto[email] = request.email
+            request.language?.let {
+                dto[language] = it
+            }
+        }
+    }
+
+    // Обновляем язык пользователя, если он изменился
+    suspend fun updateUserLanguage(userId: String, newLanguage: String) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
+            it[language] = newLanguage
         }
     }
 
@@ -57,7 +78,11 @@ class UserRepository {
         return UserDto(
             id = row[UsersTable.id],
             phoneNumber = row[UsersTable.phoneNumber],
-            countryCode = row[UsersTable.countryCode]
+            countryCode = row[UsersTable.countryCode],
+            firstName = row[UsersTable.firstName],
+            lastName = row[UsersTable.lastName],
+            email = row[UsersTable.email],
+            language = row[UsersTable.language]
         )
     }
 

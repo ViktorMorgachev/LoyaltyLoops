@@ -38,6 +38,10 @@ data class UserProfileResponse(
     val userId: String,
     val phone: String,
     val countryCode: String,
+    val firstName: String?,
+    val lastName: String?,
+    val email: String?,
+    val language: String,
     val workspaces: List<UserWorkspace>
 )
 

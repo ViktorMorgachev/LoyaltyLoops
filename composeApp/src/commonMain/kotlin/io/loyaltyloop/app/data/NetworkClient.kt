@@ -11,10 +11,12 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.request.header
 import co.touchlab.kermit.Logger as KermitLogger
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -110,6 +112,7 @@ object NetworkClient {
             // 4. URL
             defaultRequest {
                 url(SERVER_URL)
+                header(HttpHeaders.AcceptLanguage, "ru")
             }
         }
     }

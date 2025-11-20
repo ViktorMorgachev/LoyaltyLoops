@@ -13,5 +13,9 @@ enum class UserRole {
 data class UserDto(
     val id: String,
     val phoneNumber: String,
-    val countryCode: String // "KG", "KZ", etc.
+    val countryCode: String, // "KG", "KZ", etc.
+    val firstName: String? = null,
+    val lastName: String? = null,
+    val email: String? = null,
+    val language: String = "ru"
 )

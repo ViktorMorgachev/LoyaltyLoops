@@ -11,6 +11,7 @@ import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.utils.resolveLanguage
 import io.loyaltyloop.server.utils.validatePhoneNumber
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
@@ -55,10 +56,12 @@ fun Route.authRoutes(
 
             // ВАЖНО: Для MVP возвращаем код в ответе, чтобы клиент мог его подставить
             // В Проде мы уберем поле code из ответа и будем слать СМС
-            call.respond(mapOf(
-                "status" to "Code sent",
-                "debugCode" to code // <-- ОТДАЕМ КОД КЛИЕНТУ
-            ))
+            call.respond(
+                mapOf(
+                    "status" to "Code sent",
+                    "debugCode" to code // <-- ОТДАЕМ КОД КЛИЕНТУ
+                )
+            )
         }
 
         authenticate("auth-jwt") {
@@ -88,6 +91,10 @@ fun Route.authRoutes(
                         userId = user.id,
                         phone = user.phoneNumber,
                         countryCode = user.countryCode,
+                        firstName = user.firstName,
+                        lastName = user.lastName,
+                        email = user.email,
+                        language = user.language,
                         workspaces = workspaces
                     )
                 )
@@ -96,6 +103,7 @@ fun Route.authRoutes(
 
         post("/login") {
             val request = call.receive<VerifyCodeRequest>()
+            val lang = call.resolveLanguage()
 
             // Валидация номера
             val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
@@ -105,7 +113,6 @@ fun Route.authRoutes(
             }
 
             // --- ИСПОЛЬЗУЕМ OTP SERVICE ---
-            // Больше никакого "1111"
             val isValid = otpService.validateCode(request.phone, request.code)
 
             if (isValid) {
@@ -113,7 +120,12 @@ fun Route.authRoutes(
                 var isNew = false
                 if (user == null) {
                     val userId = UUID.randomUUID().toString()
-                    val newUser = UserDto(id = userId, phoneNumber = request.phone, countryCode = "KG")
+                    val newUser = UserDto(
+                        id = userId,
+                        phoneNumber = request.phone,
+                        countryCode = "KG",
+                        language = lang
+                    )
                     repository.createUser(newUser)
                     val savedUser = repository.getUserById(userId)
                     if (savedUser == null) {
@@ -122,6 +134,15 @@ fun Route.authRoutes(
                     }
                     user = savedUser
                     isNew = true
+                } else {
+                    // Юзер уже есть. Проверяем, сменил ли он язык?
+                    if (user.language != lang) {
+                        // Да, в базе "ru", а пришел "en". Обновляем базу!
+                        repository.updateUserLanguage(user.id, lang)
+
+                        // Обновляем объект user в памяти, чтобы в токен/ответ попали актуальные данные (если нужно)
+                        user = user.copy(language = lang)
+                    }
                 }
 
                 val workspaces = repository.getUserWorkspaces(user.id)
@@ -134,73 +155,6 @@ fun Route.authRoutes(
 
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Неверный или устаревший код")
-            }
-        }
-
-        post("/login") {
-            val request = call.receive<VerifyCodeRequest>()
-
-            // Валидация номера (которую мы добавили ранее)
-            val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
-            if (error != null) {
-                call.respond(HttpStatusCode.BadRequest, error)
-                return@post
-            }
-
-            if (request.code == "1111") {
-                var user = repository.getUserByPhone(request.phone)
-                var isNew = false
-
-                if (user == null) {
-                    // 1. Формируем DTO
-                    val userId = UUID.randomUUID().toString()
-                    val newUser = UserDto(
-                        id = userId,
-                        phoneNumber = request.phone,
-                        countryCode = "KG"
-                    )
-
-                    // 2. Пытаемся сохранить
-                    repository.createUser(newUser)
-
-                    // 3. ПРОВЕРКА (Double Check)
-                    // Пытаемся прочитать то, что только что записали.
-                    // Это гарантирует, что данные физически лежат в базе.
-                    val savedUser = repository.getUserById(userId)
-
-                    if (savedUser == null) {
-                        // Если не нашли - значит запись не прошла (Rollback или ошибка)
-                        call.respond(
-                            HttpStatusCode.InternalServerError,
-                            "Failed to create user database record"
-                        )
-                        return@post
-                    }
-
-                    // Используем именно того юзера, который вернулся из БАЗЫ
-                    user = savedUser
-                    isNew = true
-                }
-
-                // Дальше собираем workspaces и токены для `user` (который точно есть в БД)
-                val workspaces = repository.getUserWorkspaces(user.id)
-                val (access, refresh) = tokenService.generateTokens(user)
-
-                val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
-                repository.saveRefreshToken(refresh, user.id, expiresAt)
-
-                call.respond(
-                    AuthResponse(
-                        accessToken = access,
-                        refreshToken = refresh,
-                        userId = user.id,
-                        isNewUser = isNew,
-                        workspaces = workspaces
-                    )
-                )
-
-            } else {
-                call.respond(HttpStatusCode.Unauthorized, "Неверный код")
             }
         }
 
@@ -228,7 +182,8 @@ fun Route.authRoutes(
                     repository.deleteRefreshToken(oldRefreshToken)
 
                     // 4. Генерируем НОВЫЙ
-                    val user = repository.getUserById(userIdFromToken)!! // Юзер точно есть, если есть токен
+                    val user =
+                        repository.getUserById(userIdFromToken)!! // Юзер точно есть, если есть токен
                     val (newAccess, newRefresh) = tokenService.generateTokens(user)
 
                     // 5. Сохраняем НОВЫЙ в базу
@@ -237,13 +192,15 @@ fun Route.authRoutes(
 
                     val workspaces = repository.getUserWorkspaces(user.id)
 
-                    call.respond(AuthResponse(
-                        accessToken = newAccess,
-                        refreshToken = newRefresh,
-                        userId = user.id,
-                        isNewUser = false,
-                        workspaces = workspaces
-                    ))
+                    call.respond(
+                        AuthResponse(
+                            accessToken = newAccess,
+                            refreshToken = newRefresh,
+                            userId = user.id,
+                            isNewUser = false,
+                            workspaces = workspaces
+                        )
+                    )
                 } else {
                     // Токен валиден по подписи, но его нет в базе (значит, уже использован или отозван)
                     // Это признак кражи токена! В идеале тут можно сбросить все сессии юзера.
@@ -264,7 +221,5 @@ fun Route.authRoutes(
                 call.respond(HttpStatusCode.OK)
             }
         }
-
-        // ...
     }
 }

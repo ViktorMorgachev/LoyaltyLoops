@@ -1,10 +1,26 @@
 package io.loyaltyloop.server
 
 import io.ktor.client.*
+import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
+import io.loyaltyloop.shared.models.AuthResponse
+import io.loyaltyloop.shared.models.SendCodeRequest
+import io.loyaltyloop.shared.models.VerifyCodeRequest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Общая конфигурация для всех тестов (База H2 + Настройки JWT)
@@ -52,4 +68,45 @@ fun generateValidPhone(): String {
     // Берем последние 6 цифр от текущего времени, чтобы обеспечить уникальность
     val uniquePart = System.currentTimeMillis().toString().takeLast(6)
     return "+996555$uniquePart"
+}
+
+suspend fun HttpClient.registerAndLogin(
+    phone: String = generateValidPhone(), // Можно передать свой номер или сгенерировать
+    language: String = "ru"               // Язык для хедера
+): AuthResponse {
+
+    // 1. Запрос кода
+    val sendRes = post("/auth/send-code") {
+        contentType(ContentType.Application.Json)
+        header(HttpHeaders.AcceptLanguage, language)
+        setBody(SendCodeRequest(phone))
+    }
+
+    if (sendRes.status != HttpStatusCode.OK) {
+        throw IllegalStateException("Test setup failed: Send Code returned ${sendRes.status}")
+    }
+
+    val code = extractOtpCode(sendRes)
+
+    // 2. Логин
+    val loginRes = post("/auth/login") {
+        contentType(ContentType.Application.Json)
+        header(HttpHeaders.AcceptLanguage, language)
+        setBody(VerifyCodeRequest(phone, code))
+    }
+
+    if (loginRes.status != HttpStatusCode.OK) {
+        throw IllegalStateException("Test setup failed: Login returned ${loginRes.status} body: ${loginRes.bodyAsText()}")
+    }
+
+    return loginRes.body()
+}
+
+/**
+ * Достает код из ответа сервера (для MVP)
+ */
+suspend fun extractOtpCode(response: HttpResponse): String {
+    val text = response.bodyAsText()
+    val jsonObject = Json.parseToJsonElement(text).jsonObject
+    return jsonObject["debugCode"]?.jsonPrimitive?.content ?: ""
 }
