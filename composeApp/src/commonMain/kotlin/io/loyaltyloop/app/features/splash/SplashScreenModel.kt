@@ -72,6 +72,7 @@ class SplashScreenModel(
 
                 // 3. Всё ок -> Домой
                 log.write("Session valid -> Go to Home")
+
                 _state.value = SplashState.NavigateToHome
             }.onFailure { error ->
                 // Логируем ошибку

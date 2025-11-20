@@ -17,5 +17,6 @@ data class UserDto(
     val firstName: String? = null,
     val lastName: String? = null,
     val email: String? = null,
+    val qrSecret: String,
     val language: String = "ru"
 )

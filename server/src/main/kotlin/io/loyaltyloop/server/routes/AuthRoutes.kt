@@ -118,12 +118,15 @@ fun Route.authRoutes(
                 var user = repository.getUserByPhone(request.phone)
                 var isNew = false
                 if (user == null) {
+                    val secret = tokenService.generateQrSecret()
                     val userId = UUID.randomUUID().toString()
                     val newUser = UserDto(
                         id = userId,
                         phoneNumber = request.phone,
-                        countryCode = "KG",
-                        language = lang
+                        countryCode = "KG", //TODO Получать код по номеру
+                        language = lang,
+                        qrSecret = secret
+
                     )
                     repository.createUser(newUser)
                     val savedUser = repository.getUserById(userId)
@@ -150,7 +153,7 @@ fun Route.authRoutes(
                 val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
                 repository.saveRefreshToken(refresh, user.id, expiresAt)
 
-                call.respond(AuthResponse(access, refresh, user.id, isNew, workspaces))
+                call.respond(AuthResponse(access, refresh, user.id, isNew, workspaces, qrSecret = user.qrSecret))
 
             } else {
                 call.respond(HttpStatusCode.Unauthorized, "Неверный или устаревший код")
@@ -181,8 +184,7 @@ fun Route.authRoutes(
                     repository.deleteRefreshToken(oldRefreshToken)
 
                     // 4. Генерируем НОВЫЙ
-                    val user =
-                        repository.getUserById(userIdFromToken)!! // Юзер точно есть, если есть токен
+                    val user = repository.getUserById(userIdFromToken)!! // Юзер точно есть, если есть токен
                     val (newAccess, newRefresh) = tokenService.generateTokens(user)
 
                     // 5. Сохраняем НОВЫЙ в базу
@@ -197,6 +199,7 @@ fun Route.authRoutes(
                             refreshToken = newRefresh,
                             userId = user.id,
                             isNewUser = false,
+                            qrSecret = user.qrSecret,
                             workspaces = workspaces
                         )
                     )

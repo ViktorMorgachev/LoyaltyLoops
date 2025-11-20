@@ -21,7 +21,8 @@ data class AuthResponse(
     val userId: String,
     val isNewUser: Boolean,
     // Список мест, куда этот юзер может войти
-    val workspaces: List<UserWorkspace>
+    val workspaces: List<UserWorkspace>,
+    val qrSecret: String
 )
 
 // Описание рабочего места

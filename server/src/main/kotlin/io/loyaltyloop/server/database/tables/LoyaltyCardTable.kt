@@ -14,6 +14,9 @@ object LoyaltyCardTable : Table("loyalty_cards") {
 
     // ФИНАНСЫ (накопления в этом конкретном заведении)
     val balance = double("balance").default(0.0)       // Доступные баллы
+
+    // Флаг: закрыта ли карта (архивная)
+    val isClosed = bool("is_closed").default(false)
     val totalSpent = double("total_spent").default(0.0) // Сколько денег потратил всего (LTV)
 
     // УРОВЕНЬ (Кешируем текущий уровень, чтобы не пересчитывать каждый раз)

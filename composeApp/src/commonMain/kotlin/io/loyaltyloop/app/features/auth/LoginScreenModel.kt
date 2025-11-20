@@ -145,7 +145,8 @@ class LoginScreenModel(
                 tokenStorage.saveAuthData(
                     accessToken = response.accessToken,
                     refreshToken = response.refreshToken,
-                    userId = response.userId
+                    userId = response.userId,
+                    qrSecret = response.qrSecret
                 )
                 if (response.isNewUser) {
                     _events.send(LoginEvent.NavigateToOnboarding)

@@ -4,10 +4,12 @@ package io.loyaltyloop.server.repository
 import org.jetbrains.exposed.sql.selectAll
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.CashiersTable
+import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
@@ -17,8 +19,10 @@ import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
@@ -26,24 +30,33 @@ class UserRepository {
 
     // Добавить пользователя
     suspend fun createUser(dto: UserDto) = dbQuery {
+
+        if (dto.qrSecret.isBlank()) {
+            throw IllegalArgumentException("SECURITY ERROR: Cannot create user ${dto.phoneNumber}. QR Secret is missing or empty.")
+        }
         UsersTable.insert {
             it[id] = dto.id.ifEmpty { UUID.randomUUID().toString() } // Генерируем ID если нет
             it[phoneNumber] = dto.phoneNumber
             it[countryCode] = dto.countryCode
             it[createdAt] = System.currentTimeMillis()
             it[language] = dto.language
+            it[qrSecret] = dto.qrSecret
+
         }
     }
 
     // Обновление профиля
-    suspend fun updateUserProfile(userId: String, request: UpdateProfileRequest) = dbQuery {
-        UsersTable.update({ UsersTable.id eq userId }) { dto->
+    suspend fun updateUserProfile(userDto: UserDto, lang: String?, request: UpdateProfileRequest) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userDto.id }) { dto->
             dto[firstName] = request.firstName
             dto[lastName] = request.lastName
             dto[email] = request.email
-            request.language?.let {
+            dto[qrSecret] = userDto.qrSecret
+            lang?.let {
                 dto[language] = it
             }
+
+
         }
     }
 
@@ -82,7 +95,57 @@ class UserRepository {
             firstName = row[UsersTable.firstName],
             lastName = row[UsersTable.lastName],
             email = row[UsersTable.email],
+            qrSecret = row[UsersTable.qrSecret],
             language = row[UsersTable.language]
+        )
+    }
+
+    suspend fun findOrCreateCard(userId: String, partnerId: String): LoyaltyCardDto = dbQuery {
+        // 1. Ищем существующую
+        val existingRow = LoyaltyCardTable.select {
+            (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId)
+        }.singleOrNull()
+
+        if (existingRow != null) {
+            return@dbQuery rowToCardDto(existingRow)
+        }
+
+        // 2. Создаем новую
+        // TODO: Пока хардкод уровня = 1. В следующем шаге мы добавим чтение настроек.
+        val newId = java.util.UUID.randomUUID().toString()
+
+        LoyaltyCardTable.insert {
+            it[id] = newId
+            it[this.userId] = userId
+            it[this.partnerId] = partnerId
+            it[balance] = 0.0
+            it[totalSpent] = 0.0
+            it[tierLevel] = 1
+            it[isBlocked] = false
+        }
+
+        // Возвращаем созданный объект
+        // Мы можем собрать его вручную, чтобы не делать лишний select
+        LoyaltyCardDto(
+            id = newId,
+            userId = userId,
+            partnerId = partnerId,
+            balance = 0.0,
+            totalSpent = 0.0,
+            tierLevel = 1,
+            isBlocked = false
+        )
+    }
+
+    private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
+        return LoyaltyCardDto(
+            id = row[LoyaltyCardTable.id],
+            userId = row[LoyaltyCardTable.userId],
+            partnerId = row[LoyaltyCardTable.partnerId],
+            balance = row[LoyaltyCardTable.balance],
+            totalSpent = row[LoyaltyCardTable.totalSpent],
+            tierLevel = row[LoyaltyCardTable.tierLevel],
+            isBlocked = row[LoyaltyCardTable.isBlocked]
         )
     }
 

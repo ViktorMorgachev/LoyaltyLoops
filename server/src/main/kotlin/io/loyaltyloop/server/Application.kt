@@ -20,6 +20,7 @@ import kotlinx.serialization.json.Json
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.loyaltyloop.server.routes.clientRoutes
+import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.shared.models.ApiMessage
@@ -131,5 +132,6 @@ fun Application.module() {
         // Подключаем наши новые маршруты
         authRoutes(userRepository, tokenService, otpService)
         clientRoutes(userRepository)
+        terminalRoutes(userRepository)
     }
 }

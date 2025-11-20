@@ -14,6 +14,7 @@ import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.features.onboarding.OnboardingScreenModel
 import io.loyaltyloop.app.features.role.RoleSelectionScreenModel
 import io.loyaltyloop.app.features.splash.SplashScreenModel
+import io.loyaltyloop.app.features.wallet.WalletScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
@@ -34,5 +35,6 @@ val appModule = module {
     factory { LoginScreenModel(get(),get()) }
     factory { OnboardingScreenModel(get()) }
     factory { RoleSelectionScreenModel(get()) }
+    factory { WalletScreenModel(get()) }
 
 }

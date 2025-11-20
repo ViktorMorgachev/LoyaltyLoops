@@ -14,6 +14,12 @@ class TokenService(config: ApplicationConfig) {
     private val accessLifetime = config.property("jwt.accessLifetime").getString().toLong()
     val refreshLifetime = config.property("jwt.refreshLifetime").getString().toLong()
 
+    fun generateQrSecret(): String {
+        // Просто случайная строка из 32 символов
+        val chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+        return (1..32).map { chars.random() }.joinToString("")
+    }
+
     fun generateTokens(user: UserDto): Pair<String, String> {
         val accessToken = JWT.create()
             .withAudience(audience)

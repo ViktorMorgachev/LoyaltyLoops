@@ -2,6 +2,9 @@ package io.loyaltyloop.app.data
 
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.set
+import io.loyaltyloop.app.utils.LogType
+import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.write
 
 class TokenStorage(private val settings: Settings) {
 
@@ -10,18 +13,25 @@ class TokenStorage(private val settings: Settings) {
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_IS_ROLE_SELECTED = "is_role_selected"
+        private const val KEY_QR_SECRET = "qr_secret"
     }
 
     // Сохранить все данные сразу
-    fun saveAuthData(accessToken: String, refreshToken: String, userId: String) {
+    fun saveAuthData(accessToken: String, refreshToken: String, userId: String, qrSecret: String) {
+        log.write("💾 STORAGE: Saving tokens... Access[${accessToken.take(5)}...]")
         settings[KEY_ACCESS_TOKEN] = accessToken
         settings[KEY_REFRESH_TOKEN] = refreshToken
         settings[KEY_USER_ID] = userId
+        settings[KEY_QR_SECRET] = qrSecret
     }
+
+    fun getQrSecret(): String? = settings.getStringOrNull(KEY_QR_SECRET)
 
     // Получить Access Token
     fun getAccessToken(): String? {
-        return settings.getStringOrNull(KEY_ACCESS_TOKEN)
+        val token = settings.getStringOrNull(KEY_ACCESS_TOKEN)
+        log.write("💾 STORAGE: Reading Access Token: ${if (token != null) "FOUND" else "NULL"}", LogType.Debug)
+        return token
     }
 
     // Получить Refresh Token
@@ -35,6 +45,10 @@ class TokenStorage(private val settings: Settings) {
 
     fun isRoleSelected(): Boolean {
         return settings.getBoolean(KEY_IS_ROLE_SELECTED, false)
+    }
+
+    fun getUserId(): String? {
+        return settings.getStringOrNull(KEY_USER_ID)
     }
 
     // Очистить (при выходе)

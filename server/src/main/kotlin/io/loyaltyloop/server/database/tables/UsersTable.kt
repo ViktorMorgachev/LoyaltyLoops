@@ -13,6 +13,8 @@ object UsersTable : Table("users") {
     val firstName = varchar("first_name", 50).nullable()
     val lastName = varchar("last_name", 50).nullable()
     val email = varchar("email", 100).nullable()
+
+    val qrSecret = varchar("qr_secret", 64)
     val language = varchar("language", 5).default("ru") // "ru", "en", "ky"
     // ------------------
 

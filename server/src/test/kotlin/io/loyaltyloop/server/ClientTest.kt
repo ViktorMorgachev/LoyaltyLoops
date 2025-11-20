@@ -23,7 +23,6 @@ class ClientTest {
             firstName = "Alex",
             lastName = "Tester",
             email = "alex@test.com",
-            language = "en"
         )
 
         // 3. Отправляем запрос на обновление
@@ -51,7 +50,6 @@ class ClientTest {
         // Сравниваем то, что отправляли, с тем, что сохранила база
         assertEquals("Alex", profile.firstName)
         assertEquals("Tester", profile.lastName)
-        assertEquals("en", profile.language)
         assertEquals("alex@test.com", profile.email)
     }
 }

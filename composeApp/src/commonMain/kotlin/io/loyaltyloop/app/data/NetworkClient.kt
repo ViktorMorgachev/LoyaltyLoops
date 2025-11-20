@@ -59,14 +59,12 @@ object NetworkClient {
                 bearer {
                     // А. Загрузка токена из памяти при старте запроса
                     loadTokens {
-
-
                         val access = tokenStorage.getAccessToken()
                         val refresh = tokenStorage.getRefreshToken()
 
-                        netLog.d { "🔐 Auth Plugin: Loading tokens..." }
-                        netLog.d { "   -> Access: ${access?.take(5)}..." }
-                        netLog.d { "   -> Refresh: ${refresh?.take(5)}..." }
+                        netLog.d { "🔐 AUTH PLUGIN: Loading tokens..." }
+                        netLog.d { "   -> Access: ${if (access != null) "OK (${access.take(5)}...)" else "NULL"}" }
+                        netLog.d { "   -> Refresh: ${if (refresh != null) "OK" else "NULL"}" }
 
                         if (access != null && refresh != null) {
                             BearerTokens(access, refresh)
@@ -97,9 +95,10 @@ object NetworkClient {
                                 netLog.write("Token refreshed successfully")
                                 val newAuth = response.body<AuthResponse>()
                                 tokenStorage.saveAuthData(
-                                    newAuth.accessToken,
-                                    newAuth.refreshToken,
-                                    newAuth.userId
+                                    accessToken = newAuth.accessToken,
+                                    refreshToken = newAuth.refreshToken,
+                                    userId = newAuth.userId,
+                                    qrSecret = newAuth.qrSecret
                                 )
                                 BearerTokens(newAuth.accessToken, newAuth.refreshToken)
                             } else {

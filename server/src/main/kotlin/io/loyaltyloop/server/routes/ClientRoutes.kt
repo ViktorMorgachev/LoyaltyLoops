@@ -52,7 +52,7 @@ fun Route.clientRoutes(repository: UserRepository) {
                     return@post
                 }
 
-                repository.updateUserProfile(userId, request)
+                repository.updateUserProfile(userDto = currentUser, lang = lang, request)
 
                 val msg = ServerResources.get("profile_updated", lang)
                 call.respond(HttpStatusCode.OK, ApiMessage(msg)) // <-- JSON

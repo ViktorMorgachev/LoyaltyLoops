@@ -61,6 +61,7 @@ kotlin {
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.tab.navigator)
             implementation(libs.voyager.koin)
             implementation(libs.koin.compose)
             implementation(libs.ktor.client.core)
@@ -70,6 +71,8 @@ kotlin {
 
             implementation(libs.ktor.client.auth) // Для рефреша токенов
             implementation(libs.multiplatform.settings)
+            implementation(libs.qrose)
+            implementation(libs.kotlinx.datetime)
 
         }
 

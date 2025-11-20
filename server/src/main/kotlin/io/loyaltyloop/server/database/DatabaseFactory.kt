@@ -6,6 +6,8 @@ import io.loyaltyloop.server.database.tables.UsersTable
 import io.ktor.server.config.*
 import io.loyaltyloop.server.database.tables.CashiersTable
 import io.loyaltyloop.server.database.tables.LoyaltyCardTable
+import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
+import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
@@ -49,7 +51,9 @@ object DatabaseFactory {
                 TradingPointsTable,
                 CashiersTable,
                 LoyaltyCardTable,
-                RefreshTokensTable
+                RefreshTokensTable,
+                LoyaltySettingsTable,
+                LoyaltyTiersTable
             )
         }
     }
@@ -67,6 +71,35 @@ object DatabaseFactory {
         } catch (e: Exception) {
             println("Database Ping Failed: ${e.message}")
             false
+        }
+    }
+
+    // 2. Точка входа для Тестов (принимает строки напрямую)
+    fun connect(driver: String, url: String, user: String, pass: String) {
+        val hikariConfig = HikariConfig().apply {
+            driverClassName = driver
+            jdbcUrl = url
+            username = user
+            password = pass
+            maximumPoolSize = 3
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            validate()
+        }
+
+        val dataSource = HikariDataSource(hikariConfig)
+        Database.connect(dataSource)
+
+        transaction {
+            SchemaUtils.create(
+                UsersTable,
+                PartnersTable,
+                TradingPointsTable,
+                CashiersTable,
+                LoyaltyCardTable,
+                LoyaltySettingsTable, // <-- Убедись, что новые таблицы здесь
+                LoyaltyTiersTable     // <-- И эта тоже
+            )
         }
     }
 
