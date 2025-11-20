@@ -16,5 +16,25 @@
     <string name="error_server">Сервис временно недоступен</string>
     <string name="error_session_expired">Сессия истекла, войдите снова</string>
     <string name="error_unknown">Произошла неизвестная ошибка</string>
+    <string name="err_invalid_email">Некорректный формат Email</string>
     <string name="btn_retry">Повторить</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Давайте знакомиться!</string>
+    <string name="onboarding_subtitle">Заполните данные, чтобы получать именные бонусы</string>
+    <string name="field_firstname">Имя *</string>
+    <string name="field_lastname">Фамилия</string>
+    <string name="field_email">Email (для восстановления доступа)</string>
+    <string name="btn_save">Сохранить и войти</string>
+    <string name="onboarding_why_info">Ваше имя будет отображаться у кассира для приветствия и начисления бонусов.</string>
+    <string name="err_field_required">Это поле обязательно</string>
+
+    <!-- Role Selection -->
+    <string name="role_select_title">Выберите режим</string>
+    <string name="role_client_title">Я Покупатель</string>
+    <string name="role_client_desc">Хочу копить бонусы и получать скидки</string>
+    <string name="role_partner_title">Я Владелец бизнеса</string>
+    <string name="role_partner_desc">Хочу запустить систему лояльности</string>
+    <string name="role_cashier_title">Я Сотрудник</string>
+    <string name="role_cashier_desc">Хочу работать с терминалом</string>
 </resources>

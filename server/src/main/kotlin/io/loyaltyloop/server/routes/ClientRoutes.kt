@@ -30,23 +30,31 @@ fun Route.clientRoutes(repository: UserRepository) {
                 }
 
                 val request = call.receive<UpdateProfileRequest>()
-                val lang = call.resolveLanguage()
+                val lang = call.resolveLanguage(default = currentUser.language)
+                if (request.firstName.isBlank()) {
+                    val msg = ServerResources.get("name_empty", lang)
+                    call.respond(HttpStatusCode.BadRequest, ApiMessage(msg))
+                    return@post
+                }
 
-                // Определяем язык для ответа:
-                // Если юзер прислал новый язык - отвечаем на нем.
-                // Если нет - отвечаем на старом языке юзера.
-                val responseLang = request.language ?: currentUser.language
+                request.email?.let { email->
+                    if (!io.loyaltyloop.server.utils.isValidEmail(email)) {
+                        val msg = ServerResources.get("invalid_email", lang)
+                        call.respond(HttpStatusCode.BadRequest, ApiMessage(msg))
+                        return@post
+                    }
+                }
 
                 // Валидация с локализацией
                 if (request.firstName.isBlank()) {
-                    val msg = ServerResources.get("name_empty", responseLang)
+                    val msg = ServerResources.get("name_empty", lang)
                     call.respond(HttpStatusCode.BadRequest, ApiMessage(msg)) // <-- JSON
                     return@post
                 }
 
                 repository.updateUserProfile(userId, request)
 
-                val msg = ServerResources.get("profile_updated", responseLang)
+                val msg = ServerResources.get("profile_updated", lang)
                 call.respond(HttpStatusCode.OK, ApiMessage(msg)) // <-- JSON
             }
         }

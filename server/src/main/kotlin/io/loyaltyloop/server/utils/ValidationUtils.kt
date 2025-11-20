@@ -2,6 +2,11 @@ package io.loyaltyloop.server.utils
 
 import io.loyaltyloop.shared.models.Country
 
+private val EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+
+fun isValidEmail(email: String): Boolean {
+    return email.isNotBlank() && email.matches(EMAIL_REGEX)
+}
 /**
  * Проверяет номер телефона.
  * @return null, если номер валиден.

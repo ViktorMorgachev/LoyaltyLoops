@@ -140,14 +140,18 @@ class LoginScreenModel(
 
             val result = repository.login(fullNumber, code)
 
-            result.onSuccess {
+            result.onSuccess {response ->
                 println("LOGIN SUCCESS! Токен получен.")
                 tokenStorage.saveAuthData(
-                    accessToken = it.accessToken,
-                    refreshToken = it.refreshToken,
-                    userId = it.userId
+                    accessToken = response.accessToken,
+                    refreshToken = response.refreshToken,
+                    userId = response.userId
                 )
-                _events.send(LoginEvent.NavigateToHome)
+                if (response.isNewUser) {
+                    _events.send(LoginEvent.NavigateToOnboarding)
+                } else {
+                    _events.send(LoginEvent.NavigateToHome)
+                }
                 _state.value = _state.value.copy(isLoading = false)
             }.onFailure { error ->
                 log.write("Login Failed", LogType.Error, error)

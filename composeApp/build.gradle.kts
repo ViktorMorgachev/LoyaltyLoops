@@ -55,6 +55,7 @@ kotlin {
             implementation(libs.kermit)
             // Основная библиотека ресурсов
             implementation(compose.components.resources)
+            implementation(compose.materialIconsExtended)
             // Аннотации для превью
             implementation(compose.components.uiToolingPreview)
 

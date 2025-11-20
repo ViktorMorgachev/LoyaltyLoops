@@ -12,7 +12,6 @@ import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.utils.resolveLanguage
-import io.loyaltyloop.server.utils.validatePhoneNumber
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
 import io.loyaltyloop.shared.models.UserDto

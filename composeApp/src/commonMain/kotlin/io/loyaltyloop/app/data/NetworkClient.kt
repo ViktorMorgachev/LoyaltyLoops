@@ -59,11 +59,19 @@ object NetworkClient {
                 bearer {
                     // А. Загрузка токена из памяти при старте запроса
                     loadTokens {
+
+
                         val access = tokenStorage.getAccessToken()
                         val refresh = tokenStorage.getRefreshToken()
+
+                        netLog.d { "🔐 Auth Plugin: Loading tokens..." }
+                        netLog.d { "   -> Access: ${access?.take(5)}..." }
+                        netLog.d { "   -> Refresh: ${refresh?.take(5)}..." }
+
                         if (access != null && refresh != null) {
                             BearerTokens(access, refresh)
                         } else {
+                            netLog.w { "🔐 Auth Plugin: No tokens found! Request will be anonymous." }
                             null
                         }
                     }

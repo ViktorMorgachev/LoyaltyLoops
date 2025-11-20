@@ -11,6 +11,8 @@ import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
+import io.loyaltyloop.app.features.onboarding.OnboardingScreenModel
+import io.loyaltyloop.app.features.role.RoleSelectionScreenModel
 import io.loyaltyloop.app.features.splash.SplashScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import kotlinx.serialization.json.Json
@@ -30,5 +32,7 @@ val appModule = module {
     single { AuthRepository(get()) }
     factory { SplashScreenModel(get(), get()) }
     factory { LoginScreenModel(get(),get()) }
+    factory { OnboardingScreenModel(get()) }
+    factory { RoleSelectionScreenModel(get()) }
 
 }

@@ -28,8 +28,8 @@ class SplashScreenModel(
         data object Loading : SplashState()
         data object NavigateToLogin : SplashState()
         data object NavigateToHome : SplashState()
-
-        // Состояние ошибки (не переходим никуда, просим повторить)
+        data object NavigateToOnboarding : SplashState()
+        data object NavigateToRoleSelection : SplashState()
         data class Error(val messageRes: StringResource) : SplashState()
     }
 
@@ -55,8 +55,23 @@ class SplashScreenModel(
 
             val result = repository.getProfile()
 
-            result.onSuccess {
-                log.write("Profile loaded -> Navigate to Home")
+            result.onSuccess { profile->
+                // 1. Если нет имени -> Он не закончил знакомство
+                if (profile.firstName.isNullOrBlank()) {
+                    log.write("Profile incomplete -> Go to Onboarding")
+                    _state.value = SplashState.NavigateToOnboarding
+                    return@onSuccess
+                }
+
+                // 2. Имя есть, но роль не выбрана -> Выбор роли
+                if (!tokenStorage.isRoleSelected()) {
+                    log.write("Role not selected -> Go to Role Selection")
+                    _state.value = SplashState.NavigateToRoleSelection
+                    return@onSuccess
+                }
+
+                // 3. Всё ок -> Домой
+                log.write("Session valid -> Go to Home")
                 _state.value = SplashState.NavigateToHome
             }.onFailure { error ->
                 // Логируем ошибку

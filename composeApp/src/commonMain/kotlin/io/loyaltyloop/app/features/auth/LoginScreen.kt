@@ -18,6 +18,7 @@ import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.onboarding.OnboardingScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.OtpTextField
 import io.loyaltyloop.app.ui.theme.LoyaltyTheme
@@ -55,6 +56,7 @@ class LoginScreen : Screen {
                             snackbarHostState.showSnackbar(message)
                         }
                     }
+                    is LoginEvent.NavigateToOnboarding -> navigator.replaceAll(OnboardingScreen())
                 }
             }
         }

@@ -12,6 +12,8 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.auth.LoginScreen
 import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.onboarding.OnboardingScreen
+import io.loyaltyloop.app.features.role.RoleSelectionScreen
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.btn_retry
@@ -33,7 +35,13 @@ class SplashScreen : Screen {
             when (state) {
                 is SplashScreenModel.SplashState.NavigateToHome -> navigator.replaceAll(HomeScreen())
                 is SplashScreenModel.SplashState.NavigateToLogin -> navigator.replaceAll(LoginScreen())
-                else -> {}
+                is SplashScreenModel.SplashState.NavigateToOnboarding -> {
+                    navigator.replaceAll(OnboardingScreen())
+                }
+                is SplashScreenModel.SplashState.NavigateToRoleSelection -> {
+                    navigator.replaceAll(RoleSelectionScreen())
+                }
+                else -> Unit
             }
         }
 
