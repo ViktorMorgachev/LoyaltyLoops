@@ -9,7 +9,7 @@
     <string name="auth_btn_next">Продолжить</string>
     <string name="auth_enter_code">Введите код из СМС</string>
     <string name="auth_resend_btn">Отправить код повторно</string>
-    <string name="auth_resend_timer">Отправить повторно через %s</string>
+    <string name="auth_resend_timer">Отправить повторно через</string>
 
     <!-- Ошибки -->
     <string name="error_network">Нет подключения к интернету</string>

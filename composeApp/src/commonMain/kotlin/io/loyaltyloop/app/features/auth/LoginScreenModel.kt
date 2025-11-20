@@ -96,7 +96,21 @@ class LoginScreenModel(
                 startTimer() // Перезапускаем таймер
 
             }.onFailure { error ->
+                log.write("Failed", LogType.Error, error)
 
+                val errorText = when(error) {
+                    is ClientException -> UiText.DynamicString(error.errorMessage)
+                    is NetworkException -> UiText.Resource(Res.string.error_network)
+                    is ServerException -> UiText.Resource(Res.string.error_server)
+                    else -> UiText.Resource(Res.string.error_unknown)
+                }
+
+                _events.send(LoginEvent.ShowError(errorText))
+
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    otpInput = ""
+                )
             }
         }
     }

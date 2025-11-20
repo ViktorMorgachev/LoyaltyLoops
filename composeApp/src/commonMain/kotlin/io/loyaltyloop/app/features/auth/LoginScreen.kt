@@ -124,13 +124,32 @@ fun LoginScreenContent(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 if (state.isLoading) {
-                    CircularProgressIndicator()
+                    CircularProgressIndicator(modifier = Modifier.size(32.dp))
                 } else {
-                    Text(
-                        text = "Отправить повторно через 00:${state.timerSeconds.toString().padStart(2, '0')}",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
+                    if (state.isResendEnabled) {
+                        // Кнопка активна
+                        TextButton(
+                            onClick = { onAction(LoginAction.OnResendClicked) }
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.auth_resend_btn),
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    } else {
+                        // Таймер тикает (Кнопка неактивна)
+                        val timerValue = "00:${state.timerSeconds.toString().padStart(2, '0')}"
+
+                        // 2. Склеиваем текст ресурса и время
+                        val fullText = "${stringResource(Res.string.auth_resend_timer)} $timerValue"
+
+                        Text(
+                            text = fullText,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                    }
                 }
             }
         }
