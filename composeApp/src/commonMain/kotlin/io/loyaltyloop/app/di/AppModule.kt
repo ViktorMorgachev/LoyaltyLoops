@@ -9,35 +9,24 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
+import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import kotlinx.serialization.json.Json
+import org.koin.core.module.Module
 import org.koin.dsl.module
+
+expect val platformModule: Module
 
 val appModule = module {
 
-    single {
-        HttpClient {
-            install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
-            }
-            install(Logging) {
-                logger = Logger.SIMPLE
-                level = LogLevel.ALL
-            }
+    includes(platformModule)
 
 
-            defaultRequest {
-                url(SERVER_URL)
-            }
-        }
-    }
+    // TokenStorage зависит от Settings (которые придут из platformModule)
+    single { TokenStorage(get()) }
 
     single { AuthRepository(get()) }
-    factory { LoginScreenModel(get()) }
+    factory { LoginScreenModel(get(),get()) }
 
 }

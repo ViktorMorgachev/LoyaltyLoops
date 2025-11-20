@@ -2,6 +2,7 @@ package io.loyaltyloop.app.features.auth
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.shared.models.Country
 import kotlinx.coroutines.Job
@@ -11,7 +12,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class LoginScreenModel(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val tokenStorage: TokenStorage
 ) : ScreenModel {
 
     private val _state = MutableStateFlow(LoginState())
@@ -35,23 +37,29 @@ class LoginScreenModel(
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
-            // Имитация задержки сети
-            delay(1000)
-
             val country = state.value.selectedCountry
-            // Очищаем номер от лишних символов перед отправкой
             val fullNumber = country.phonePrefix + state.value.phoneInput
 
-            println("Отправляем код на: $fullNumber")
-            // repository.sendCode(fullNumber) // (Пока закомментировано, сервер ждет 1111)
+            println("Запрос кода на: $fullNumber")
 
-            // Переходим на шаг ввода кода
-            _state.value = _state.value.copy(
-                isLoading = false,
-                step = LoginStep.EnterCode,
-                timerSeconds = 60 // Запускаем таймер
-            )
-            startTimer()
+            // --- РЕАЛЬНЫЙ ВЫЗОВ ---
+            val result = repository.sendCode(fullNumber)
+
+            result.onSuccess { debugCode ->
+                println("Код получен: $debugCode")
+
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    step = LoginStep.EnterCode,
+                    timerSeconds = 60
+                )
+                startTimer()
+
+            }.onFailure { error ->
+                println("Ошибка отправки СМС: ${error.message}")
+                _state.value = _state.value.copy(isLoading = false)
+                //TODO Тут хорошо бы показать Snackber с ошибкой
+            }
         }
     }
 
@@ -76,6 +84,11 @@ class LoginScreenModel(
 
             result.onSuccess {
                 println("LOGIN SUCCESS! Токен получен.")
+                tokenStorage.saveAuthData(
+                    accessToken = it.accessToken,
+                    refreshToken = it.refreshToken,
+                    userId = it.userId
+                )
                 // Тут будет навигация на Главный экран
             }.onFailure {
                 println("LOGIN FAILED: ${it.message}")
