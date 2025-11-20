@@ -52,6 +52,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
 
+            implementation(libs.kermit)
             // Основная библиотека ресурсов
             implementation(compose.components.resources)
             // Аннотации для превью

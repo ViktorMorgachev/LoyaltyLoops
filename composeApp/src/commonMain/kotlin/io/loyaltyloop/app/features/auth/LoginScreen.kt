@@ -10,13 +10,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.OtpTextField
 import io.loyaltyloop.app.ui.theme.LoyaltyTheme
 import io.loyaltyloop.shared.models.Country
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import loyaltyloop.composeapp.generated.resources.*
@@ -26,16 +32,37 @@ class LoginScreen : Screen {
     override fun Content() {
         val viewModel = getScreenModel<LoginScreenModel>()
         val state by viewModel.state.collectAsState()
+        val navigator = LocalNavigator.currentOrThrow
+        val keyboardController = LocalSoftwareKeyboardController.current
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        LaunchedEffect(Unit) {
+            viewModel.events.collect { event ->
+                when (event) {
+                    is LoginEvent.HideKeyboard -> {
+                        keyboardController?.hide()
+                    }
+                    is LoginEvent.NavigateToHome -> {
+                        navigator.replaceAll(HomeScreen())
+                    }
+                    is LoginEvent.ShowError -> {
+                        // 1. Получаем строку (асинхронно)
+                        val message = event.message.asStringSuspend()
+                        // 2. Показываем снекбар (этот вызов приостановит корутину, пока снекбар не исчезнет)
+                        // Но так как мы в collect, это может заблокировать обработку следующих событий.
+                        // Поэтому лучше запустить отдельную дочернюю корутину для показа.
+                        launch {
+                            snackbarHostState.showSnackbar(message)
+                        }
+                    }
+                }
+            }
+        }
 
         LoginScreenContent(
             state = state,
-            onPhoneChanged = viewModel::onPhoneChanged,
-            onCountryClicked = { /* ... */ },
-            onNextClicked = viewModel::onSendCodeClicked,
-
-            // Подключаем новые методы
-            onOtpChanged = viewModel::onCodeChanged,
-            onBackClicked = viewModel::onBackClicked
+            snackbarHostState = snackbarHostState,
+            onAction = viewModel::onAction
         )
     }
 }
@@ -47,18 +74,16 @@ class LoginScreen : Screen {
 @Composable
 fun LoginScreenContent(
     state: LoginState,
-    onPhoneChanged: (String) -> Unit,
-    onCountryClicked: () -> Unit,
-    onNextClicked: () -> Unit,
-    onOtpChanged: (String) -> Unit, // <-- Новый
-    onBackClicked: () -> Unit       // <-- Новый
+    snackbarHostState: SnackbarHostState,
+    onAction: (LoginAction) -> Unit
 ) {
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState)},
         topBar = {
-            // Показываем кнопку назад только на шаге 2
             if (state.step == LoginStep.EnterCode) {
-                IconButton(onClick = onBackClicked) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                IconButton(onClick = { onAction(LoginAction.OnBackClicked) }) {
+                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
         },
@@ -70,9 +95,8 @@ fun LoginScreenContent(
                 .padding(padding)
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            // verticalArrangement = Arrangement.Center // <-- Убираем центрирование, чтобы клавиатура не закрывала
         ) {
-            Spacer(modifier = Modifier.height(40.dp)) // Отступ сверху
+            Spacer(modifier = Modifier.height(40.dp))
 
             Text(
                 text = stringResource(Res.string.auth_title),
@@ -85,23 +109,16 @@ fun LoginScreenContent(
             if (state.step == LoginStep.EnterPhone) {
                 PhoneInputCard(
                     state = state,
-                    onPhoneChanged = onPhoneChanged,
-                    onCountryClicked = onCountryClicked,
-                    onNextClicked = onNextClicked
+                    onAction = onAction
                 )
             } else {
                 // --- ЭКРАН ВВОДА КОДА ---
-                Text(
-                    text = stringResource(Res.string.auth_enter_code),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-
+                Text(stringResource(Res.string.auth_enter_code), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Наш кастомный компонент
                 OtpTextField(
                     otpText = state.otpInput,
-                    onOtpTextChange = onOtpChanged
+                    onOtpTextChange = { onAction(LoginAction.OnOtpChanged(it)) }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -122,10 +139,8 @@ fun LoginScreenContent(
 
 @Composable
 fun PhoneInputCard(
-    state: LoginState,
-    onPhoneChanged: (String) -> Unit,
-    onCountryClicked: () -> Unit,
-    onNextClicked: () -> Unit
+    state: LoginState, // <-- Берем данные из state
+    onAction: (LoginAction) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -141,70 +156,31 @@ fun PhoneInputCard(
                     text = state.selectedCountry.flagEmoji + " " + state.selectedCountry.phonePrefix,
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier
-                        .clickable { onCountryClicked() }
+                        .clickable { onAction(LoginAction.OnCountryClicked) } // <-- Action
                         .padding(8.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 OutlinedTextField(
                     value = state.phoneInput,
-                    onValueChange = onPhoneChanged,
+                    onValueChange = { onAction(LoginAction.OnPhoneChanged(it)) }, // <-- Action
                     placeholder = { Text(state.selectedCountry.mask) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
                     modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    singleLine = true,
+                    enabled = !state.isLoading // Берем из state
                 )
             }
         }
     }
+
     Spacer(modifier = Modifier.height(24.dp))
-    Button(
-        onClick = onNextClicked,
-        modifier = Modifier.fillMaxWidth().height(50.dp),
-        shape = MaterialTheme.shapes.medium
-    ) {
-        Text(stringResource(Res.string.auth_btn_next), style = MaterialTheme.typography.titleMedium)
-    }
-}
 
-// --- PREVIEWS ---
-
-@Preview
-@Composable
-fun LoginPhonePreview() {
-    LoyaltyTheme {
-        LoginScreenContent(
-            state = LoginState(
-                phoneInput = "555 123",
-                selectedCountry = Country.KYRGYZSTAN,
-                step = LoginStep.EnterPhone
-            ),
-            onPhoneChanged = {},
-            onCountryClicked = {},
-            onNextClicked = {},
-            onOtpChanged = {},
-            onBackClicked = {}
-        )
-    }
-}
-
-@Preview
-@Composable
-fun LoginOtpPreview() {
-    LoyaltyTheme {
-        LoginScreenContent(
-            state = LoginState(
-                phoneInput = "555 123",
-                selectedCountry = Country.KYRGYZSTAN,
-                step = LoginStep.EnterCode, // <-- Показываем второй шаг
-                otpInput = "12", // <-- Имитируем, что 2 цифры уже введены
-                timerSeconds = 59
-            ),
-            onPhoneChanged = {},
-            onCountryClicked = {},
-            onNextClicked = {},
-            onOtpChanged = {},
-            onBackClicked = {}
-        )
-    }
+    // --- НАША НОВАЯ КНОПКА ---
+    LoyaltyButton(
+        text = stringResource(Res.string.auth_btn_next),
+        isLoading = state.isLoading, // Берем из state
+        onClick = { onAction(LoginAction.OnSubmitClicked) },
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 

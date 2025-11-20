@@ -7,8 +7,14 @@
     <string name="auth_subtitle">Вход для клиентов и партнеров</string>
     <string name="auth_phone_label">Ваш номер телефона</string>
     <string name="auth_btn_next">Продолжить</string>
-    <string name="auth_enter_code">Введите код из СМС (1111)</string>
+    <string name="auth_enter_code">Введите код из СМС</string>
+    <string name="auth_resend_btn">Отправить код повторно</string>
+    <string name="auth_resend_timer">Отправить повторно через %s</string>
 
-    <!-- Errors -->
-    <string name="error_network">Ошибка сети</string>
+    <!-- Ошибки -->
+    <string name="error_network">Нет подключения к интернету</string>
+    <string name="error_server">Сервис временно недоступен</string>
+    <string name="error_session_expired">Сессия истекла, войдите снова</string>
+    <string name="error_unknown">Произошла неизвестная ошибка</string>
+    <string name="btn_retry">Повторить</string>
 </resources>

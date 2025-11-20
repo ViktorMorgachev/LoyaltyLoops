@@ -11,6 +11,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
+import io.loyaltyloop.app.features.splash.SplashScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
@@ -27,6 +28,7 @@ val appModule = module {
     single { TokenStorage(get()) }
 
     single { AuthRepository(get()) }
+    factory { SplashScreenModel(get(), get()) }
     factory { LoginScreenModel(get(),get()) }
 
 }
