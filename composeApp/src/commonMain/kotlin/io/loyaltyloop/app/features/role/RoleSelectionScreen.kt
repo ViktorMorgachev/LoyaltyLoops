@@ -16,7 +16,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.main.MainScreen
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
@@ -52,7 +52,7 @@ class RoleSelectionScreen : Screen {
                     icon = Icons.Default.Person,
                     onClick = {
                         viewModel.onRoleSelected()
-                        navigator.replaceAll(HomeScreen())
+                        navigator.replaceAll(MainScreen())
                     }
                 )
 
@@ -66,7 +66,7 @@ class RoleSelectionScreen : Screen {
                     onClick = {
                         viewModel.onRoleSelected()
                         // Для теста можно тоже кинуть на Home
-                        navigator.replaceAll(HomeScreen())
+                        navigator.replaceAll(MainScreen())
                     }
                 )
 
@@ -80,7 +80,7 @@ class RoleSelectionScreen : Screen {
                     onClick = {
                         viewModel.onRoleSelected()
                         // Для теста можно тоже кинуть на Home
-                        navigator.replaceAll(HomeScreen())
+                        navigator.replaceAll(MainScreen())
                     }
                 )
             }

@@ -16,7 +16,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.role.RoleSelectionScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.utils.UiText
@@ -36,7 +36,7 @@ class OnboardingScreen : Screen {
             viewModel.events.collect { event ->
                 when (event) {
                     is OnboardingScreenModel.Event.NavigateToHome ->
-                        navigator.replaceAll(HomeScreen())
+                        navigator.replaceAll(MainScreen())
                     is OnboardingScreenModel.Event.ShowError -> {
                          val msg = event.message.asStringSuspend()
                          launch { snackbarHostState.showSnackbar(msg) }

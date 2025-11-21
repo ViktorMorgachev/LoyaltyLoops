@@ -59,7 +59,7 @@ class SplashScreenModel(
 
             result.onSuccess { profile->
 
-                sessionManager.initSession(profile.workspaces)
+                sessionManager.updateWorkspaces(profile.workspaces)
                 // 1. Если нет имени -> Он не закончил знакомство
                 if (profile.firstName.isNullOrBlank()) {
                     _state.value = SplashState.NavigateToOnboarding

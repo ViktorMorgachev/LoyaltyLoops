@@ -10,6 +10,8 @@
     <string name="auth_enter_code">Введите код из СМС</string>
     <string name="auth_resend_btn">Отправить код повторно</string>
     <string name="auth_resend_timer">Отправить повторно через</string>
+    <string name="profile_loading">Загрузка...</string>
+    <string name="profile_error_load">Ошибка загрузки</string>
 
     <!-- Ошибки -->
     <string name="error_network">Нет подключения к интернету</string>
@@ -17,6 +19,7 @@
     <string name="error_session_expired">Сессия истекла, войдите снова</string>
     <string name="error_unknown">Произошла неизвестная ошибка</string>
     <string name="err_invalid_email">Некорректный формат Email</string>
+    <string name="error_profile_loading">Не удалось загрузить профиль</string>
     <string name="btn_retry">Повторить</string>
 
     <!-- Onboarding -->
@@ -37,4 +40,24 @@
     <string name="role_partner_desc">Хочу запустить систему лояльности</string>
     <string name="role_cashier_title">Я Сотрудник</string>
     <string name="role_cashier_desc">Хочу работать с терминалом</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workspaces_title">Мои рабочие места</string>
+    <string name="profile_role_owner">Владелец</string>
+    <string name="profile_role_cashier">Кассир</string>
+    <string name="profile_btn_logout">Выйти из аккаунта</string>
+    <string name="profile_section_general">Основное</string>
+    <string name="profile_section_business">Бизнес и Карьера</string>
+
+    <string name="profile_item_language">Язык приложения</string>
+    <string name="profile_item_support">Поддержка</string>
+
+    <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
+    <string name="profile_desc_create_business">Для владельцев заведений</string>
+
+    <string name="profile_btn_join_team">Ввести инвайт-код</string>
+    <string name="profile_desc_join_team">Для сотрудников</string>
+
+    <string name="profile_version">Версия %s</string>
+
 </resources>

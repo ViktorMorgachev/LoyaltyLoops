@@ -17,15 +17,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.OtpTextField
-import io.loyaltyloop.app.ui.theme.LoyaltyTheme
-import io.loyaltyloop.shared.models.Country
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import loyaltyloop.composeapp.generated.resources.*
 
 class LoginScreen : Screen {
@@ -44,7 +41,7 @@ class LoginScreen : Screen {
                         keyboardController?.hide()
                     }
                     is LoginEvent.NavigateToHome -> {
-                        navigator.replaceAll(HomeScreen())
+                        navigator.replaceAll(MainScreen())
                     }
                     is LoginEvent.ShowError -> {
                         // 1. Получаем строку (асинхронно)

@@ -5,7 +5,6 @@ import io.loyaltyloop.shared.models.UserWorkspace
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-// composeApp/src/commonMain/kotlin/io/loyaltyloop/app/data/SessionManager.kt
 
 class SessionManager(
     private val tokenStorage: TokenStorage
@@ -14,18 +13,29 @@ class SessionManager(
     private val _currentWorkspace = MutableStateFlow<UserWorkspace?>(null)
     val currentWorkspace = _currentWorkspace.asStateFlow()
 
+
     // Список всех доступных ролей (загружается с сервера)
-    private var allWorkspaces: List<UserWorkspace> = emptyList()
+    private val _availableWorkspaces = MutableStateFlow<List<UserWorkspace>>(emptyList())
+    val availableWorkspaces = _availableWorkspaces.asStateFlow()
 
     // Вызывается при старте приложения (в Splash)
-    fun initSession(workspaces: List<UserWorkspace>) {
-        this.allWorkspaces = workspaces
+    fun updateWorkspaces(newList: List<UserWorkspace>) {
+        _availableWorkspaces.value = newList
 
-        // Восстанавливаем последний выбор
+        // 1. Пытаемся восстановить сохраненный выбор
         val savedId = tokenStorage.getCurrentWorkspaceId()
-        val savedWorkspace = workspaces.find { it.id == savedId }
 
-        _currentWorkspace.value = savedWorkspace
+        // 2. Проверяем, есть ли сохраненный ID в новом списке
+        // (Это важно: если меня уволили, я не должен остаться в режиме кассира)
+        val validWorkspace = newList.find { it.id == savedId }
+
+        // 3. Обновляем текущий режим (если не нашли - сбросится в null/Client)
+        _currentWorkspace.value = validWorkspace
+
+        // Если выбор сбросился, а был сохранен какой-то ID - стоит почистить сторадж
+        if (savedId != null && validWorkspace == null) {
+            tokenStorage.saveCurrentWorkspaceId(null)
+        }
     }
 
     // Переключение режима
@@ -39,5 +49,5 @@ class SessionManager(
     fun isCashierMode() = _currentWorkspace.value?.role == UserRole.CASHIER
     fun isPartnerMode() = _currentWorkspace.value?.role == UserRole.PARTNER_ADMIN
 
-    fun getAvailableWorkspaces() = allWorkspaces
+    fun getWorkspaces() = availableWorkspaces
 }
