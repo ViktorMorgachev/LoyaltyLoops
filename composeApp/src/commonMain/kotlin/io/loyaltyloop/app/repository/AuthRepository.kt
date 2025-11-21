@@ -3,9 +3,11 @@ package io.loyaltyloop.app.repository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.headers
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.loyaltyloop.app.data.network.safeApiCall
@@ -41,7 +43,7 @@ class AuthRepository(private val client: HttpClient) {
     // 3. Профиль (Check Session)
     suspend fun getProfile(): Result<UserProfileResponse> {
         return safeApiCall<UserProfileResponse> {
-            client.get("/auth/me")
+            client.get("/client/me")
         }
     }
 

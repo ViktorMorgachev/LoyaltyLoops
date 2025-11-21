@@ -34,7 +34,7 @@ class WalletScreen : Screen {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(20.dp))
-                
+
                 Text(
                     text = "Мой Кошелек",
                     style = MaterialTheme.typography.headlineMedium,
@@ -48,9 +48,9 @@ class WalletScreen : Screen {
                     qrContent = state.qrContent,
                     secondsRemaining = state.secondsRemaining
                 )
-                
+
                 Spacer(modifier = Modifier.height(40.dp))
-                
+
                 Text("Покажите этот код кассиру для начисления баллов")
             }
         }
@@ -94,13 +94,14 @@ fun QrCard(qrContent: String, secondsRemaining: Int) {
                 style = MaterialTheme.typography.labelLarge,
                 color = if (secondsRemaining < 5) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
             )
-            
+
             // Полоска прогресса таймера
             LinearProgressIndicator(
-                progress = secondsRemaining / 30f,
+                progress = { secondsRemaining / 30f },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(4.dp),
                 color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.surfaceVariant
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
             )
         }
     }

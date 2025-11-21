@@ -2,8 +2,10 @@ package io.loyaltyloop.app.data
 
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 
 
 class SessionManager(
@@ -12,11 +14,19 @@ class SessionManager(
     // Текущий активный режим
     private val _currentWorkspace = MutableStateFlow<UserWorkspace?>(null)
     val currentWorkspace = _currentWorkspace.asStateFlow()
-
+    private val _logoutEvent = Channel<Unit>()
+    val logoutEvent = _logoutEvent.receiveAsFlow()
 
     // Список всех доступных ролей (загружается с сервера)
     private val _availableWorkspaces = MutableStateFlow<List<UserWorkspace>>(emptyList())
     val availableWorkspaces = _availableWorkspaces.asStateFlow()
+
+    suspend fun logout() {
+        tokenStorage.clear()
+        _currentWorkspace.value = null
+        _availableWorkspaces.value = emptyList() // <-- ВАЖНО: Очищаем список
+        _logoutEvent.send(Unit)
+    }
 
     // Вызывается при старте приложения (в Splash)
     fun updateWorkspaces(newList: List<UserWorkspace>) {

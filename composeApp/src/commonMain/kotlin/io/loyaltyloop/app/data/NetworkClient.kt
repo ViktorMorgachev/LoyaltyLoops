@@ -19,6 +19,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
+import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
 import io.loyaltyloop.app.utils.LogType
@@ -32,7 +33,7 @@ object NetworkClient {
 
     private val netLog = KermitLogger.withTag("LoyaltyNetwork")
 
-    fun create(engine: HttpClientEngine, tokenStorage: TokenStorage): HttpClient {
+    fun create(engine: HttpClientEngine, tokenStorage: TokenStorage,  sessionManager: SessionManager): HttpClient {
         return HttpClient(engine) {
 
             // 1. JSON
@@ -63,7 +64,7 @@ object NetworkClient {
                         val refresh = tokenStorage.getRefreshToken()
 
                         netLog.d { "🔐 AUTH PLUGIN: Loading tokens..." }
-                        netLog.d { "   -> Access: ${if (access != null) "OK (${access.take(5)}...)" else "NULL"}" }
+                        netLog.d { "   -> Access: ${if (access != null) "OK (${access.take(6)}...${access.takeLast(6)})" else "NULL"}" }
                         netLog.d { "   -> Refresh: ${if (refresh != null) "OK" else "NULL"}" }
 
                         if (access != null && refresh != null) {
@@ -73,6 +74,8 @@ object NetworkClient {
                             null
                         }
                     }
+
+                    sendWithoutRequest { false }
 
                     // Б. Логика обновления, если пришел 401
                     refreshTokens {
@@ -103,8 +106,8 @@ object NetworkClient {
                                 BearerTokens(newAuth.accessToken, newAuth.refreshToken)
                             } else {
                                 // Рефреш протух - разлогин
-                                netLog.write("Refresh failed: ${response.status}", LogType.Warning)
-                                tokenStorage.clear()
+                                netLog.write("Refresh failed: ${response.status}. Logging out...", LogType.Warning)
+                                sessionManager.logout()
                                 null
                             }
                         } catch (e: Exception) {
@@ -119,7 +122,24 @@ object NetworkClient {
             // 4. URL
             defaultRequest {
                 url(SERVER_URL)
-                header(HttpHeaders.AcceptLanguage, "ru")
+
+                // Всегда ставим язык
+                header(HttpHeaders.AcceptLanguage, "ru") // TODO: Брать из локали
+
+                // Проверяем, нужен ли токен для этого пути
+                val path = url.encodedPath
+                val isAuthPath = path.endsWith("/auth/login") ||
+                        path.endsWith("/auth/send-code") ||
+                        path.endsWith("/auth/refresh")
+
+                // Если это НЕ путь авторизации - вставляем токен ПРИНУДИТЕЛЬНО
+                if (!isAuthPath) {
+                    val token = tokenStorage.getAccessToken()
+                    if (token != null) {
+                        // netLog.d { "💉 Injecting Fresh Token: ${token.takeLast(6)}" }
+                        header(HttpHeaders.Authorization, "Bearer $token")
+                    }
+                }
             }
         }
     }

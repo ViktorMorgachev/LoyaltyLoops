@@ -35,8 +35,6 @@ class OnboardingScreenModel(
 
     sealed interface Event {
         data object NavigateToHome : Event
-
-        data object NavigateToRoleSelection : Event
         data class ShowError(val message: UiText) : Event
     }
 
@@ -70,7 +68,7 @@ class OnboardingScreenModel(
 
             result.onSuccess {
                 log.write("Profile updated!")
-                _events.send(Event.NavigateToRoleSelection)
+                _events.send(Event.NavigateToHome)
             }.onFailure { error ->
                 log.write("Update failed", LogType.Error, error)
                 val errorText = when(error) {

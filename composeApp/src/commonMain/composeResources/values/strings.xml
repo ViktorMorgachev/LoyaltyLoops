@@ -59,5 +59,12 @@
     <string name="profile_desc_join_team">Для сотрудников</string>
 
     <string name="profile_version">Версия %s</string>
+    <!-- Profile Roles -->
+    <string name="profile_role_admin">Администратор Платформы</string>
+    <string name="profile_role_manager">Менеджер Платформы</string>
+
+    <!-- Profile Sections -->
+    <string name="profile_header_workspaces">Мои рабочие места</string>
+    <string name="profile_header_actions">Возможности</string>
 
 </resources>

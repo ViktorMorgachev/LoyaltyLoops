@@ -41,9 +41,6 @@ class OnboardingScreen : Screen {
                          val msg = event.message.asStringSuspend()
                          launch { snackbarHostState.showSnackbar(msg) }
                     }
-
-                    OnboardingScreenModel.Event.NavigateToRoleSelection -> {
-                        navigator.replace(RoleSelectionScreen())}
                 }
             }
         }

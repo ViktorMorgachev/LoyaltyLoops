@@ -112,7 +112,7 @@ class AuthTest {
         val client = createJsonClient()
         val expiredAccess = generateExpiredToken("some_user_id")
 
-        val response = client.get("/auth/me") {
+        val response = client.get("/client/me") {
             header("Authorization", "Bearer $expiredAccess")
         }
 
@@ -147,7 +147,7 @@ class AuthTest {
         client.registerAndLogin(phone = phone, language = "en")
 
         // 3. Проверяем БД (запрос через токен, чтобы было честно)
-        val meRes = client.get("/auth/me") {
+        val meRes = client.get("/client/me") {
             header("Authorization", "Bearer ${authRu.accessToken}")
         }
         val profile = meRes.body<UserProfileResponse>()

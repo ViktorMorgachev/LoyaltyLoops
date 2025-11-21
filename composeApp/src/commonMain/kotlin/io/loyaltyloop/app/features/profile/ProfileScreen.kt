@@ -62,23 +62,34 @@ class ProfileScreen : Screen {
                 ) {
                     // 1. Header (Красивая карточка)
                     item {
-                        ProfileHeaderCard(state.name.asString(), state.phone)
+                        ProfileHeaderCard(name = state.name.asString(), phone = state.phone)
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
 
-                    // 2. Секция БИЗНЕС (Workspaces + Actions)
-                    item {
-                        SectionTitle(stringResource(Res.string.profile_section_business))
-                    }
-
-                    // Если есть рабочие места - показываем их
+                    // --- ГРУППА 1: ТЕКУЩИЕ РАБОЧИЕ МЕСТА ---
                     if (state.workspaces.isNotEmpty()) {
+                        item {
+                            SectionTitle(stringResource(Res.string.profile_header_workspaces))
+                        }
+
                         items(state.workspaces) { workspace ->
-                            WorkspaceItem(workspace) { viewModel.onWorkspaceClicked(workspace) }
+                            WorkspaceItem(workspace) {
+                                viewModel.onWorkspaceClicked(workspace)
+                            }
+                            // Тонкий разделитель между элементами (опционально)
+                            if (state.workspaces.last() != workspace) {
+                                Divider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+                            }
                         }
                     }
 
-                    // Кнопки действий (Всегда видны!)
+                    // --- ГРУППА 2: ДЕЙСТВИЯ (Создать / Вступить) ---
                     item {
+                        // Отступ, если список выше был
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        SectionTitle(stringResource(Res.string.profile_header_actions))
+
                         // Создать бизнес
                         SettingsItem(
                             icon = Icons.Default.AddBusiness,
@@ -86,21 +97,15 @@ class ProfileScreen : Screen {
                             subtitle = stringResource(Res.string.profile_desc_create_business),
                             onClick = viewModel::onCreateBusinessClicked
                         )
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
 
                         // Стать сотрудником
                         SettingsItem(
-                            icon = Icons.Default.Badge, // Или Work
+                            icon = Icons.Default.Badge,
                             title = stringResource(Res.string.profile_btn_join_team),
                             subtitle = stringResource(Res.string.profile_desc_join_team),
                             onClick = viewModel::onJoinTeamClicked
                         )
                     }
-
                     // 3. Секция НАСТРОЙКИ
                     item {
                         SectionTitle(stringResource(Res.string.profile_section_general))
@@ -111,7 +116,11 @@ class ProfileScreen : Screen {
                             value = "Русский", // TODO: Брать из настроек
                             onClick = viewModel::onLanguageClicked
                         )
-                        Divider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                        HorizontalDivider(
+                            Modifier,
+                            DividerDefaults.Thickness,
+                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                        )
 
                         SettingsItem(
                             icon = Icons.AutoMirrored.Filled.Help,
@@ -133,6 +142,7 @@ class ProfileScreen : Screen {
                             modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
                         )
                     }
+
                 }
             }
         }
@@ -254,9 +264,18 @@ fun SettingsItem(
 
 @Composable
 fun WorkspaceItem(workspace: UserWorkspace, onClick: () -> Unit) {
-    // Переиспользуем стиль SettingsItem, но с выделением
-    val icon = if (workspace.role == UserRole.PARTNER_ADMIN) Icons.Default.Business else Icons.Default.Store
-    val roleRes = if (workspace.role == UserRole.PARTNER_ADMIN) Res.string.profile_role_owner else Res.string.profile_role_cashier
+    // Выбираем иконку и текст в зависимости от роли
+    val (icon, roleRes) = when (workspace.role) {
+        UserRole.PARTNER_ADMIN -> Pair(Icons.Default.Business, Res.string.profile_role_owner)
+        UserRole.CASHIER -> Pair(Icons.Default.Store, Res.string.profile_role_cashier)
+
+        // Для Админов платформы
+        UserRole.PLATFORM_SUPER_ADMIN -> Pair(Icons.Default.Security, Res.string.profile_role_admin)
+        UserRole.PLATFORM_MANAGER -> Pair(Icons.Default.SupervisorAccount, Res.string.profile_role_manager)
+
+        // Клиент сюда попасть не должен, но на всякий случай
+        UserRole.CLIENT -> Pair(Icons.Default.Person, Res.string.app_name)
+    }
 
     SettingsItem(
         icon = icon,

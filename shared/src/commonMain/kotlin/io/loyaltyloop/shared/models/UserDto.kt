@@ -3,10 +3,13 @@ package io.loyaltyloop.shared.models
 import kotlinx.serialization.Serializable
 
 enum class UserRole {
-    CLIENT,         // Обычный покупатель
-    PARTNER_ADMIN,  // Владелец бизнеса (требует PIN)
-    CASHIER,        // Сотрудник (вход свободный)
-    SUPER_ADMIN     // Ты
+    CLIENT,         // Обычный
+    CASHIER,        // Сотрудник точки
+    PARTNER_ADMIN,  // Владелец бизнеса
+
+    // Системные роли
+    PLATFORM_SUPER_ADMIN, // Бог
+    PLATFORM_MANAGER      // Менеджер поддержки
 }
 
 @Serializable

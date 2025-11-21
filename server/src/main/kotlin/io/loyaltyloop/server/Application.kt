@@ -25,6 +25,8 @@ import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.HealthResponse
+import io.loyaltyloop.shared.models.UserRole
+import kotlinx.coroutines.launch
 import org.slf4j.event.*
 
 
@@ -104,6 +106,32 @@ fun Application.module() {
                 HttpStatusCode.InternalServerError,
                 ApiMessage("Server Error: ${cause.localizedMessage}")
             )
+        }
+    }
+
+    val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
+    val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
+    if (superPhone != null) {
+        launch {
+            // 1. Ждем, пока база поднимется (на всякий случай)
+            // 2. Ищем юзера
+            val user = userRepository.getUserByPhone(superPhone)
+
+            if (user != null) {
+                // TODO: В реальности тут надо хэшировать PIN.
+                // Для MVP запишем как есть, но в продакшене используй BCrypt.
+                val pinHash = defaultPin // hash(defaultPin)
+
+                val created = userRepository.createSystemStaff(
+                    userId = user.id,
+                    role = UserRole.PLATFORM_SUPER_ADMIN,
+                    defaultPinHash = pinHash
+                )
+
+                if (created) {
+                    println("🚀 SEEDING: Super Admin rights granted to $superPhone")
+                }
+            }
         }
     }
 

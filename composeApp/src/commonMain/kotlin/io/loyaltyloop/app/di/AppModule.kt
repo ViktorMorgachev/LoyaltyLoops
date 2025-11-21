@@ -34,7 +34,7 @@ val appModule = module {
     single { AuthRepository(get()) }
     single { SessionManager(get()) }
     factory { SplashScreenModel(get(), get(), get()) }
-    factory { LoginScreenModel(get(),get()) }
+    factory { LoginScreenModel(get(),get(), get()) }
     factory { OnboardingScreenModel(get()) }
     factory { RoleSelectionScreenModel(get()) }
     factory { WalletScreenModel(get()) }

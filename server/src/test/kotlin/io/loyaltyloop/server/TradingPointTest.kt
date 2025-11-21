@@ -38,7 +38,8 @@ class TradingPointTest {
                     id = ownerId,
                     phoneNumber = "+996555000000",
                     countryCode = "KG",
-                    qrSecret = "test_secret"
+                    qrSecret = "test_secret",
+                    firstName = null
                 )
             )
 

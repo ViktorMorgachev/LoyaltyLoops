@@ -12,6 +12,7 @@ import io.loyaltyloop.server.utils.ServerResources
 import io.loyaltyloop.server.utils.resolveLanguage
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.UpdateProfileRequest
+import io.loyaltyloop.shared.models.UserProfileResponse
 
 fun Route.clientRoutes(repository: UserRepository) {
     route("/client") {
@@ -65,6 +66,42 @@ fun Route.clientRoutes(repository: UserRepository) {
 
                 val cards = repository.getUserCards(userId)
                 call.respond(cards)
+            }
+        }
+        authenticate("auth-jwt") {
+            get("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                // Безопасное извлечение ID (на случай сбоя парсинга)
+                val userId = principal?.payload?.getClaim("id")?.asString()
+
+                if (userId == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "Token claim 'id' is missing")
+                    return@get
+                }
+
+                // 1. Проверяем, существует ли юзер реально
+                val user = repository.getUserById(userId)
+                if (user == null) {
+                    call.respond(HttpStatusCode.Unauthorized, "User no longer exists")
+                    return@get
+                }
+
+                // 2. Если юзер есть, собираем его актуальные роли
+                val workspaces = repository.getUserWorkspaces(userId)
+
+                // 3. Отдаем профиль
+                call.respond(
+                    UserProfileResponse(
+                        userId = user.id,
+                        phone = user.phoneNumber,
+                        countryCode = user.countryCode,
+                        firstName = user.firstName,
+                        lastName = user.lastName,
+                        email = user.email,
+                        language = user.language,
+                        workspaces = workspaces
+                    )
+                )
             }
         }
     }

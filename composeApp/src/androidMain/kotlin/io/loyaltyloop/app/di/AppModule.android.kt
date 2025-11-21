@@ -17,7 +17,8 @@ actual val platformModule = module {
     single {
         NetworkClient.create(
             engine = OkHttp.create(),
-            tokenStorage = get<TokenStorage>() // Koin сам найдет TokenStorage
+            tokenStorage = get<TokenStorage>(),
+            sessionManager = get()// Koin сам найдет TokenStorage
         )
     }
 }

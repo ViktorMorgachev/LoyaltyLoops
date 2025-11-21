@@ -1,12 +1,12 @@
 package io.loyaltyloop.server.repository
 
-
 import org.jetbrains.exposed.sql.selectAll
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.CashiersTable
 import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.shared.models.LoyaltyCardDto
@@ -99,6 +99,18 @@ class UserRepository {
             qrSecret = row[UsersTable.qrSecret],
             language = row[UsersTable.language]
         )
+    }
+
+    suspend fun setSuperAdmin(userId: String, isAdmin: Boolean) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
+            it[isSuperAdmin] = isAdmin
+        }
+    }
+
+    suspend fun isSuperAdmin(userId: String): Boolean = dbQuery {
+        UsersTable.selectAll().where { UsersTable.id eq userId }
+            .map { it[UsersTable.isSuperAdmin] }
+            .singleOrNull() == true
     }
 
     suspend fun findOrCreateCard(userId: String, partnerId: String): LoyaltyCardDto = dbQuery {
@@ -213,11 +225,40 @@ class UserRepository {
             }
     }
 
-    suspend fun getUserWorkspaces(userId: String): List<UserWorkspace> {
+
+
+    suspend fun getUserWorkspaces(userId: String): List<UserWorkspace> = dbQuery { // <--- ДОБАВЬ ЭТО
+
         val workspaces = mutableListOf<UserWorkspace>()
 
-        // 1. Владения
-        val ownedBusinesses = getPartnersByOwner(userId)
+        // 1. ПРОВЕРКА: Является ли он сотрудником платформы?
+        // Вот эта строка падала, потому что была без транзакции:
+        val systemStaff = SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }
+            .singleOrNull()
+
+        if (systemStaff != null) {
+            val role = systemStaff[SystemStaffTable.role]
+
+            workspaces.add(UserWorkspace(
+                id = "platform_admin_panel",
+                title = "LoyaltyLoop (Platform)",
+                role = role,
+                requirePin = true
+            ))
+        }
+
+        // 2. Владения (Вызываем другие методы, это ок, транзакция поддержит вложенность)
+        // Но лучше, если getPartnersByOwner тоже внутри вызывает dbQuery,
+        // Exposed обработает вложенную транзакцию нормально.
+        val ownedBusinesses = PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
+            .map {
+                PartnerEntity(
+                    id = it[PartnersTable.id],
+                    name = it[PartnersTable.businessName],
+                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank()
+                )
+            }
+
         ownedBusinesses.forEach { p ->
             workspaces.add(UserWorkspace(
                 id = p.id,
@@ -227,8 +268,23 @@ class UserRepository {
             ))
         }
 
-        // 2. Работа кассиром
-        val cashierJobs = getCashierJobs(userId)
+        // 3. Работа кассиром (Тут тоже перепишем на прямой запрос для чистоты транзакции)
+        val cashierJobs = CashiersTable.innerJoin(TradingPointsTable)
+            .join(
+                otherTable = PartnersTable,
+                joinType = JoinType.INNER,
+                onColumn = TradingPointsTable.partnerId, // Явно говорим: бери партнера из Точки
+                otherColumn = PartnersTable.id
+            )
+            .selectAll().where { CashiersTable.userId eq userId }
+            .map {
+                CashierJobEntity(
+                    tradingPointId = it[TradingPointsTable.id],
+                    pointName = it[TradingPointsTable.name],
+                    businessName = it[PartnersTable.businessName]
+                )
+            }
+
         cashierJobs.forEach { job ->
             workspaces.add(UserWorkspace(
                 id = job.tradingPointId,
@@ -238,7 +294,23 @@ class UserRepository {
             ))
         }
 
-        return workspaces
+        workspaces
+    }
+
+    // Метод для сидинга (создания админа при старте)
+    suspend fun createSystemStaff(userId: String, role: UserRole, defaultPinHash: String?) = dbQuery {
+        // Проверяем, нет ли уже такого
+        if (SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }.empty()) {
+            SystemStaffTable.insert {
+                it[id] = UUID.randomUUID().toString()
+                it[this.userId] = userId
+                it[this.role] = role
+                it[pinHash] = defaultPinHash
+            }
+            true
+        } else {
+            false
+        }
     }
 
     // Сохранить новый рефреш токен

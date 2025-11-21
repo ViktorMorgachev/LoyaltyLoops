@@ -40,7 +40,7 @@ class ClientTest {
         assert(apiMessage.message.isNotEmpty())
 
         // 4. ПРОВЕРКА БАЗЫ: Запрашиваем профиль через /me
-        val meRes = client.get("/auth/me") {
+        val meRes = client.get("/client/me") {
             header("Authorization", "Bearer $token")
         }
 

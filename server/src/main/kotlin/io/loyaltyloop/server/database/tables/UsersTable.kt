@@ -16,6 +16,9 @@ object UsersTable : Table("users") {
 
     val qrSecret = varchar("qr_secret", 64)
     val language = varchar("language", 5).default("ru") // "ru", "en", "ky"
+
+    val isSuperAdmin = bool("is_super_admin").default(false)
+    val isManager = bool("is_manager").default(false)
     // ------------------
 
     override val primaryKey = PrimaryKey(id)

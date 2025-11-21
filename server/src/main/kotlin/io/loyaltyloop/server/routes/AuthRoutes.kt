@@ -63,43 +63,6 @@ fun Route.authRoutes(
             )
         }
 
-        authenticate("auth-jwt") {
-            get("/me") {
-                val principal = call.principal<JWTPrincipal>()
-                // Безопасное извлечение ID (на случай сбоя парсинга)
-                val userId = principal?.payload?.getClaim("id")?.asString()
-
-                if (userId == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "Token claim 'id' is missing")
-                    return@get
-                }
-
-                // 1. Проверяем, существует ли юзер реально
-                val user = repository.getUserById(userId)
-                if (user == null) {
-                    call.respond(HttpStatusCode.Unauthorized, "User no longer exists")
-                    return@get
-                }
-
-                // 2. Если юзер есть, собираем его актуальные роли
-                val workspaces = repository.getUserWorkspaces(userId)
-
-                // 3. Отдаем профиль
-                call.respond(
-                    UserProfileResponse(
-                        userId = user.id,
-                        phone = user.phoneNumber,
-                        countryCode = user.countryCode,
-                        firstName = user.firstName,
-                        lastName = user.lastName,
-                        email = user.email,
-                        language = user.language,
-                        workspaces = workspaces
-                    )
-                )
-            }
-        }
-
         post("/login") {
             val request = call.receive<VerifyCodeRequest>()
             val lang = call.resolveLanguage()
@@ -125,8 +88,8 @@ fun Route.authRoutes(
                         phoneNumber = request.phone,
                         countryCode = "KG", //TODO Получать код по номеру
                         language = lang,
-                        qrSecret = secret
-
+                        qrSecret = secret,
+                        firstName = null
                     )
                     repository.createUser(newUser)
                     val savedUser = repository.getUserById(userId)

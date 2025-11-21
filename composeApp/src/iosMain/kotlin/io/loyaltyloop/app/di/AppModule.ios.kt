@@ -4,6 +4,7 @@ import com.russhwolf.settings.NSUserDefaultsSettings
 import com.russhwolf.settings.Settings
 import io.ktor.client.engine.darwin.Darwin
 import io.loyaltyloop.app.data.NetworkClient
+import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import org.koin.dsl.module
 import platform.Foundation.NSUserDefaults
@@ -18,7 +19,8 @@ actual val platformModule = module {
     single {
         NetworkClient.create(
             engine = Darwin.create(),
-            tokenStorage = get<TokenStorage>()
+            tokenStorage = get<TokenStorage>(),
+            sessionManager = get<SessionManager>()
         )
     }
 }

@@ -10,6 +10,7 @@ import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
@@ -53,7 +54,8 @@ object DatabaseFactory {
                 LoyaltyCardTable,
                 RefreshTokensTable,
                 LoyaltySettingsTable,
-                LoyaltyTiersTable
+                LoyaltyTiersTable,
+                SystemStaffTable
             )
         }
     }

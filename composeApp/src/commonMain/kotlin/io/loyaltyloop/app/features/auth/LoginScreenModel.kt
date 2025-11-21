@@ -2,6 +2,7 @@ package io.loyaltyloop.app.features.auth
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.data.network.ClientException
 import io.loyaltyloop.app.data.network.NetworkException
@@ -27,7 +28,8 @@ import loyaltyloop.composeapp.generated.resources.error_unknown
 
 class LoginScreenModel(
     private val repository: AuthRepository,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val sessionManager: SessionManager
 ) : ScreenModel {
 
     private val _state = MutableStateFlow(LoginState(isLoading = false))
@@ -134,38 +136,70 @@ class LoginScreenModel(
 
     private fun verifyCode(code: String) {
         screenModelScope.launch {
+            // 1. Подготовка UI
             _events.send(LoginEvent.HideKeyboard)
             _state.value = _state.value.copy(isLoading = true)
+
             val fullNumber = state.value.selectedCountry.phonePrefix + state.value.phoneInput
 
-            val result = repository.login(fullNumber, code)
+            log.write("Verifying code for $fullNumber...")
 
-            result.onSuccess {response ->
-                println("LOGIN SUCCESS! Токен получен.")
+            // 2. Выполняем ЛОГИН
+            val loginResult = repository.login(fullNumber, code)
+
+            loginResult.onSuccess { authResponse ->
+                // --- ЛОГИН УСПЕШЕН ---
+
+                // 3. Сохраняем токены в хранилище
                 tokenStorage.saveAuthData(
-                    accessToken = response.accessToken,
-                    refreshToken = response.refreshToken,
-                    userId = response.userId,
-                    qrSecret = response.qrSecret
+                    accessToken = authResponse.accessToken,
+                    refreshToken = authResponse.refreshToken,
+                    userId = authResponse.userId,
+                    qrSecret = authResponse.qrSecret
                 )
-                if (response.isNewUser) {
-                    _events.send(LoginEvent.NavigateToOnboarding)
-                } else {
+
+                log.write("Tokens saved. Fetching fresh profile to update SessionManager...")
+
+                val profileResult = repository.getProfile()
+
+                profileResult.onSuccess { userProfile ->
+                    // 5. Обновляем глобальное состояние сессии (workspaces, роли)
+                    sessionManager.updateWorkspaces(userProfile.workspaces)
+
+                    // 6. Решаем, куда идти
+                    if (authResponse.isNewUser) {
+                        _events.send(LoginEvent.NavigateToOnboarding)
+                    } else {
+                        _events.send(LoginEvent.NavigateToHome)
+                    }
+
+                }.onFailure { profileError ->
+                    // Токены есть, но профиль не загрузился (сеть мигнула?)
+                    log.write("Login OK, but Profile load failed", LogType.Warning, profileError)
+
+                    // Все равно пускаем на Главную, там экран Профиля сам попробует перезагрузить
                     _events.send(LoginEvent.NavigateToHome)
                 }
+
+                // Снимаем лоадер в любом случае успеха логина
                 _state.value = _state.value.copy(isLoading = false)
+
             }.onFailure { error ->
+                // --- ОШИБКА ЛОГИНА ---
                 log.write("Login Failed", LogType.Error, error)
+
                 val errorText = when(error) {
-                    is UnauthorizedException -> UiText.DynamicString("Неверный код")
-                    is ClientException -> UiText.DynamicString("Неверный код") // Упростим для MVP
+                    is ClientException -> UiText.DynamicString(error.errorMessage) // "Неверный код" от сервера
+                    is NetworkException -> UiText.Resource(Res.string.error_network)
+                    is ServerException -> UiText.Resource(Res.string.error_server)
                     else -> UiText.Resource(Res.string.error_unknown)
                 }
+
                 _events.send(LoginEvent.ShowError(errorText))
 
                 _state.value = _state.value.copy(
                     isLoading = false,
-                    otpInput = ""
+                    otpInput = "" // Очищаем поле, чтобы ввести заново
                 )
             }
         }

@@ -15,16 +15,19 @@ object ServerResources {
         val locale = try {
             Locale.forLanguageTag(languageCode)
         } catch (e: Exception) {
-            Locale("ru") // Дефолт, если код кривой
+            Locale("ru")
         }
 
         return try {
-            // Java сама найдет нужный файл (messages_en, messages_ru и т.д.)
-            // Если не найдет messages_ky, она возьмет дефолтный (messages_ru)
             val bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale)
-            bundle.getString(key)
+            val value = bundle.getString(key)
+
+            // --- FIX КОДИРОВКИ ---
+            // Читаем "битые" байты как ISO-8859-1 и собираем обратно в UTF-8
+            String(value.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
+            // ---------------------
+
         } catch (e: Exception) {
-            // Если ключа нет даже в дефолтном файле
             key
         }
     }
