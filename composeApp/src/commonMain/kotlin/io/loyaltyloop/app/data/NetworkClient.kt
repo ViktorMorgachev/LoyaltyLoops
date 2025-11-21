@@ -60,19 +60,18 @@ object NetworkClient {
                 bearer {
                     // А. Загрузка токена из памяти при старте запроса
                     loadTokens {
-                        val access = tokenStorage.getAccessToken()
-                        val refresh = tokenStorage.getRefreshToken()
+                        val accessToken = tokenStorage.getAccessToken()
+                        val refreshToken = tokenStorage.getRefreshToken()
 
-                        netLog.d { "🔐 AUTH PLUGIN: Loading tokens..." }
-                        netLog.d { "   -> Access: ${if (access != null) "OK (${access.take(6)}...${access.takeLast(6)})" else "NULL"}" }
-                        netLog.d { "   -> Refresh: ${if (refresh != null) "OK" else "NULL"}" }
-
-                        if (access != null && refresh != null) {
-                            BearerTokens(access, refresh)
-                        } else {
-                            netLog.w { "🔐 Auth Plugin: No tokens found! Request will be anonymous." }
-                            null
+                        netLog.d {
+                            """
+                            🔐 AUTH PLUGIN: Loading tokens state...
+                               -> Access: ${if (accessToken != null) "OK (${accessToken.takeLast(6)})" else "NULL"}
+                               -> Refresh: ${if (refreshToken != null) "OK" else "NULL"}
+                            """.trimIndent()
                         }
+
+                        BearerTokens(accessToken = accessToken.orEmpty(), refreshToken = refreshToken.orEmpty())
                     }
 
                     sendWithoutRequest { false }
@@ -106,13 +105,13 @@ object NetworkClient {
                                 BearerTokens(newAuth.accessToken, newAuth.refreshToken)
                             } else {
                                 // Рефреш протух - разлогин
-                                netLog.write("Refresh failed: ${response.status}. Logging out...", LogType.Warning)
+                                netLog.write("⛔ Refresh failed: ${response.status}. Logging out...", LogType.Warning)
                                 sessionManager.logout()
                                 null
                             }
                         } catch (e: Exception) {
                             // Ошибка сети при рефреше
-                            netLog.write("Network error during refresh", LogType.Error, e)
+                            netLog.write("💥 Network error during refresh", LogType.Error, e)
                             null
                         }
                     }
@@ -122,22 +121,19 @@ object NetworkClient {
             // 4. URL
             defaultRequest {
                 url(SERVER_URL)
+                header(HttpHeaders.AcceptLanguage, "ru") // TODO: Локаль
 
-                // Всегда ставим язык
-                header(HttpHeaders.AcceptLanguage, "ru") // TODO: Брать из локали
-
-                // Проверяем, нужен ли токен для этого пути
                 val path = url.encodedPath
-                val isAuthPath = path.endsWith("/auth/login") ||
+                val isPublic = path.endsWith("/auth/login") ||
                         path.endsWith("/auth/send-code") ||
                         path.endsWith("/auth/refresh")
 
-                // Если это НЕ путь авторизации - вставляем токен ПРИНУДИТЕЛЬНО
-                if (!isAuthPath) {
-                    val token = tokenStorage.getAccessToken()
-                    if (token != null) {
-                        // netLog.d { "💉 Injecting Fresh Token: ${token.takeLast(6)}" }
-                        header(HttpHeaders.Authorization, "Bearer $token")
+                // Если запрос требует авторизации - берем СВЕЖИЙ токен из памяти прямо сейчас
+                if (!isPublic) {
+                    val freshToken = tokenStorage.getAccessToken()
+                    if (freshToken != null) {
+                         netLog.d { "💉 Injecting Header: Bearer ...${freshToken.takeLast(6)}" }
+                        header(HttpHeaders.Authorization, "Bearer $freshToken")
                     }
                 }
             }

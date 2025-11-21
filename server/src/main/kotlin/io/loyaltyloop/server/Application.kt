@@ -113,24 +113,32 @@ fun Application.module() {
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
     if (superPhone != null) {
         launch {
-            // 1. Ждем, пока база поднимется (на всякий случай)
-            // 2. Ищем юзера
-            val user = userRepository.getUserByPhone(superPhone)
+            // 1. Пытаемся найти
+            var user = userRepository.getUserByPhone(superPhone)
 
+            if (user == null) {
+                println("🚀 SEEDING: Creating Super User $superPhone...")
+                val newId = java.util.UUID.randomUUID().toString()
+                val newUser = io.loyaltyloop.shared.models.UserDto(
+                    id = newId,
+                    phoneNumber = superPhone,
+                    countryCode = "KG",
+                    firstName = null,
+                    qrSecret = "admin_secret_key",
+                    language = "ru"
+                )
+                userRepository.createUser(newUser)
+                user = userRepository.getUserById(newId)
+            }
+
+            // 3. Выдаем права
             if (user != null) {
-                // TODO: В реальности тут надо хэшировать PIN.
-                // Для MVP запишем как есть, но в продакшене используй BCrypt.
-                val pinHash = defaultPin // hash(defaultPin)
-
                 val created = userRepository.createSystemStaff(
                     userId = user.id,
-                    role = UserRole.PLATFORM_SUPER_ADMIN,
-                    defaultPinHash = pinHash
+                    role = io.loyaltyloop.shared.models.UserRole.PLATFORM_SUPER_ADMIN,
+                    defaultPinHash = defaultPin
                 )
-
-                if (created) {
-                    println("🚀 SEEDING: Super Admin rights granted to $superPhone")
-                }
+                if (created) println("✅ SEEDING: Admin rights granted.")
             }
         }
     }
@@ -153,6 +161,7 @@ fun Application.module() {
 
             call.respond(status, response)
         }
+
         get("/") {
             call.respondText("LoyaltyLoop Backend is ALIVE! 🐘")
         }

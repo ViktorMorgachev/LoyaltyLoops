@@ -21,12 +21,8 @@ object ServerResources {
         return try {
             val bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale)
             val value = bundle.getString(key)
-
-            // --- FIX КОДИРОВКИ ---
-            // Читаем "битые" байты как ISO-8859-1 и собираем обратно в UTF-8
+            // ВОТ ЭТА МАГИЯ ЧИНИТ КОДИРОВКУ:
             String(value.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
-            // ---------------------
-
         } catch (e: Exception) {
             key
         }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.error_server
 import loyaltyloop.composeapp.generated.resources.error_unknown
@@ -44,8 +45,20 @@ class LoginScreenModel(
     fun onAction(action: LoginAction) {
         when (action) {
             is LoginAction.OnPhoneChanged -> {
-                if (action.phone.all { it.isDigit() }) {
-                    _state.value = _state.value.copy(phoneInput = action.phone)
+                // 1. Оставляем только цифры
+                val digitsOnly = action.phone.filter { it.isDigit() }
+
+                // 2. Считаем макс. длину для текущей страны
+                // (Считаем количество символов '#' в маске)
+                val currentCountry = _state.value.selectedCountry
+                val maxLen = currentCountry.mask.count { it == '#' }
+
+                // 3. Применяем изменение ТОЛЬКО если длина не превышает лимит
+                if (digitsOnly.length <= maxLen) {
+                    _state.value = _state.value.copy(
+                        phoneInput = digitsOnly,
+                        phoneError = null // Сбрасываем ошибку при любом изменении
+                    )
                 }
             }
             is LoginAction.OnOtpChanged -> onCodeChanged(action.code)
@@ -77,14 +90,35 @@ class LoginScreenModel(
         }
     }
 
+    fun onPhoneChanged(newPhone: String) {
+        val digitsOnly = newPhone.filter { it.isDigit() }
+        val currentCountry = _state.value.selectedCountry
+
+        // Считаем макс длину по маске (количество символов #)
+        val maxLen = currentCountry.mask.count { it == '#' }
+
+        if (digitsOnly.length <= maxLen) {
+            // Сбрасываем ошибку при вводе
+            _state.value = _state.value.copy(
+                phoneInput = digitsOnly,
+            )
+        }
+    }
+
     private fun onSendCodeClicked(isResend: Boolean = false) {
+        val country = state.value.selectedCountry
+        if (!country.isValidNumber(state.value.phoneInput)) {
+            _state.value = _state.value.copy(
+                phoneError = UiText.Resource(Res.string.err_invalid_phone_format)
+            )
+            return
+        }
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true, step = LoginStep.EnterCode)
 
-            val country = state.value.selectedCountry
             val fullNumber = country.phonePrefix + state.value.phoneInput
-
             val result = repository.sendCode(fullNumber)
+
 
             result.onSuccess { debugCode ->
                 log.write("Code received: $debugCode")
@@ -167,7 +201,7 @@ class LoginScreenModel(
                     sessionManager.updateWorkspaces(userProfile.workspaces)
 
                     // 6. Решаем, куда идти
-                    if (authResponse.isNewUser) {
+                    if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
                         _events.send(LoginEvent.NavigateToOnboarding)
                     } else {
                         _events.send(LoginEvent.NavigateToHome)
@@ -227,6 +261,7 @@ data class LoginState(
     val otpInput: String = "",
     val isResendEnabled: Boolean = false,
     val step: LoginStep = LoginStep.EnterPhone,
+    val phoneError: UiText? = null,
     val isLoading: Boolean = false,
     val timerSeconds: Int = 0,
 )

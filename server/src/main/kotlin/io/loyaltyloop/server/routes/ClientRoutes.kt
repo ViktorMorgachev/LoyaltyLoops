@@ -32,6 +32,8 @@ fun Route.clientRoutes(repository: UserRepository) {
 
                 val request = call.receive<UpdateProfileRequest>()
                 val lang = call.resolveLanguage(default = currentUser.language)
+
+
                 if (request.firstName.isBlank()) {
                     val msg = ServerResources.get("name_empty", lang)
                     call.respond(HttpStatusCode.BadRequest, ApiMessage(msg))
@@ -44,13 +46,6 @@ fun Route.clientRoutes(repository: UserRepository) {
                         call.respond(HttpStatusCode.BadRequest, ApiMessage(msg))
                         return@post
                     }
-                }
-
-                // Валидация с локализацией
-                if (request.firstName.isBlank()) {
-                    val msg = ServerResources.get("name_empty", lang)
-                    call.respond(HttpStatusCode.BadRequest, ApiMessage(msg)) // <-- JSON
-                    return@post
                 }
 
                 repository.updateUserProfile(userDto = currentUser, lang = lang, request)

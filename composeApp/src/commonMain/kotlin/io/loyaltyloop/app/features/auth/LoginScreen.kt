@@ -1,11 +1,13 @@
 package io.loyaltyloop.app.features.auth
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,6 +23,7 @@ import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.OtpTextField
+import io.loyaltyloop.app.utils.MaskVisualTransformation
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.*
@@ -157,7 +160,7 @@ fun LoginScreenContent(
 
 @Composable
 fun PhoneInputCard(
-    state: LoginState, // <-- Берем данные из state
+    state: LoginState,
     onAction: (LoginAction) -> Unit
 ) {
     Card(
@@ -166,37 +169,95 @@ fun PhoneInputCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text(stringResource(Res.string.auth_phone_label), style = MaterialTheme.typography.labelMedium)
+
+            // Заголовок над полем (аккуратно, серым)
+            Text(
+                text = stringResource(Res.string.auth_phone_label),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = state.selectedCountry.flagEmoji + " " + state.selectedCountry.phonePrefix,
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier
-                        .clickable { onAction(LoginAction.OnCountryClicked) } // <-- Action
-                        .padding(8.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = state.phoneInput,
-                    onValueChange = { onAction(LoginAction.OnPhoneChanged(it)) }, // <-- Action
-                    placeholder = { Text(state.selectedCountry.mask) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = !state.isLoading // Берем из state
-                )
-            }
+            OutlinedTextField(
+                value = state.phoneInput,
+                onValueChange = { onAction(LoginAction.OnPhoneChanged(it)) },
+
+                // --- САМОЕ ВАЖНОЕ: Флаг и Код ВНУТРИ поля ---
+                leadingIcon = {
+                    Row(
+                        modifier = Modifier
+                            .height(IntrinsicSize.Min) // Чтобы разделитель был во всю высоту
+                            .padding(start = 12.dp, end = 8.dp)
+                            .clickable { onAction(LoginAction.OnCountryClicked) }, // Кликаем только по флагу/коду
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // 1. Флаг
+                        Text(
+                            text = state.selectedCountry.flagEmoji,
+                            style = MaterialTheme.typography.headlineSmall // Крупный эмодзи
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // 2. Код страны (+996)
+                        Text(
+                            text = state.selectedCountry.phonePrefix,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        // 3. Вертикальная черта-разделитель
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(24.dp)
+                                .background(MaterialTheme.colorScheme.outlineVariant)
+                        )
+                    }
+                },
+                // --------------------------------------------
+
+                // Маска ввода (000 000)
+                placeholder = {
+                    Text(
+                        text = state.selectedCountry.mask.replace("#", "0"),
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                    )
+                },
+
+                visualTransformation = MaskVisualTransformation(state.selectedCountry.mask),
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                enabled = !state.isLoading,
+
+                // Стиль вводимых цифр (Крупный, как и код страны)
+                textStyle = MaterialTheme.typography.titleLarge,
+
+                // Обработка ошибок (Красная рамка)
+                isError = state.phoneError != null,
+                supportingText = {
+                    state.phoneError?.let { error ->
+                        Text(
+                            text = error.asString(),
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                },
+                shape = MaterialTheme.shapes.medium // Скругленные углы поля
+            )
         }
     }
 
     Spacer(modifier = Modifier.height(24.dp))
 
-    // --- НАША НОВАЯ КНОПКА ---
     LoyaltyButton(
         text = stringResource(Res.string.auth_btn_next),
-        isLoading = state.isLoading, // Берем из state
+        isLoading = state.isLoading,
         onClick = { onAction(LoginAction.OnSubmitClicked) },
         modifier = Modifier.fillMaxWidth()
     )

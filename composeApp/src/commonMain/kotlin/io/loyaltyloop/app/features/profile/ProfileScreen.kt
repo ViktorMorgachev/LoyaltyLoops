@@ -13,6 +13,8 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -21,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -34,13 +37,17 @@ import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 class ProfileScreen : Screen {
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val viewModel = getScreenModel<ProfileScreenModel>()
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow.parent ?: LocalNavigator.currentOrThrow
+        val pullRefreshState = rememberPullToRefreshState()
+
 
         LaunchedEffect(Unit) {
+            viewModel.loadProfile()
             viewModel.events.collect { event ->
                 if (event is ProfileScreenModel.Event.NavigateToSplash) {
                     navigator.replaceAll(SplashScreen())
@@ -48,103 +55,129 @@ class ProfileScreen : Screen {
             }
         }
 
+        if (pullRefreshState.isRefreshing) {
+            LaunchedEffect(Unit) {
+                viewModel.loadProfile()
+            }
+        }
+
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
-            if (state.isLoading && state.phone.isBlank()) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize().padding(padding),
-                    contentPadding = PaddingValues(bottom = 24.dp)
-                ) {
-                    // 1. Header (Красивая карточка)
-                    item {
-                        ProfileHeaderCard(name = state.name.asString(), phone = state.phone)
-                        Spacer(modifier = Modifier.height(16.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    // Подключаем скролл-жесты к контейнеру
+                    .nestedScroll(pullRefreshState.nestedScrollConnection)
+            ) {
+                if (state.isLoading && state.phone.isBlank()) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        CircularProgressIndicator()
                     }
-
-                    // --- ГРУППА 1: ТЕКУЩИЕ РАБОЧИЕ МЕСТА ---
-                    if (state.workspaces.isNotEmpty()) {
+                } else {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize().padding(padding),
+                        contentPadding = PaddingValues(bottom = 24.dp)
+                    ) {
+                        // 1. Header (Красивая карточка)
                         item {
-                            SectionTitle(stringResource(Res.string.profile_header_workspaces))
+                            ProfileHeaderCard(name = state.name.asString(), phone = state.phone)
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
 
-                        items(state.workspaces) { workspace ->
-                            WorkspaceItem(workspace) {
-                                viewModel.onWorkspaceClicked(workspace)
+                        // --- ГРУППА 1: ТЕКУЩИЕ РАБОЧИЕ МЕСТА ---
+                        if (state.workspaces.isNotEmpty()) {
+                            item {
+                                SectionTitle(stringResource(Res.string.profile_header_workspaces))
                             }
-                            // Тонкий разделитель между элементами (опционально)
-                            if (state.workspaces.last() != workspace) {
-                                Divider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
+
+                            items(state.workspaces) { workspace ->
+                                WorkspaceItem(workspace) {
+                                    viewModel.onWorkspaceClicked(workspace)
+                                }
+                                // Тонкий разделитель между элементами (опционально)
+                                if (state.workspaces.last() != workspace) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(start = 56.dp),
+                                        thickness = DividerDefaults.Thickness,
+                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                                    )
+                                }
                             }
                         }
+
+                        // --- ГРУППА 2: ДЕЙСТВИЯ (Создать / Вступить) ---
+                        item {
+                            // Отступ, если список выше был
+                            Spacer(modifier = Modifier.height(24.dp))
+
+                            SectionTitle(stringResource(Res.string.profile_header_actions))
+
+                            // Создать бизнес
+                            SettingsItem(
+                                icon = Icons.Default.AddBusiness,
+                                title = stringResource(Res.string.profile_btn_create_business),
+                                subtitle = stringResource(Res.string.profile_desc_create_business),
+                                onClick = viewModel::onCreateBusinessClicked
+                            )
+
+                            // Стать сотрудником
+                            SettingsItem(
+                                icon = Icons.Default.Badge,
+                                title = stringResource(Res.string.profile_btn_join_team),
+                                subtitle = stringResource(Res.string.profile_desc_join_team),
+                                onClick = viewModel::onJoinTeamClicked
+                            )
+                        }
+                        // 3. Секция НАСТРОЙКИ
+                        item {
+                            SectionTitle(stringResource(Res.string.profile_section_general))
+
+                            SettingsItem(
+                                icon = Icons.Default.Language,
+                                title = stringResource(Res.string.profile_item_language),
+                                value = "Русский", // TODO: Брать из настроек
+                                onClick = viewModel::onLanguageClicked
+                            )
+                            HorizontalDivider(
+                                Modifier,
+                                DividerDefaults.Thickness,
+                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
+                            )
+
+                            SettingsItem(
+                                icon = Icons.AutoMirrored.Filled.Help,
+                                title = stringResource(Res.string.profile_item_support),
+                                onClick = viewModel::onSupportClicked
+                            )
+                        }
+
+                        // 4. Футер (Выход и Версия)
+                        item {
+                            Spacer(modifier = Modifier.height(24.dp))
+                            LogoutButton(onClick = viewModel::onLogoutClicked)
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                text = "v1.0.0 (Build 10)", // TODO: BuildConfig
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline,
+                                modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
+                            )
+                        }
+
                     }
-
-                    // --- ГРУППА 2: ДЕЙСТВИЯ (Создать / Вступить) ---
-                    item {
-                        // Отступ, если список выше был
-                        Spacer(modifier = Modifier.height(24.dp))
-
-                        SectionTitle(stringResource(Res.string.profile_header_actions))
-
-                        // Создать бизнес
-                        SettingsItem(
-                            icon = Icons.Default.AddBusiness,
-                            title = stringResource(Res.string.profile_btn_create_business),
-                            subtitle = stringResource(Res.string.profile_desc_create_business),
-                            onClick = viewModel::onCreateBusinessClicked
-                        )
-
-                        // Стать сотрудником
-                        SettingsItem(
-                            icon = Icons.Default.Badge,
-                            title = stringResource(Res.string.profile_btn_join_team),
-                            subtitle = stringResource(Res.string.profile_desc_join_team),
-                            onClick = viewModel::onJoinTeamClicked
-                        )
-                    }
-                    // 3. Секция НАСТРОЙКИ
-                    item {
-                        SectionTitle(stringResource(Res.string.profile_section_general))
-
-                        SettingsItem(
-                            icon = Icons.Default.Language,
-                            title = stringResource(Res.string.profile_item_language),
-                            value = "Русский", // TODO: Брать из настроек
-                            onClick = viewModel::onLanguageClicked
-                        )
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                        )
-
-                        SettingsItem(
-                            icon = Icons.AutoMirrored.Filled.Help,
-                            title = stringResource(Res.string.profile_item_support),
-                            onClick = viewModel::onSupportClicked
-                        )
-                    }
-
-                    // 4. Футер (Выход и Версия)
-                    item {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        LogoutButton(onClick = viewModel::onLogoutClicked)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "v1.0.0 (Build 10)", // TODO: BuildConfig
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
-                        )
-                    }
-
                 }
+
+                PullToRefreshContainer(
+                    state = pullRefreshState,
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
+                )
             }
+
         }
     }
 }
