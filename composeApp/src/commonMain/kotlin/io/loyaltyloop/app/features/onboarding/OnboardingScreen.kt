@@ -14,10 +14,10 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.main.MainScreen
-import io.loyaltyloop.app.features.role.RoleSelectionScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.utils.UiText
 import kotlinx.coroutines.launch
@@ -27,7 +27,7 @@ import org.jetbrains.compose.resources.stringResource
 class OnboardingScreen : Screen {
     @Composable
     override fun Content() {
-        val viewModel = getScreenModel<OnboardingScreenModel>()
+        val viewModel = koinScreenModel<OnboardingScreenModel>()
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }

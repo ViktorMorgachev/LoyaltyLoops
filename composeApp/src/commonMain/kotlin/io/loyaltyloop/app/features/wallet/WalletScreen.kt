@@ -11,6 +11,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.koin.koinScreenModel
 import io.github.alexzhirkevich.qrose.options.QrBallShape
 import io.github.alexzhirkevich.qrose.options.QrFrameShape
 import io.github.alexzhirkevich.qrose.options.QrPixelShape
@@ -20,7 +21,7 @@ import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 class WalletScreen : Screen {
     @Composable
     override fun Content() {
-        val viewModel = getScreenModel<WalletScreenModel>()
+        val viewModel = koinScreenModel<WalletScreenModel>()
         val state by viewModel.state.collectAsState()
 
         Scaffold(

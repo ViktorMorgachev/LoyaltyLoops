@@ -5,9 +5,13 @@ import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.LoyaltySettingsDto
 import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.PartnerStatus
+import io.loyaltyloop.shared.models.TradingPointDto
+import io.loyaltyloop.shared.models.TradingPointType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.insert
@@ -29,13 +33,23 @@ class PartnerRepository {
     }
 
     // --- МАГИЯ ЗДЕСЬ ---
-    suspend fun createTradingPoint(partnerId: String, pointId: String, name: String) = dbQuery {
+    suspend fun createTradingPoint(
+        partnerId: String,
+        pointId: String,
+        name: String,
+        type: TradingPointType = TradingPointType.OTHER, // Дефолт
+        latitude: Double? = null,
+        longitude: Double? = null
+    ) = dbQuery {
         // 1. Создаем саму точку
         TradingPointsTable.insert {
             it[this.id] = pointId
             it[this.partnerId] = partnerId
             it[this.name] = name
-            it[this.isActive] = true // Для теста активна
+            it[this.isActive] = false
+            it[this.type] = type
+            it[this.latitude] = latitude
+            it[this.longitude] = longitude// Для теста активна
         }
 
         // 2. Создаем настройки для этой точки (TIERED по умолчанию)
@@ -78,6 +92,41 @@ class PartnerRepository {
             it[threshold] = 50000.0
             it[cashbackPercent] = 0.10
         }
+    }
+
+    suspend fun createPartner(ownerId: String, request: CreatePartnerRequest): String = dbQuery {
+        val newId = java.util.UUID.randomUUID().toString()
+
+        PartnersTable.insert {
+            it[id] = newId
+            it[this.ownerId] = ownerId
+            it[businessName] = request.businessName
+            it[countryCode] = request.countryCode
+            it[status] = PartnerStatus.PENDING // <-- По умолчанию на проверке
+            // Пин код пока null, его зададут позже
+        }
+
+        // Сразу создаем дефолтные настройки лояльности!
+        // (Логику createTradingPoint и Settings можно вызывать тут или создавать дефолтную точку "Main" сразу)
+
+        newId
+    }
+
+    // Новый метод для чтения (нужен для теста и для API)
+    suspend fun getTradingPointById(id: String): TradingPointDto? = dbQuery {
+        TradingPointsTable.select { TradingPointsTable.id eq id }
+            .map {
+                TradingPointDto(
+                    id = it[TradingPointsTable.id],
+                    name = it[TradingPointsTable.name],
+                    address = it[TradingPointsTable.address],
+                    type = it[TradingPointsTable.type],
+                    latitude = it[TradingPointsTable.latitude],
+                    longitude = it[TradingPointsTable.longitude],
+                    active = it[TradingPointsTable.isActive]
+                )
+            }
+            .singleOrNull()
     }
 
     suspend fun getSettingsByPointId(pointId: String): LoyaltySettingsDto? = dbQuery {

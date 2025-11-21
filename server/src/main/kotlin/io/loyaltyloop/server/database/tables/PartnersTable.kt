@@ -1,5 +1,6 @@
 package io.loyaltyloop.server.database.tables
 
+import io.loyaltyloop.shared.models.PartnerStatus
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
@@ -13,6 +14,8 @@ object PartnersTable : Table("partners") {
     val adminPinHash = varchar("admin_pin_hash", 128).nullable()
 
     val logoUrl = varchar("logo_url", 255).nullable()
+
+    val status = enumerationByName("status", 20, PartnerStatus::class).default(PartnerStatus.PENDING)
 
     override val primaryKey = PrimaryKey(id)
 }

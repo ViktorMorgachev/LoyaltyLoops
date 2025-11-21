@@ -13,13 +13,16 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.routes.clientRoutes
+import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
@@ -46,11 +49,30 @@ fun Application.module() {
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
 
+    install(CORS) {
+//        allowMethod(HttpMethod.Options)
+//        allowMethod(HttpMethod.Put)
+//        allowMethod(HttpMethod.Delete)
+//        allowMethod(HttpMethod.Patch)
+//
+//        // Разрешаем наши заголовки
+//        allowHeader(HttpHeaders.Authorization)
+//        allowHeader(HttpHeaders.ContentType)
+//        allowHeader(HttpHeaders.AcceptLanguage)
+
+        // Разрешаем любой хост (для разработки)
+        anyHost()
+
+        // Или конкретно для твоего веба:
+        // allowHost("localhost:8081")
+    }
+
     DatabaseFactory.init(environment.config)
 
 
     // Создаем экземпляр репозитория
     val userRepository = UserRepository()
+    val partnerRepository = PartnerRepository()
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
 
@@ -170,5 +192,6 @@ fun Application.module() {
         authRoutes(userRepository, tokenService, otpService)
         clientRoutes(userRepository)
         terminalRoutes(userRepository)
+        partnerRoutes(partnerRepository)
     }
 }

@@ -16,7 +16,7 @@ hikaricp = "5.1.0"
 
 
 # Client
-voyager = "1.0.0"
+voyager = "1.1.0-beta02"
 koin = "3.5.6"
 koin-compose = "1.1.5"
 sqlDelight = "2.0.2"
