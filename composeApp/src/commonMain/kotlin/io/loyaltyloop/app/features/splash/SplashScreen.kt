@@ -12,6 +12,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.auth.LoginScreen
 import io.loyaltyloop.app.features.home.HomeScreen
+import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
 import io.loyaltyloop.app.features.role.RoleSelectionScreen
 import org.jetbrains.compose.resources.stringResource
@@ -33,7 +34,7 @@ class SplashScreen : Screen {
         // Обработка навигации
         LaunchedEffect(state) {
             when (state) {
-                is SplashScreenModel.SplashState.NavigateToHome -> navigator.replaceAll(HomeScreen())
+                is SplashScreenModel.SplashState.NavigateToHome -> navigator.replaceAll(MainScreen())
                 is SplashScreenModel.SplashState.NavigateToLogin -> navigator.replaceAll(LoginScreen())
                 is SplashScreenModel.SplashState.NavigateToOnboarding -> {
                     navigator.replaceAll(OnboardingScreen())

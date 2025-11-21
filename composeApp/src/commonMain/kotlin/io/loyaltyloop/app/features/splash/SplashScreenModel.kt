@@ -2,6 +2,7 @@ package io.loyaltyloop.app.features.splash
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.data.network.* // Импортируем наши исключения
 import io.loyaltyloop.app.repository.AuthRepository
@@ -19,7 +20,8 @@ import co.touchlab.kermit.Logger as KermitLogger
 
 class SplashScreenModel(
     private val repository: AuthRepository,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val sessionManager: SessionManager,
 ) : ScreenModel {
 
      val log = KermitLogger.withTag("SplashScreenModel")
@@ -56,24 +58,22 @@ class SplashScreenModel(
             val result = repository.getProfile()
 
             result.onSuccess { profile->
+
+                sessionManager.initSession(profile.workspaces)
                 // 1. Если нет имени -> Он не закончил знакомство
                 if (profile.firstName.isNullOrBlank()) {
-                    log.write("Profile incomplete -> Go to Onboarding")
                     _state.value = SplashState.NavigateToOnboarding
                     return@onSuccess
                 }
 
-                // 2. Имя есть, но роль не выбрана -> Выбор роли
-                if (!tokenStorage.isRoleSelected()) {
-                    log.write("Role not selected -> Go to Role Selection")
-                    _state.value = SplashState.NavigateToRoleSelection
-                    return@onSuccess
+                if (profile.firstName.isNullOrBlank()) {
+                    log.write("Profile incomplete -> Go to Onboarding")
+                    _state.value = SplashState.NavigateToOnboarding
+                } else {
+                    // Идем в главное меню, а оно само решит, какой UI показать (Клиент/Кассир)
+                    _state.value = SplashState.NavigateToHome
+                    log.write("Session valid -> Go to Home")
                 }
-
-                // 3. Всё ок -> Домой
-                log.write("Session valid -> Go to Home")
-
-                _state.value = SplashState.NavigateToHome
             }.onFailure { error ->
                 // Логируем ошибку
                 log.write("Profile check failed", LogType.Error, error)

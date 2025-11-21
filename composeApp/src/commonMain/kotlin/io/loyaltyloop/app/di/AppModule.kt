@@ -9,6 +9,7 @@ import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
+import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.features.onboarding.OnboardingScreenModel
@@ -31,7 +32,8 @@ val appModule = module {
     single { TokenStorage(get()) }
 
     single { AuthRepository(get()) }
-    factory { SplashScreenModel(get(), get()) }
+    single { SessionManager(get()) }
+    factory { SplashScreenModel(get(), get(), get()) }
     factory { LoginScreenModel(get(),get()) }
     factory { OnboardingScreenModel(get()) }
     factory { RoleSelectionScreenModel(get()) }

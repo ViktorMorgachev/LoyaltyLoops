@@ -14,6 +14,7 @@ class TokenStorage(private val settings: Settings) {
         private const val KEY_USER_ID = "user_id"
         private const val KEY_IS_ROLE_SELECTED = "is_role_selected"
         private const val KEY_QR_SECRET = "qr_secret"
+        private const val KEY_CURRENT_WORKSPACE_ID = "current_workspace_id"
     }
 
     // Сохранить все данные сразу
@@ -49,6 +50,18 @@ class TokenStorage(private val settings: Settings) {
 
     fun getUserId(): String? {
         return settings.getStringOrNull(KEY_USER_ID)
+    }
+
+    fun saveCurrentWorkspaceId(id: String?) {
+        if (id == null) {
+            settings.remove(KEY_CURRENT_WORKSPACE_ID)
+        } else {
+            settings.putString(KEY_CURRENT_WORKSPACE_ID, id)
+        }
+    }
+
+    fun getCurrentWorkspaceId(): String? {
+        return settings.getStringOrNull(KEY_CURRENT_WORKSPACE_ID)
     }
 
     // Очистить (при выходе)
