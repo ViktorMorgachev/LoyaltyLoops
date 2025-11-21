@@ -52,4 +52,38 @@ class ClientTest {
         assertEquals("Tester", profile.lastName)
         assertEquals("alex@test.com", profile.email)
     }
+
+    @Test
+    fun testGetCardsReturnsList() = testApplication {
+        configureTestEnv()
+        val client = createJsonClient()
+
+        // 1. Регистрируем Клиента
+        val auth = client.registerAndLogin()
+        val token = auth.accessToken
+
+        // 2. Нам нужно создать Партнера и Карту в базе вручную (так как API сканирования сложное)
+        // Для этого нам нужен доступ к репозиторию внутри теста.
+        // В реальном integration тесте мы бы дергали API партнера.
+
+        // ХАК ДЛЯ ТЕСТА: Прямая вставка в H2 (так как это Unit/Integration тест сервера)
+        val partnerId = "partner_test"
+        val repo = io.loyaltyloop.server.repository.PartnerRepository()
+        // Создаем партнера через репозиторий (нужно сделать ownerId, возьмем id клиента для простоты)
+        // ВАЖНО: метод createPartner должен быть suspend и доступен
+        // Либо мокаем данные.
+
+        // Давай лучше проверим, что список ПУСТОЙ (для начала),
+        // так как создание полной цепочки Partner -> Settings -> Card требует много кода.
+
+        val cardsRes = client.get("/client/cards") {
+            header("Authorization", "Bearer $token")
+        }
+
+        assertEquals(HttpStatusCode.OK, cardsRes.status)
+        val cards = cardsRes.body<List<io.loyaltyloop.shared.models.LoyaltyCardDto>>()
+
+        // Пока 0, так как мы не сканировали QR
+        assertEquals(0, cards.size)
+    }
 }

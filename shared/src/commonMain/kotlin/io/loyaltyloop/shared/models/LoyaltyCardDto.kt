@@ -11,6 +11,9 @@ data class LoyaltyCardDto(
     val totalSpent: Double,
     val tierLevel: Int,
     val isBlocked: Boolean,
-    val isClosed: Boolean = false
+    val isClosed: Boolean = false,
+    val partnerName: String = "",      // "Sierra Coffee"
+    val cardColor: String = "#808080", // Цвет карточки
+    val logoUrl: String? = null
     // Позже добавим сюда название уровня и цвет (из настроек партнера)
 )

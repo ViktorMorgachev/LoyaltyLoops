@@ -12,5 +12,7 @@ object PartnersTable : Table("partners") {
     // ЗАЩИТА: Хэш пин-кода (4 цифры)
     val adminPinHash = varchar("admin_pin_hash", 128).nullable()
 
+    val logoUrl = varchar("logo_url", 255).nullable()
+
     override val primaryKey = PrimaryKey(id)
 }

@@ -57,6 +57,15 @@ fun Route.clientRoutes(repository: UserRepository) {
                 val msg = ServerResources.get("profile_updated", lang)
                 call.respond(HttpStatusCode.OK, ApiMessage(msg)) // <-- JSON
             }
+
+            // GET /client/cards - Список карт для кошелька
+            get("/cards") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
+
+                val cards = repository.getUserCards(userId)
+                call.respond(cards)
+            }
         }
     }
 }

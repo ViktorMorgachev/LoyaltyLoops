@@ -23,6 +23,7 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
@@ -137,7 +138,18 @@ class UserRepository {
         )
     }
 
+    // 1. Обновленный маппер (теперь учитывает данные партнера)
     private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
+        // Используем getOrNull - это безопасно.
+        // Если мы сделали JOIN с PartnersTable, данные вернутся.
+        // Если нет - вернется null (или пустая строка через элвис-оператор).
+
+        val partnerName = row.getOrNull(PartnersTable.businessName) ?: ""
+        val partnerLogo = row.getOrNull(PartnersTable.logoUrl)
+
+        // Цвет пока хардкодим (в будущем добавим поле color в PartnersTable или Settings)
+        val cardColor = "#4F46E5"
+
         return LoyaltyCardDto(
             id = row[LoyaltyCardTable.id],
             userId = row[LoyaltyCardTable.userId],
@@ -145,8 +157,27 @@ class UserRepository {
             balance = row[LoyaltyCardTable.balance],
             totalSpent = row[LoyaltyCardTable.totalSpent],
             tierLevel = row[LoyaltyCardTable.tierLevel],
-            isBlocked = row[LoyaltyCardTable.isBlocked]
+            isBlocked = row[LoyaltyCardTable.isBlocked],
+            isClosed = row[LoyaltyCardTable.isClosed],
+
+            // UI данные
+            partnerName = partnerName,
+            cardColor = cardColor,
+            logoUrl = partnerLogo
         )
+    }
+
+    // 2. Получить список карт для Кошелька
+    suspend fun getUserCards(userId: String): List<LoyaltyCardDto> = dbQuery {
+        LoyaltyCardTable
+            .join(
+                otherTable = PartnersTable,
+                joinType = JoinType.INNER,
+                onColumn = LoyaltyCardTable.partnerId,
+                otherColumn = PartnersTable.id
+            )
+            .selectAll().where { LoyaltyCardTable.userId eq userId }
+            .map { rowToCardDto(it) }
     }
 
     // 1. Найти бизнесы, где я Владелец
