@@ -8,14 +8,18 @@ import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.CreatePartnerRequest
+import io.loyaltyloop.shared.models.CreateTradingPointRequest
+import io.loyaltyloop.shared.models.JoinTradingPointRequest
 
-fun Route.partnerRoutes(repository: PartnerRepository) {
-    route("/partners") {
+fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: UserRepository) {
+    route("/partner") {
         authenticate("auth-jwt") {
             
             post("/create") {
@@ -32,9 +36,85 @@ fun Route.partnerRoutes(repository: PartnerRepository) {
                 }
 
                 // 2. Создаем
-                val partnerId = repository.createPartner(userId, request)
+                val partnerId = partnerRepository.createPartner(userId, request)
                 
                 call.respond(HttpStatusCode.Created, ApiMessage("Бизнес создан: $partnerId"))
+            }
+
+            post("/join") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@post
+
+                val request = call.receive<JoinTradingPointRequest>()
+
+                // 1. Ищем точку
+                val point = partnerRepository.findTradingPointByInvite(request.inviteCode)
+                if (point == null) {
+                    call.respond(HttpStatusCode.NotFound, ApiMessage("Неверный код приглашения"))
+                    return@post
+                }
+
+                // 2. Проверяем дубли
+                if (partnerRepository.isUserCashierAtPoint(userId, point.id)) {
+                    call.respond(HttpStatusCode.Conflict, ApiMessage("Вы уже сотрудник этой точки"))
+                    return@post
+                }
+
+                // 3. Получаем PartnerID
+                val partnerId = partnerRepository.getPartnerIdByPoint(point.id)!!
+
+                // 4. Добавляем
+                partnerRepository.addCashier(userId, point.id, partnerId)
+
+                call.respond(HttpStatusCode.OK, ApiMessage("Успешно! Вы присоединились к ${point.name}"))
+            }
+
+            get("/points") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
+
+                // Логика поиска партнера
+                val partners = userRepository.getPartnersByOwner(userId)
+                val myPartner = partners.firstOrNull()
+
+                if (myPartner == null) {
+                    // Если это срабатывает, значит в базе рассинхрон: роль есть, а записи в partners нет
+                    call.respond(HttpStatusCode.NotFound, ApiMessage("Бизнес не найден"))
+                    return@get
+                }
+
+                val points = partnerRepository.getPointsByPartnerId(myPartner.id)
+                call.respond(points)
+            }
+
+            post("/points") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@post
+
+                val request = call.receive<CreateTradingPointRequest>()
+
+                // 1. Проверяем, есть ли у юзера бизнес (Partner)
+                val partners = userRepository.getPartnersByOwner(userId)
+                val myPartner = partners.firstOrNull()
+
+                if (myPartner == null) {
+                    call.respond(HttpStatusCode.Forbidden, ApiMessage("Сначала создайте бизнес"))
+                    return@post
+                }
+
+                // 2. Генерируем ID для новой точки
+                val pointId = java.util.UUID.randomUUID().toString()
+
+                // 3. Создаем точку (Репозиторий сам создаст дефолтные настройки лояльности)
+                partnerRepository.createTradingPoint(
+                    partnerId = myPartner.id,
+                    pointId = pointId,
+                    name = request.name,
+                    type = request.type,
+                    address = request.address
+                )
+
+                call.respond(HttpStatusCode.Created, ApiMessage("Точка создана"))
             }
         }
     }

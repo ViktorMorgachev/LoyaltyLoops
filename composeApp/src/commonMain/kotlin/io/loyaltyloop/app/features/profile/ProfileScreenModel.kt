@@ -16,10 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
-import loyaltyloop.composeapp.generated.resources.error_profile_loading
 import loyaltyloop.composeapp.generated.resources.profile_error_load
 import loyaltyloop.composeapp.generated.resources.profile_loading
-import org.jetbrains.compose.resources.getString
 
 class ProfileScreenModel(
     private val repository: AuthRepository,
@@ -35,7 +33,8 @@ class ProfileScreenModel(
     )
 
     sealed interface Event {
-        data object NavigateToSplash : Event // После логаута
+        data object NavigateToSplash : Event
+        data object NavigateToJoinCompany : Event
     }
 
     private val _state = MutableStateFlow(State())
@@ -48,68 +47,64 @@ class ProfileScreenModel(
         loadProfile()
     }
 
-    fun onCreateBusinessClicked() {
-        // TODO: Переход на флоу регистрации Партнера (Этап 4)
-        log.write("Click: Create Business")
+    // --- ЕДИНАЯ ТОЧКА ВХОДА ---
+    fun onAction(action: ProfileAction) {
+        when (action) {
+            is ProfileAction.OnRefresh -> loadProfile()
+
+            is ProfileAction.OnLogoutClicked -> logout()
+
+            is ProfileAction.OnWorkspaceClicked -> {
+                log.write("Switching to workspace: ${action.workspace.title}")
+                sessionManager.switchWorkspace(action.workspace)
+            }
+
+            is ProfileAction.OnJoinTeamClicked -> {
+                _events.trySend(Event.NavigateToJoinCompany)
+            }
+
+            is ProfileAction.OnCreateBusinessClicked -> {
+                log.write("Create Business clicked (Mobile not implemented)")
+                // TODO: Можно показать тост "Используйте веб-версию"
+            }
+
+            is ProfileAction.OnLanguageClicked -> {
+                log.write("Click: Change Language")
+            }
+            is ProfileAction.OnSupportClicked -> {
+                log.write("Click: Support")
+            }
+        }
     }
 
-    fun onJoinTeamClicked() {
-        // TODO: Диалог ввода инвайт-кода (Этап 3)
-        log.write("Click: Join Team")
-    }
-
-    fun onLanguageClicked() {
-        // TODO: BottomSheet с выбором языка
-        log.write("Click: Change Language")
-    }
-
-    fun onSupportClicked() {
-        // TODO: Открыть Telegram/WhatsApp
-    }
-
-    fun loadProfile() {
+    private fun loadProfile() {
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
             repository.getProfile()
                 .onSuccess { profile ->
                     _state.value = _state.value.copy(
-                        name =  UiText.DynamicString(profile.firstName?.trim() ?: ""),
+                        name = UiText.DynamicString("${profile.firstName ?: ""} ${profile.lastName ?: ""}".trim()),
                         phone = profile.phone,
                         workspaces = profile.workspaces,
                         isLoading = false
                     )
-
-                    // ИСПОЛЬЗУЕМ ЕДИНЫЙ МЕТОД
                     sessionManager.updateWorkspaces(profile.workspaces)
                 }
                 .onFailure { error ->
                     log.write("Failed to load profile", LogType.Error, error)
-
-                    // ИСПОЛЬЗУЕМ РЕСУРСЫ (асинхронно)
-                    val errorText = UiText.Resource(Res.string.profile_error_load)
-
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        name = errorText
+                        name = UiText.Resource(Res.string.profile_error_load)
                     )
                 }
         }
     }
 
-    fun onWorkspaceClicked(workspace: UserWorkspace) {
-        // TODO: Тут потом добавим проверку PIN-кода для Владельца
-        log.write("Switching to workspace: ${workspace.title}")
-        sessionManager.switchWorkspace(workspace)
-    }
-
-    fun onLogoutClicked() {
+    private fun logout() {
         screenModelScope.launch {
-            // 1. Чистим хранилище
             tokenStorage.clear()
-            // 2. Сбрасываем сессию
-            sessionManager.switchWorkspace(null)
-            // 3. Отправляем на Сплеш (который кинет на Логин)
+            sessionManager.logout()
             _events.send(Event.NavigateToSplash)
         }
     }

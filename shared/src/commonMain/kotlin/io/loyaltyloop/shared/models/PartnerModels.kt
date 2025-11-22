@@ -13,3 +13,11 @@ data class CreatePartnerRequest(
     val businessName: String,
     val countryCode: String // "KG"
 )
+
+/**
+ * Запрос на присоединение к точке (для Кассира)
+ */
+@Serializable
+data class JoinTradingPointRequest(
+    val inviteCode: String
+)

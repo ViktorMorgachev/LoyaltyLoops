@@ -197,6 +197,6 @@ fun Application.module() {
         authRoutes(userRepository, tokenService, otpService)
         clientRoutes(userRepository)
         terminalRoutes(userRepository)
-        partnerRoutes(partnerRepository)
+        partnerRoutes(userRepository = userRepository, partnerRepository = partnerRepository)
     }
 }

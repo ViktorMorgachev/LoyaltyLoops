@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -41,136 +40,140 @@ class ProfileScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        // Используем наш кастомный getScreenModel для совместимости с Wasm/JS в будущем
         val viewModel = koinScreenModel<ProfileScreenModel>()
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow.parent ?: LocalNavigator.currentOrThrow
-        val pullRefreshState = rememberPullToRefreshState()
 
-
+        // 1. Навигация
         LaunchedEffect(Unit) {
-            viewModel.loadProfile()
+            // При первом входе грузим данные
+            viewModel.onAction(ProfileAction.OnRefresh)
+
             viewModel.events.collect { event ->
                 if (event is ProfileScreenModel.Event.NavigateToSplash) {
                     navigator.replaceAll(SplashScreen())
                 }
+                if (event is ProfileScreenModel.Event.NavigateToJoinCompany) {
+                    navigator.push(io.loyaltyloop.app.features.join.JoinCompanyScreen())
+                }
             }
         }
 
+        // 2. Настройка Pull-to-Refresh
+        val pullRefreshState = rememberPullToRefreshState()
+
+        // Если юзер потянул вниз (state.isRefreshing стало true) -> вызываем загрузку
         if (pullRefreshState.isRefreshing) {
             LaunchedEffect(Unit) {
-                viewModel.loadProfile()
+                viewModel.onAction(ProfileAction.OnRefresh)
             }
         }
+
+        // Если загрузка закончилась (в ViewModel) -> сообщаем об этом UI, чтобы убрать крутилку
+        LaunchedEffect(state.isLoading) {
+            if (!state.isLoading) {
+                pullRefreshState.endRefresh()
+            }
+        }
+
 
         Scaffold(
             containerColor = MaterialTheme.colorScheme.background
         ) { padding ->
+            // Оборачиваем контент в Box с nestedScroll
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    // Подключаем скролл-жесты к контейнеру
-                    .nestedScroll(pullRefreshState.nestedScrollConnection)
+                    .nestedScroll(pullRefreshState.nestedScrollConnection) // <-- Магия свайпа здесь
             ) {
                 if (state.isLoading && state.phone.isBlank()) {
+                    // Показываем большую крутилку только если данных НЕТ совсем
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 } else {
+                    // Основной список
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(padding),
-                        contentPadding = PaddingValues(bottom = 24.dp)
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(bottom = 24.dp, top = 16.dp, start = 16.dp, end = 16.dp)
                     ) {
-                        // 1. Header (Красивая карточка)
+                        // 1. Header
                         item {
-                            ProfileHeaderCard(name = state.name.asString(), phone = state.phone)
-                            Spacer(modifier = Modifier.height(16.dp))
+                            ProfileHeader(name = state.name.asString(), phone = state.phone)
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
 
-                        // --- ГРУППА 1: ТЕКУЩИЕ РАБОЧИЕ МЕСТА ---
+                        // 2. Рабочие места
                         if (state.workspaces.isNotEmpty()) {
                             item {
                                 SectionTitle(stringResource(Res.string.profile_header_workspaces))
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
-
                             items(state.workspaces) { workspace ->
                                 WorkspaceItem(workspace) {
-                                    viewModel.onWorkspaceClicked(workspace)
+                                    viewModel.onAction(ProfileAction.OnWorkspaceClicked(workspace))
                                 }
-                                // Тонкий разделитель между элементами (опционально)
-                                if (state.workspaces.last() != workspace) {
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(start = 56.dp),
-                                        thickness = DividerDefaults.Thickness,
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
-                                    )
-                                }
+                                Spacer(modifier = Modifier.height(8.dp))
                             }
+                            item { Spacer(modifier = Modifier.height(24.dp)) }
                         }
 
-                        // --- ГРУППА 2: ДЕЙСТВИЯ (Создать / Вступить) ---
+                        // 3. Действия
                         item {
-                            // Отступ, если список выше был
-                            Spacer(modifier = Modifier.height(24.dp))
-
                             SectionTitle(stringResource(Res.string.profile_header_actions))
 
-                            // Создать бизнес
                             SettingsItem(
                                 icon = Icons.Default.AddBusiness,
                                 title = stringResource(Res.string.profile_btn_create_business),
                                 subtitle = stringResource(Res.string.profile_desc_create_business),
-                                onClick = viewModel::onCreateBusinessClicked
+                                onClick = { viewModel.onAction(ProfileAction.OnCreateBusinessClicked) }
                             )
 
-                            // Стать сотрудником
                             SettingsItem(
                                 icon = Icons.Default.Badge,
                                 title = stringResource(Res.string.profile_btn_join_team),
                                 subtitle = stringResource(Res.string.profile_desc_join_team),
-                                onClick = viewModel::onJoinTeamClicked
+                                onClick = { viewModel.onAction(ProfileAction.OnJoinTeamClicked) }
                             )
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
-                        // 3. Секция НАСТРОЙКИ
+
+                        // 4. Настройки и Футер
                         item {
                             SectionTitle(stringResource(Res.string.profile_section_general))
 
                             SettingsItem(
                                 icon = Icons.Default.Language,
                                 title = stringResource(Res.string.profile_item_language),
-                                value = "Русский", // TODO: Брать из настроек
-                                onClick = viewModel::onLanguageClicked
+                                value = "Русский",
+                                onClick = { viewModel.onAction(ProfileAction.OnLanguageClicked) }
                             )
-                            HorizontalDivider(
-                                Modifier,
-                                DividerDefaults.Thickness,
-                                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
-                            )
+                            HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 
                             SettingsItem(
                                 icon = Icons.AutoMirrored.Filled.Help,
                                 title = stringResource(Res.string.profile_item_support),
-                                onClick = viewModel::onSupportClicked
+                                onClick = { viewModel.onAction(ProfileAction.OnSupportClicked) }
                             )
+                            Spacer(modifier = Modifier.height(24.dp))
                         }
 
-                        // 4. Футер (Выход и Версия)
                         item {
-                            Spacer(modifier = Modifier.height(24.dp))
-                            LogoutButton(onClick = viewModel::onLogoutClicked)
-
+                            LogoutButton(onClick = { viewModel.onAction(ProfileAction.OnLogoutClicked) })
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "v1.0.0 (Build 10)", // TODO: BuildConfig
+                                text = "v1.0.0",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.outline,
                                 modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
                             )
                         }
-
                     }
                 }
 
+                // Индикатор обновления (поверх списка)
                 PullToRefreshContainer(
                     state = pullRefreshState,
                     modifier = Modifier.align(Alignment.TopCenter),
@@ -178,7 +181,6 @@ class ProfileScreen : Screen {
                     contentColor = MaterialTheme.colorScheme.primary
                 )
             }
-
         }
     }
 }
@@ -186,7 +188,7 @@ class ProfileScreen : Screen {
 // --- КОМПОНЕНТЫ ---
 
 @Composable
-fun ProfileHeaderCard(name: String, phone: String) {
+fun ProfileHeader(name: String, phone: String) {
     Surface(
         color = MaterialTheme.colorScheme.surface,
         tonalElevation = 2.dp,
@@ -337,3 +339,5 @@ fun LogoutButton(onClick: () -> Unit) {
         )
     }
 }
+
+// ... Компоненты ProfileHeader, SettingsItem, WorkspaceItem

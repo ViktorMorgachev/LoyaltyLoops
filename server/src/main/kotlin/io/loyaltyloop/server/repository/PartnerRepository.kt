@@ -1,10 +1,12 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
+import io.loyaltyloop.server.database.tables.CashiersTable
 import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable.isActive
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.LoyaltySettingsDto
@@ -14,6 +16,7 @@ import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
@@ -32,12 +35,59 @@ class PartnerRepository {
         }
     }
 
+    // 1. Найти точку по инвайту
+    suspend fun findTradingPointByInvite(code: String): TradingPointDto? = dbQuery {
+        TradingPointsTable.select { TradingPointsTable.inviteCode eq code }
+            .map {
+                TradingPointDto(
+                    id = it[TradingPointsTable.id],
+                    name = it[TradingPointsTable.name],
+                    active = it[TradingPointsTable.isActive],
+                    type = it[TradingPointsTable.type],
+                    address = it[TradingPointsTable.address],
+                    latitude = it[TradingPointsTable.latitude],
+                    longitude = it[TradingPointsTable.longitude],
+                    inviteCode = it[TradingPointsTable.inviteCode]
+                )
+            }
+            .singleOrNull()
+    }
+
+    // 2. Проверка: уже работает здесь?
+    suspend fun isUserCashierAtPoint(userId: String, pointId: String): Boolean = dbQuery {
+        !CashiersTable.selectAll()
+            .where { (CashiersTable.userId eq userId) and (CashiersTable.tradingPointId eq pointId) }
+            .empty()
+    }
+
+    // 3. Добавить кассира
+    suspend fun addCashier(userId: String, pointId: String, partnerId: String) = dbQuery {
+        CashiersTable.insert {
+            it[id] = UUID.randomUUID().toString()
+            it[this.userId] = userId
+            it[this.tradingPointId] = pointId
+            it[this.partnerId] = partnerId
+            it[isActive] = true
+        }
+    }
+
+    // 1. Найти ID точки по инвайту
+
+
+    // 4. Получить PartnerID по PointID
+    suspend fun getPartnerIdByPoint(pointId: String): String? = dbQuery {
+        TradingPointsTable.select { TradingPointsTable.id eq pointId }
+            .map { it[TradingPointsTable.partnerId] }
+            .singleOrNull()
+    }
+
     // --- МАГИЯ ЗДЕСЬ ---
     suspend fun createTradingPoint(
         partnerId: String,
         pointId: String,
         name: String,
         type: TradingPointType = TradingPointType.OTHER, // Дефолт
+        address: String? = null,
         latitude: Double? = null,
         longitude: Double? = null
     ) = dbQuery {
@@ -46,7 +96,9 @@ class PartnerRepository {
             it[this.id] = pointId
             it[this.partnerId] = partnerId
             it[this.name] = name
+            it[this.inviteCode] = (100000..999999).random().toString()
             it[this.isActive] = false
+            it[this.address] = address
             it[this.type] = type
             it[this.latitude] = latitude
             it[this.longitude] = longitude// Для теста активна
@@ -114,7 +166,7 @@ class PartnerRepository {
 
     // Новый метод для чтения (нужен для теста и для API)
     suspend fun getTradingPointById(id: String): TradingPointDto? = dbQuery {
-        TradingPointsTable.select { TradingPointsTable.id eq id }
+        TradingPointsTable.selectAll().where { TradingPointsTable.id eq id }
             .map {
                 TradingPointDto(
                     id = it[TradingPointsTable.id],
@@ -123,10 +175,29 @@ class PartnerRepository {
                     type = it[TradingPointsTable.type],
                     latitude = it[TradingPointsTable.latitude],
                     longitude = it[TradingPointsTable.longitude],
-                    active = it[TradingPointsTable.isActive]
+                    active = it[TradingPointsTable.isActive],
+                    inviteCode = it[TradingPointsTable.inviteCode]
                 )
             }
             .singleOrNull()
+    }
+
+    suspend fun getPointsByPartnerId(partnerId: String): List<TradingPointDto> = dbQuery {
+        TradingPointsTable.select { TradingPointsTable.partnerId eq partnerId }
+            .map {
+                TradingPointDto(
+                    id = it[TradingPointsTable.id],
+                    name = it[TradingPointsTable.name],
+                    address = it[TradingPointsTable.address],
+                    type = it[TradingPointsTable.type],
+                    latitude = it[TradingPointsTable.latitude],
+                    longitude = it[TradingPointsTable.longitude],
+                    active = it[TradingPointsTable.isActive],
+                    inviteCode = it[TradingPointsTable.inviteCode]
+                    // Добавим инвайт код, так как это админка владельца, ему нужно его знать
+                    // (В DTO нужно добавить поле inviteCode, если его нет, см. шаг ниже)
+                )
+            }
     }
 
     suspend fun getSettingsByPointId(pointId: String): LoyaltySettingsDto? = dbQuery {

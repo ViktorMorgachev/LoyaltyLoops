@@ -10,6 +10,7 @@ import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.shared.models.LoyaltyCardDto
+import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
@@ -115,9 +116,9 @@ class UserRepository {
 
     suspend fun findOrCreateCard(userId: String, partnerId: String): LoyaltyCardDto = dbQuery {
         // 1. Ищем существующую
-        val existingRow = LoyaltyCardTable.select {
-            (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId)
-        }.singleOrNull()
+        val existingRow = LoyaltyCardTable.selectAll()
+            .where { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
+            .singleOrNull()
 
         if (existingRow != null) {
             return@dbQuery rowToCardDto(existingRow)

@@ -14,9 +14,17 @@ enum class TradingPointType {
 data class TradingPointDto(
     val id: String,
     val name: String,
-    val address: String?,
+    val active: Boolean,
     val type: TradingPointType,
-    val latitude: Double?,  // Гео
-    val longitude: Double?, // Гео
-    val active: Boolean
+    val address: String?,
+    val latitude: Double?,
+    val longitude: Double?,
+    val inviteCode: String?
+)
+
+@Serializable
+data class CreateTradingPointRequest(
+    val name: String,
+    val type: TradingPointType, // JSON: "type": "COFFEE_SHOP"
+    val address: String? = null
 )
