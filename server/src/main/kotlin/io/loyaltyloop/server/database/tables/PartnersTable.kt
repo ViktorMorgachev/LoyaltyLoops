@@ -14,6 +14,7 @@ object PartnersTable : Table("partners") {
     val adminPinHash = varchar("admin_pin_hash", 128).nullable()
 
     val logoUrl = varchar("logo_url", 255).nullable()
+    val color = varchar("color", 9).default("#4F46E5") // Default Indigo
 
     val status = enumerationByName("status", 20, PartnerStatus::class).default(PartnerStatus.PENDING)
 

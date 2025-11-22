@@ -9,8 +9,10 @@ data class LoyaltyCardDto(
     val partnerId: String,
     val balance: Double,
     val totalSpent: Double,
+    val visitsCount: Int,
     val tierLevel: Int,
     val isBlocked: Boolean,
+
     val isClosed: Boolean = false,
     val partnerName: String = "",      // "Sierra Coffee"
     val cardColor: String = "#808080", // Цвет карточки

@@ -57,7 +57,7 @@ export const DashboardPage = () => {
 
   const loadPoints = async () => {
     try {
-      const res = await api.get('/partner/points');
+      const res = await api.get('/partners/points');
       setPoints(res.data);
     } catch (e) {
       console.error("Error loading points", e);
@@ -73,7 +73,7 @@ export const DashboardPage = () => {
 
   const handleCreateBusiness = async () => {
     try {
-      await api.post('/partner/create', {
+      await api.post('/partners/create', {
         businessName: bizName,
         countryCode: "KG" // Пока хардкод
       });
@@ -88,7 +88,7 @@ export const DashboardPage = () => {
 
   const handleCreatePoint = async () => {
     try {
-      await api.post('/partner/points', {
+      await api.post('/partners/points', {
         name: pointName,
         type: pointType
       });

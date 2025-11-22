@@ -23,6 +23,8 @@ object LoyaltyCardTable : Table("loyalty_cards") {
     // Например: 0 - Start, 1 - Middle, 2 - Top
     val tierLevel = integer("tier_level").default(0)
 
+    val visitsCount = integer("visits_count").default(0)
+
     // Блокировка конкретно в этом заведении
     val isBlocked = bool("is_blocked").default(false)
 

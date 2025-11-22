@@ -20,6 +20,7 @@ import io.loyaltyloop.app.features.splash.SplashScreenModel
 import io.loyaltyloop.app.features.wallet.WalletScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.repository.PartnerRepository
+import io.loyaltyloop.app.repository.WalletRepository
 import kotlinx.serialization.json.Json
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -37,13 +38,14 @@ val appModule = module {
     // Репозитории
     single { AuthRepository(get()) }
     single { PartnerRepository(get()) }
+    single { WalletRepository(get()) }
 
     // ViewModels
     factory { SplashScreenModel(get(), get(), get()) }
     factory { LoginScreenModel(get(),get(), get()) }
     factory { OnboardingScreenModel(get()) }
     factory { RoleSelectionScreenModel(get()) }
-    factory { WalletScreenModel(get()) }
+    factory { WalletScreenModel(get(),get()) }
     factory { ProfileScreenModel(get(), get(), get()) }
     factory { JoinCompanyScreenModel(get()) }
 

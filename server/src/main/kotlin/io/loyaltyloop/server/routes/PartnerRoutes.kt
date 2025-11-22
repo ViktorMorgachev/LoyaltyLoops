@@ -17,9 +17,11 @@ import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
+import io.loyaltyloop.shared.models.ScanQrRequest
+import io.loyaltyloop.shared.models.ScanQrResponse
 
 fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: UserRepository) {
-    route("/partner") {
+    route("/partners") {
         authenticate("auth-jwt") {
             
             post("/create") {
@@ -74,7 +76,7 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                 val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
 
                 // Логика поиска партнера
-                val partners = userRepository.getPartnersByOwner(userId)
+                val partners = partnerRepository.getPartnersByOwner(userId)
                 val myPartner = partners.firstOrNull()
 
                 if (myPartner == null) {
@@ -94,7 +96,7 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                 val request = call.receive<CreateTradingPointRequest>()
 
                 // 1. Проверяем, есть ли у юзера бизнес (Partner)
-                val partners = userRepository.getPartnersByOwner(userId)
+                val partners = partnerRepository.getPartnersByOwner(userId)
                 val myPartner = partners.firstOrNull()
 
                 if (myPartner == null) {

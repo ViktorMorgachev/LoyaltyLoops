@@ -15,8 +15,15 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
+import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.AuthResponse
+import io.loyaltyloop.shared.models.CreatePartnerRequest
+import io.loyaltyloop.shared.models.CreateTradingPointRequest
+import io.loyaltyloop.shared.models.JoinTradingPointRequest
 import io.loyaltyloop.shared.models.SendCodeRequest
+import io.loyaltyloop.shared.models.TradingPointType
+import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.VerifyCodeRequest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -48,6 +55,121 @@ fun ApplicationTestBuilder.configureTestEnv() {
     application {
         module()
     }
+}
+
+/**
+ * Хелпер: Создает полную экосистему (Партнер -> Точка) и регистрирует там Кассира.
+ * Возвращает токен Кассира.
+ */
+suspend fun HttpClient.createCashierEcosystem(
+    ownerToken: String,
+    ownerId: String,
+    partnerRepo: PartnerRepository
+): String { // Возвращает cashierToken
+
+    // 1. Создаем точку
+    // (Мы не можем достать inviteCode через API создания, поэтому лезем в базу или делаем getPoints)
+    // Упростим: Создадим точку через API, потом найдем её в БД
+    createTradingPoint(ownerToken, "Cashier Point", TradingPointType.COFFEE_SHOP)
+
+    val partnerId = partnerRepo.getPartnersByOwner(ownerId).first().id
+    val point = partnerRepo.getPointsByPartnerId(partnerId).first()
+    val inviteCode = point.inviteCode ?: throw IllegalStateException("No invite code generated")
+
+    // 2. Регистрируем нового юзера (будущего кассира)
+    val cashierAuth = registerAndLogin(phone = generateValidPhone())
+
+    // 3. Вводим инвайт код
+    val joinRes = post("/partners/join") {
+        header("Authorization", "Bearer ${cashierAuth.accessToken}")
+        contentType(ContentType.Application.Json)
+        setBody(JoinTradingPointRequest(inviteCode))
+    }
+
+    if (joinRes.status != HttpStatusCode.OK) {
+        throw IllegalStateException("Failed to join company: ${joinRes.bodyAsText()}")
+    }
+
+    // 4. Важно: После смены роли (стали кассиром) лучше обновить токен или профиль.
+    // В нашем случае права проверяются динамически, так что старый токен подойдет.
+    return cashierAuth.accessToken
+}
+
+/**
+* Хелпер: Регистрирует юзера и МГНОВЕННО делает его Супер-Админом (через БД).
+* Возвращает токены уже привилегированного пользователя.
+*/
+suspend fun HttpClient.registerAsAdmin(
+    userRepo: UserRepository,
+    phone: String = "+996554190030" // Номер из конфига (для красоты)
+): AuthResponse {
+    // 1. Регистрируемся как обычно
+    val auth = this.registerAndLogin(phone = phone)
+
+    // 2. ХАК: Лезем в базу и выдаем права (симуляция Seeding)
+    userRepo.setSuperAdmin(auth.userId, true)
+    userRepo.createSystemStaff(auth.userId, UserRole.PLATFORM_SUPER_ADMIN, "0000")
+
+    // Возвращаем те же токены (права проверяются на лету при запросе, так что токены валидны)
+    return auth
+}
+
+suspend fun HttpClient.createPartner(
+    token: String,           // Токен владельца
+    ownerId: String,         // ID владельца (чтобы найти партнера в БД)
+    repo: PartnerRepository, // Репозиторий для поиска ID
+    name: String = "Test Cafe",
+    country: String = "KG"
+): String {
+    val response = post("/partners/create") {
+        header("Authorization", "Bearer $token")
+        contentType(ContentType.Application.Json)
+        setBody(CreatePartnerRequest(name, country))
+    }
+
+    if (response.status != HttpStatusCode.Created) {
+        throw IllegalStateException("Failed to create partner. Status: ${response.status}, Body: ${response.bodyAsText()}")
+    }
+
+    // Достаем ID из базы данных, так как API возвращает просто сообщение
+    // (Это надежнее, чем парсить строку сообщения)
+    val partner = repo.getPartnersByOwner(ownerId).firstOrNull()
+        ?: throw IllegalStateException("Partner created via API but not found in DB for user $ownerId")
+
+    return partner.id
+}
+
+
+// ...
+
+/**
+ * Хелпер: Создает торговую точку через API.
+ */
+suspend fun HttpClient.createTradingPoint(
+    token: String,
+    name: String = "Test Point",
+    type: TradingPointType = TradingPointType.COFFEE_SHOP
+): String {
+    val request = CreateTradingPointRequest(
+        name = name,
+        type = type,
+        address = "Some Address"
+    )
+
+    val response = post("/partners/points") {
+        header("Authorization", "Bearer $token")
+        contentType(ContentType.Application.Json)
+        setBody(request)
+    }
+
+    if (response.status != HttpStatusCode.Created) {
+        throw IllegalStateException("Failed to create point. Status: ${response.status}, Body: ${response.bodyAsText()}")
+    }
+
+    // API возвращает ApiMessage("Точка создана"), ID там нет в тексте для простоты.
+    // Поэтому ID точки мы будем искать в тесте через репозиторий, зная ID партнера.
+    // Либо можно вернуть просто "OK".
+    return "OK"
 }
 
 /**

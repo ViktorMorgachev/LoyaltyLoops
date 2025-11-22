@@ -13,18 +13,22 @@ import org.koin.compose.koinInject
 fun App() {
     LoyaltyTheme {
         val sessionManager = koinInject<SessionManager>()
-        Navigator(SplashScreen()) { navigator ->
 
-            // Слушаем событие глобального выхода
-            LaunchedEffect(Unit) {
-                sessionManager.logoutEvent.collect {
-                    // Если пришло событие -> Жестко переходим на Логин, очищая стек
-                    navigator.replaceAll(LoginScreen())
-                }
+        // Ключ для перезапуска всего графа навигации
+        var restartKey by remember { mutableStateOf(0) }
+
+        // Слушаем логаут глобально
+        LaunchedEffect(Unit) {
+            sessionManager.logoutEvent.collect {
+                // Увеличиваем ключ -> Компоновка Navigator пересоздастся с нуля!
+                restartKey++
             }
-
-            // Анимация переходов (для красоты)
-            SlideTransition(navigator)
+        }
+        // Оборачиваем Navigator в key
+        key(restartKey) {
+            Navigator(SplashScreen()) { navigator ->
+                SlideTransition(navigator)
+            }
         }
     }
 }

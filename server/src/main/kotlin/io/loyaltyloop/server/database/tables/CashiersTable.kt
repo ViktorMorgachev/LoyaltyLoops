@@ -11,6 +11,8 @@ object CashiersTable : Table("cashiers") {
 
     // Дублируем partnerId для быстрого поиска всех сотрудников бизнеса
     val partnerId = varchar("partner_id", 50).references(PartnersTable.id)
+    val isActive = bool("is_active").default(true)
+    val canRefund = bool("can_refund").default(false)
 
     override val primaryKey = PrimaryKey(id)
 }

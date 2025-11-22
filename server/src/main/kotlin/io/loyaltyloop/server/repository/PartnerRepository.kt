@@ -14,12 +14,11 @@ import io.loyaltyloop.shared.models.LoyaltyTierDto
 import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
-import org.jetbrains.exposed.sql.Op
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 class PartnerRepository {
@@ -32,6 +31,42 @@ class PartnerRepository {
             it[this.businessName] = name
             it[this.countryCode] = "KG" // Хардкод для теста
             it[this.adminPinHash] = null
+        }
+    }
+
+    suspend fun getPartnerById(id: String): PartnerEntity? = dbQuery {
+        PartnersTable.selectAll().where { PartnersTable.id eq id }
+            .map {
+                PartnerEntity(
+                    id = it[PartnersTable.id],
+                    name = it[PartnersTable.businessName],
+                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank(),
+                    status = it[PartnersTable.status],
+                    logoUrl = it[PartnersTable.logoUrl],
+                    color = it[PartnersTable.color]
+                )
+            }
+            .singleOrNull()
+    }
+
+    // 1. Найти бизнесы, где я Владелец
+    suspend fun getPartnersByOwner(userId: String): List<PartnerEntity> = dbQuery {
+        PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
+            .map {
+                PartnerEntity(
+                    id = it[PartnersTable.id],
+                    name = it[PartnersTable.businessName],
+                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank(),
+                    status = it[PartnersTable.status],
+                    logoUrl = it[PartnersTable.logoUrl],
+                    color = it[PartnersTable.color]
+                )
+            }
+    }
+
+    suspend fun updateStatus(partnerId: String, newStatus: PartnerStatus) = dbQuery {
+        PartnersTable.update({ PartnersTable.id eq partnerId }) {
+            it[status] = newStatus
         }
     }
 
@@ -67,7 +102,8 @@ class PartnerRepository {
             it[this.userId] = userId
             it[this.tradingPointId] = pointId
             it[this.partnerId] = partnerId
-            it[isActive] = true
+            it[this.isActive] = true
+            it[this.canRefund] = false
         }
     }
 
@@ -212,13 +248,13 @@ class PartnerRepository {
         val tiers = LoyaltyTiersTable.selectAll()
             .where { LoyaltyTiersTable.settingsId eq settingsId }
             .map {
-            LoyaltyTierDto(
-                levelIndex = it[LoyaltyTiersTable.levelIndex],
-                name = it[LoyaltyTiersTable.name],
-                threshold = it[LoyaltyTiersTable.threshold],
-                cashbackPercent = it[LoyaltyTiersTable.cashbackPercent]
-            )
-        }
+                LoyaltyTierDto(
+                    levelIndex = it[LoyaltyTiersTable.levelIndex],
+                    name = it[LoyaltyTiersTable.name],
+                    threshold = it[LoyaltyTiersTable.threshold],
+                    cashbackPercent = it[LoyaltyTiersTable.cashbackPercent]
+                )
+            }
 
         // 3. Собираем DTO
         LoyaltySettingsDto(

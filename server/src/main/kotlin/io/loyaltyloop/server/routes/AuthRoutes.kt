@@ -176,15 +176,13 @@ fun Route.authRoutes(
             }
         }
 
-        authenticate("auth-jwt") {
-            post("/logout") {
-                // Клиент может прислать refresh token, чтобы мы его удалили
-                val request = call.receiveNullable<RefreshTokenRequest>()
-                if (request != null) {
-                    repository.deleteRefreshToken(request.refreshToken)
-                }
-                call.respond(HttpStatusCode.OK)
+        post("/logout") {
+            // Клиент может прислать refresh token, чтобы мы его удалили
+            val request = call.receiveNullable<RefreshTokenRequest>()
+            if (request != null) {
+                repository.deleteRefreshToken(request.refreshToken)
             }
+            call.respond(HttpStatusCode.OK)
         }
     }
 }

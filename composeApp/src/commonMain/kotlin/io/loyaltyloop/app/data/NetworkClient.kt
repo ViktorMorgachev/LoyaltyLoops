@@ -66,7 +66,7 @@ object NetworkClient {
                         netLog.d {
                             """
                             🔐 AUTH PLUGIN: Loading tokens state...
-                               -> Access: ${if (accessToken != null) "OK (${accessToken.takeLast(6)})" else "NULL"}
+                               -> Access: ${if (accessToken != null) "OK (${accessToken.takeLast(8)})" else "NULL"}
                                -> Refresh: ${if (refreshToken != null) "OK" else "NULL"}
                             """.trimIndent()
                         }
@@ -74,14 +74,13 @@ object NetworkClient {
                         BearerTokens(accessToken = accessToken.orEmpty(), refreshToken = refreshToken.orEmpty())
                     }
 
-                    sendWithoutRequest { false }
+                    sendWithoutRequest {  !it.url.pathSegments.contains("auth") }
 
                     // Б. Логика обновления, если пришел 401
                     refreshTokens {
-                        val oldTokens = oldTokens
-                        // Если старого токена не было - нечего обновлять
-                        val refreshToken = oldTokens?.refreshToken ?: return@refreshTokens null
-                        netLog.write("Attempting to refresh token...", LogType.Debug)
+                        val refreshToken = tokenStorage.getRefreshToken().orEmpty()
+
+                        netLog.write("Attempting to refresh token...${refreshToken.takeLast(8)}", LogType.Debug)
 
                         try {
                             // Делаем запрос на /refresh
@@ -89,7 +88,7 @@ object NetworkClient {
                             val response = client.post("/auth/refresh") {
                                 contentType(ContentType.Application.Json)
                                 setBody(RefreshTokenRequest(refreshToken))
-                                markAsRefreshTokenRequest() // <-- Не перехватывать этот запрос!
+                                markAsRefreshTokenRequest()
                             }
 
                             if (response.status == HttpStatusCode.OK) {
@@ -122,20 +121,6 @@ object NetworkClient {
             defaultRequest {
                 url(SERVER_URL)
                 header(HttpHeaders.AcceptLanguage, "ru") // TODO: Локаль
-
-                val path = url.encodedPath
-                val isPublic = path.endsWith("/auth/login") ||
-                        path.endsWith("/auth/send-code") ||
-                        path.endsWith("/auth/refresh")
-
-                // Если запрос требует авторизации - берем СВЕЖИЙ токен из памяти прямо сейчас
-                if (!isPublic) {
-                    val freshToken = tokenStorage.getAccessToken()
-                    if (freshToken != null) {
-                         netLog.d { "💉 Injecting Header: Bearer ...${freshToken.takeLast(6)}" }
-                        header(HttpHeaders.Authorization, "Bearer $freshToken")
-                    }
-                }
             }
         }
     }

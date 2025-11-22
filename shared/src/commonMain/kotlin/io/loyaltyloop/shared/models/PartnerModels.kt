@@ -14,6 +14,12 @@ data class CreatePartnerRequest(
     val countryCode: String // "KG"
 )
 
+
+@Serializable
+data class ChangePartnerStatusRequest(
+    val status: PartnerStatus
+)
+
 /**
  * Запрос на присоединение к точке (для Кассира)
  */

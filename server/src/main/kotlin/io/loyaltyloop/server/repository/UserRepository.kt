@@ -10,7 +10,7 @@ import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.TradingPointDto
+import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
@@ -48,19 +48,20 @@ class UserRepository {
     }
 
     // Обновление профиля
-    suspend fun updateUserProfile(userDto: UserDto, lang: String?, request: UpdateProfileRequest) = dbQuery {
-        UsersTable.update({ UsersTable.id eq userDto.id }) { dto->
-            dto[firstName] = request.firstName
-            dto[lastName] = request.lastName
-            dto[email] = request.email
-            dto[qrSecret] = userDto.qrSecret
-            lang?.let {
-                dto[language] = it
+    suspend fun updateUserProfile(userDto: UserDto, lang: String?, request: UpdateProfileRequest) =
+        dbQuery {
+            UsersTable.update({ UsersTable.id eq userDto.id }) { dto ->
+                dto[firstName] = request.firstName
+                dto[lastName] = request.lastName
+                dto[email] = request.email
+                dto[qrSecret] = userDto.qrSecret
+                lang?.let {
+                    dto[language] = it
+                }
+
+
             }
-
-
         }
-    }
 
     // Обновляем язык пользователя, если он изменился
     suspend fun updateUserLanguage(userId: String, newLanguage: String) = dbQuery {
@@ -68,7 +69,6 @@ class UserRepository {
             it[language] = newLanguage
         }
     }
-
 
 
     // Получить всех (для теста)
@@ -114,18 +114,34 @@ class UserRepository {
             .singleOrNull() == true
     }
 
-    suspend fun findOrCreateCard(userId: String, partnerId: String): LoyaltyCardDto = dbQuery {
+    suspend fun findOrCreateCard(
+        userId: String,
+        partnerId: String,
+        partnerName: String,
+        partnerColor: String,
+        partnerLogo: String?
+    ): Pair<LoyaltyCardDto, Boolean> = dbQuery {
+
         // 1. Ищем существующую
         val existingRow = LoyaltyCardTable.selectAll()
             .where { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
             .singleOrNull()
 
         if (existingRow != null) {
-            return@dbQuery rowToCardDto(existingRow)
+            // Для старой карты - подтягиваем данные через маппер (он там пытается делать join или берет переданные?)
+            // Нюанс: rowToCardDto у нас заточен под JOIN.
+            // Если мы тут делаем простой select без join, то rowToCardDto вернет пустые поля.
+            // Давай сделаем умнее: вернем DTO, но перезапишем UI поля теми, что мы передали в функцию!
+            // TODO потом если что убрать
+            val dto = rowToCardDto(existingRow).copy(
+                partnerName = partnerName,
+                cardColor = partnerColor,
+                logoUrl = partnerLogo
+            )
+            return@dbQuery dto to false
         }
 
         // 2. Создаем новую
-        // TODO: Пока хардкод уровня = 1. В следующем шаге мы добавим чтение настроек.
         val newId = java.util.UUID.randomUUID().toString()
 
         LoyaltyCardTable.insert {
@@ -135,34 +151,33 @@ class UserRepository {
             it[balance] = 0.0
             it[totalSpent] = 0.0
             it[tierLevel] = 1
+            it[this.visitsCount] = visitsCount
             it[isBlocked] = false
+            it[isClosed] = false
         }
 
-        // Возвращаем созданный объект
-        // Мы можем собрать его вручную, чтобы не делать лишний select
-        LoyaltyCardDto(
+        // 3. Собираем полный DTO сразу
+        val newCard = LoyaltyCardDto(
             id = newId,
             userId = userId,
             partnerId = partnerId,
             balance = 0.0,
             totalSpent = 0.0,
             tierLevel = 1,
-            isBlocked = false
+            isBlocked = false,
+            isClosed = false,
+            // Используем переданные параметры
+            partnerName = partnerName,
+            cardColor = partnerColor,
+            logoUrl = partnerLogo,
+            visitsCount = 0
         )
+
+        newCard to true
     }
 
     // 1. Обновленный маппер (теперь учитывает данные партнера)
     private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
-        // Используем getOrNull - это безопасно.
-        // Если мы сделали JOIN с PartnersTable, данные вернутся.
-        // Если нет - вернется null (или пустая строка через элвис-оператор).
-
-        val partnerName = row.getOrNull(PartnersTable.businessName) ?: ""
-        val partnerLogo = row.getOrNull(PartnersTable.logoUrl)
-
-        // Цвет пока хардкодим (в будущем добавим поле color в PartnersTable или Settings)
-        val cardColor = "#4F46E5"
-
         return LoyaltyCardDto(
             id = row[LoyaltyCardTable.id],
             userId = row[LoyaltyCardTable.userId],
@@ -172,11 +187,11 @@ class UserRepository {
             tierLevel = row[LoyaltyCardTable.tierLevel],
             isBlocked = row[LoyaltyCardTable.isBlocked],
             isClosed = row[LoyaltyCardTable.isClosed],
+            partnerName = "",
+            cardColor = "#000000",
+            logoUrl = null,
+            visitsCount = row[LoyaltyCardTable.visitsCount]
 
-            // UI данные
-            partnerName = partnerName,
-            cardColor = cardColor,
-            logoUrl = partnerLogo
         )
     }
 
@@ -190,17 +205,11 @@ class UserRepository {
                 otherColumn = PartnersTable.id
             )
             .selectAll().where { LoyaltyCardTable.userId eq userId }
-            .map { rowToCardDto(it) }
-    }
-
-    // 1. Найти бизнесы, где я Владелец
-    suspend fun getPartnersByOwner(userId: String): List<PartnerEntity> = dbQuery {
-        PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
             .map {
-                PartnerEntity(
-                    id = it[PartnersTable.id],
-                    name = it[PartnersTable.businessName],
-                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank()
+                rowToCardDto(it).copy(
+                    partnerName = it[PartnersTable.businessName],
+                    cardColor = it[PartnersTable.color],
+                    logoUrl = it[PartnersTable.logoUrl]
                 )
             }
     }
@@ -227,46 +236,54 @@ class UserRepository {
     }
 
 
-
-    suspend fun getUserWorkspaces(userId: String): List<UserWorkspace> = dbQuery { // <--- ДОБАВЬ ЭТО
+    suspend fun getUserWorkspaces(userId: String): List<UserWorkspace> = dbQuery {
 
         val workspaces = mutableListOf<UserWorkspace>()
 
         // 1. ПРОВЕРКА: Является ли он сотрудником платформы?
         // Вот эта строка падала, потому что была без транзакции:
-        val systemStaff = SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }
-            .singleOrNull()
+        val systemStaff =
+            SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }
+                .singleOrNull()
 
         if (systemStaff != null) {
             val role = systemStaff[SystemStaffTable.role]
 
-            workspaces.add(UserWorkspace(
-                id = "platform_admin_panel",
-                title = "LoyaltyLoop (Platform)",
-                role = role,
-                requirePin = true
-            ))
+            workspaces.add(
+                UserWorkspace(
+                    id = "platform_admin_panel",
+                    title = "LoyaltyLoop (Platform)",
+                    role = role,
+                    requirePin = true
+                )
+            )
         }
 
         // 2. Владения (Вызываем другие методы, это ок, транзакция поддержит вложенность)
         // Но лучше, если getPartnersByOwner тоже внутри вызывает dbQuery,
         // Exposed обработает вложенную транзакцию нормально.
-        val ownedBusinesses = PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
-            .map {
-                PartnerEntity(
-                    id = it[PartnersTable.id],
-                    name = it[PartnersTable.businessName],
-                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank()
-                )
-            }
+        val ownedBusinesses =
+            PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
+                .map {
+                    PartnerEntity(
+                        id = it[PartnersTable.id],
+                        name = it[PartnersTable.businessName],
+                        hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank(),
+                        status = it[PartnersTable.status],
+                        logoUrl = it[PartnersTable.logoUrl],
+                        color = it[PartnersTable.color]
+                    )
+                }
 
         ownedBusinesses.forEach { p ->
-            workspaces.add(UserWorkspace(
-                id = p.id,
-                title = p.name,
-                role = UserRole.PARTNER_ADMIN,
-                requirePin = true
-            ))
+            workspaces.add(
+                UserWorkspace(
+                    id = p.id,
+                    title = p.name,
+                    role = UserRole.PARTNER_ADMIN,
+                    requirePin = true
+                )
+            )
         }
 
         // 3. Работа кассиром (Тут тоже перепишем на прямой запрос для чистоты транзакции)
@@ -287,32 +304,35 @@ class UserRepository {
             }
 
         cashierJobs.forEach { job ->
-            workspaces.add(UserWorkspace(
-                id = job.tradingPointId,
-                title = "${job.businessName} (${job.pointName})",
-                role = UserRole.CASHIER,
-                requirePin = false
-            ))
+            workspaces.add(
+                UserWorkspace(
+                    id = job.tradingPointId,
+                    title = "${job.businessName} (${job.pointName})",
+                    role = UserRole.CASHIER,
+                    requirePin = false
+                )
+            )
         }
 
         workspaces
     }
 
     // Метод для сидинга (создания админа при старте)
-    suspend fun createSystemStaff(userId: String, role: UserRole, defaultPinHash: String?) = dbQuery {
-        // Проверяем, нет ли уже такого
-        if (SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }.empty()) {
-            SystemStaffTable.insert {
-                it[id] = UUID.randomUUID().toString()
-                it[this.userId] = userId
-                it[this.role] = role
-                it[pinHash] = defaultPinHash
+    suspend fun createSystemStaff(userId: String, role: UserRole, defaultPinHash: String?) =
+        dbQuery {
+            // Проверяем, нет ли уже такого
+            if (SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }.empty()) {
+                SystemStaffTable.insert {
+                    it[id] = UUID.randomUUID().toString()
+                    it[this.userId] = userId
+                    it[this.role] = role
+                    it[pinHash] = defaultPinHash
+                }
+                true
+            } else {
+                false
             }
-            true
-        } else {
-            false
         }
-    }
 
     // Сохранить новый рефреш токен
     suspend fun saveRefreshToken(token: String, userId: String, expiresAt: Long) = dbQuery {
@@ -341,5 +361,17 @@ class UserRepository {
     }
 }
 
-data class PartnerEntity(val id: String, val name: String, val hasPin: Boolean)
-data class CashierJobEntity(val tradingPointId: String, val pointName: String, val businessName: String)
+data class PartnerEntity(
+    val id: String,
+    val name: String,
+    val hasPin: Boolean,
+    val status: PartnerStatus,
+    val logoUrl: String?,
+    val color: String
+)
+
+data class CashierJobEntity(
+    val tradingPointId: String,
+    val pointName: String,
+    val businessName: String
+)
