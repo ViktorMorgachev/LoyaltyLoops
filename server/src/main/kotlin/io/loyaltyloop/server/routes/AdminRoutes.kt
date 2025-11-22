@@ -45,6 +45,11 @@ fun Route.adminRoutes(
                 
                 call.respond(HttpStatusCode.OK, ApiMessage("Status changed to ${request.status}"))
             }
+
+            get("/partners") {
+                val partners = partnerRepo.getAllPartners()
+                call.respond(partners)
+            }
         }
     }
 }

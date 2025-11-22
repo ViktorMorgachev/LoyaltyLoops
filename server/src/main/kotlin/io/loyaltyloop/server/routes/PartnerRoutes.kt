@@ -110,10 +110,7 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                 // 3. Создаем точку (Репозиторий сам создаст дефолтные настройки лояльности)
                 partnerRepository.createTradingPoint(
                     partnerId = myPartner.id,
-                    pointId = pointId,
-                    name = request.name,
-                    type = request.type,
-                    address = request.address
+                    request = request
                 )
 
                 call.respond(HttpStatusCode.Created, ApiMessage("Точка создана"))

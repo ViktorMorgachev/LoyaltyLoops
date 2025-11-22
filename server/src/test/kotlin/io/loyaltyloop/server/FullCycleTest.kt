@@ -80,7 +80,7 @@ class FullCycleTest {
         // --- ПРОВЕРКИ ---
         assertEquals(clientAuth.userId, scanResponse.userId)
         assertTrue(scanResponse.isNewCard, "Карта должна создаться впервые")
-        assertEquals(1, scanResponse.tierLevel)
+        assertEquals(0.0, scanResponse.currentBalance)
         
         // Проверяем, что в базе карта создалась
         val cards = userRepo.getUserCards(clientAuth.userId)

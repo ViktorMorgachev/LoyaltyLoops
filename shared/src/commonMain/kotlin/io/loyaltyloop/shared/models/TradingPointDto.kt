@@ -26,5 +26,12 @@ data class TradingPointDto(
 data class CreateTradingPointRequest(
     val name: String,
     val type: TradingPointType, // JSON: "type": "COFFEE_SHOP"
-    val address: String? = null
+    val address: String? = null,
+    val programType: LoyaltyProgramType = LoyaltyProgramType.TIERED_LTV,
+
+    // Для VISITS
+    val visitsTarget: Int? = null,       // Например: 10
+
+    // Для TIERED (можно передать базовый процент или список, для простоты возьмем базовый)
+    val baseCashback: Double? = null     // Например: 0.05 (5%)
 )

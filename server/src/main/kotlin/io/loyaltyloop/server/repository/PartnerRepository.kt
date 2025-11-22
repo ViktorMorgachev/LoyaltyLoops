@@ -8,6 +8,7 @@ import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable.isActive
 import io.loyaltyloop.shared.models.CreatePartnerRequest
+import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.LoyaltySettingsDto
 import io.loyaltyloop.shared.models.LoyaltyTierDto
@@ -47,6 +48,20 @@ class PartnerRepository {
                 )
             }
             .singleOrNull()
+    }
+
+    suspend fun getAllPartners(): List<PartnerEntity> = dbQuery {
+        PartnersTable.selectAll()
+            .map {
+                PartnerEntity(
+                    id = it[PartnersTable.id],
+                    name = it[PartnersTable.businessName],
+                    hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank(),
+                    status = it[PartnersTable.status],
+                    logoUrl = it[PartnersTable.logoUrl],
+                    color = it[PartnersTable.color]
+                )
+            }
     }
 
     // 1. Найти бизнесы, где я Владелец
@@ -120,66 +135,62 @@ class PartnerRepository {
     // --- МАГИЯ ЗДЕСЬ ---
     suspend fun createTradingPoint(
         partnerId: String,
-        pointId: String,
-        name: String,
-        type: TradingPointType = TradingPointType.OTHER, // Дефолт
-        address: String? = null,
-        latitude: Double? = null,
-        longitude: Double? = null
+        request: CreateTradingPointRequest // <-- Передаем весь объект запроса для удобства
     ) = dbQuery {
-        // 1. Создаем саму точку
+
+        val pointId = java.util.UUID.randomUUID().toString()
+
+        // 1. Точка
         TradingPointsTable.insert {
             it[this.id] = pointId
             it[this.partnerId] = partnerId
-            it[this.name] = name
+            it[this.name] = request.name
+            it[this.type] = request.type
+            it[this.address] = request.address
             it[this.inviteCode] = (100000..999999).random().toString()
-            it[this.isActive] = false
-            it[this.address] = address
-            it[this.type] = type
-            it[this.latitude] = latitude
-            it[this.longitude] = longitude// Для теста активна
+            it[this.isActive] = true
         }
 
-        // 2. Создаем настройки для этой точки (TIERED по умолчанию)
-        val settingsId = UUID.randomUUID().toString()
+        // 2. Настройки
+        val settingsId = java.util.UUID.randomUUID().toString()
 
         LoyaltySettingsTable.insert {
             it[id] = settingsId
             it[this.partnerId] = partnerId
-            it[this.tradingPointId] = pointId // Привязываем к точке!
-            it[programType] = LoyaltyProgramType.TIERED_LTV.name
+            it[this.tradingPointId] = pointId
+
+            // Берем из запроса
+            it[programType] = request.programType.name
+            it[visitsTarget] = request.visitsTarget ?: 6 // Дефолт 6, если не указали
+            it[visitsResetValue] = 0
         }
 
-        // 3. Создаем 3 уровня по умолчанию
-        // Уровень 1: Start (3%)
-        LoyaltyTiersTable.insert {
-            it[id] = UUID.randomUUID().toString()
-            it[this.settingsId] = settingsId
-            it[levelIndex] = 1
-            it[this.name] = "Start"
-            it[threshold] = 0.0
-            it[cashbackPercent] = 0.03
+        // 3. Уровни (Зависят от типа)
+        if (request.programType == LoyaltyProgramType.TIERED_LTV) {
+            // Если TIERED - создаем 3 уровня
+            // Базовый процент берем из запроса или 3%
+            val base = request.baseCashback ?: 0.03
+
+            val levels = listOf(
+                Triple(1, "Start", base),
+                Triple(2, "Silver", base + 0.02), // +2%
+                Triple(3, "Gold", base + 0.05)    // +5%
+            )
+
+            // ... цикл insert LoyaltyTiersTable (тот же код, что был) ...
+            levels.forEach { (idx, name, percent) ->
+                LoyaltyTiersTable.insert {
+                    it[id] = java.util.UUID.randomUUID().toString()
+                    it[this.settingsId] = settingsId
+                    it[levelIndex] = idx
+                    it[this.name] = name
+                    it[threshold] = if (idx == 1) 0.0 else (idx * 10000.0)
+                    it[cashbackPercent] = percent
+                }
+            }
         }
 
-        // Уровень 2: Middle (5%)
-        LoyaltyTiersTable.insert {
-            it[id] = UUID.randomUUID().toString()
-            it[this.settingsId] = settingsId
-            it[levelIndex] = 2
-            it[this.name] = "Middle"
-            it[threshold] = 10000.0
-            it[cashbackPercent] = 0.05
-        }
-
-        // Уровень 3: Top (10%)
-        LoyaltyTiersTable.insert {
-            it[id] = UUID.randomUUID().toString()
-            it[this.settingsId] = settingsId
-            it[levelIndex] = 3
-            it[this.name] = "Top"
-            it[threshold] = 50000.0
-            it[cashbackPercent] = 0.10
-        }
+        pointId
     }
 
     suspend fun createPartner(ownerId: String, request: CreatePartnerRequest): String = dbQuery {

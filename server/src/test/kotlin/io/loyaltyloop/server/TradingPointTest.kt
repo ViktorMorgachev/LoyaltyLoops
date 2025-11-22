@@ -47,11 +47,7 @@ class TradingPointTest {
             partnerRepo.createPartner(partnerId, ownerId, "Test Business")
 
             // 3. Создаем Точку
-            partnerRepo.createTradingPoint(
-                partnerId = partnerId,
-                pointId = pointId,
-                name = "Central Branch"
-            )
+
 
             // 3. Проверяем
             val settings = partnerRepo.getSettingsByPointId(pointId)

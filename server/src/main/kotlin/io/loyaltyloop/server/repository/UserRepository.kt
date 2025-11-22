@@ -15,6 +15,7 @@ import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
+import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
@@ -361,6 +362,7 @@ class UserRepository {
     }
 }
 
+@Serializable
 data class PartnerEntity(
     val id: String,
     val name: String,
