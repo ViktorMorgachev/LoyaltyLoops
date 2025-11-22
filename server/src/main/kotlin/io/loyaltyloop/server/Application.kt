@@ -2,6 +2,8 @@ package io.loyaltyloop.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.loyaltyloop.server.database.DatabaseFactory
 import io.loyaltyloop.server.repository.UserRepository
@@ -13,7 +15,7 @@ import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.CORS
+import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -44,28 +46,31 @@ val startTime = System.currentTimeMillis()
 @Suppress("unused")
 fun Application.module() {
 
+    install(CORS) {
+        allowMethod(HttpMethod.Options)
+        allowMethod(HttpMethod.Put)
+        allowMethod(HttpMethod.Delete)
+        allowMethod(HttpMethod.Patch)
+        allowMethod(HttpMethod.Post)
+
+        allowHeader(HttpHeaders.Authorization)
+        allowHeader(HttpHeaders.ContentType)
+        allowHeader(HttpHeaders.AcceptLanguage)
+        allowHeader(HttpHeaders.AccessControlAllowOrigin)
+
+        allowCredentials = true
+
+        // Разрешаем только наш фиксированный порт
+        allowHost("localhost:3000", schemes = listOf("http", "https"))
+        allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
+    }
+
     val jwtSecret = environment.config.property("jwt.secret").getString()
     val jwtIssuer = environment.config.property("jwt.issuer").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
 
-    install(CORS) {
-//        allowMethod(HttpMethod.Options)
-//        allowMethod(HttpMethod.Put)
-//        allowMethod(HttpMethod.Delete)
-//        allowMethod(HttpMethod.Patch)
-//
-//        // Разрешаем наши заголовки
-//        allowHeader(HttpHeaders.Authorization)
-//        allowHeader(HttpHeaders.ContentType)
-//        allowHeader(HttpHeaders.AcceptLanguage)
 
-        // Разрешаем любой хост (для разработки)
-        anyHost()
-
-        // Или конкретно для твоего веба:
-        // allowHost("localhost:8081")
-    }
 
     DatabaseFactory.init(environment.config)
 
