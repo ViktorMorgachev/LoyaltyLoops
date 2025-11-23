@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,8 +21,11 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
+import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.OtpTextField
+import io.loyaltyloop.app.ui.components.show
 import io.loyaltyloop.app.utils.MaskVisualTransformation
+
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.*
@@ -38,23 +42,14 @@ class LoginScreen : Screen {
         LaunchedEffect(Unit) {
             viewModel.events.collect { event ->
                 when (event) {
-                    is LoginEvent.HideKeyboard -> {
-                        keyboardController?.hide()
-                    }
-                    is LoginEvent.NavigateToHome -> {
-                        navigator.replaceAll(MainScreen())
-                    }
-                    is LoginEvent.ShowError -> {
-                        // 1. Получаем строку (асинхронно)
-                        val message = event.message.asStringSuspend()
-                        // 2. Показываем снекбар (этот вызов приостановит корутину, пока снекбар не исчезнет)
-                        // Но так как мы в collect, это может заблокировать обработку следующих событий.
-                        // Поэтому лучше запустить отдельную дочернюю корутину для показа.
+                    is LoginScreenModel.Event.HideKeyboard -> keyboardController?.hide()
+                    is LoginScreenModel.Event.NavigateToHome -> navigator.replaceAll(MainScreen())
+                    is LoginScreenModel.Event.NavigateToOnboarding -> navigator.replaceAll(OnboardingScreen())
+                    is LoginScreenModel.Event.ShowMessage -> {
                         launch {
-                            snackbarHostState.showSnackbar(message)
+                            snackbarHostState.show(event.message, event.type)
                         }
                     }
-                    is LoginEvent.NavigateToOnboarding -> navigator.replaceAll(OnboardingScreen())
                 }
             }
         }
@@ -67,22 +62,18 @@ class LoginScreen : Screen {
     }
 }
 
-/**
- * Чистая UI функция. Никаких ViewModel, только данные.
- * Её легко переиспользовать и тестировать.
- */
 @Composable
 fun LoginScreenContent(
-    state: LoginState,
+    state: LoginScreenModel.State,
     snackbarHostState: SnackbarHostState,
-    onAction: (LoginAction) -> Unit
+    onAction: (LoginScreenModel.Action) -> Unit
 ) {
 
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState)},
+    LoyaltyScaffold(
+        snackbarHostState = snackbarHostState,
         topBar = {
-            if (state.step == LoginStep.EnterCode) {
-                IconButton(onClick = { onAction(LoginAction.OnBackClicked) }) {
+            if (state.step == LoginScreenModel.Step.EnterCode) {
+                IconButton(onClick = { onAction(LoginScreenModel.Action.OnBackClicked) }) {
                     Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                 }
             }
@@ -106,19 +97,18 @@ fun LoginScreenContent(
 
             Spacer(modifier = Modifier.height(48.dp))
 
-            if (state.step == LoginStep.EnterPhone) {
+            if (state.step == LoginScreenModel.Step.EnterPhone) {
                 PhoneInputCard(
                     state = state,
                     onAction = onAction
                 )
             } else {
-                // --- ЭКРАН ВВОДА КОДА ---
                 Text(stringResource(Res.string.auth_enter_code), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(32.dp))
 
                 OtpTextField(
                     otpText = state.otpInput,
-                    onOtpTextChange = { onAction(LoginAction.OnOtpChanged(it)) }
+                    onOtpTextChange = { onAction(LoginScreenModel.Action.OnOtpChanged(it)) }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -127,9 +117,8 @@ fun LoginScreenContent(
                     CircularProgressIndicator(modifier = Modifier.size(32.dp))
                 } else {
                     if (state.isResendEnabled) {
-                        // Кнопка активна
                         TextButton(
-                            onClick = { onAction(LoginAction.OnResendClicked) }
+                            onClick = { onAction(LoginScreenModel.Action.OnResendClicked) }
                         ) {
                             Text(
                                 text = stringResource(Res.string.auth_resend_btn),
@@ -138,10 +127,7 @@ fun LoginScreenContent(
                             )
                         }
                     } else {
-                        // Таймер тикает (Кнопка неактивна)
                         val timerValue = "00:${state.timerSeconds.toString().padStart(2, '0')}"
-
-                        // 2. Склеиваем текст ресурса и время
                         val fullText = "${stringResource(Res.string.auth_resend_timer)} $timerValue"
 
                         Text(
@@ -158,8 +144,8 @@ fun LoginScreenContent(
 
 @Composable
 fun PhoneInputCard(
-    state: LoginState,
-    onAction: (LoginAction) -> Unit
+    state: LoginScreenModel.State,
+    onAction: (LoginScreenModel.Action) -> Unit
 ) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -167,8 +153,6 @@ fun PhoneInputCard(
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-
-            // Заголовок над полем (аккуратно, серым)
             Text(
                 text = stringResource(Res.string.auth_phone_label),
                 style = MaterialTheme.typography.labelMedium,
@@ -179,35 +163,26 @@ fun PhoneInputCard(
 
             OutlinedTextField(
                 value = state.phoneInput,
-                onValueChange = { onAction(LoginAction.OnPhoneChanged(it)) },
-
-                // --- САМОЕ ВАЖНОЕ: Флаг и Код ВНУТРИ поля ---
+                onValueChange = { onAction(LoginScreenModel.Action.OnPhoneChanged(it)) },
                 leadingIcon = {
                     Row(
                         modifier = Modifier
-                            .height(IntrinsicSize.Min) // Чтобы разделитель был во всю высоту
+                            .height(IntrinsicSize.Min)
                             .padding(start = 12.dp, end = 8.dp)
-                            .clickable { onAction(LoginAction.OnCountryClicked) }, // Кликаем только по флагу/коду
+                            .clickable { onAction(LoginScreenModel.Action.OnCountryClicked) },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // 1. Флаг
                         Text(
                             text = state.selectedCountry.flagEmoji,
-                            style = MaterialTheme.typography.headlineSmall // Крупный эмодзи
+                            style = MaterialTheme.typography.headlineSmall
                         )
-
                         Spacer(modifier = Modifier.width(8.dp))
-
-                        // 2. Код страны (+996)
                         Text(
                             text = state.selectedCountry.phonePrefix,
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-
                         Spacer(modifier = Modifier.width(12.dp))
-
-                        // 3. Вертикальная черта-разделитель
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
@@ -216,9 +191,6 @@ fun PhoneInputCard(
                         )
                     }
                 },
-                // --------------------------------------------
-
-                // Маска ввода (000 000)
                 placeholder = {
                     Text(
                         text = state.selectedCountry.mask.replace("#", "0"),
@@ -226,17 +198,12 @@ fun PhoneInputCard(
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                     )
                 },
-
                 visualTransformation = MaskVisualTransformation(state.selectedCountry.mask),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = !state.isLoading,
-
-                // Стиль вводимых цифр (Крупный, как и код страны)
                 textStyle = MaterialTheme.typography.titleLarge,
-
-                // Обработка ошибок (Красная рамка)
                 isError = state.phoneError != null,
                 supportingText = {
                     state.phoneError?.let { error ->
@@ -246,7 +213,12 @@ fun PhoneInputCard(
                         )
                     }
                 },
-                shape = MaterialTheme.shapes.medium // Скругленные углы поля
+                trailingIcon = {
+                    if (state.phoneError != null) {
+                        Icon(Icons.Default.Error, "Error", tint = MaterialTheme.colorScheme.error)
+                    }
+                },
+                shape = MaterialTheme.shapes.medium
             )
         }
     }
@@ -256,8 +228,7 @@ fun PhoneInputCard(
     LoyaltyButton(
         text = stringResource(Res.string.auth_btn_next),
         isLoading = state.isLoading,
-        onClick = { onAction(LoginAction.OnSubmitClicked) },
+        onClick = { onAction(LoginScreenModel.Action.OnSubmitClicked) },
         modifier = Modifier.fillMaxWidth()
     )
 }
-

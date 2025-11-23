@@ -10,6 +10,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
+import io.ktor.server.routing.put
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
@@ -19,6 +20,8 @@ import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.shared.models.ScanQrResponse
+import io.loyaltyloop.shared.models.TradingPointDto
+import io.loyaltyloop.shared.models.UpdatePartnerRequest
 
 fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: UserRepository) {
     route("/partners") {
@@ -80,13 +83,42 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                 val myPartner = partners.firstOrNull()
 
                 if (myPartner == null) {
-                    // Если это срабатывает, значит в базе рассинхрон: роль есть, а записи в partners нет
-                    call.respond(HttpStatusCode.NotFound, ApiMessage("Бизнес не найден"))
+                    // Если бизнес не найден, возвращаем пустой список, а не 404,
+                    // чтобы фронтенд не падал с красной ошибкой, а просто показывал "Нет точек"
+                    call.respond(listOf<TradingPointDto>())
                     return@get
                 }
 
                 val points = partnerRepository.getPointsByPartnerId(myPartner.id)
                 call.respond(points)
+            }
+
+            get("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
+
+                val partner = partnerRepository.getPartnerByOwnerId(userId)
+                if (partner == null) {
+                    call.respond(HttpStatusCode.NotFound, ApiMessage("Бизнес не найден"))
+                    return@get
+                }
+                call.respond(partner)
+            }
+
+            // PUT /partners/me - Обновить настройки
+            put("/me") {
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@put
+
+                val request = call.receive<UpdatePartnerRequest>()
+                // Валидация
+                if (request.businessName.isBlank()) {
+                    call.respond(HttpStatusCode.BadRequest, ApiMessage("Название не может быть пустым"))
+                    return@put
+                }
+
+                partnerRepository.updatePartner(userId, request)
+                call.respond(HttpStatusCode.OK, ApiMessage("Настройки сохранены"))
             }
 
             post("/points") {
@@ -104,13 +136,10 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                     return@post
                 }
 
-                // 2. Генерируем ID для новой точки
-                val pointId = java.util.UUID.randomUUID().toString()
-
                 // 3. Создаем точку (Репозиторий сам создаст дефолтные настройки лояльности)
                 partnerRepository.createTradingPoint(
                     partnerId = myPartner.id,
-                    request = request
+                    request = request,
                 )
 
                 call.respond(HttpStatusCode.Created, ApiMessage("Точка создана"))

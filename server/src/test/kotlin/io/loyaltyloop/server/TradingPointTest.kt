@@ -44,7 +44,7 @@ class TradingPointTest {
             )
 
             /// 2. Теперь создаем Партнера (ссылаясь на ownerId)
-            partnerRepo.createPartner(partnerId, ownerId, "Test Business")
+         //   partnerRepo.createPartner(partnerId, ownerId, "Test Business")
 
             // 3. Создаем Точку
 

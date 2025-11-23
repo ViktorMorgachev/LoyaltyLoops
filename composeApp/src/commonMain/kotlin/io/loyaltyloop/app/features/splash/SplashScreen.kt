@@ -7,17 +7,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.auth.LoginScreen
 import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
-import io.loyaltyloop.app.features.role.RoleSelectionScreen
-import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.btn_retry
+import org.jetbrains.compose.resources.stringResource
 
 class SplashScreen : Screen {
     @Composable
@@ -26,23 +24,14 @@ class SplashScreen : Screen {
         val viewModel = koinScreenModel<SplashScreenModel>()
         val state by viewModel.state.collectAsState()
 
-        // Авто-запуск при открытии экрана
+        // Навигация через Events (одноразовые события)
         LaunchedEffect(Unit) {
-            viewModel.checkSession()
-        }
-
-        // Обработка навигации
-        LaunchedEffect(state) {
-            when (state) {
-                is SplashScreenModel.SplashState.NavigateToHome -> navigator.replaceAll(MainScreen())
-                is SplashScreenModel.SplashState.NavigateToLogin -> navigator.replaceAll(LoginScreen())
-                is SplashScreenModel.SplashState.NavigateToOnboarding -> {
-                    navigator.replaceAll(OnboardingScreen())
+            viewModel.events.collect { event ->
+                when (event) {
+                    is SplashScreenModel.Event.NavigateToHome -> navigator.replaceAll(MainScreen())
+                    is SplashScreenModel.Event.NavigateToLogin -> navigator.replaceAll(LoginScreen())
+                    is SplashScreenModel.Event.NavigateToOnboarding -> navigator.replaceAll(OnboardingScreen())
                 }
-                is SplashScreenModel.SplashState.NavigateToRoleSelection -> {
-                    navigator.replaceAll(RoleSelectionScreen())
-                }
-                else -> Unit
             }
         }
 
@@ -50,35 +39,37 @@ class SplashScreen : Screen {
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            when (val currentState = state) {
-                is SplashScreenModel.SplashState.Loading -> {
-                    // Логотип
+            if (state.error != null) {
+                // --- ЭКРАН ОШИБКИ ---
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = state.error!!.asString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.onAction(SplashScreenModel.Action.OnRetryClicked) }) {
+                        Text(stringResource(Res.string.btn_retry))
+                    }
+                }
+            } else {
+                // --- ЛОГОТИП (Загрузка) ---
+                // Можно добавить CircularProgressIndicator, если долго грузится
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
                         text = "LoyaltyLoop",
                         style = MaterialTheme.typography.displayMedium,
                         color = MaterialTheme.colorScheme.primary
                     )
-                }
-
-                is SplashScreenModel.SplashState.Error -> {
-                    // Экран ошибки с кнопкой Повторить
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = stringResource(currentState.messageRes), // <-- Локализованный текст
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.error
-                        )
+                    if (state.isLoading) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { viewModel.checkSession() }) {
-                            Text(stringResource(Res.string.btn_retry))
-                        }
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp))
                     }
                 }
-                else -> {}
             }
         }
     }

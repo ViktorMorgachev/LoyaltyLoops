@@ -1,26 +1,15 @@
 package io.loyaltyloop.app.features.main
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.RowScope // <--- ВАЖНЫЙ ИМПОРТ
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Web
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.Navigator
@@ -35,6 +24,8 @@ import io.loyaltyloop.app.features.tabs.ProfileTab
 import io.loyaltyloop.app.features.tabs.WalletTab
 import io.loyaltyloop.app.features.terminal.TerminalScreen
 import io.loyaltyloop.shared.models.UserRole
+import loyaltyloop.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 class MainScreen : Screen {
@@ -48,7 +39,7 @@ class MainScreen : Screen {
         val onAction: (MainScreenAction) -> Unit = { action ->
             when (action) {
                 is MainScreenAction.LogoutToClientMode -> {
-                    sessionManager.switchWorkspace(null) // Сброс в null = Клиент
+                    sessionManager.switchWorkspace(null)
                 }
                 is MainScreenAction.SwitchWorkspace -> {
                     sessionManager.switchWorkspace(action.workspace)
@@ -58,12 +49,13 @@ class MainScreen : Screen {
 
         // Роутинг
         when (currentWorkspace?.role) {
-            null -> ClientUi() // Клиенту пока action не нужен (у него свои табы)
+            null -> ClientUi() // Режим Клиента (по умолчанию)
             UserRole.CASHIER -> CashierUi(onAction = onAction)
             UserRole.PARTNER_ADMIN -> PartnerUi(onAction = onAction)
+            // Для админов платформы тоже можно сделать заглушку или перекинуть на PartnerUi
+            UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_MANAGER -> PartnerUi(onAction = onAction)
             else -> ClientUi()
         }
-
     }
 
     @Composable
@@ -86,26 +78,22 @@ class MainScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     fun CashierUi(
-        onAction: (MainScreenAction) -> Unit // <-- Принимаем лямбду
+        onAction: (MainScreenAction) -> Unit
     ) {
         // Запускаем Навигатор специально для флоу Кассира
-        // Это позволяет внутри терминала ходить вперед-назад,
-        // не ломая глобальную навигацию.
         Navigator(TerminalScreen()) { navigator ->
             Scaffold(
                 topBar = {
-                    // Добавим кнопку выхода из режима
                     CenterAlignedTopAppBar(
-                        title = { Text("Рабочее место") },
+                        title = { Text(stringResource(Res.string.workspace_cashier_title)) },
                         actions = {
                             TextButton(onClick = { onAction(MainScreenAction.LogoutToClientMode) }) {
-                                Text("Выйти")
+                                Text(stringResource(Res.string.btn_exit_short))
                             }
                         }
                     )
                 }
             ) { padding ->
-                // Показываем текущий экран внутри Навигатора с отступами
                 Box(Modifier.padding(padding)) {
                     SlideTransition(navigator)
                 }
@@ -115,15 +103,36 @@ class MainScreen : Screen {
 
     @Composable
     fun PartnerUi(
-        onAction: (MainScreenAction) -> Unit // <-- Принимаем лямбду
+        onAction: (MainScreenAction) -> Unit
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        // Экран-заглушка для Партнера (так как управление в Вебе)
+        Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("Режим Партнера (Дашборд)")
+                Icon(
+                    imageVector = Icons.Default.Web,
+                    contentDescription = null,
+                    modifier = Modifier.size(64.dp),
+                    tint = MaterialTheme.colorScheme.primary
+                )
                 Spacer(modifier = Modifier.height(16.dp))
 
+                Text(
+                    text = stringResource(Res.string.workspace_partner_title),
+                    style = MaterialTheme.typography.headlineMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = stringResource(Res.string.workspace_partner_stub),
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(modifier = Modifier.height(32.dp))
+
                 Button(onClick = { onAction(MainScreenAction.LogoutToClientMode) }) {
-                    Text("Выйти в режим клиента")
+                    Text(stringResource(Res.string.btn_exit_mode))
                 }
             }
         }

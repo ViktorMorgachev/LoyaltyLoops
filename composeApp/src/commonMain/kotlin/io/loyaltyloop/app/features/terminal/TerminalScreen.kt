@@ -16,6 +16,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.terminal.result.TerminalResultScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
+import io.loyaltyloop.app.ui.components.LoyaltyScaffold // <-- Наш скаффолд
+import io.loyaltyloop.app.ui.components.show // <-- Наш экстеншн
+import kotlinx.coroutines.launch
+import loyaltyloop.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 class TerminalScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -29,8 +34,8 @@ class TerminalScreen : Screen {
         LaunchedEffect(Unit) {
             viewModel.events.collect { event ->
                 when(event) {
-                    is TerminalScreenModel.Event.ShowError -> {
-                        snackbarHostState.showSnackbar(event.message)
+                    is TerminalScreenModel.Event.ShowMessage -> {
+                        launch { snackbarHostState.show(event.message, event.type) }
                     }
                     is TerminalScreenModel.Event.NavigateToResult -> {
                         navigator.push(TerminalResultScreen(event.scanData))
@@ -39,61 +44,86 @@ class TerminalScreen : Screen {
             }
         }
 
-        Scaffold(
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { padding ->
-            Column(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+        TerminalContent(
+            state = state,
+            snackbarHostState = snackbarHostState,
+            onAction = viewModel::onAction
+        )
+    }
+}
+
+@Composable
+fun TerminalContent(
+    state: TerminalScreenModel.State,
+    snackbarHostState: SnackbarHostState,
+    onAction: (TerminalScreenModel.Action) -> Unit
+) {
+    LoyaltyScaffold(
+        snackbarHostState = snackbarHostState,
+        // TopBar можно не рисовать, если он уже есть в MainScreen.CashierUi
+        // Но если мы хотим быть самодостаточными, можно добавить заголовок здесь.
+        // В данном случае мы рисуем его внутри контента или полагаемся на родителя.
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            // --- БЛОК КАМЕРЫ (Заглушка) ---
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .background(Color.Black, shape = MaterialTheme.shapes.medium),
+                contentAlignment = Alignment.Center
             ) {
-                // --- БЛОК КАМЕРЫ (Заглушка) ---
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .background(Color.Black, shape = MaterialTheme.shapes.medium),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            Icons.Default.QrCodeScanner, 
-                            contentDescription = null, 
-                            tint = Color.White,
-                            modifier = Modifier.size(64.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text("Наведите камеру на QR-код", color = Color.White)
-                    }
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(
+                        Icons.Default.QrCodeScanner,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(64.dp)
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = stringResource(Res.string.terminal_camera_hint),
+                        color = Color.White
+                    )
                 }
-                
-                Spacer(modifier = Modifier.height(24.dp))
-                
-                // --- БЛОК РУЧНОГО ВВОДА (Для тестов) ---
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Режим отладки (Эмулятор)", style = MaterialTheme.typography.labelMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        OutlinedTextField(
-                            value = state.manualInput,
-                            onValueChange = viewModel::onManualInputChanged,
-                            label = { Text("Вставьте строку QR") },
-                            modifier = Modifier.fillMaxWidth(),
-                            maxLines = 3
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        
-                        LoyaltyButton(
-                            text = "Имитировать сканирование",
-                            onClick = { viewModel.onScan(state.manualInput) },
-                            isLoading = state.isLoading,
-                            enabled = state.manualInput.isNotBlank(),
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // --- БЛОК РУЧНОГО ВВОДА (Для тестов) ---
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = stringResource(Res.string.terminal_debug_title),
+                        style = MaterialTheme.typography.labelMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = state.manualInput,
+                        onValueChange = { onAction(TerminalScreenModel.Action.OnManualInputChanged(it)) },
+                        label = { Text(stringResource(Res.string.terminal_input_label)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        maxLines = 3
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    LoyaltyButton(
+                        text = stringResource(Res.string.terminal_btn_scan),
+                        onClick = { onAction(TerminalScreenModel.Action.OnScanClicked) },
+                        isLoading = state.isLoading,
+                        enabled = state.manualInput.isNotBlank(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }

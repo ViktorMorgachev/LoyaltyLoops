@@ -3,6 +3,7 @@ package io.loyaltyloop.app.features.wallet
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.*
@@ -11,15 +12,20 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
 import cafe.adriel.voyager.koin.koinScreenModel
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.LoyaltyCardItem
+import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.QrCard
+import io.loyaltyloop.app.ui.components.show
+import kotlinx.coroutines.launch
+import loyaltyloop.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.stringResource
 
 class WalletScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -28,28 +34,44 @@ class WalletScreen : Screen {
         val viewModel = koinScreenModel<WalletScreenModel>()
         val state by viewModel.state.collectAsState()
 
-        // Состояние для BottomSheet
         var showQrSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState()
+
+        // Снекбар для ошибок
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        // Показываем ошибку, если есть
+        LaunchedEffect(Unit) {
+            viewModel.events.collect { event ->
+                when(event) {
+                    is WalletScreenModel.Event.ShowMessage -> {
+                        launch { snackbarHostState.show(event.message, event.type) }
+                    }
+                }
+            }
+        }
 
         // Pull To Refresh
         val pullRefreshState = rememberPullToRefreshState()
         if (pullRefreshState.isRefreshing) {
-            LaunchedEffect(Unit) { viewModel.loadCards() }
+            LaunchedEffect(Unit) { viewModel.onAction(WalletScreenModel.Action.OnRefresh) }
         }
         LaunchedEffect(state.isLoading) {
             if (!state.isLoading) pullRefreshState.endRefresh()
         }
 
-        Scaffold(
+        LoyaltyScaffold(
+            snackbarHostState = snackbarHostState,
             containerColor = MaterialTheme.colorScheme.background,
-            // ПЛАВАЮЩАЯ КНОПКА (FAB) ДЛЯ QR
             floatingActionButton = {
                 if (!state.isLoading && state.cards.isNotEmpty()) {
                     ExtendedFloatingActionButton(
-                        onClick = { showQrSheet = true },
-                        icon = { Icon(Icons.Default.QrCode, "QR") },
-                        text = { Text("Мой код") },
+                        onClick = {
+                            viewModel.onAction(WalletScreenModel.Action.OnQrCodeClicked)
+                            showQrSheet = true
+                        },
+                        icon = { Icon(Icons.Default.QrCode, null) },
+                        text = { Text(stringResource(Res.string.wallet_my_qr)) },
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary
                     )
@@ -63,60 +85,55 @@ class WalletScreen : Screen {
                     .nestedScroll(pullRefreshState.nestedScrollConnection)
             ) {
                 if (state.cards.isEmpty() && !state.isLoading) {
-                    // --- EMPTY STATE ---
                     EmptyWalletView(onShowQrClicked = { showQrSheet = true })
                 } else {
-                    // --- СПИСОК КАРТ ---
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(16.dp)
                     ) {
                         item {
                             Text(
-                                "Мои карты",
+                                text = stringResource(Res.string.wallet_my_cards),
                                 style = MaterialTheme.typography.headlineMedium,
                                 modifier = Modifier.padding(bottom = 16.dp)
                             )
                         }
                         items(state.cards) { card ->
-                            LoyaltyCardItem(card) {
-                                // TODO: Детали карты
-                            }
+                            LoyaltyCardItem(card) { /* Детали */ }
                             Spacer(modifier = Modifier.height(16.dp))
                         }
-                        // Отступ снизу под FAB
                         item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }
 
                 PullToRefreshContainer(
                     state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter)
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    contentColor = MaterialTheme.colorScheme.primary
                 )
             }
 
-            // --- BOTTOM SHEET С QR-КОДОМ ---
             if (showQrSheet) {
                 ModalBottomSheet(
                     onDismissRequest = { showQrSheet = false },
                     sheetState = sheetState,
                     containerColor = MaterialTheme.colorScheme.surface
                 ) {
-                    // Контент шторки
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(bottom = 48.dp) // Отступ для safe area
+                            .padding(bottom = 48.dp)
                             .padding(horizontal = 16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            "Покажите кассиру",
+                            text = stringResource(Res.string.qr_sheet_title),
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.padding(bottom = 24.dp)
                         )
 
-                        // Наша существующая карточка
+                        // Вызов компонента
                         QrCard(
                             qrContent = state.qrContent,
                             secondsRemaining = state.secondsRemaining
@@ -133,9 +150,7 @@ class WalletScreen : Screen {
 @Composable
 fun EmptyWalletView(onShowQrClicked: () -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
+        modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
@@ -147,13 +162,13 @@ fun EmptyWalletView(onShowQrClicked: () -> Unit) {
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(
-            text = "У вас пока нет карт лояльности",
+            text = stringResource(Res.string.wallet_empty_title),
             style = MaterialTheme.typography.headlineSmall,
             textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Покажите свой QR-код кассиру при первой покупке, чтобы получить карту.",
+            text = stringResource(Res.string.wallet_empty_desc),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
@@ -161,11 +176,9 @@ fun EmptyWalletView(onShowQrClicked: () -> Unit) {
         Spacer(modifier = Modifier.height(32.dp))
 
         LoyaltyButton(
-            text = "Показать мой QR",
+            text = stringResource(Res.string.wallet_show_qr_btn),
             onClick = onShowQrClicked,
             modifier = Modifier.fillMaxWidth()
         )
     }
 }
-
-// QrCard остается без изменений (в том же файле или отдельно)

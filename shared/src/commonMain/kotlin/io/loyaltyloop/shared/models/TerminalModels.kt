@@ -25,3 +25,9 @@ data class ScanQrResponse(
 
     val isNewCard: Boolean
 )
+
+@Serializable
+data class ProcessTransactionRequest(
+    val cardId: String,
+    val amount: Double? = null // Если null, значит это VISIT (+1)
+)

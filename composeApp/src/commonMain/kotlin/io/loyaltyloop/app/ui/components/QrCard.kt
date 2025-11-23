@@ -21,8 +21,13 @@ import androidx.compose.ui.unit.dp
 import io.github.alexzhirkevich.qrose.options.QrBallShape
 import io.github.alexzhirkevich.qrose.options.QrFrameShape
 import io.github.alexzhirkevich.qrose.options.QrPixelShape
+import io.github.alexzhirkevich.qrose.options.QrShapes
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
+import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.qr_sec
+import loyaltyloop.composeapp.generated.resources.qr_timer_update
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun QrCard(qrContent: String, secondsRemaining: Int) {
@@ -35,40 +40,41 @@ fun QrCard(qrContent: String, secondsRemaining: Int) {
             modifier = Modifier.padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Рисуем QR
             if (qrContent.isNotEmpty()) {
                 val painter = rememberQrCodePainter(
                     data = qrContent,
-                    shapes = io.github.alexzhirkevich.qrose.options.QrShapes(
+                    shapes = QrShapes(
                         ball = QrBallShape.roundCorners(.25f),
                         frame = QrFrameShape.roundCorners(.25f),
                         darkPixel = QrPixelShape.roundCorners(.5f)
                     )
                 )
-
                 androidx.compose.foundation.Image(
                     painter = painter,
-                    contentDescription = "QR Code",
+                    contentDescription = "QR",
                     modifier = Modifier.size(250.dp)
                 )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Таймер жизни кода
+            // Используем ресурс без форматирования (как договаривались) + склейка
+            val timerText = "${stringResource(Res.string.qr_timer_update)} $secondsRemaining ${stringResource(Res.string.qr_sec)}"
+
             Text(
-                text = "Обновится через $secondsRemaining сек",
+                text = timerText,
                 style = MaterialTheme.typography.labelLarge,
                 color = if (secondsRemaining < 5) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary
             )
 
-            // Полоска прогресса таймера
+            Spacer(modifier = Modifier.height(8.dp))
+
             LinearProgressIndicator(
                 progress = { secondsRemaining / 30f },
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(4.dp),
+                modifier = Modifier.fillMaxWidth().height(4.dp),
                 color = MaterialTheme.colorScheme.primary,
                 trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+                strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
             )
         }
     }

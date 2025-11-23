@@ -12,6 +12,7 @@
     <string name="auth_resend_timer">Отправить повторно через</string>
     <string name="profile_loading">Загрузка...</string>
     <string name="profile_error_load">Ошибка загрузки</string>
+    <string name="auth_success">Успешный вход</string>
 
     <!-- Ошибки -->
     <string name="error_network">Нет подключения к интернету</string>
@@ -21,6 +22,12 @@
     <string name="err_invalid_email">Некорректный формат Email</string>
     <string name="error_profile_loading">Не удалось загрузить профиль</string>
     <string name="btn_retry">Повторить</string>
+
+    <!-- Join Company Screen -->
+    <string name="join_title">Стать сотрудником</string>
+    <string name="join_description">Введите код приглашения, который вам дал владелец заведения.</string>
+    <string name="join_code_label">Инвайт-код</string>
+    <string name="join_btn_submit">Присоединиться</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Давайте знакомиться!</string>
@@ -32,6 +39,7 @@
     <string name="onboarding_why_info">Ваше имя будет отображаться у кассира для приветствия и начисления бонусов.</string>
     <string name="err_field_required">Это поле обязательно</string>
     <string name="err_invalid_phone_format">Неверный формат номера</string>
+    <string name="onboarding_success">Профиль сохранен!</string>
 
     <!-- Role Selection -->
     <string name="role_select_title">Выберите режим</string>
@@ -41,6 +49,12 @@
     <string name="role_partner_desc">Хочу запустить систему лояльности</string>
     <string name="role_cashier_title">Я Сотрудник</string>
     <string name="role_cashier_desc">Хочу работать с терминалом</string>
+
+    <string name="workspace_cashier_title">Рабочее место</string>
+    <string name="workspace_partner_title">Кабинет Владельца</string>
+    <string name="workspace_partner_stub">Полное управление бизнесом доступно в веб-версии.</string>
+    <string name="btn_exit_mode">Выйти из режима</string>
+    <string name="btn_exit_short">Выйти</string>
 
     <!-- Profile Screen -->
     <string name="profile_workspaces_title">Мои рабочие места</string>
@@ -67,5 +81,64 @@
     <!-- Profile Sections -->
     <string name="profile_header_workspaces">Мои рабочие места</string>
     <string name="profile_header_actions">Возможности</string>
+
+    <!-- Bottom Navigation -->
+    <string name="tab_wallet">Кошелек</string>
+    <string name="tab_locations">Места</string>
+    <string name="tab_profile">Профиль</string>
+
+    <!-- Wallet Screen -->
+    <string name="wallet_title">Кошелек</string>
+    <string name="wallet_my_cards">Мои карты</string>
+    <string name="wallet_my_qr">Мой код</string>
+    <string name="wallet_empty_title">У вас пока нет карт лояльности</string>
+    <string name="wallet_empty_desc">Покажите свой QR-код кассиру при первой покупке, чтобы получить карту.</string>
+    <string name="wallet_show_qr_btn">Показать мой QR</string>
+
+    <!-- Terminal Screen -->
+    <string name="terminal_title">Терминал</string>
+    <string name="terminal_camera_hint">Наведите камеру на QR-код</string>
+    <string name="terminal_debug_title">Ручной ввод (Тест)</string>
+    <string name="terminal_input_label">QR строка</string>
+    <string name="terminal_btn_scan">Обработать</string>
+    <string name="error_no_workspace">Ошибка: Нет рабочей смены (контекст потерян)</string>
+    <string name="terminal_scan_success">Клиент найден!</string>
+
+    <!-- Terminal Scanner -->
+    <string name="terminal_camera_placeholder">Сканер (Заглушка)</string>
+    <string name="terminal_camera_instruction">Наведите камеру на QR-код</string>
+    <string name="terminal_debug_card_title">Режим отладки (Эмулятор)</string>
+    <string name="terminal_input_placeholder">Вставьте строку QR</string>
+    <string name="terminal_btn_simulate">Имитировать сканирование</string>
+    <string name="terminal_client_found_fmt">Клиент найден: %s</string>
+
+    <!-- Terminal Result -->
+    <string name="term_res_title">Результат</string>
+    <string name="term_res_client_default">Клиент</string>
+    <string name="term_res_new_client_chip">Новый клиент! 🎉</string>
+
+    <!-- Visits Strategy -->
+    <string name="term_res_visit_action_prefix">АКЦИЯ: </string>
+    <string name="term_res_visit_action_suffix">-й товар в подарок</string>
+    <string name="term_res_next_free">СЛЕДУЮЩИЙ ВИЗИТ - ПРИЗОВОЙ! 🎁</string>
+    <string name="term_res_btn_add_visit">Засчитать визит (+1)</string>
+
+    <!-- Tiered Strategy -->
+    <string name="term_res_tiered_title">Накопительная система</string>
+    <string name="term_res_amount_label">Сумма чека</string>
+    <string name="term_res_calc_prefix">Будет начислено:</string>
+    <string name="term_res_points_suffix">Б</string>
+    <string name="term_res_balance_prefix">Текущий баланс:</string>
+    <string name="term_res_btn_add_points">Начислить бонусы</string>
+
+    <!-- Messages -->
+    <string name="term_msg_success">Транзакция успешна!</string>
+    <string name="term_err_no_workspace">Ошибка: Нет рабочей смены</string>
+    <string name="term_err_scan_generic">Ошибка сканирования</string>
+
+    <!-- QR Sheet -->
+    <string name="qr_sheet_title">Покажите кассиру</string>
+    <string name="qr_timer_update">Обновится через</string>
+    <string name="qr_sec">сек</string>
 
 </resources>

@@ -9,23 +9,18 @@ import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.shared.models.CashierJobEntity
 import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
-import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.JoinType
-import org.jetbrains.exposed.sql.Op
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SqlExpressionBuilder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
@@ -361,19 +356,3 @@ class UserRepository {
         RefreshTokensTable.deleteWhere { RefreshTokensTable.userId eq userId }
     }
 }
-
-@Serializable
-data class PartnerEntity(
-    val id: String,
-    val name: String,
-    val hasPin: Boolean,
-    val status: PartnerStatus,
-    val logoUrl: String?,
-    val color: String
-)
-
-data class CashierJobEntity(
-    val tradingPointId: String,
-    val pointName: String,
-    val businessName: String
-)

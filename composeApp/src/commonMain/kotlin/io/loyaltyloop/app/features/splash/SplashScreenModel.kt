@@ -4,19 +4,24 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.data.network.* // Импортируем наши исключения
+import io.loyaltyloop.app.data.network.NetworkException
+import io.loyaltyloop.app.data.network.ServerException
+import io.loyaltyloop.app.data.network.UnauthorizedException
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.utils.LogType
+import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.write
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
-import loyaltyloop.composeapp.generated.resources.* // Импорт ресурсов
-import org.jetbrains.compose.resources.StringResource
-import co.touchlab.kermit.Logger as KermitLogger
+import loyaltyloop.composeapp.generated.resources.error_network
+import loyaltyloop.composeapp.generated.resources.error_server
+import loyaltyloop.composeapp.generated.resources.error_unknown
 
 class SplashScreenModel(
     private val repository: AuthRepository,
@@ -24,79 +29,91 @@ class SplashScreenModel(
     private val sessionManager: SessionManager,
 ) : ScreenModel {
 
-     val log = KermitLogger.withTag("SplashScreenModel")
+    // --- КОНТРАКТ ---
+    data class State(
+        val isLoading: Boolean = true,
+        val error: UiText? = null // Если ошибка есть - показываем кнопку Retry
+    )
 
-    sealed class SplashState {
-        data object Loading : SplashState()
-        data object NavigateToLogin : SplashState()
-        data object NavigateToHome : SplashState()
-        data object NavigateToOnboarding : SplashState()
-        data object NavigateToRoleSelection : SplashState()
-        data class Error(val messageRes: StringResource) : SplashState()
+    sealed interface Action {
+        data object OnRetryClicked : Action
     }
 
-    private val _state = MutableStateFlow<SplashState>(SplashState.Loading)
+    sealed interface Event {
+        data object NavigateToLogin : Event
+        data object NavigateToHome : Event
+        data object NavigateToOnboarding : Event
+    }
+    // ----------------
+
+    private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
 
-    fun checkSession() {
+    private val _events = Channel<Event>()
+    val events = _events.receiveAsFlow()
+
+    init {
+        checkSession()
+    }
+
+    fun onAction(action: Action) {
+        when (action) {
+            is Action.OnRetryClicked -> checkSession()
+        }
+    }
+
+    private fun checkSession() {
         screenModelScope.launch {
-            _state.value = SplashState.Loading
+            _state.value = State(isLoading = true, error = null)
+
+            // Минимальная задержка, чтобы логотип не мигал
             delay(1000)
 
             val hasToken = tokenStorage.getAccessToken() != null
-
-            // Логируем отладку
-
             log.write("Check Session: Token present? $hasToken", LogType.Debug)
 
             if (!hasToken) {
                 log.write("No token found -> Navigate to Login")
-                _state.value = SplashState.NavigateToLogin
+                _events.send(Event.NavigateToLogin)
                 return@launch
             }
 
-            val result = repository.getProfile()
+            repository.getProfile()
+                .onSuccess { profile ->
+                    // Обновляем сессию (воркспейсы)
+                    sessionManager.updateWorkspaces(profile.workspaces)
 
-            result.onSuccess { profile->
-
-                sessionManager.updateWorkspaces(profile.workspaces)
-                // 1. Если нет имени -> Он не закончил знакомство
-                if (profile.firstName.isNullOrBlank()) {
-                    _state.value = SplashState.NavigateToOnboarding
-                    return@onSuccess
+                    if (profile.firstName.isNullOrBlank()) {
+                        log.write("Profile incomplete -> Go to Onboarding")
+                        _events.send(Event.NavigateToOnboarding)
+                    } else {
+                        log.write("Session valid -> Go to Home")
+                        _events.send(Event.NavigateToHome)
+                    }
                 }
-
-                if (profile.firstName.isNullOrBlank()) {
-                    log.write("Profile incomplete -> Go to Onboarding")
-                    _state.value = SplashState.NavigateToOnboarding
-                } else {
-                    // Идем в главное меню, а оно само решит, какой UI показать (Клиент/Кассир)
-                    _state.value = SplashState.NavigateToHome
-                    log.write("Session valid -> Go to Home")
+                .onFailure { error ->
+                    log.write("Profile check failed", LogType.Error, error)
+                    handleError(error)
                 }
-            }.onFailure { error ->
-                // Логируем ошибку
-                log.write("Profile check failed", LogType.Error, error)
-                handleError(error)
-            }
         }
     }
 
-    private fun handleError(error: Throwable) {
+    private suspend fun handleError(error: Throwable) {
         when (error) {
             is UnauthorizedException -> {
-                // Токен умер -> Чистим и на Логин
+                // Токен протух окончательно -> Логин
                 tokenStorage.clear()
-                _state.value = SplashState.NavigateToLogin
-            }
-            is NetworkException -> {
-                _state.value = SplashState.Error(Res.string.error_network)
-            }
-            is ServerException -> {
-                _state.value = SplashState.Error(Res.string.error_server)
+                _events.send(Event.NavigateToLogin)
             }
             else -> {
-                _state.value = SplashState.Error(Res.string.error_unknown)
+                // Сетевая или серверная ошибка -> Показываем UI ошибки
+                val errorText = when (error) {
+                    is NetworkException -> UiText.Resource(Res.string.error_network)
+                    is ServerException -> UiText.Resource(Res.string.error_server)
+                    else -> UiText.Resource(Res.string.error_unknown)
+                }
+
+                _state.value = State(isLoading = false, error = errorText)
             }
         }
     }

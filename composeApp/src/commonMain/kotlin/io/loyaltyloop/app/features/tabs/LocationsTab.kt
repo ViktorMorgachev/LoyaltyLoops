@@ -12,21 +12,32 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.tab_locations
+import org.jetbrains.compose.resources.stringResource
 
 object LocationsTab : Tab {
+
     override val options: TabOptions
         @Composable
         get() {
-            val title = "Места" // В ресурсы!
-            val icon = rememberVectorPainter(Icons.Default.Place) // Или Store
-            return remember { TabOptions(1u, title, icon) }
+            val title = stringResource(Res.string.tab_locations)
+            val icon = rememberVectorPainter(Icons.Default.Place)
+
+            return remember {
+                TabOptions(
+                    index = 1u,
+                    title = title,
+                    icon = icon
+                )
+            }
         }
 
     @Composable
     override fun Content() {
-        // Тут будет список всех заведений
+        // Пока заглушка, в будущем тут будет LocationsScreen().Content()
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Список заведений")
+            Text(stringResource(Res.string.tab_locations))
         }
     }
 }

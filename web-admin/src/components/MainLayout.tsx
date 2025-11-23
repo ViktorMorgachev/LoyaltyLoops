@@ -8,12 +8,13 @@ import {
   Store as StoreIcon,
   Person as PersonIcon,
   Settings as SettingsIcon,
-  People as PeopleIcon,
-  AdminPanelSettings as AdminIcon
+  AdminPanelSettings as AdminIcon,
+  AddBusiness as AddBusinessIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { useUser } from '../context/UserContext'; // <-- ИСПОЛЬЗУЕМ КОНТЕКСТ
 
 const drawerWidth = 240;
 
@@ -22,15 +23,11 @@ export const MainLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // БЕРЕМ ДАННЫЕ ИЗ КОНТЕКСТА (Они реактивные!)
+  const { isPartner, isSuperAdmin, isNewUser } = useUser();
+
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  // Определяем роль
-  const workspacesStr = localStorage.getItem('workspaces');
-  const workspaces = workspacesStr ? JSON.parse(workspacesStr) : [];
-
-  const isSuperAdmin = workspaces.some((w: any) => w.role === 'PLATFORM_SUPER_ADMIN');
-  const isPartner = workspaces.some((w: any) => w.role === 'PARTNER_ADMIN');
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -50,11 +47,39 @@ export const MainLayout = () => {
   };
 
   const menuItems = [
-    { text: t('menu.profile'), icon: <PersonIcon />, path: '/profile', show: true },
-    { text: t('menu.dashboard'), icon: <StoreIcon />, path: '/dashboard', show: isPartner },
-    { text: 'Settings', icon: <SettingsIcon />, path: '/loyalty-settings', show: isPartner }, // Можно добавить перевод позже
-    { text: 'Staff', icon: <PeopleIcon />, path: '/staff', show: isPartner }, // Можно добавить перевод позже
-    { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners', show: isSuperAdmin },
+    {
+      text: t('menu.profile'),
+      icon: <PersonIcon />,
+      path: '/profile',
+      show: true
+    },
+    // Кнопка "Создать бизнес" видна ТОЛЬКО новичкам
+    {
+      text: t('menu.create_business'), // Убедись, что есть в resources.ts или используй хардкод для теста
+      icon: <AddBusinessIcon />,
+      path: '/partner/onboarding',
+      show: isNewUser
+    },
+    // Кнопки Партнера видны ТОЛЬКО партнерам
+    {
+      text: t('menu.dashboard'),
+      icon: <StoreIcon />,
+      path: '/partner/dashboard',
+      show: isPartner
+    },
+    {
+      text: t('menu.settings'),
+      icon: <SettingsIcon />,
+      path: '/partner/settings',
+      show: isPartner
+    },
+    // Кнопки Админа
+    {
+      text: t('menu.admin_partners'),
+      icon: <AdminIcon />,
+      path: '/admin/partners',
+      show: isSuperAdmin
+    },
   ];
 
   const drawer = (
@@ -67,10 +92,13 @@ export const MainLayout = () => {
       <Divider />
       <List>
         {menuItems.filter(item => item.show).map((item) => (
-          <ListItem key={item.text} disablePadding>
+          <ListItem key={item.path} disablePadding>
             <ListItemButton
               selected={location.pathname === item.path}
-              onClick={() => navigate(item.path)}
+              onClick={() => {
+                  navigate(item.path);
+                  setMobileOpen(false);
+              }}
             >
               <ListItemIcon>{item.icon}</ListItemIcon>
               <ListItemText primary={item.text} />
@@ -84,8 +112,6 @@ export const MainLayout = () => {
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
-
-      {/* ВЕРХНЯЯ ПАНЕЛЬ */}
       <AppBar
         position="fixed"
         sx={{
@@ -111,10 +137,8 @@ export const MainLayout = () => {
              {t('menu.title')}
           </Typography>
 
-          {/* Переключатель языка */}
           <LanguageSwitcher />
 
-          {/* Аватарка и Меню */}
           <IconButton onClick={handleMenuOpen} sx={{ p: 0, ml: 2 }}>
             <Avatar sx={{ bgcolor: 'primary.main' }}>U</Avatar>
           </IconButton>
@@ -139,7 +163,6 @@ export const MainLayout = () => {
         </Toolbar>
       </AppBar>
 
-      {/* БОКОВОЕ МЕНЮ */}
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -168,7 +191,6 @@ export const MainLayout = () => {
         </Drawer>
       </Box>
 
-      {/* КОНТЕНТ СТРАНИЦЫ */}
       <Box
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` }, minHeight: '100vh', bgcolor: '#f5f5f5' }}

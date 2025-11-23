@@ -14,6 +14,22 @@ data class CreatePartnerRequest(
     val countryCode: String // "KG"
 )
 
+@Serializable
+data class UpdatePartnerRequest(
+    val businessName: String,
+    val color: String,   // HEX цвет (#FF0000)
+    val logoUrl: String? // Пока просто ссылка текстом
+)
+
+@Serializable
+data class PartnerDto(
+    val id: String,
+    val businessName: String,
+    val countryCode: String,
+    val status: PartnerStatus,
+    val color: String,
+    val logoUrl: String?
+)
 
 @Serializable
 data class ChangePartnerStatusRequest(
@@ -26,4 +42,11 @@ data class ChangePartnerStatusRequest(
 @Serializable
 data class JoinTradingPointRequest(
     val inviteCode: String
+)
+
+@Serializable
+data class CashierJobEntity(
+    val tradingPointId: String,
+    val pointName: String,
+    val businessName: String
 )

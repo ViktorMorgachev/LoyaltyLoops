@@ -8,12 +8,16 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import io.loyaltyloop.app.features.wallet.WalletScreen
+import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.tab_wallet
+import org.jetbrains.compose.resources.stringResource
 
 object WalletTab : Tab {
+
     override val options: TabOptions
         @Composable
         get() {
-            val title = "Кошелек"
+            val title = stringResource(Res.string.tab_wallet)
             val icon = rememberVectorPainter(Icons.Default.QrCode)
 
             return remember {
@@ -27,8 +31,7 @@ object WalletTab : Tab {
 
     @Composable
     override fun Content() {
-        // Внутри таба показываем наш WalletScreen
-        // (Voyager позволяет вкладывать экраны, но для простоты вызовем контент напрямую или через Navigator)
-        WalletScreen().Content() 
+        // Делегируем отрисовку экрану
+        WalletScreen().Content()
     }
 }

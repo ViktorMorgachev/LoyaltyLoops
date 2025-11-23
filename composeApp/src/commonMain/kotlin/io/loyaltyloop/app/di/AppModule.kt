@@ -43,7 +43,7 @@ val appModule = module {
     // ViewModels
     factory { SplashScreenModel(get(), get(), get()) }
     factory { LoginScreenModel(get(),get(), get()) }
-    factory { OnboardingScreenModel(get()) }
+    factory { OnboardingScreenModel(get(), get()) }
     factory { RoleSelectionScreenModel(get()) }
     factory { WalletScreenModel(get(),get()) }
     factory { ProfileScreenModel(get(), get(), get()) }

@@ -8,6 +8,7 @@ import io.ktor.http.contentType
 import io.loyaltyloop.app.data.network.safeApiCall
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
+import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.shared.models.ScanQrResponse
 
@@ -30,6 +31,15 @@ class PartnerRepository(private val client: HttpClient) {
                 setBody(request)
             }
         }
+    }
+
+    suspend fun processTransaction(cardId: String, amount: Double?): Result<String> {
+        return safeApiCall<ApiMessage> {
+            client.post("/terminal/transaction") {
+                contentType(ContentType.Application.Json)
+                setBody(ProcessTransactionRequest(cardId, amount))
+            }
+        }.map { it.message }
     }
     
     // В будущем сюда добавим методы:
