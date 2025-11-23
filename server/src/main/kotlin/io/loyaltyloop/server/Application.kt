@@ -17,6 +17,7 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.statuspages.StatusPages
+import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.json.Json
@@ -172,6 +173,8 @@ fun Application.module() {
     }
 
     routing {
+
+        swaggerUI(path = "swagger", swaggerFile = "openapi.yaml")
         get("/health") {
             // 1. Делаем реальный пинг
             val isDbAlive = DatabaseFactory.ping()

@@ -1,0 +1,30 @@
+openapi: "3.0.3"
+info:
+  title: "LoyaltyLoop API"
+  description: "API для системы лояльности"
+  version: "1.0.0"
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /health:
+    get:
+      summary: "Проверка здоровья"
+      responses:
+        "200":
+          description: "OK"
+  /auth/login:
+    post:
+      summary: "Вход пользователя"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+                code:
+                  type: string
+      responses:
+        "200":
+          description: "Токены получены"
