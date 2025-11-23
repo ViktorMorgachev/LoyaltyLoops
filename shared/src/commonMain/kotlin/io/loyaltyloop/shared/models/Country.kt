@@ -4,16 +4,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class Country(
-    val code: String,
+    val code: CountryCode,
     val nameRu: String,
     val phonePrefix: String,
     val mask: String,
     val flagEmoji: String
 ) {
-    KYRGYZSTAN("KG", "Кыргызстан", "+996", "### ### ###", "🇰🇬"),
-    KAZAKHSTAN("KZ", "Казахстан", "+7", "### ### ## ##", "🇰🇿"),
-    UZBEKISTAN("UZ", "Узбекистан", "+998", "## ### ## ##", "🇺🇿"),
-    BELARUS("BY", "Беларусь", "+375", "## ### ## ##", "🇧🇾");
+    KYRGYZSTAN(CountryCode.KG, "Кыргызстан", "+996", "### ### ###", "🇰🇬"),
+    KAZAKHSTAN(CountryCode.KZ, "Казахстан", "+7", "### ### ## ##", "🇰🇿"),
+    UZBEKISTAN(CountryCode.UZ, "Узбекистан", "+998", "## ### ## ##", "🇺🇿"),
+    BELARUS(CountryCode.BY, "Беларусь", "+375", "## ### ## ##", "🇧🇾");
 
     // Функция для получения чистого номера (без пробелов и скобок)
     fun getFullNumber(rawInput: String): String {
@@ -39,5 +39,9 @@ enum class Country(
     companion object {
         fun default() = KYRGYZSTAN
     }
+}
+
+enum class CountryCode{
+    KG, KZ, UZ, BY
 }
 

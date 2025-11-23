@@ -4,16 +4,18 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.data.network.ClientException
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
+import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.UserWorkspace
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,8 +23,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
-import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
 import loyaltyloop.composeapp.generated.resources.profile_error_load
 import loyaltyloop.composeapp.generated.resources.profile_loading
 
@@ -62,9 +62,6 @@ class ProfileScreenModel(
     private val _events = Channel<Event>()
     val events = _events.receiveAsFlow()
 
-    init {
-        loadProfile()
-    }
 
     fun onAction(action: Action) {
         when (action) {
@@ -104,19 +101,17 @@ class ProfileScreenModel(
                     )
                     sessionManager.updateWorkspaces(profile.workspaces)
                 }
-                .onFailure { error ->
-                    log.write("Failed to load profile", LogType.Error, error)
-
-                    val errorText = when (error) {
-                        is ClientException -> UiText.DynamicString(error.errorMessage)
-                        is NetworkException -> UiText.Resource(Res.string.error_network)
-                        is ServerException -> UiText.Resource(Res.string.error_server)
-                        else -> UiText.Resource(Res.string.error_unknown)
-                    }
-
-                    // Шлем ошибку в UI
-                    _events.send(Event.ShowMessage(errorText, SnackbarType.Error))
-
+                .onFailure { exception ->
+                    log.write("Failed to load profile", LogType.Error, exception)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        name = UiText.Resource(Res.string.profile_error_load)
+                    )
+                }
+                .onError { code, _ ->
+                    log.write("Failed to load profile: $code", LogType.Error)
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
                     _state.value = _state.value.copy(
                         isLoading = false,
                         name = UiText.Resource(Res.string.profile_error_load)

@@ -16,10 +16,18 @@ export const CreateBusinessPage = () => {
   const [name, setName] = useState('');
   const [color, setColor] = useState('#4F46E5');
   const [logo, setLogo] = useState('');
+  const [pin, setPin] = useState('');
+  const [pinConfirm, setPinConfirm] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    if (!name) return showError(t('dashboard.modal_biz_name') + " is required");
+    if (!name) return showError(t('dashboard.modal_biz_name_required'));
+    if (pin.length < 4 || !/^\d+$/.test(pin)) {
+        return showError(t('dashboard.pin_length_error'));
+    }
+    if (pin !== pinConfirm) {
+        return showError(t('dashboard.pin_confirm_error'));
+    }
 
     setLoading(true);
     try {
@@ -29,6 +37,7 @@ export const CreateBusinessPage = () => {
       await api.post('/partners/create', {
         businessName: name,
         countryCode: "KG",
+        ownerPin: pin
         // color: color, // <-- Добавить в DTO на сервере
         // logoUrl: logo // <-- Добавить в DTO на сервере
       });
@@ -76,6 +85,27 @@ export const CreateBusinessPage = () => {
           fullWidth margin="normal"
           value={logo} onChange={(e) => setLogo(e.target.value)}
           placeholder="https://..."
+        />
+
+        <TextField
+          label={t('dashboard.pin_label')}
+          type="password"
+          fullWidth
+          margin="normal"
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
+          inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
+          helperText={t('dashboard.pin_hint')}
+        />
+
+        <TextField
+          label={t('dashboard.pin_confirm_label')}
+          type="password"
+          fullWidth
+          margin="normal"
+          value={pinConfirm}
+          onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
+          inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
         />
 
         <Button

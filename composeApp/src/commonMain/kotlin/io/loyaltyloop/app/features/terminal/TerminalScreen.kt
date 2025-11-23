@@ -16,8 +16,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.terminal.result.TerminalResultScreen
 import io.loyaltyloop.app.ui.components.LoyaltyButton
-import io.loyaltyloop.app.ui.components.LoyaltyScaffold // <-- Наш скаффолд
-import io.loyaltyloop.app.ui.components.show // <-- Наш экстеншн
+import io.loyaltyloop.app.ui.components.LoyaltyScaffold
+import io.loyaltyloop.app.ui.components.show
+import io.loyaltyloop.shared.models.TransactionStrategy
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -38,7 +39,7 @@ class TerminalScreen : Screen {
                         launch { snackbarHostState.show(event.message, event.type) }
                     }
                     is TerminalScreenModel.Event.NavigateToResult -> {
-                        navigator.push(TerminalResultScreen(event.scanData))
+                        navigator.push(TerminalResultScreen(event.scanData, event.tradingPointId, event.strategy))
                     }
                 }
             }
@@ -58,11 +59,26 @@ fun TerminalContent(
     snackbarHostState: SnackbarHostState,
     onAction: (TerminalScreenModel.Action) -> Unit
 ) {
+    if (state.showHybridDialog) {
+        AlertDialog(
+            onDismissRequest = { /* Prevent dismiss to force choice */ },
+            title = { Text(stringResource(Res.string.hybrid_dialog_title)) },
+            text = { Text(stringResource(Res.string.hybrid_dialog_text)) },
+            confirmButton = {
+                Button(onClick = { onAction(TerminalScreenModel.Action.OnHybridStrategySelected(TransactionStrategy.CHARGE)) }) {
+                    Text(stringResource(Res.string.hybrid_action_bonus))
+                }
+            },
+            dismissButton = {
+                Button(onClick = { onAction(TerminalScreenModel.Action.OnHybridStrategySelected(TransactionStrategy.VISIT)) }) {
+                    Text(stringResource(Res.string.hybrid_action_visit))
+                }
+            }
+        )
+    }
+
     LoyaltyScaffold(
         snackbarHostState = snackbarHostState,
-        // TopBar можно не рисовать, если он уже есть в MainScreen.CashierUi
-        // Но если мы хотим быть самодостаточными, можно добавить заголовок здесь.
-        // В данном случае мы рисуем его внутри контента или полагаемся на родителя.
     ) { padding ->
         Column(
             modifier = Modifier
@@ -71,7 +87,7 @@ fun TerminalContent(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // --- БЛОК КАМЕРЫ (Заглушка) ---
+            // --- CAMERA PLACEHOLDER ---
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -96,7 +112,7 @@ fun TerminalContent(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- БЛОК РУЧНОГО ВВОДА (Для тестов) ---
+            // --- MANUAL INPUT (DEBUG) ---
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)

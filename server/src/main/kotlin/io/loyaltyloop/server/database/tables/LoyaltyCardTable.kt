@@ -28,5 +28,12 @@ object LoyaltyCardTable : Table("loyalty_cards") {
     // Блокировка конкретно в этом заведении
     val isBlocked = bool("is_blocked").default(false)
 
+    // Дата последней активности (для сгорания бонусов)
+    val lastActivityAt = long("last_activity_at").default(System.currentTimeMillis())
+
     override val primaryKey = PrimaryKey(id)
+
+    init {
+        uniqueIndex("uk_user_partner", userId, partnerId)
+    }
 }

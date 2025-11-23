@@ -3,19 +3,29 @@ import { CssBaseline } from '@mui/material';
 
 // Страницы
 import { LoginPage } from './pages/LoginPage';
-import { DashboardPage } from './pages/DashboardPage'; // Диспетчер
+import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { AboutPage } from './pages/AboutPage';
+import { JoinPlatformManagerPage } from './pages/JoinPlatformManagerPage';
+import { JoinPartnerManagerPage } from './pages/JoinPartnerManagerPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 
 // Партнер
 import { PartnerDashboardPage } from './pages/partner/PartnerDashboardPage';
+import { PointsPage } from './pages/partner/PointsPage';
+import { PointDetailsPage } from './pages/partner/PointDetailsPage';
 import { CreateBusinessPage } from './pages/partner/CreateBusinessPage';
-import { BusinessSettingsPage } from './pages/partner/BusinessSettingsPage'; // <-- Добавил
+import { BusinessSettingsPage } from './pages/partner/BusinessSettingsPage';
+import { TransactionsPage } from './pages/partner/TransactionsPage';
+import { PartnerStaffPage } from './pages/partner/PartnerStaffPage'; // NEW
 
 // Админ
 import { AllPartnersPage } from './pages/admin/AllPartnersPage';
+import { PartnerDetailsAdminPage } from './pages/admin/PartnerDetailsAdminPage';
 
 // Лейаут
 import { MainLayout } from './components/MainLayout';
+import { SelectRolePage } from './pages/SelectRolePage';
 
 function App() {
   return (
@@ -25,23 +35,33 @@ function App() {
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/profile" />} />
 
           {/* Внутри Лейаута */}
           <Route element={<MainLayout />}>
+            <Route path="/select-role" element={<SelectRolePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/join/platform-manager" element={<JoinPlatformManagerPage />} />
+            <Route path="/join/partner" element={<JoinPartnerManagerPage />} />
 
             {/* Партнер */}
             <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />
+            <Route path="/partner/points" element={<PointsPage />} />
+            <Route path="/partner/points/:id" element={<PointDetailsPage />} />
+            <Route path="/partner/transactions" element={<TransactionsPage />} />
             <Route path="/partner/onboarding" element={<CreateBusinessPage />} />
             <Route path="/partner/settings" element={<BusinessSettingsPage />} />
+            <Route path="/partner/staff" element={<PartnerStaffPage />} />
 
             {/* Супер-Админ */}
             <Route path="/admin/partners" element={<AllPartnersPage />} />
+            <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
           </Route>
 
           {/* Фоллбэк */}
-          <Route path="*" element={<Navigate to="/login" />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </>

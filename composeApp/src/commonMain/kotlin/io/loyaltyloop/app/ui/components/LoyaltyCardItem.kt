@@ -16,6 +16,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.loyaltyloop.shared.models.LoyaltyCardDto
+import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.LoyaltyTierDto.LoyaltyLevel
 
 @Composable
 fun LoyaltyCardItem(
@@ -91,7 +93,7 @@ private fun ContainerLvl(
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = "LVL $level",
+            text = LoyaltyLevel.entries[level-1].name,
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold

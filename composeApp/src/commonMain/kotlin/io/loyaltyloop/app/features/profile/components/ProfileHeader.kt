@@ -14,7 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.Business
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Store
 import androidx.compose.material.icons.filled.SupervisorAccount
@@ -33,12 +33,11 @@ import androidx.compose.ui.unit.dp
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
 import loyaltyloop.composeapp.generated.resources.Res
-import loyaltyloop.composeapp.generated.resources.app_name
 import loyaltyloop.composeapp.generated.resources.profile_btn_logout
-import loyaltyloop.composeapp.generated.resources.profile_role_admin
+import loyaltyloop.composeapp.generated.resources.profile_role_administrator
 import loyaltyloop.composeapp.generated.resources.profile_role_cashier
-import loyaltyloop.composeapp.generated.resources.profile_role_manager
-import loyaltyloop.composeapp.generated.resources.profile_role_owner
+import loyaltyloop.composeapp.generated.resources.profile_role_partner
+import loyaltyloop.composeapp.generated.resources.profile_role_platform_manager
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -156,15 +155,16 @@ fun SettingsItem(
 fun WorkspaceItem(workspace: UserWorkspace, onClick: () -> Unit) {
     // Выбираем иконку и текст в зависимости от роли
     val (icon, roleRes) = when (workspace.role) {
-        UserRole.PARTNER_ADMIN -> Pair(Icons.Default.Business, Res.string.profile_role_owner)
+        UserRole.PARTNER_ADMIN -> Pair(Icons.Default.Business, Res.string.profile_role_partner)
         UserRole.CASHIER -> Pair(Icons.Default.Store, Res.string.profile_role_cashier)
 
         // Для Админов платформы
-        UserRole.PLATFORM_SUPER_ADMIN -> Pair(Icons.Default.Security, Res.string.profile_role_admin)
-        UserRole.PLATFORM_MANAGER -> Pair(Icons.Default.SupervisorAccount, Res.string.profile_role_manager)
+        UserRole.PLATFORM_SUPER_ADMIN -> Pair(Icons.Default.Security, Res.string.profile_role_partner)
+        UserRole.PLATFORM_MANAGER -> Pair(Icons.Default.SupervisorAccount, Res.string.profile_role_platform_manager)
 
         // Клиент сюда попасть не должен, но на всякий случай
-        UserRole.CLIENT -> Pair(Icons.Default.Person, Res.string.app_name)
+        UserRole.PARTNER_MANAGER -> Pair(Icons.Default.ManageAccounts, Res.string.profile_role_administrator)
+        UserRole.CLIENT -> return
     }
 
     SettingsItem(

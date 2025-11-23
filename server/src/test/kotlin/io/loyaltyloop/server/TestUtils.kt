@@ -3,8 +3,10 @@ package io.loyaltyloop.server
 import io.ktor.client.*
 import io.ktor.client.call.body
 import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -18,16 +20,23 @@ import io.ktor.server.testing.*
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.AuthResponse
+import io.loyaltyloop.shared.models.ChangePointStatusRequest
+import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
+import io.loyaltyloop.shared.models.LoyaltyCardDto
+import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.SendCodeRequest
 import io.loyaltyloop.shared.models.TradingPointType
+import io.loyaltyloop.shared.models.TransactionResult
+import io.loyaltyloop.shared.models.TransactionStrategy
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.VerifyCodeRequest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.assertEquals
 
 /**
  * Общая конфигурация для всех тестов (База H2 + Настройки JWT)
@@ -47,7 +56,12 @@ fun ApplicationTestBuilder.configureTestEnv() {
             "jwt.audience" to "http://test-server/hello",
             "jwt.realm" to "Test Realm",
             "jwt.accessLifetime" to "3600000",  // 1 час
-            "jwt.refreshLifetime" to "86400000" // 1 день
+            "jwt.refreshLifetime" to "86400000", // 1 день
+
+            "features.enableTestSupport" to "true",
+            "admin.defaultPin" to "0000",
+            "platform.inviteCode" to "SECRET123",
+            "platform.managerInviteCode" to "MANAGER123"
         )
     }
 
@@ -64,20 +78,21 @@ fun ApplicationTestBuilder.configureTestEnv() {
 suspend fun HttpClient.createCashierEcosystem(
     ownerToken: String,
     ownerId: String,
-    partnerRepo: PartnerRepository
+    partnerRepo: PartnerRepository,
+    testDescr: String = "createCashierEcosystem"
 ): String { // Возвращает cashierToken
 
     // 1. Создаем точку
     // (Мы не можем достать inviteCode через API создания, поэтому лезем в базу или делаем getPoints)
     // Упростим: Создадим точку через API, потом найдем её в БД
-    createTradingPoint(ownerToken, "Cashier Point", TradingPointType.COFFEE_SHOP)
+    createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", TradingPointType.COFFEE_SHOP)
 
     val partnerId = partnerRepo.getPartnersByOwner(ownerId).first().id
     val point = partnerRepo.getPointsByPartnerId(partnerId).first()
     val inviteCode = point.inviteCode ?: throw IllegalStateException("No invite code generated")
 
     // 2. Регистрируем нового юзера (будущего кассира)
-    val cashierAuth = registerAndLogin(phone = generateValidPhone())
+    val cashierAuth = registerAndLogin(phone = generateValidPhone(), testDescr = testDescr)
 
     // 3. Вводим инвайт код
     val joinRes = post("/partners/join") {
@@ -101,10 +116,11 @@ suspend fun HttpClient.createCashierEcosystem(
 */
 suspend fun HttpClient.registerAsAdmin(
     userRepo: UserRepository,
-    phone: String = "+996554190030" // Номер из конфига (для красоты)
+    phone: String = "+996554190030", // Номер из конфига (для красоты)
+    testDescr: String = "registerAsAdmin"
 ): AuthResponse {
     // 1. Регистрируемся как обычно
-    val auth = this.registerAndLogin(phone = phone)
+    val auth = this.registerAndLogin(phone = phone, testDescr = testDescr, withLogs = false)
 
     // 2. ХАК: Лезем в базу и выдаем права (симуляция Seeding)
     userRepo.setSuperAdmin(auth.userId, true)
@@ -114,17 +130,36 @@ suspend fun HttpClient.registerAsAdmin(
     return auth
 }
 
+/**
+ * Хелпер: Владельцем включаем или выключаем точку
+ */
+suspend fun HttpClient.changeTradingPointActivity(
+    userRepo: UserRepository,
+    pointID: String,
+    enable: Boolean
+) {
+    // 1. Регистрируемся как обычно
+    val auth = this.registerAsAdmin(userRepo = userRepo)
+    put("/admin/points/${pointID}/status") {
+        header("Authorization", "Bearer ${auth.accessToken}")
+        contentType(ContentType.Application.Json)
+        setBody(ChangePointStatusRequest(isActive = enable))
+    }.apply {
+        assertEquals(HttpStatusCode.OK, status)
+    }
+}
+
 suspend fun HttpClient.createPartner(
     token: String,           // Токен владельца
     ownerId: String,         // ID владельца (чтобы найти партнера в БД)
     repo: PartnerRepository, // Репозиторий для поиска ID
     name: String = "Test Cafe",
-    country: String = "KG"
+    country: CountryCode = CountryCode.KG
 ): String {
     val response = post("/partners/create") {
         header("Authorization", "Bearer $token")
         contentType(ContentType.Application.Json)
-        setBody(CreatePartnerRequest(name, country))
+    setBody(CreatePartnerRequest(name, country, ownerPin = "1234"))
     }
 
     if (response.status != HttpStatusCode.Created) {
@@ -146,18 +181,27 @@ suspend fun HttpClient.createPartner(
  * Хелпер: Создает торговую точку через API.
  */
 suspend fun HttpClient.createTradingPoint(
-    token: String,
+    ownerToken: String,
     name: String = "Test Point",
-    type: TradingPointType = TradingPointType.COFFEE_SHOP
+    type: TradingPointType = TradingPointType.COFFEE_SHOP,
+    address: String = "Test Street",
+    latitude: Double = 42.8746,
+    longitude: Double = 74.5698,
+    visitTarget: Int = 10,
+    awardOnMixedPayment: Boolean = false
 ): String {
     val request = CreateTradingPointRequest(
         name = name,
         type = type,
-        address = "Some Address"
+        address = address,
+        latitude = latitude,
+        longitude = longitude,
+        visitsTarget = visitTarget,
+        awardOnMixedPayment = awardOnMixedPayment
     )
 
     val response = post("/partners/points") {
-        header("Authorization", "Bearer $token")
+        header("Authorization", "Bearer $ownerToken")
         contentType(ContentType.Application.Json)
         setBody(request)
     }
@@ -166,10 +210,43 @@ suspend fun HttpClient.createTradingPoint(
         throw IllegalStateException("Failed to create point. Status: ${response.status}, Body: ${response.bodyAsText()}")
     }
 
-    // API возвращает ApiMessage("Точка создана"), ID там нет в тексте для простоты.
-    // Поэтому ID точки мы будем искать в тесте через репозиторий, зная ID партнера.
-    // Либо можно вернуть просто "OK".
-    return "OK"
+    return "Created"
+}
+
+suspend fun HttpClient.processTransaction(
+    accessToken: String,
+    pointId: String,
+    cardId: String,
+    amount: Double,
+    description: String,
+    strategy: TransactionStrategy = TransactionStrategy.CHARGE
+): TransactionResult {
+    println(description)
+    val response = post("/terminal/process") {
+        header("Authorization", "Bearer $accessToken")
+        contentType(ContentType.Application.Json)
+        setBody(
+            ProcessTransactionRequest(
+                tradingPointId = pointId,
+                cardId = cardId,
+                purchaseAmount = amount,
+                strategy = strategy
+            )
+        )
+    }
+    assertEquals(HttpStatusCode.OK, response.status)
+    return response.body()
+}
+
+suspend fun HttpClient.fetchCard(
+    customerToken: String,
+    cardId: String
+): LoyaltyCardDto {
+    val cards = get("/client/cards") {
+        header("Authorization", "Bearer $customerToken")
+    }.body<List<LoyaltyCardDto>>()
+
+    return cards.first { it.id == cardId }
 }
 
 /**
@@ -194,10 +271,13 @@ fun generateValidPhone(): String {
 
 suspend fun HttpClient.registerAndLogin(
     phone: String = generateValidPhone(), // Можно передать свой номер или сгенерировать
-    language: String = "ru"               // Язык для хедера
+    language: String = "ru",               // Язык для хедера
+    testDescr: String = "registerAndLogin",
+    withLogs: Boolean = true
 ): AuthResponse {
 
-    // 1. Запрос кода
+    if (withLogs) println("${testDescr}: Запрос смс")
+
     val sendRes = post("/auth/send-code") {
         contentType(ContentType.Application.Json)
         header(HttpHeaders.AcceptLanguage, language)
@@ -207,10 +287,11 @@ suspend fun HttpClient.registerAndLogin(
     if (sendRes.status != HttpStatusCode.OK) {
         throw IllegalStateException("Test setup failed: Send Code returned ${sendRes.status}")
     }
-
+    if (withLogs)  println("${testDescr}: Запрос смс: Успех")
     val code = extractOtpCode(sendRes)
 
     // 2. Логин
+    if (withLogs)  println("${testDescr}: Логин")
     val loginRes = post("/auth/login") {
         contentType(ContentType.Application.Json)
         header(HttpHeaders.AcceptLanguage, language)
@@ -220,6 +301,8 @@ suspend fun HttpClient.registerAndLogin(
     if (loginRes.status != HttpStatusCode.OK) {
         throw IllegalStateException("Test setup failed: Login returned ${loginRes.status} body: ${loginRes.bodyAsText()}")
     }
+
+    if (withLogs)  println("${testDescr}: Логин: Успех")
 
     return loginRes.body()
 }

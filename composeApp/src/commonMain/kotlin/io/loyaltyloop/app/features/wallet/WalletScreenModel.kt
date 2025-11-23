@@ -3,16 +3,17 @@ package io.loyaltyloop.app.features.wallet
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.data.network.ClientException
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
 import io.loyaltyloop.app.repository.WalletRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.LoyaltyCardDto
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import io.loyaltyloop.shared.utils.CryptoUtils
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -25,8 +26,6 @@ import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
-import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
 
 class WalletScreenModel(
     private val tokenStorage: TokenStorage,
@@ -39,7 +38,6 @@ class WalletScreenModel(
         val secondsRemaining: Int = 30,
         val cards: List<LoyaltyCardDto> = emptyList(),
         val isLoading: Boolean = false
-        // error убрали, он теперь в Event
     )
 
     sealed interface Action {
@@ -60,19 +58,15 @@ class WalletScreenModel(
 
     private var timerJob: Job? = null
 
-    init {
-        startQrGenerator()
-        loadCards()
-    }
 
     fun onAction(action: Action) {
         when (action) {
             is Action.OnRefresh -> loadCards()
-            is Action.OnQrCodeClicked -> log.write("QR Code opened")
+            is Action.OnQrCodeClicked -> startQrGenerator()
         }
     }
 
-    private fun loadCards() {
+    fun loadCards() {
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
@@ -83,26 +77,20 @@ class WalletScreenModel(
                         isLoading = false
                     )
                 }
-                .onFailure { error ->
-                    log.write("Failed to load cards", LogType.Error, error)
-
-                    // Маппим ошибку в UiText
-                    val errorText = when(error) {
-                        is ClientException -> UiText.DynamicString(error.errorMessage)
-                        is NetworkException -> UiText.Resource(Res.string.error_network)
-                        is ServerException -> UiText.Resource(Res.string.error_server)
-                        else -> UiText.Resource(Res.string.error_unknown)
-                    }
-
-                    // Отправляем событие
-                    _events.send(Event.ShowMessage(errorText, SnackbarType.Error))
-
+                .onFailure { exception ->
+                    log.write("Failed to load cards", LogType.Error, exception)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false)
+                }
+                .onError { code, _ ->
+                    log.write("Failed to load cards: $code", LogType.Error)
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false)
                 }
         }
     }
 
-    private fun startQrGenerator() {
+    fun startQrGenerator() {
         timerJob?.cancel()
         timerJob = screenModelScope.launch {
             while (isActive) {
@@ -124,6 +112,8 @@ class WalletScreenModel(
         val signature = CryptoUtils.hmacSha256(secret, data)
 
         val payload = "loyalty_v1:$data:$signature"
+
+        log.write("updateQrCode: ${payload}")
 
         _state.value = _state.value.copy(qrContent = payload)
     }

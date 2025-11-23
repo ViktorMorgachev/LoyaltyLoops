@@ -3,7 +3,7 @@ package io.loyaltyloop.server.database.tables
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.Table
 
-object CashiersTable : Table("cashiers") {
+object PartnerCashiersTable : Table("cashiers") {
     val id = varchar("id", 50)
     val userId = varchar("user_id", 50)
         .references(UsersTable.id, onDelete = ReferenceOption.CASCADE)

@@ -11,7 +11,6 @@ object LoyaltySettingsTable : Table("loyalty_settings") {
         .references(PartnersTable.id, onDelete = ReferenceOption.CASCADE)
 
     // --- ОБЯЗАТЕЛЬНАЯ СВЯЗЬ 1:1 ---
-    // uniqueIndex гарантирует, что у одной точки не будет двух настроек
     val tradingPointId = varchar("trading_point_id", 50)
         .references(TradingPointsTable.id, onDelete = ReferenceOption.CASCADE)
         .uniqueIndex()
@@ -21,12 +20,14 @@ object LoyaltySettingsTable : Table("loyalty_settings") {
     val programType = varchar("program_type", 20)
 
     // Настройки Visits
-    val visitsTarget = integer("visits_target").nullable()
+    val visitsTarget = integer("visits_target")
     val visitsReward = varchar("visits_reward", 100).nullable()
 
     // Настройки Expiration
-    val inactivityDays = integer("inactivity_days").nullable()
-    val visitsResetValue = integer("visits_reset_value").default(0)
+    val burnBonusesDays = integer("burn_bonuses_days").nullable()     // Сгорание баллов
+    val downgradeTierDays = integer("downgrade_tier_days").nullable() // Сброс уровня
+    val maxBurnPercentage = integer("max_burn_percentage").default(100)
+    val awardOnMixedPayment = bool("award_on_mixed_payment").default(false)
 
     override val primaryKey = PrimaryKey(id)
 }

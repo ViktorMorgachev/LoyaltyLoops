@@ -23,11 +23,55 @@
     <string name="error_profile_loading">Не удалось загрузить профиль</string>
     <string name="btn_retry">Повторить</string>
 
+    <!-- AppErrorCode Translations (Server Mapped) -->
+    <string name="error_success">Успешно</string>
+    <string name="error_unknown_error">Неизвестная ошибка</string>
+    <string name="error_internal_error">Внутренняя ошибка сервера</string>
+    <string name="error_invalid_request">Ошибка запроса</string>
+    <string name="error_unauthorized">Требуется авторизация</string>
+    <string name="error_forbidden">Доступ запрещен</string>
+    <string name="error_not_found">Ресурс не найден</string>
+    <string name="error_account_frozen">Аккаунт временно заморожен</string>
+    
+    <string name="error_invalid_phone">Неверный формат телефона</string>
+    <string name="error_invalid_code">Неверный код подтверждения</string>
+    <string name="error_code_expired">Код истек</string>
+    <string name="error_user_not_found">Пользователь не найден</string>
+    <string name="error_token_expired">Сессия истекла</string>
+    <string name="error_invalid_tier_value">Неверные настройки лояльности торговой точки</string>
+    <string name="error_token_invalid">Ошибка сессии (Токен невалиден)</string>
+    <string name="error_invalid_pin">Неверный PIN-код</string>
+    <string name="error_user_creation_failed">Ошибка создания пользователя</string>
+    
+    <string name="error_business_already_exists">Бизнес уже существует</string>
+    <string name="error_business_not_found">Бизнес не найден</string>
+    <string name="error_point_not_found">Торговая точка не найдена</string>
+    <string name="error_point_inactive">Точка не активна</string>
+    <string name="error_already_joined">Вы уже присоединились</string>
+    <string name="error_invalid_invite_code">Неверный инвайт-код</string>
+    
+    <string name="error_qr_expired">QR код истек</string>
+    <string name="error_invalid_qr_signature">Поддельный QR код</string>
+    <string name="error_security_qr_secret_missing">Ошибка безопасности QR</string>
+    <string name="error_invalid_amount">Некорректная сумма</string>
+    <string name="error_loyalty_setting_not_found">Настройки лояльности не найдены</string>
+    <string name="error_card_not_found">Карта лояльности не найдена</string>
+
+    <!-- Transaction Results (NEW) -->
+    <string name="msg_points_earned">Начислено: %s Б</string>
+    <string name="msg_points_spent">Списано: %s Б</string>
+    <string name="msg_points_spent_earned">Списано: %s, Начислено: %s</string>
+    <string name="msg_visit_progress">Визит учтен! Всего: %s из %s</string>
+    <string name="msg_visit_reward">Цель достигнута! Подарок доступен! (%s)</string>
+    <string name="msg_balance_info">Баланс: %s</string>
+    <string name="msg_success_default">Операция успешна!</string>
+
     <!-- Join Company Screen -->
     <string name="join_title">Стать сотрудником</string>
     <string name="join_description">Введите код приглашения, который вам дал владелец заведения.</string>
     <string name="join_code_label">Инвайт-код</string>
     <string name="join_btn_submit">Присоединиться</string>
+    <string name="cashier_join_success">Вы успешно присоединились к команде!</string>
 
     <!-- Onboarding -->
     <string name="onboarding_title">Давайте знакомиться!</string>
@@ -58,8 +102,9 @@
 
     <!-- Profile Screen -->
     <string name="profile_workspaces_title">Мои рабочие места</string>
-    <string name="profile_role_owner">Владелец</string>
+    <string name="profile_role_partner">Владелец</string>
     <string name="profile_role_cashier">Кассир</string>
+    <string name="profile_role_administrator">Администратор</string>
     <string name="profile_btn_logout">Выйти из аккаунта</string>
     <string name="profile_section_general">Основное</string>
     <string name="profile_section_business">Бизнес и Карьера</string>
@@ -75,8 +120,8 @@
 
     <string name="profile_version">Версия %s</string>
     <!-- Profile Roles -->
-    <string name="profile_role_admin">Администратор Платформы</string>
-    <string name="profile_role_manager">Менеджер Платформы</string>
+    <string name="profile_role_platform_owner">Владелец платформы</string>
+    <string name="profile_role_platform_manager">Менеджер Платформы</string>
 
     <!-- Profile Sections -->
     <string name="profile_header_workspaces">Мои рабочие места</string>
@@ -131,6 +176,34 @@
     <string name="term_res_balance_prefix">Текущий баланс:</string>
     <string name="term_res_btn_add_points">Начислить бонусы</string>
 
+    <!-- Terminal New UI -->
+    <string name="term_res_spend_title">Списать баллы</string>
+    <string name="term_res_spend_available">Доступно:</string>
+    <string name="term_res_spend_will_spend">Будет списано:</string>
+    <string name="term_res_award_will_earn">Будет начислено:</string>
+    <string name="term_res_award_hint">Даже при списании бонусов начислим кешбэк на оплату деньгами</string>
+    <string name="term_res_total_pay">Итого к оплате:</string>
+    <string name="term_res_calculating">Считаем...</string>
+    <string name="term_calc_msg_visit">Визит будет учтён</string>
+    <string name="term_calc_msg_visit_reward">Награда выдана — цикл обнулён</string>
+    <string name="term_calc_msg_next_reward">Остался один визит до награды</string>
+    <string name="term_calc_msg_spend_limit_balance">Списали все доступные баллы, остальное — деньгами</string>
+    <string name="term_calc_msg_spend">Списали максимум по правилам точки</string>
+    <string name="term_calc_msg_charge">Начислим бонусы по текущему уровню</string>
+    <string name="term_calc_msg_charge_upgrade">Уровень повышен! Клиент получает больше бонусов</string>
+    <string name="term_calc_msg_error">Некорректная сумма</string>
+
+    <!-- Confirmation Screen -->
+    <string name="term_confirm_title">Подтверждение</string>
+    <string name="term_confirm_total_pay">К оплате</string>
+    <string name="term_confirm_purchase">Сумма чека</string>
+    <string name="term_confirm_spent">Списание баллов</string>
+    <string name="term_confirm_earned">Начисление баллов</string>
+    <string name="term_confirm_balance">Баланс после</string>
+    <string name="term_confirm_visits">Визиты после</string>
+    <string name="term_confirm_status">Статус</string>
+    <string name="term_btn_confirm">Подтвердить</string>
+
     <!-- Messages -->
     <string name="term_msg_success">Транзакция успешна!</string>
     <string name="term_err_no_workspace">Ошибка: Нет рабочей смены</string>
@@ -140,5 +213,12 @@
     <string name="qr_sheet_title">Покажите кассиру</string>
     <string name="qr_timer_update">Обновится через</string>
     <string name="qr_sec">сек</string>
+
+    <!-- Hybrid Dialog -->
+    <string name="hybrid_dialog_title">Выберите тип операции</string>
+    <string name="hybrid_dialog_text">Клиент может накопить визит или использовать бонусы. Выберите действие:</string>
+    <string name="hybrid_action_bonus">Бонусы / Кешбэк</string>
+    <string name="hybrid_action_visit">Добавить визит</string>
+    <string name="term_btn_next">Далее</string>
 
 </resources>

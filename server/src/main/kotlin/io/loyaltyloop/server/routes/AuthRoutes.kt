@@ -3,39 +3,29 @@ package io.loyaltyloop.server.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.VerifyCodeRequest
 import java.util.UUID
 import io.loyaltyloop.shared.models.SendCodeRequest
-import io.loyaltyloop.shared.models.UserProfileResponse
 
 fun Route.authRoutes(
     repository: UserRepository,
+    partnerRepository: io.loyaltyloop.server.repository.PartnerRepository,
     tokenService: TokenService,
     otpService: OtpService
 ) {
-
-    get("/health") {
-        // Возвращаем JSON, чтобы тест мог его проверить
-        call.respond(
-            mapOf(
-                "status" to "OK",
-                "db" to "connected",
-                "version" to "1.0.0"
-            )
-        )
-    }
 
     route("/auth") {
 
@@ -44,21 +34,16 @@ fun Route.authRoutes(
 
             val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
             if (error != null) {
-                call.respond(HttpStatusCode.BadRequest, error)
-                return@post
+                throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            // Генерируем реальный случайный код
             val code = otpService.generateCode(request.phone)
+            println("SMS для ${request.phone}: $code")
 
-            println("SMS для ${request.phone}: $code") // Лог для нас
-
-            // ВАЖНО: Для MVP возвращаем код в ответе, чтобы клиент мог его подставить
-            // В Проде мы уберем поле code из ответа и будем слать СМС
             call.respond(
                 mapOf(
                     "status" to "Code sent",
-                    "debugCode" to code // <-- ОТДАЕМ КОД КЛИЕНТУ
+                    "debugCode" to code
                 )
             )
         }
@@ -67,59 +52,46 @@ fun Route.authRoutes(
             val request = call.receive<VerifyCodeRequest>()
             val lang = call.resolveLanguage()
 
-            // Валидация номера
             val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
             if (error != null) {
-                call.respond(HttpStatusCode.BadRequest, error)
-                return@post
+                throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            // --- ИСПОЛЬЗУЕМ OTP SERVICE ---
-            val isValid = otpService.validateCode(request.phone, request.code)
-
-            if (isValid) {
+            if (otpService.validateCode(request.phone, request.code)) {
                 var user = repository.getUserByPhone(request.phone)
-                var isNew = false
+                val isNew = user == null
                 if (user == null) {
-                    val secret = tokenService.generateQrSecret()
-                    val userId = UUID.randomUUID().toString()
-                    val newUser = UserDto(
-                        id = userId,
+                    user = UserDto(
+                        id = UUID.randomUUID().toString(),
                         phoneNumber = request.phone,
-                        countryCode = "KG", //TODO Получать код по номеру
+                        countryCode = request.code,
                         language = lang,
-                        qrSecret = secret,
+                        qrSecret = tokenService.generateQrSecret(),
                         firstName = null
                     )
-                    repository.createUser(newUser)
-                    val savedUser = repository.getUserById(userId)
+                    repository.createUser(user)
+                    val savedUser = repository.getUserById(user.id)
                     if (savedUser == null) {
-                        call.respond(HttpStatusCode.InternalServerError, "DB Error")
-                        return@post
+                        throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
                     }
-                    user = savedUser
-                    isNew = true
                 } else {
-                    // Юзер уже есть. Проверяем, сменил ли он язык?
                     if (user.language != lang) {
-                        // Да, в базе "ru", а пришел "en". Обновляем базу!
                         repository.updateUserLanguage(user.id, lang)
-
-                        // Обновляем объект user в памяти, чтобы в токен/ответ попали актуальные данные (если нужно)
                         user = user.copy(language = lang)
                     }
+
                 }
+
 
                 val workspaces = repository.getUserWorkspaces(user.id)
                 val (access, refresh) = tokenService.generateTokens(user)
-
                 val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
                 repository.saveRefreshToken(refresh, user.id, expiresAt)
-
                 call.respond(AuthResponse(access, refresh, user.id, isNew, workspaces, qrSecret = user.qrSecret))
 
+
             } else {
-                call.respond(HttpStatusCode.Unauthorized, "Неверный или устаревший код")
+                throw LoyaltyException(AppErrorCode.INVALID_CODE)
             }
         }
 
@@ -132,25 +104,17 @@ fun Route.authRoutes(
             val request = call.receive<RefreshTokenRequest>()
             val oldRefreshToken = request.refreshToken
 
-            // 1. Валидация подписи (Stateless)
             val userIdFromToken = tokenService.validateRefreshToken(oldRefreshToken)
 
             if (userIdFromToken != null) {
-                // 2. Валидация базы данных (Stateful)
-                // Проверяем, существует ли этот токен в белом списке
                 val dbUserId = repository.findRefreshToken(oldRefreshToken)
 
                 if (dbUserId != null && dbUserId == userIdFromToken) {
-                    // Токен валиден и найден в базе!
-
-                    // 3. Удаляем СТАРЫЙ токен (чтобы его нельзя было использовать дважды)
                     repository.deleteRefreshToken(oldRefreshToken)
 
-                    // 4. Генерируем НОВЫЙ
-                    val user = repository.getUserById(userIdFromToken)!! // Юзер точно есть, если есть токен
+                    val user = repository.getUserById(userIdFromToken)!!
                     val (newAccess, newRefresh) = tokenService.generateTokens(user)
 
-                    // 5. Сохраняем НОВЫЙ в базу
                     val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
                     repository.saveRefreshToken(newRefresh, user.id, expiresAt)
 
@@ -177,12 +141,33 @@ fun Route.authRoutes(
         }
 
         post("/logout") {
-            // Клиент может прислать refresh token, чтобы мы его удалили
             val request = call.receiveNullable<RefreshTokenRequest>()
             if (request != null) {
                 repository.deleteRefreshToken(request.refreshToken)
             }
             call.respond(HttpStatusCode.OK)
+        }
+
+        authenticate("auth-jwt") {
+            post("/verify-pin") {
+                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val request = call.receive<io.loyaltyloop.shared.models.VerifyPinRequest>()
+
+                // TODO проверить что пользователь не кассир и не обычный пользователь и имеет доступ к workspaceId
+
+                val partner = partnerRepository.getPartnerById(request.workspaceId)
+
+                val isValid = partnerRepository.verifyPartnerPin(partner.id, request.pin)
+                if (isValid) call.respond(HttpStatusCode.OK)
+                else throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
+                return@post
+
+                // If workspace not found or not partner? Assume OK or specific error
+                // For now OK implies "no pin needed" or "not found so whatever"
+                // But let's keep old logic: respond OK if partner not found? That's weird.
+                // Old code: if (partner != null) ... else respond(OK).
+                // Assuming it means "No pin required".
+            }
         }
     }
 }

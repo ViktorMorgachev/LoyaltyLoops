@@ -4,11 +4,14 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.data.network.*
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.*
 import io.loyaltyloop.shared.models.Country
+import io.loyaltyloop.shared.models.NetworkResult
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -91,8 +94,8 @@ class LoginScreenModel(
 
             is Action.OnCountryClicked -> {
                 val current = _state.value.selectedCountry
-                val nextIndex = (current.ordinal + 1) % Country.values().size
-                _state.value = _state.value.copy(selectedCountry = Country.values()[nextIndex])
+                val nextIndex = (current.ordinal + 1) % Country.entries.size
+                _state.value = _state.value.copy(selectedCountry = Country.entries[nextIndex])
             }
 
             is Action.OnSubmitClicked -> {
@@ -124,34 +127,27 @@ class LoginScreenModel(
             _state.value = _state.value.copy(isLoading = true, step = Step.EnterCode)
 
             val fullNumber = country.phonePrefix + state.value.phoneInput
-            val result = repository.sendCode(fullNumber)
 
-            result.onSuccess { debugCode ->
-                log.write("Code received: $debugCode")
-
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    otpInput = "",
-                    timerSeconds = 60,
-                    isResendEnabled = false
-                )
-                startTimer()
-
-            }.onFailure { error ->
-                log.write("Failed", LogType.Error, error)
-
-                _events.send(
-                    Event.ShowMessage(
-                        message = mapError(error),
-                        type = SnackbarType.Error
+            repository.sendCode(fullNumber)
+                .onSuccess {
+                    log.write("Code sent")
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        otpInput = "",
+                        timerSeconds = 60,
+                        isResendEnabled = false
                     )
-                )
-
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    otpInput = ""
-                )
-            }
+                    startTimer()
+                }
+                .onFailure { exception ->
+                    log.write("Failed", LogType.Error, exception)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false, otpInput = "")
+                }
+                .onError { apiCode, _ ->
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false, otpInput = "")
+                }
         }
     }
 
@@ -172,39 +168,41 @@ class LoginScreenModel(
             val fullNumber = state.value.selectedCountry.phonePrefix + state.value.phoneInput
             log.write("Verifying code for $fullNumber...")
 
-            repository.login(fullNumber, code).onSuccess { authResponse ->
-                tokenStorage.saveAuthData(
-                    accessToken = authResponse.accessToken,
-                    refreshToken = authResponse.refreshToken,
-                    userId = authResponse.userId,
-                    qrSecret = authResponse.qrSecret
-                )
-
-                repository.getProfile().onSuccess { userProfile ->
-
-                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.auth_success), SnackbarType.Success))
-                    sessionManager.updateWorkspaces(userProfile.workspaces)
-
-                    if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
-                        _events.send(Event.NavigateToOnboarding)
-                    } else {
-                        _events.send(Event.NavigateToHome)
-                    }
-                }.onFailure {
-                    _events.send(Event.NavigateToHome)
-                }
-
-                _state.value = _state.value.copy(isLoading = false)
-
-            }.onFailure { error ->
-                _events.send(
-                    Event.ShowMessage(
-                        message = mapError(error),
-                        type = SnackbarType.Error
+            repository.login(fullNumber, code)
+                .onSuccess { authResponse ->
+                    tokenStorage.saveAuthData(
+                        accessToken = authResponse.accessToken,
+                        refreshToken = authResponse.refreshToken,
+                        userId = authResponse.userId,
+                        qrSecret = authResponse.qrSecret
                     )
-                )
-                _state.value = _state.value.copy(isLoading = false, otpInput = "")
-            }
+                    repository.getProfile()
+                        .onSuccess { userProfile ->
+                            _events.send(Event.ShowMessage(UiText.Resource(Res.string.auth_success), SnackbarType.Success))
+                            sessionManager.updateWorkspaces(userProfile.workspaces)
+                            if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
+                                _events.send(Event.NavigateToOnboarding)
+                            } else {
+                                _events.send(Event.NavigateToHome)
+                            }
+                            _state.value = _state.value.copy(isLoading = false)
+                        }
+                        .onFailure { exception ->
+                            log.write("Get profile failed: ${exception.message}", LogType.Error)
+                            _events.send(Event.NavigateToHome)
+                        }
+                        .onError { _, _ ->
+                            _events.send(Event.NavigateToHome)
+                        }
+                }
+                .onError { apiCode, _ ->
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false, otpInput = "")
+                }
+                .onFailure { exception ->
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false, otpInput = "")
+                }
         }
     }
 
@@ -216,15 +214,6 @@ class LoginScreenModel(
                 _state.value = _state.value.copy(timerSeconds = _state.value.timerSeconds - 1)
             }
             _state.value = _state.value.copy(isResendEnabled = true)
-        }
-    }
-
-    private fun mapError(error: Throwable): UiText {
-        return when (error) {
-            is ClientException -> UiText.DynamicString(error.errorMessage)
-            is NetworkException -> UiText.Resource(Res.string.error_network)
-            is ServerException -> UiText.Resource(Res.string.error_server)
-            else -> UiText.Resource(Res.string.error_unknown)
         }
     }
 }

@@ -4,7 +4,7 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.ktor.server.config.*
-import io.loyaltyloop.server.database.tables.CashiersTable
+import io.loyaltyloop.server.database.tables.PartnerCashiersTable
 import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
@@ -12,18 +12,31 @@ import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.PartnerManagersTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.StdOutSqlLogger
-import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
-
+import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
 
 object DatabaseFactory {
+
+
+    private fun config(driver: String, url: String, user: String, pass: String): HikariConfig{
+        return HikariConfig().apply {
+            driverClassName = driver
+            jdbcUrl = url
+            username = user
+            password = pass
+            maximumPoolSize = 3
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            validate()
+        }
+    }
 
     fun init(config: ApplicationConfig) {
         val driverClassName = config.property("storage.driverClassName").getString()
@@ -31,31 +44,23 @@ object DatabaseFactory {
         val user = config.property("storage.user").getString()
         val password = config.property("storage.password").getString()
 
-        val hikariConfig = HikariConfig().apply {
-            this.driverClassName = driverClassName
-            this.jdbcUrl = jdbcUrl
-            this.username = user
-            this.password = password
-
-            maximumPoolSize = 3
-            isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-            validate()
-        }
+        val hikariConfig = config(driver = driverClassName, url = jdbcUrl, user = user, pass = password)
 
         val dataSource = HikariDataSource(hikariConfig)
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create( UsersTable,
+            SchemaUtils.createMissingTablesAndColumns( UsersTable,
                 PartnersTable,
                 TradingPointsTable,
-                CashiersTable,
+                PartnerCashiersTable,
                 LoyaltyCardTable,
                 RefreshTokensTable,
                 LoyaltySettingsTable,
                 LoyaltyTiersTable,
-                SystemStaffTable
+                SystemStaffTable,
+                TransactionsHistoryTable,
+                PartnerManagersTable
             )
         }
     }
@@ -76,31 +81,24 @@ object DatabaseFactory {
         }
     }
 
-    // 2. Точка входа для Тестов (принимает строки напрямую)
+    // 2. Точка входа для Тестов
     fun connect(driver: String, url: String, user: String, pass: String) {
-        val hikariConfig = HikariConfig().apply {
-            driverClassName = driver
-            jdbcUrl = url
-            username = user
-            password = pass
-            maximumPoolSize = 3
-            isAutoCommit = false
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
-            validate()
-        }
-
+        val hikariConfig = config(driver = driver, url = url, user = user, pass = pass)
         val dataSource = HikariDataSource(hikariConfig)
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.create(
+            SchemaUtils.createMissingTablesAndColumns(
                 UsersTable,
                 PartnersTable,
                 TradingPointsTable,
-                CashiersTable,
+                PartnerCashiersTable,
                 LoyaltyCardTable,
-                LoyaltySettingsTable, // <-- Убедись, что новые таблицы здесь
-                LoyaltyTiersTable     // <-- И эта тоже
+                LoyaltySettingsTable, 
+                LoyaltyTiersTable,
+                SystemStaffTable,
+                TransactionsHistoryTable,
+                PartnerManagersTable
             )
         }
     }

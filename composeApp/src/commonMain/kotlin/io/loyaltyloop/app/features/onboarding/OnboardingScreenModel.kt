@@ -3,15 +3,17 @@ package io.loyaltyloop.app.features.onboarding
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
-import io.loyaltyloop.app.data.network.ClientException
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.models.NetworkResult
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,13 +22,11 @@ import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.err_field_required
 import loyaltyloop.composeapp.generated.resources.error_network
-import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
 import loyaltyloop.composeapp.generated.resources.onboarding_success
 
 class OnboardingScreenModel(
     private val repository: AuthRepository,
-    private val sessionManager: SessionManager // Чтобы обновить сессию после сохранения имени
+    private val sessionManager: SessionManager
 ) : ScreenModel {
 
     // --- КОНТРАКТ ---
@@ -83,32 +83,30 @@ class OnboardingScreenModel(
             repository.updateProfile(firstName = currentState.firstName)
                 .onSuccess {
                     log.write("Profile updated successfully")
-
-                    repository.getProfile().onSuccess { profile ->
-                        sessionManager.updateWorkspaces(profile.workspaces)
-                    }
-
+                    repository.getProfile()
+                        .onSuccess { data ->
+                            sessionManager.updateWorkspaces(data.workspaces)
+                        }
+                        .onFailure { exception ->
+                            log.write("Profile refresh failed", LogType.Error, exception)
+                        }
+                        .onError { code, _ ->
+                            log.write("Profile refresh failed: $code", LogType.Error)
+                        }
                     _events.send(Event.ShowMessage(
                         UiText.Resource(Res.string.onboarding_success),
                         SnackbarType.Success
                     ))
-
-                    // Переходим домой
                     _events.send(Event.NavigateToHome)
                 }
-                .onFailure { error ->
-                    log.write("Update failed", LogType.Error, error)
-
-                    val errorText = when (error) {
-                        is ClientException -> UiText.DynamicString(error.errorMessage)
-                        is NetworkException -> UiText.Resource(Res.string.error_network)
-                        is ServerException -> UiText.Resource(Res.string.error_server)
-                        else -> UiText.Resource(Res.string.error_unknown)
-                    }
-
-                    // Показываем красный снекбар
-                    _events.send(Event.ShowMessage(errorText, SnackbarType.Error))
-
+                .onFailure { exception ->
+                    log.write("Update failed", LogType.Error, exception)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = currentState.copy(isLoading = false)
+                }
+                .onError { apiCode, string ->
+                    log.write("Update failed: $apiCode", LogType.Error)
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
                     _state.value = currentState.copy(isLoading = false)
                 }
         }

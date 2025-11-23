@@ -3,53 +3,142 @@ package io.loyaltyloop.server.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
-import io.ktor.server.auth.jwt.*
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.ApiMessage
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.ChangePartnerStatusRequest
+import io.loyaltyloop.shared.models.JoinPlatformAdminRequest
 import io.loyaltyloop.shared.models.UserRole
+import kotlinx.serialization.Serializable
 
 fun Route.adminRoutes(
+    applicationConfig: ApplicationConfig,
     userRepo: UserRepository,
     partnerRepo: PartnerRepository
 ) {
-    route("/admin") {
-        authenticate("auth-jwt") {
-            
-            // INTERCEPTOR: Проверка прав СУПЕР-АДМИНА
-            intercept(ApplicationCallPipeline.Call) {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@intercept finish()
-                
-                // Проверяем через таблицу SystemStaff
-                val workspaces = userRepo.getUserWorkspaces(userId)
-                val isSuperAdmin = workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN }
-                
-                if (!isSuperAdmin) {
-                    call.respond(HttpStatusCode.Forbidden, ApiMessage("Access denied: Super Admin only"))
-                    return@intercept finish()
-                }
-            }
+    authenticate("auth-jwt") {
+        route("/admin") {
 
-            // СМЕНА СТАТУСА
+            // СМЕНА СТАТУСА ПАРТНЕРА
             // POST /admin/partners/{id}/status
             post("/partners/{id}/status") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@post
+
+                requireAdminRole(userRepo, userId, requireWrite = true)
+
                 val partnerId = call.parameters["id"] ?: return@post
                 val request = call.receive<ChangePartnerStatusRequest>()
                 
                 partnerRepo.updateStatus(partnerId, request.status)
                 
-                call.respond(HttpStatusCode.OK, ApiMessage("Status changed to ${request.status}"))
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Status changed to ${request.status}"))
             }
 
+            // СТАТИСТИКА ПАРТНЕРА
+            get("/partners/{id}/stats") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                requireAdminRole(userRepo, userId, requireWrite = false)
+
+                val partnerId = call.parameters["id"] ?: return@get
+                val stats = partnerRepo.getPartnerStats(partnerId)
+                call.respond(stats)
+            }
+
+            // ТОЧКИ ПАРТНЕРА
+            get("/partners/{id}/points") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                requireAdminRole(userRepo, userId, requireWrite = false)
+
+                val partnerId = call.parameters["id"] ?: return@get
+                val points = partnerRepo.getPointsByPartnerId(partnerId)
+                call.respond(points)
+            }
+
+            // БЛОКИРОВКА ТОЧКИ
+            put("/points/{id}/status") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@put
+                requireAdminRole(userRepo, userId, requireWrite = true)
+
+                val pointId = call.parameters["id"] ?: return@put
+                val request = call.receive<io.loyaltyloop.shared.models.ChangePointStatusRequest>()
+                partnerRepo.updatePointStatus(pointId, request.isActive)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Point status updated"))
+            }
+
+            // СПИСОК ВСЕХ ПАРТНЕРОВ
             get("/partners") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                requireAdminRole(userRepo, userId, requireWrite = false)
+
                 val partners = partnerRepo.getAllPartners()
                 call.respond(partners)
             }
+
+            delete("/users/{id}") {
+                val requesterId = call.getUserIdOrRespond(userRepo) ?: return@delete
+                requireAdminRole(userRepo, requesterId, requireWrite = true)
+
+                val targetId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "User ID is required")
+
+                if (targetId == requesterId) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "You cannot delete yourself")
+                }
+
+                val deleted = userRepo.deleteUser(targetId)
+                if (!deleted) {
+                    throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "User not found")
+                }
+
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "User deleted"))
+            }
+            post("/platform/manager/join") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@post
+                val request = call.receive<JoinPlatformAdminRequest>()
+
+                val expectedCode = applicationConfig.propertyOrNull("platform.managerInviteCode")?.getString()
+                    ?: applicationConfig.propertyOrNull("platform.inviteCode")?.getString()
+                    ?: throw LoyaltyException(AppErrorCode.INTERNAL_ERROR, "Invite code is not configured")
+
+                if (request.inviteCode != expectedCode) {
+                    throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE, "Invalid platform invite code")
+                }
+
+                val workspaces = userRepo.getUserWorkspaces(userId)
+                val alreadyStaff = workspaces.any {
+                    it.role == UserRole.PLATFORM_SUPER_ADMIN || it.role == UserRole.PLATFORM_MANAGER
+                }
+                if (alreadyStaff) {
+                    throw LoyaltyException(AppErrorCode.ALREADY_JOINED, "User already has platform role")
+                }
+
+                val defaultPin = applicationConfig.propertyOrNull("admin.defaultPin")?.getString() ?: "0000"
+                userRepo.createSystemStaff(userId, UserRole.PLATFORM_MANAGER, defaultPinHash = defaultPin)
+
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Platform manager role granted"))
+            }
         }
+    }
+}
+
+// Helper for RBAC checks
+private suspend fun requireAdminRole(userRepo: UserRepository, userId: String, requireWrite: Boolean) {
+    val workspaces = userRepo.getUserWorkspaces(userId)
+
+    val isSuperAdmin = workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN }
+    val isManager = workspaces.any { it.role == UserRole.PLATFORM_MANAGER }
+
+    if (!isSuperAdmin && !isManager) {
+        throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Admins only")
+    }
+
+    if (requireWrite && !isSuperAdmin) {
+        throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Read-only for Managers")
     }
 }

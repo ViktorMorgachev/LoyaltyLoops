@@ -11,24 +11,44 @@ enum class PartnerStatus {
 @Serializable
 data class CreatePartnerRequest(
     val businessName: String,
-    val countryCode: String // "KG"
+    val countryCode: CountryCode = CountryCode.KG,
+    val ownerPin: String
 )
 
 @Serializable
 data class UpdatePartnerRequest(
     val businessName: String,
     val color: String,   // HEX цвет (#FF0000)
-    val logoUrl: String? // Пока просто ссылка текстом
+    val logoUrl: String?, // Пока просто ссылка текстом
+    val burnBonusesDays: Int? = null,
+    val downgradeTierDays: Int? = null
 )
 
 @Serializable
-data class PartnerDto(
+data class UpdatePinRequest(
+    val currentPin: String? = null,
+    val newPin: String
+)
+
+@Serializable
+data class ResetPinRequest(
+    val confirm: Boolean = false
+)
+
+
+@Serializable
+data class PartnerEntity(
     val id: String,
+    val ownerId: String,
     val businessName: String,
     val countryCode: String,
+    val hasPin: Boolean,
     val status: PartnerStatus,
+    val logoUrl: String?,
     val color: String,
-    val logoUrl: String?
+    val burnBonusesDays: Int?,
+    val downgradeTierDays: Int?,
+    val ownerPhone: String? = null
 )
 
 @Serializable

@@ -7,13 +7,15 @@ import LockIcon from '@mui/icons-material/Lock';
 import LoyaltyIcon from '@mui/icons-material/Loyalty';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
-import { useTranslation } from 'react-i18next'; // <-- Хук
-import { LanguageSwitcher } from '../components/LanguageSwitcher'; // <-- Компонент
+import { useTranslation } from 'react-i18next'; 
+import { LanguageSwitcher } from '../components/LanguageSwitcher'; 
+import { useUser } from '../context/UserContext';
 
 export const LoginPage = () => {
-  const { t } = useTranslation(); // Инициализация
+  const { t } = useTranslation(); 
   const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
+  const { refreshUser } = useUser(); // <-- Get refreshUser
 
   const [phone, setPhone] = useState('+996');
   const [code, setCode] = useState('');
@@ -43,7 +45,30 @@ export const LoginPage = () => {
       localStorage.setItem('workspaces', JSON.stringify(workspaces));
 
       showSuccess(t('auth.success'));
-      navigate('/dashboard');
+      
+      // Умный редирект
+      if (workspaces.length > 1) {
+          await refreshUser(); // Update context before redirect!
+          navigate('/select-role');
+      } else if (workspaces.length === 1) {
+          // Автовыбор единственной роли
+          localStorage.setItem('currentWorkspace', JSON.stringify(workspaces[0]));
+          
+          await refreshUser(); // Update context!
+          
+          const role = workspaces[0].role;
+          if (role === 'PLATFORM_SUPER_ADMIN') {
+              navigate('/admin/partners');
+          } else if (role === 'PARTNER_ADMIN') {
+              navigate('/partner/dashboard');
+          } else {
+              navigate('/dashboard');
+          }
+      } else {
+          // Нет ролей (Новый юзер)
+          await refreshUser();
+          navigate('/partner/onboarding');
+      }
     } catch (e: any) {
       showError(getErrorMessage(e));
     } finally {

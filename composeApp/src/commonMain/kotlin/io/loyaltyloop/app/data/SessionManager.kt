@@ -1,11 +1,14 @@
 package io.loyaltyloop.app.data
 
+import io.loyaltyloop.app.data.network.AuthWatcher
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlin.random.Random
+import kotlin.random.nextLong
 
 
 class SessionManager(
@@ -14,18 +17,22 @@ class SessionManager(
     // Текущий активный режим
     private val _currentWorkspace = MutableStateFlow<UserWorkspace?>(null)
     val currentWorkspace = _currentWorkspace.asStateFlow()
-    private val _logoutEvent = Channel<Unit>()
+    private val _logoutEvent = Channel<Any>()
     val logoutEvent = _logoutEvent.receiveAsFlow()
 
     // Список всех доступных ролей (загружается с сервера)
     private val _availableWorkspaces = MutableStateFlow<List<UserWorkspace>>(emptyList())
     val availableWorkspaces = _availableWorkspaces.asStateFlow()
 
+    init {
+        AuthWatcher.register(this)
+    }
+
     suspend fun logout() {
         tokenStorage.clear()
         _currentWorkspace.value = null
         _availableWorkspaces.value = emptyList() // <-- ВАЖНО: Очищаем список
-        _logoutEvent.send(Unit)
+        _logoutEvent.send(Random.nextLong())
     }
 
     // Вызывается при старте приложения (в Splash)
@@ -53,11 +60,6 @@ class SessionManager(
         _currentWorkspace.value = workspace
         tokenStorage.saveCurrentWorkspaceId(workspace?.id) // Сохраняем выбор
     }
-
-    // Геттеры для UI
-    fun isClientMode() = _currentWorkspace.value == null
-    fun isCashierMode() = _currentWorkspace.value?.role == UserRole.CASHIER
-    fun isPartnerMode() = _currentWorkspace.value?.role == UserRole.PARTNER_ADMIN
 
     fun getWorkspaces() = availableWorkspaces
 }

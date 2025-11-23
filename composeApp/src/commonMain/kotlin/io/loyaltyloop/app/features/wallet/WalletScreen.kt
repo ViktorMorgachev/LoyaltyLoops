@@ -51,6 +51,11 @@ class WalletScreen : Screen {
             }
         }
 
+
+        LaunchedEffect(Unit){
+            viewModel.loadCards()
+        }
+
         // Pull To Refresh
         val pullRefreshState = rememberPullToRefreshState()
         if (pullRefreshState.isRefreshing) {

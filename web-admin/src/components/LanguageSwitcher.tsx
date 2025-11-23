@@ -3,6 +3,9 @@ import { Button, Menu, MenuItem } from '@mui/material';
 import LanguageIcon from '@mui/icons-material/Language';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/axiosConfig';
+import { useNotification } from '../context/NotificationContext';
+import { getErrorMessage } from '../utils/errorHandler';
+import { useUser } from '../context/UserContext';
 
 const languages = [
   { code: 'ru', label: 'Русский' },
@@ -15,16 +18,35 @@ const languages = [
 
 export const LanguageSwitcher = () => {
   const { i18n } = useTranslation();
+  const { showSuccess, showError } = useNotification();
+  const { refreshUser } = useUser();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [saving, setSaving] = useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const changeLanguage = (lang: string) => {
-    i18n.changeLanguage(lang);
-    api.defaults.headers['Accept-Language'] = lang; // Обновляем хедер для сервера
-    setAnchorEl(null);
+  const changeLanguage = async (lang: string) => {
+    if (saving) return;
+    setSaving(true);
+    try {
+        const hasToken = Boolean(localStorage.getItem('accessToken'));
+        if (hasToken) {
+            await api.post('/client/language', { language: lang });
+            showSuccess(i18n.t('profile.language_saved'));
+            refreshUser();
+        }
+
+        i18n.changeLanguage(lang);
+        api.defaults.headers.common['Accept-Language'] = lang;
+        localStorage.setItem('lang', lang);
+    } catch (error: any) {
+        showError(getErrorMessage(error));
+    } finally {
+        setSaving(false);
+        setAnchorEl(null);
+    }
   };
 
   return (
@@ -42,6 +64,7 @@ export const LanguageSwitcher = () => {
             key={lang.code}
             onClick={() => changeLanguage(lang.code)}
             selected={i18n.language.startsWith(lang.code)}
+            disabled={saving}
           >
             {lang.label}
           </MenuItem>

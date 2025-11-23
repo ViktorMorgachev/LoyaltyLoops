@@ -7,7 +7,6 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.loyaltyloop.server.database.DatabaseFactory
 import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.server.routes.authRoutes
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.Authentication
@@ -24,18 +23,23 @@ import kotlinx.serialization.json.Json
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.routes.adminRoutes
+import io.loyaltyloop.server.routes.authRoutes
 import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
+import io.loyaltyloop.server.routes.testSupportRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.HealthResponse
-import io.loyaltyloop.shared.models.UserRole
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
-
+import io.loyaltyloop.server.utils.handleError
+import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.shared.models.AppErrorCode
 
 
 fun main(args: Array<String>) {
@@ -72,16 +76,19 @@ fun Application.module() {
     val jwtAudience = environment.config.property("jwt.audience").getString()
     val jwtRealm = environment.config.property("jwt.realm").getString()
 
-
-
     DatabaseFactory.init(environment.config)
-
 
     // Создаем экземпляр репозитория
     val userRepository = UserRepository()
     val partnerRepository = PartnerRepository()
+    val transactionRepository = TransactionRepository()
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
+    val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository)
+
+    // Start Background Jobs
+    val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService()
+    loyaltyEngine.start(this)
 
     install(ContentNegotiation) {
         json(Json {
@@ -127,14 +134,7 @@ fun Application.module() {
 
     install(StatusPages) {
         exception<Throwable> { call, cause ->
-            // Логируем в консоль сервера
-            cause.printStackTrace()
-
-            // Отдаем клиенту JSON с причиной
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                ApiMessage("Server Error: ${cause.localizedMessage}")
-            )
+            handleError(call, cause)
         }
     }
 
@@ -162,11 +162,18 @@ fun Application.module() {
 
             // 3. Выдаем права
             if (user != null) {
-                val created = userRepository.createSystemStaff(
-                    userId = user.id,
-                    role = io.loyaltyloop.shared.models.UserRole.PLATFORM_SUPER_ADMIN,
-                    defaultPinHash = defaultPin
-                )
+                val created = try {
+                    userRepository.createSystemStaff(
+                        userId = user.id,
+                        role = io.loyaltyloop.shared.models.UserRole.PLATFORM_SUPER_ADMIN,
+                        defaultPinHash = defaultPin
+                    )
+                } catch (ex: LoyaltyException) {
+                    if (ex.code != AppErrorCode.ALREADY_JOINED) {
+                        throw ex
+                    }
+                    false
+                }
                 if (created) println("✅ SEEDING: Admin rights granted.")
             }
         }
@@ -174,7 +181,7 @@ fun Application.module() {
 
     routing {
 
-        swaggerUI(path = "swagger", swaggerFile = "openapi.yaml")
+        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
         get("/health") {
             // 1. Делаем реальный пинг
             val isDbAlive = DatabaseFactory.ping()
@@ -198,10 +205,18 @@ fun Application.module() {
         }
 
         // Подключаем наши новые маршруты
-        authRoutes(userRepository, tokenService, otpService)
+        authRoutes(userRepository, partnerRepository, tokenService, otpService)
         clientRoutes(userRepository)
-        terminalRoutes(userRepository, partnerRepository)
-        partnerRoutes(userRepository = userRepository, partnerRepository = partnerRepository)
-        adminRoutes(userRepository, partnerRepository)
+        terminalRoutes(userRepository = userRepository, transactionService = transactionService)
+        partnerRoutes(
+            userRepository = userRepository,
+            partnerRepository = partnerRepository,
+            transactionService = transactionService
+        )
+        adminRoutes(applicationConfig = environment!!.config,   userRepo = userRepository, partnerRepo = partnerRepository)
+        val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
+        if (enableTestSupport) {
+            testSupportRoutes(userRepository)
+        }
     }
 }

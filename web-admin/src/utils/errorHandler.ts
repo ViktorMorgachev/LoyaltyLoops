@@ -1,6 +1,17 @@
+import i18n from '../i18n';
+
 export const getErrorMessage = (error: any): string => {
   // 1. Если сервер прислал ответ (например, 400 или 500)
   if (error.response) {
+    const serverCode = error.response.data?.code;
+    if (serverCode) {
+      const key = `errors.${serverCode}`;
+      const translated = i18n.t(key);
+      if (translated && translated !== key) {
+        return translated;
+      }
+    }
+
     // Пытаемся достать сообщение из JSON (наш ApiMessage)
     const serverMessage = error.response.data?.message;
     if (serverMessage) return serverMessage;

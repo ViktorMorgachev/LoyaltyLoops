@@ -6,6 +6,7 @@ enum class UserRole {
     CLIENT,         // Обычный
     CASHIER,        // Сотрудник точки
     PARTNER_ADMIN,  // Владелец бизнеса
+    PARTNER_MANAGER, // Менеджер партнера
 
     // Системные роли
     PLATFORM_SUPER_ADMIN, // Бог
@@ -21,5 +22,11 @@ data class UserDto(
     val lastName: String? = null,
     val email: String? = null,
     val qrSecret: String,
-    val language: String = "ru"
+    val language: String = "ru",
+    val isFrozenUntil: Long? = null
+)
+
+@Serializable
+data class TestApiErrors(
+    val apiError: AppErrorCode
 )

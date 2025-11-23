@@ -21,7 +21,44 @@ export const resources = {
         block: "Блок",
         unblock: "Разблок",
         status_active: "Активен",
-        status_not_paid: "Не оплачена"
+        status_not_paid: "Не оплачена",
+        week: "Неделя",
+        month: "Месяц",
+        months: "Месяцев",
+        year: "Год",
+        revenue_chart: "Динамика Выручки",
+        required: "Обязательно"
+      },
+      errors: {
+        INVALID_PHONE: "Неверный формат номера",
+        INVALID_CODE: "Неверный код",
+        CODE_EXPIRED: "Код истек",
+        USER_NOT_FOUND: "Пользователь не найден",
+        USER_CREATION_FAILED: "Ошибка создания пользователя",
+        TOKEN_EXPIRED: "Сессия истекла",
+        TOKEN_INVALID: "Ошибка сессии (Токен невалиден)",
+        INVALID_PIN: "Неверный PIN",
+        FORBIDDEN: "Доступ запрещен",
+        BUSINESS_ALREADY_EXISTS: "У вас уже есть бизнес",
+        BUSINESS_NOT_FOUND: "Бизнес не найден",
+        POINT_NOT_FOUND: "Точка не найдена",
+        UNKNOWN_ERROR: "Неизвестная ошибка",
+        INTERNAL_ERROR: "Внутренняя ошибка",
+        INVALID_REQUEST: "Ошибка запроса",
+        UNAUTHORIZED: "Требуется авторизация",
+        NOT_FOUND: "Ресурс не найден",
+        ACCOUNT_FROZEN: "Аккаунт временно заморожен",
+        POINT_INACTIVE: "Торговая точка не активна",
+        QR_EXPIRED: "Срок действия QR истек",
+        INVALID_QR_SIGNATURE: "Поддельный QR код",
+        INVALID_AMOUNT: "Некорректная сумма операции",
+        INVALID_TIER_VALUE: "Нельзя использовать отрицательные значения в уровнях",
+        SUCCESS: "Успешно",
+        INVALID_INVITE_CODE: "Неверный инвайт код",
+        ALREADY_JOINED: "Вы уже присоединены",
+        SECURITY_QR_SECRET_MISSING: "Критическая ошибка безопасности (QR Secret)",
+        LOYALTY_SETTING_NOT_FOUND: "Настройки лояльности не найдены",
+        CARD_NOT_FOUND: "Карта лояльности не найдена",
       },
       auth: {
         title: "Вход в панель управления",
@@ -35,21 +72,133 @@ export const resources = {
       },
       menu: {
         title: "Консоль",
-        dashboard: "Мои Точки",
-        create_business: "Создать Бизнес",
-        settings: "Настройки Бизнеса",
+        
+        // Общее
+        dashboard: "Главная",
+        switch_role: "Сменить роль",
         profile: "Профиль",
-        admin_partners: "Все Партнеры",
-        logout: "Выйти"
+        logout: "Выйти",
+        about_project: "О проекте",
+        join_platform_manager: "Стать менеджером платформы",
+        join_partner_manager: "Стать менеджером партнёра",
+
+        // Партнер
+        my_points: "Торговые точки",
+        my_clients: "Клиенты",
+        transactions: "История",
+        settings: "Настройки",
+        staff: "Сотрудники",
+
+        // Админ
+        admin_dashboard: "Обзор",
+        admin_partners: "Партнеры",
+        
+        // Новичок
+        create_business: "Создать Бизнес"
       },
-      // --- НАСТРОЙКИ БИЗНЕСА (Которых не хватало) ---
+      join_partner: {
+        title: "Присоединиться как менеджер партнёра",
+        subtitle: "Введите код приглашения менеджера от владельца бизнеса.",
+        code_label: "Код приглашения",
+        submit: "Присоединиться",
+        success: "Готово! Вы стали менеджером партнёра.",
+        info: "После успешного присоединения вам будут доступны разделы персонала и аналитики конкретного партнёра."
+      },
+      join_platform_manager: {
+        title: "Стать менеджером платформы",
+        subtitle: "Введите код приглашения платформы. Менеджеры получают доступ только для чтения.",
+        code_label: "Код приглашения",
+        submit: "Присоединиться",
+        success: "Отлично! Вы получили роль менеджера платформы.",
+        info: "Менеджеры платформы видят аналитику и статусы, но не могут изменять настройки. Код выдаёт администратор платформы."
+      },
+      select_role: {
+        title: "Выберите рабочее пространство",
+        subtitle: "Роли определяют набор доступных разделов и прав. Выберите актуальную задачу."
+      },
+      about: {
+        title: "О проекте LoyaltyLoop",
+        section_mission: "Миссия",
+        section_focus: "Фокус развития",
+        section_contact: "Связь и идеи",
+        mission_text: "Мы строим платформу лояльности нового поколения для локальных сетей в странах СНГ. Цель — упростить запуск гибких программ кешбэка, визитов и гибридных сценариев.",
+        items: {
+          architecture: "Масштабируемая архитектура: единый бэкенд + веб + мобильное приложение.",
+          security: "Безопасность: централизованная работа с токенами, контроль прав и журналирование действий.",
+          localization: "Локализация и удобные интерфейсы на русском/английском.",
+          soon: "Скоро: расширенная аналитика, коммуникации и автоматизация маркетинга."
+        },
+        loyalty_types: {
+          title: "Варианты систем лояльности",
+          tiered_title: "Накопительная (Tiered LTV)",
+          tiered_desc: "Клиент копит оборот, повышает уровень и получает больший кешбэк. Проценты задаются по уровням: Start, Silver, Gold.",
+          visits_title: "Счетчик визитов",
+          visits_desc: "Каждый визит приближает к подарку: например, каждый 6-й кофе бесплатно. Подходит для сервисов с частыми покупками.",
+          hybrid_title: "HYBRID: визиты + кешбэк",
+          hybrid_desc: "Кассир выбирает стратегию после сканирования: либо начислить визит, либо рассчитать кешбэк с возможностью списания баллов."
+        },
+        faq: {
+          title: "FAQ — популярные вопросы",
+          cashback_q: "Как считается кешбэк?",
+          cashback_a: "Бонусы начисляются только на денежную часть платежа по текущему уровню клиента. Если включена опция «Начислять при смешанной оплате», учитываем сумму после списания баллов.",
+          visits_q: "Можно ли изменить цель по визитам?",
+          visits_a: "Да. Во вкладке настроек укажите целевое количество визитов. Новое значение применяется ко всем новым посетителям.",
+          downgrade_q: "Что происходит при простое клиента?",
+          downgrade_a: "Используйте поле «Срок до сброса уровня». Если клиент не совершает покупок указанное количество дней, уровень автоматически снижается.",
+          staff_q: "Чем отличаются владелец и менеджер?",
+          staff_a: "PARTNER_ADMIN может менять настройки, увольнять сотрудников и удалять точки. PARTNER_MANAGER работает в режиме только чтение и не видит критичные действия."
+        },
+        contact_text: "Если есть идеи или предложения, напишите основателю в поддержку — мы быстро реагируем на фидбек."
+      },
+      not_found: {
+        title: "Страница не найдена",
+        subtitle: "Возможно, ссылка устарела или страница была удалена.",
+        to_profile: "В профиль",
+        to_login: "На страницу входа"
+      },
+      // --- ИСТОРИЯ ---
+      history: {
+        title: "История Транзакций",
+        table_date: "Дата",
+        table_point: "Точка",
+        table_type: "Тип",
+        table_amount: "Сумма",
+        table_bonus: "Бонусы",
+        empty: "Транзакций пока нет",
+        type_visit: "Визит (+1)",
+        type_earn: "Покупка (Начисление)",
+        type_spend: "Списание"
+      },
+      // --- СОТРУДНИКИ (NEW) ---
+      staff: {
+        title: "Управление Персоналом",
+        managers: "Менеджеры",
+        cashiers: "Кассиры",
+        invite_manager: "Пригласить менеджера",
+        invite_hint: "Отправьте этот код сотруднику, чтобы он присоединился как Менеджер:",
+        generate_btn: "Сгенерировать код",
+        role: "Роль",
+        name: "Имя",
+        phone: "Телефон",
+        active: "Активен",
+        fire: "Уволить",
+        empty_managers: "Менеджеров пока нет",
+        empty_cashiers: "Кассиров пока нет",
+        confirm_fire: "Вы уверены, что хотите уволить этого сотрудника?",
+        multi_points: "{{count}} Точки",
+        role_manager: "Менеджер",
+        role_cashier: "Кассир"
+      },
+      // --- НАСТРОЙКИ БИЗНЕСА ---
       settings: {
         title: "Настройки Бизнеса",
         name_label: "Название бренда",
         color_label: "Фирменный цвет",
         color_helper: "Этот цвет будет отображаться на карте клиента",
         logo_label: "Ссылка на логотип",
-        save_success: "Настройки успешно сохранены"
+        save_success: "Настройки успешно сохранены",
+        expiration_policy: "Политика сгорания (для всех точек)",
+        expiration_hint: "Правила сгорания настраиваются здесь и действуют на всю сеть."
       },
       dashboard: {
         title: "Мои торговые точки",
@@ -64,6 +213,8 @@ export const resources = {
         create_business_btn: "Создать Бизнес",
         modal_biz_title: "Регистрация Компании",
         modal_biz_name: "Название бизнеса",
+        modal_biz_name_required: "Название бизнеса обязательно",
+        modal_biz_logo: "Ссылка на логотип",
 
         // Поля формы создания точки
         label_point_name: "Название филиала",
@@ -71,6 +222,13 @@ export const resources = {
         label_strategy: "Стратегия Лояльности",
         label_target: "Цель (сколько собрать?)",
         label_cashback: "Начальный Кешбэк (%)",
+        label_currency: "Валюта",
+        country_label: "Страна",
+        pin_label: "PIN владельца (4-12 цифр)",
+        pin_confirm_label: "Подтвердите PIN",
+        pin_hint: "PIN нужен для всех критичных действий в админке",
+        pin_length_error: "PIN должен состоять минимум из 4 цифр",
+        pin_confirm_error: "PIN и подтверждение не совпадают",
 
         // --- НОВЫЕ КЛЮЧИ ДЛЯ УРОВНЕЙ ---
         label_lvl_start: "Старт (%)",
@@ -79,7 +237,6 @@ export const resources = {
 
         hint_target: "Например: 6 (каждый 6-й бесплатно)",
         hint_cashback: "Например: 5 (начнем с 5%)",
-        // В React i18next интерполяция делается через {{ }}
         hint_tiered_levels: "Будут созданы 3 уровня: Старт ({{base}}%), Серебро ({{mid}}%), Золото ({{max}}%)",
 
         types: {
@@ -91,20 +248,100 @@ export const resources = {
         },
         strategies: {
             TIERED_LTV: "Накопительная (Кешбэк)",
-            VISIT_COUNTER: "Счетчик (N-й в подарок)"
+            VISIT_COUNTER: "Счетчик (N-й в подарок)",
+            HYBRID: "Смешанная (Баллы + Визиты)"
         }
+      },
+      countries: {
+        KG: "Кыргызстан",
+        KZ: "Казахстан",
+        UZ: "Узбекистан",
+        BY: "Беларусь"
       },
       profile: {
         title: "Мой Профиль",
         id_label: "ID Пользователя (нажмите для копирования)",
         phone_label: "Телефон",
         name_label: "Имя",
-        save_btn: "Сохранить изменения"
+        email_label: "E-mail",
+        save_btn: "Сохранить изменения",
+        my_workspaces: "Мои рабочие области",
+        current_role: "Текущая",
+        switch_role: "Перейти",
+        no_workspaces: "Рабочие области не найдены",
+        pin_protected: "Защищено PIN",
+        switched_success: "Переключено на {{name}}",
+        join_section: "Дополнительные действия",
+        language_saved: "Язык сохранён",
+        freeze_alert: "Аккаунт заморожен до {{date}}. Изменения временно недоступны.",
+        pin_section_title: "Управление PIN владельца",
+        pin_current_label: "Текущий PIN",
+        pin_new_label: "Новый PIN",
+        pin_confirm_label: "Подтверждение PIN",
+        pin_change_btn: "Сменить PIN",
+        pin_change_success: "PIN успешно обновлён",
+        pin_reset_btn: "Сбросить PIN",
+        pin_reset_success: "PIN сброшен. Аккаунт заморожен на 24 часа.",
+        pin_reset_confirm: "Сбросить PIN? Все действия будут заблокированы на 24 часа.",
+        pin_length_error: "PIN должен содержать 4-12 цифр",
+        pin_confirm_error: "PIN и подтверждение не совпадают"
+      },
+      point_details: {
+        title: "Управление Филиалом",
+        tab_overview: "Обзор",
+        tab_settings: "Настройки",
+        tab_staff: "Персонал",
+        burn_bonuses: "Срок жизни бонусов (дней)",
+        downgrade_tier: "Срок до сброса уровня (дней)",
+        days: "дн.",
+        delete_point: "Удалить точку",
+        fire_cashier: "Уволить",
+        confirm_delete: "Вы уверены? Это действие необратимо.",
+        invite_code: "Код для кассира",
+        save_settings: "Сохранить настройки",
+        staff_empty: "Кассиров пока нет",
+        levels_config: "Настройка Уровней",
+        lvl_name: "Название",
+        lvl_threshold: "Порог (сумма)",
+        lvl_percent: "Кешбэк (%)",
+        country_label: "Страна",
+        country_label: "Country",
+        address_label: "Адрес (введите вручную)",
+        max_burn_label: "Макс. % оплаты баллами",
+        max_burn_hint: "Сколько процентов от чека можно покрыть бонусами (0-100)",
+        map_location: "Местоположение на карте",
+        map_hint: "Нажмите на карту, чтобы выбрать координаты. Адрес можно отредактировать вручную.",
+        latitude_label: "Широта",
+        longitude_label: "Долгота",
+        coords_required: "Укажите координаты (широту и долготу)",
+        select_on_map: "Указать на карте",
+        edit_on_map: "Изменить на карте",
+        location_selected: "Локация выбрана на карте",
+        map_dialog_title: "Выбор расположения",
+        search_placeholder: "Введите адрес или место",
+        search_button: "Поиск",
+        search_not_found: "Ничего не найдено для запроса",
+        search_error: "Не удалось выполнить поиск адреса",
+        map_required: "Пожалуйста, укажите точное расположение на карте",
+        selected_address: "Выбранный адрес",
+        award_mixed_label: "Начислять кешбэк при смешанной оплате",
+        award_mixed_hint: "Если клиент списывает бонусы и доплачивает деньгами — начислять кешбэк на денежную часть",
+        cashback_rule_hint: "Кешбэк начисляется по уровню клиента только на денежную часть платежа. При списании баллов учитывается оставшаяся сумма.",
+        edit_forbidden: "Только владелец бизнеса может изменять или удалять точку.",
+        readonly_hint: "Вы работаете как менеджер: действия по изменению настроек и увольнению сотрудников недоступны."
       },
       admin: {
         title: "Управление Партнерами",
-        table_owner: "Владелец (ID)",
-        table_country: "Страна"
+        table_owner: "Владелец (Тел)",
+        table_country: "Страна",
+        details_title: "Детали Партнера",
+        total_points: "Всего Точек",
+        total_clients: "Всего Клиентов",
+        total_transactions: "Всего Транзакций",
+        total_revenue: "Общая Выручка",
+        trading_points: "Торговые Точки",
+        no_points: "Точек нет",
+        id: "ID"
       }
     }
   },
@@ -131,7 +368,44 @@ export const resources = {
         block: "Block",
         unblock: "Unblock",
         status_active: "Active",
-        status_not_paid: "Not Paid"
+        status_not_paid: "Not Paid",
+        week: "Week",
+        month: "Month",
+        months: "Months",
+        year: "Year",
+        revenue_chart: "Revenue Dynamics",
+        required: "Required"
+      },
+      errors: {
+        INVALID_PHONE: "Invalid phone number",
+        INVALID_CODE: "Invalid code",
+        CODE_EXPIRED: "Code expired",
+        USER_NOT_FOUND: "User not found",
+        USER_CREATION_FAILED: "User creation failed",
+        TOKEN_EXPIRED: "Session expired",
+        TOKEN_INVALID: "Session error (Token invalid)",
+        INVALID_PIN: "Invalid PIN",
+        FORBIDDEN: "Access denied",
+        BUSINESS_ALREADY_EXISTS: "You already have a business",
+        BUSINESS_NOT_FOUND: "Business not found",
+        POINT_NOT_FOUND: "Point not found",
+        UNKNOWN_ERROR: "Unknown error",
+        INTERNAL_ERROR: "Internal Error",
+        INVALID_REQUEST: "Invalid request",
+        UNAUTHORIZED: "Unauthorized",
+        NOT_FOUND: "Resource not found",
+        ACCOUNT_FROZEN: "Account is temporarily frozen",
+        POINT_INACTIVE: "Trading point is inactive",
+        QR_EXPIRED: "QR code expired",
+        INVALID_QR_SIGNATURE: "Fake QR code",
+        INVALID_AMOUNT: "Invalid amount",
+        INVALID_TIER_VALUE: "Negative tier values are not allowed",
+        SUCCESS: "Success",
+        INVALID_INVITE_CODE: "Invalid invite code",
+        ALREADY_JOINED: "Already joined",
+        SECURITY_QR_SECRET_MISSING: "Critical Security Error (QR Secret)",
+        LOYALTY_SETTING_NOT_FOUND: "Loyalty settings not found",
+        CARD_NOT_FOUND: "Loyalty card not found",
       },
       auth: {
         title: "Admin Panel Login",
@@ -145,12 +419,101 @@ export const resources = {
       },
       menu: {
         title: "Console",
-        dashboard: "My Points",
-        create_business: "Create Business",
-        settings: "Business Settings",
+        
+        // Common
+        dashboard: "Dashboard",
+        switch_role: "Switch Role",
         profile: "Profile",
-        admin_partners: "All Partners",
-        logout: "Logout"
+        logout: "Logout",
+        about_project: "About Project",
+        join_platform_manager: "Become Platform Manager",
+        join_partner_manager: "Join as Partner Manager",
+
+        // Partner
+        my_points: "Trading Points",
+        my_clients: "Clients",
+        transactions: "History",
+        settings: "Settings",
+        staff: "Staff",
+
+        // Admin
+        admin_dashboard: "Overview",
+        admin_partners: "Partners",
+        
+        // New User
+        create_business: "Create Business"
+      },
+      join_partner: {
+        title: "Join as Partner Manager",
+        subtitle: "Enter the invite code provided by the business owner.",
+        code_label: "Invite Code",
+        submit: "Join",
+        success: "Success! You are now a partner manager.",
+        info: "After joining you will gain access to staff, analytics and other partner tools."
+      },
+      join_platform_manager: {
+        title: "Become a Platform Manager",
+        subtitle: "Enter the invite code for read-only platform access.",
+        code_label: "Invite Code",
+        submit: "Join",
+        success: "Great! You now have platform manager access.",
+        info: "Platform managers can view analytics and partner statuses without edit rights. Codes are issued by platform admins."
+      },
+      select_role: {
+        title: "Select workspace",
+        subtitle: "Each role unlocks its own dashboard sections. Pick the workspace you want to work with."
+      },
+      about: {
+        title: "About LoyaltyLoop",
+        section_mission: "Mission",
+        section_focus: "Focus",
+        section_contact: "Contact",
+        mission_text: "We are building the next-gen loyalty platform for local businesses across CIS countries. The goal is to launch cashback, visits and hybrid programs within minutes.",
+        items: {
+          architecture: "Scalable architecture: shared backend + admin web + mobile app.",
+          security: "Security first: centralized token handling, RBAC enforcement and audit logs.",
+          localization: "Localization and UI tailored for Russian/English speaking teams.",
+          soon: "Coming soon: advanced analytics, communication layer and marketing automation."
+        },
+        loyalty_types: {
+          title: "Available loyalty programs",
+          tiered_title: "Tiered cashback (LTV)",
+          tiered_desc: "Customers climb tiers by spending more and receive a higher cashback percentage. Configure Start, Silver and Gold levels.",
+          visits_title: "Visit counter",
+          visits_desc: "Reward every Nth visit. Perfect for coffee shops and services with frequent purchases.",
+          hybrid_title: "HYBRID: visits + cashback",
+          hybrid_desc: "After scanning QR the cashier selects either visit or tiered cashback with optional point burning."
+        },
+        faq: {
+          title: "FAQ",
+          cashback_q: "How is cashback calculated?",
+          cashback_a: "We apply the current tier percentage only to the amount paid with money. If the mixed-payment option is enabled, we accrue bonuses after subtracting spent points.",
+          visits_q: "Can I change the visit target?",
+          visits_a: "Yes, adjust the visit target in settings and it will be applied for new customers.",
+          downgrade_q: "What happens when a client is inactive?",
+          downgrade_a: "Use the downgrade setting to reduce a tier after N inactive days automatically.",
+          staff_q: "What is the difference between owner and manager?",
+          staff_a: "PARTNER_ADMIN can update settings, delete points and fire staff. PARTNER_MANAGER has read-only access without destructive actions."
+        },
+        contact_text: "Have an idea? Ping the founder via support chat — we iterate fast on real feedback."
+      },
+      not_found: {
+        title: "Page not found",
+        subtitle: "The link might be outdated or the page has been moved.",
+        to_profile: "Go to Profile",
+        to_login: "Back to Login"
+      },
+      history: {
+        title: "Transaction History",
+        table_date: "Date",
+        table_point: "Point",
+        table_type: "Type",
+        table_amount: "Amount",
+        table_bonus: "Bonus",
+        empty: "No transactions yet",
+        type_visit: "Visit (+1)",
+        type_earn: "Purchase (Earn)",
+        type_spend: "Redeem"
       },
       settings: {
         title: "Business Settings",
@@ -158,7 +521,28 @@ export const resources = {
         color_label: "Brand Color",
         color_helper: "This color will be displayed on the client card",
         logo_label: "Logo URL",
-        save_success: "Settings saved"
+        save_success: "Settings saved",
+        expiration_policy: "Expiration Policy (Global)",
+        expiration_hint: "Expiration rules are configured here and apply to all branches."
+      },
+      staff: {
+        title: "Staff Management",
+        managers: "Managers",
+        cashiers: "Cashiers",
+        invite_manager: "Invite Manager",
+        invite_hint: "Send this code to the employee to join as a Manager:",
+        generate_btn: "Generate Code",
+        role: "Role",
+        name: "Name",
+        phone: "Phone",
+        active: "Active",
+        fire: "Fire",
+        empty_managers: "No managers yet",
+        empty_cashiers: "No cashiers yet",
+        confirm_fire: "Are you sure you want to fire this employee?",
+        multi_points: "{{count}} Points",
+        role_manager: "Manager",
+        role_cashier: "Cashier"
       },
       dashboard: {
         title: "My Trading Points",
@@ -173,12 +557,21 @@ export const resources = {
         create_business_btn: "Create Business",
         modal_biz_title: "Company Registration",
         modal_biz_name: "Business Name",
+        modal_biz_name_required: "Business name is required",
+        modal_biz_logo: "Logo URL",
 
         label_point_name: "Branch Name",
         label_point_type: "Venue Type",
         label_strategy: "Loyalty Strategy",
         label_target: "Target (how many?)",
         label_cashback: "Base Cashback (%)",
+        label_currency: "Currency",
+        country_label: "Country",
+        pin_label: "Owner PIN (4-12 digits)",
+        pin_confirm_label: "Confirm PIN",
+        pin_hint: "PIN protects critical actions in the admin console",
+        pin_length_error: "PIN must contain at least 4 digits",
+        pin_confirm_error: "PIN and confirmation do not match",
 
         label_lvl_start: "Start (%)",
         label_lvl_silver: "Silver (%)",
@@ -197,20 +590,94 @@ export const resources = {
         },
         strategies: {
             TIERED_LTV: "Cashback (Tiered)",
-            VISIT_COUNTER: "Visits (Nth free)"
+            VISIT_COUNTER: "Visits (Nth free)",
+            HYBRID: "Hybrid (Points + Visits)"
         }
+      },
+      countries: {
+        KG: "Kyrgyzstan",
+        KZ: "Kazakhstan",
+        UZ: "Uzbekistan",
+        BY: "Belarus"
       },
       profile: {
         title: "My Profile",
         id_label: "User ID (Click to copy)",
         phone_label: "Phone",
         name_label: "Name",
-        save_btn: "Save Changes"
+        email_label: "E-mail",
+        save_btn: "Save Changes",
+        my_workspaces: "My Workspaces",
+        current_role: "Current",
+        switch_role: "Switch",
+        no_workspaces: "No workspaces found",
+        pin_protected: "PIN protected",
+        switched_success: "Switched to {{name}}",
+        join_section: "Additional actions",
+        language_saved: "Language updated",
+        freeze_alert: "Account is frozen until {{date}}. Changes are temporarily unavailable.",
+        pin_section_title: "Owner PIN management",
+        pin_current_label: "Current PIN",
+        pin_new_label: "New PIN",
+        pin_confirm_label: "Confirm PIN",
+        pin_change_btn: "Change PIN",
+        pin_change_success: "PIN updated successfully",
+        pin_reset_btn: "Reset PIN",
+        pin_reset_success: "PIN reset. Account is frozen for 24 hours.",
+        pin_reset_confirm: "Reset PIN? All actions will be blocked for 24 hours.",
+        pin_length_error: "PIN must contain 4-12 digits",
+        pin_confirm_error: "PIN and confirmation do not match"
+      },
+      point_details: {
+        title: "Branch Management",
+        tab_overview: "Overview",
+        tab_settings: "Settings",
+        tab_staff: "Staff",
+        burn_bonuses: "Points Expiration (days)",
+        downgrade_tier: "Tier Reset (days)",
+        days: "days",
+        delete_point: "Delete Branch",
+        fire_cashier: "Fire",
+        confirm_delete: "Are you sure? This action is irreversible.",
+        invite_code: "Cashier Invite Code",
+        save_settings: "Save Settings",
+        staff_empty: "No cashiers yet",
+        address_label: "Address (manual entry)",
+        max_burn_label: "Max Points Payment %",
+        max_burn_hint: "What percentage of the bill can be paid with points (0-100)",
+        map_location: "Map Location",
+        map_hint: "Click on the map to select coordinates. You can edit the address manually afterwards.",
+        latitude_label: "Latitude",
+        longitude_label: "Longitude",
+        coords_required: "Latitude and longitude are required",
+        select_on_map: "Select on map",
+        edit_on_map: "Edit on map",
+        location_selected: "Location selected from map",
+        map_dialog_title: "Choose Location",
+        search_placeholder: "Enter address or place",
+        search_button: "Search",
+        search_not_found: "Nothing found for this query",
+        search_error: "Unable to search address",
+        map_required: "Please provide a location using the map",
+        selected_address: "Selected address",
+        award_mixed_label: "Award cashback on mixed payment",
+        award_mixed_hint: "Accrue bonuses on the cash portion even if the client redeems points",
+        cashback_rule_hint: "Cashback is based on the client tier and only on the money part of the payment. When points are spent we use the remaining amount.",
+        edit_forbidden: "Only the business owner can modify or delete a point.",
+        readonly_hint: "You are in manager mode — editing settings and firing staff is disabled."
       },
       admin: {
         title: "Partner Management",
-        table_owner: "Owner (ID)",
-        table_country: "Country"
+        table_owner: "Owner (Phone)",
+        table_country: "Country",
+        details_title: "Partner Details",
+        total_points: "Total Points",
+        total_clients: "Total Clients",
+        total_transactions: "Total Transactions",
+        total_revenue: "Total Revenue",
+        trading_points: "Trading Points",
+        no_points: "No points found",
+        id: "ID"
       }
     }
   }

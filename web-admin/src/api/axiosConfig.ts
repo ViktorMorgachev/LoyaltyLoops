@@ -1,16 +1,78 @@
 import axios from 'axios';
+import i18n from '../i18n';
 
 // Адрес твоего Ktor сервера
 // Важно: Сервер должен быть запущен на порту 8080
 const BASE_URL = 'http://localhost:8080';
+const resolveInitialLanguage = (): string => {
+    if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem('lang') || i18n.language || 'ru';
+    }
+    return i18n.language || 'ru';
+};
+const initialLanguage = resolveInitialLanguage();
 
 export const api = axios.create({
     baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json',
-        'Accept-Language': 'ru' // Язык админки по умолчанию
+        'Accept-Language': initialLanguage
     }
 });
+api.defaults.headers.common['Accept-Language'] = initialLanguage;
+
+const performLogout = () => {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    window.location.href = '/login';
+};
+
+const refreshableStatuses = [401];
+const refreshableCodes = ['TOKEN_EXPIRED', 'TOKEN_INVALID', 'UNAUTHORIZED'];
+let refreshPromise: Promise<string> | null = null;
+
+const requestRefresh = async (): Promise<string> => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+        throw new Error('Refresh token missing');
+    }
+
+    const response = await axios.post(
+        `${BASE_URL}/auth/refresh`,
+        { refreshToken },
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept-Language': i18n.language
+            }
+        }
+    );
+
+    const { accessToken, refreshToken: newRefreshToken, workspaces } = response.data;
+    localStorage.setItem('accessToken', accessToken);
+    if (newRefreshToken) {
+        localStorage.setItem('refreshToken', newRefreshToken);
+    }
+    if (workspaces) {
+        localStorage.setItem('workspaces', JSON.stringify(workspaces));
+    }
+    api.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
+
+    return accessToken;
+};
+
+const refreshAccessToken = () => {
+    if (!refreshPromise) {
+        refreshPromise = requestRefresh()
+            .catch((error) => {
+                throw error;
+            })
+            .finally(() => {
+                refreshPromise = null;
+            });
+    }
+    return refreshPromise;
+};
 
 // --- ИНТЕРЦЕПТОР ЗАПРОСА ---
 // Автоматически добавляет токен, если он есть в localStorage
@@ -19,26 +81,82 @@ api.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+    // Обновляем заголовок языка при каждом запросе (если пользователь сменил язык)
+    config.headers['Accept-Language'] = i18n.language;
+    
     return config;
 }, (error) => {
     return Promise.reject(error);
 });
 
 // --- ИНТЕРЦЕПТОР ОТВЕТА ---
-// Если токен протух (401), выкидываем на логин
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response && error.response.status === 401) {
-            // Если это не сам запрос логина (чтобы не зациклить)
-            if (!error.config.url.includes('/auth/login')) {
-                console.warn('Session expired, logging out...');
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                // Жесткая перезагрузка на страницу входа
-                window.location.href = '/login';
+        const originalRequest = error.config || {};
+        if (process.env.NODE_ENV !== 'production') {
+            console.warn(
+                '[API] Error response',
+                {
+                    status: error.response?.status,
+                    code: error.response?.data?.code,
+                    url: originalRequest?.url,
+                }
+            );
+        }
+
+        // Локализация ошибок
+        if (error.response?.data?.code) {
+            const code = error.response.data.code;
+            const key = `errors.${code}`;
+            const translated = i18n.t(key);
+            if (translated && translated !== key) {
+                error.message = translated;
             }
         }
+
+        const code = error.response?.data?.code;
+        const status = error.response?.status;
+        const isLoginOrRefresh = originalRequest?.url?.includes('/auth/login') || originalRequest?.url?.includes('/auth/refresh');
+
+        const canAttemptRefresh =
+            !isLoginOrRefresh &&
+            !originalRequest._retry &&
+            (refreshableStatuses.includes(status) || (code && refreshableCodes.includes(code)));
+
+        if (canAttemptRefresh) {
+            originalRequest._retry = true;
+            try {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[API] Trying to refresh access token…');
+                }
+                const newToken = await refreshAccessToken();
+                if (newToken) {
+                    originalRequest.headers = originalRequest.headers || {};
+                    originalRequest.headers.Authorization = `Bearer ${newToken}`;
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.warn('[API] Token refreshed, repeating request', originalRequest?.url);
+                    }
+                    return api(originalRequest);
+                }
+            } catch (refreshError) {
+                if (process.env.NODE_ENV !== 'production') {
+                    console.warn('[API] Refresh failed, forcing logout');
+                }
+                performLogout();
+                return Promise.reject(refreshError);
+            }
+        }
+
+        const authCodes = ['UNAUTHORIZED', 'TOKEN_INVALID', 'INVALID_CODE', 'CODE_EXPIRED', 'USER_NOT_FOUND'];
+        const shouldForceLogout =
+            (code && authCodes.includes(code)) ||
+            status === 401;
+
+        if (shouldForceLogout && !isLoginOrRefresh) {
+            performLogout();
+        }
+
         return Promise.reject(error);
     }
 );

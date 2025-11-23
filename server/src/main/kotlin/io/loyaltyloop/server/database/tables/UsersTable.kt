@@ -19,6 +19,7 @@ object UsersTable : Table("users") {
 
     val isSuperAdmin = bool("is_super_admin").default(false)
     val isManager = bool("is_manager").default(false)
+    val frozenUntil = long("frozen_until").nullable()
     // ------------------
 
     override val primaryKey = PrimaryKey(id)

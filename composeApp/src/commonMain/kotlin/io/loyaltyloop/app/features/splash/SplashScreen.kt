@@ -24,6 +24,10 @@ class SplashScreen : Screen {
         val viewModel = koinScreenModel<SplashScreenModel>()
         val state by viewModel.state.collectAsState()
 
+        LaunchedEffect(Unit){
+            viewModel.checkSession()
+        }
+
         // Навигация через Events (одноразовые события)
         LaunchedEffect(Unit) {
             viewModel.events.collect { event ->

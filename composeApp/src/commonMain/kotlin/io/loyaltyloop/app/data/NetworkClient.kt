@@ -22,6 +22,7 @@ import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.loyaltyloop.app.config.SERVER_URL
+import io.loyaltyloop.app.data.network.jsonParser
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.AuthResponse
@@ -35,20 +36,15 @@ object NetworkClient {
 
     fun create(engine: HttpClientEngine, tokenStorage: TokenStorage,  sessionManager: SessionManager): HttpClient {
         return HttpClient(engine) {
-
             // 1. JSON
             install(ContentNegotiation) {
-                json(Json {
-                    prettyPrint = true
-                    isLenient = true
-                    ignoreUnknownKeys = true
-                })
+                json(jsonParser)
             }
 
             // 2. LOGS
             install(Logging) {
                 // Связываем Ktor с Kermit
-                logger = object : io.ktor.client.plugins.logging.Logger {
+                logger = object : Logger {
                     override fun log(message: String) {
                         netLog.write(message)
                     }
@@ -120,7 +116,10 @@ object NetworkClient {
             // 4. URL
             defaultRequest {
                 url(SERVER_URL)
-                header(HttpHeaders.AcceptLanguage, "ru") // TODO: Локаль
+                // TODO: Локаль добить функционал (думаю по умолчанию при старте приложения устанавливать локаль с
+                //  системы но и давать сменить локаль в личном профиле и тут его слать а так же при получении профиля
+                //  устанавливать локаль с его профиля и добавить флаг для реализации (isNotSetLocale чтобы понимать откуда брать язык (с системы или с профиля)
+                header(HttpHeaders.AcceptLanguage, "ru")
             }
         }
     }

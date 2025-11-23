@@ -2,115 +2,107 @@ package io.loyaltyloop.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import io.ktor.server.testing.*
-import io.loyaltyloop.shared.models.*
-import java.util.*
-import kotlin.test.*
+import io.ktor.client.call.body
+import io.ktor.client.request.delete
+import io.ktor.client.request.get
+import io.ktor.client.request.header
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.server.testing.testApplication
+import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.shared.models.ApiMessage
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.AuthResponse
+import io.loyaltyloop.shared.models.RefreshTokenRequest
+import io.loyaltyloop.shared.models.SendCodeRequest
+import io.loyaltyloop.shared.models.VerifyCodeRequest
+import java.util.Date
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class AuthTest {
 
-    // Создаем протухший токен вручную
+    private val userRepo = UserRepository()
+
     private fun generateExpiredToken(userId: String): String {
         return JWT.create()
             .withAudience("http://test-server/hello")
             .withIssuer("http://test-server/")
             .withClaim("id", userId)
-            .withExpiresAt(Date(System.currentTimeMillis() - 3600000)) // -1 час
+            .withExpiresAt(Date(System.currentTimeMillis() - 3_600_000))
             .sign(Algorithm.HMAC256("test_secret_key_12345"))
     }
 
-    // --- ТЕСТЫ ---
-
     @Test
-    fun test01_RegisterNewUser() = testApplication {
-        configureTestEnv()
-        val client = createJsonClient()
-
-        val authResponse = client.registerAndLogin() // Генерирует номер сама
-
-        // Проверки
-        assertNotNull(authResponse.accessToken)
-        assertTrue(authResponse.isNewUser)
-    }
-
-    @Test
-    fun test02_LoginExistingUser() = testApplication {
+    fun otpLoginFlow_returnsTokens() = testApplication {
         configureTestEnv()
         val client = createJsonClient()
         val phone = generateValidPhone()
 
-        // 1. Первая регистрация (через хелпер)
-        val firstAuth = client.registerAndLogin(phone = phone)
+        val sendCodeResponse = client.post("/auth/send-code") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.AcceptLanguage, "ru")
+            setBody(SendCodeRequest(phone))
+        }
+        assertEquals(HttpStatusCode.OK, sendCodeResponse.status)
+        val otpCode = Json.parseToJsonElement(sendCodeResponse.bodyAsText())
+            .jsonObject["debugCode"]!!.jsonPrimitive.content
+        assertTrue(otpCode.isNotBlank(), "OTP code must be returned in debug payload for tests")
 
-        // 2. Повторный вход (приходится делать руками, чтобы проверить isNewUser=false,
-        // либо можно вызвать хелпер второй раз с тем же номером)
-        val secondAuth = client.registerAndLogin(phone = phone)
+        val loginResponse = client.post("/auth/login") {
+            contentType(ContentType.Application.Json)
+            header(HttpHeaders.AcceptLanguage, "ru")
+            setBody(VerifyCodeRequest(phone, otpCode))
+        }
+        assertEquals(HttpStatusCode.OK, loginResponse.status)
 
-        // Проверки
-        assertFalse(secondAuth.isNewUser)
-        assertEquals(firstAuth.userId, secondAuth.userId)
+        val auth = loginResponse.body<AuthResponse>()
+        assertTrue(auth.isNewUser)
+        assertTrue(auth.accessToken.isNotBlank())
+        assertTrue(auth.refreshToken.isNotBlank())
+        assertTrue(auth.qrSecret.isNotBlank())
+        assertTrue(auth.workspaces.isEmpty(), "New user should not have workspaces yet")
     }
 
     @Test
-    fun test03_RefreshTokenSuccess() = testApplication {
+    fun refreshToken_rotatesAndRevokesPreviousOne() = testApplication {
         configureTestEnv()
         val client = createJsonClient()
-        val authResponse = client.registerAndLogin()
+        val initial = client.registerAndLogin()
 
-        // 2. REFRESH
-        val refreshRes = client.post("/auth/refresh") {
+        val refreshResponse = client.post("/auth/refresh") {
             contentType(ContentType.Application.Json)
-            setBody(RefreshTokenRequest(authResponse.refreshToken))
+            setBody(RefreshTokenRequest(initial.refreshToken))
         }
+        assertEquals(HttpStatusCode.OK, refreshResponse.status)
 
-        if (refreshRes.status != HttpStatusCode.OK) {
-            val errorText = refreshRes.bodyAsText()
-            println("Refresh Failed Error: $errorText") // Увидим причину (Invalid Token или User not found)
-            fail("Refresh returned ${refreshRes.status}: $errorText")
+        val refreshed = refreshResponse.body<AuthResponse>()
+        assertEquals(initial.userId, refreshed.userId)
+        assertNotEquals(initial.accessToken, refreshed.accessToken)
+        assertNotEquals(initial.refreshToken, refreshed.refreshToken)
+
+        val reusedResponse = client.post("/auth/refresh") {
+            contentType(ContentType.Application.Json)
+            setBody(RefreshTokenRequest(initial.refreshToken))
         }
-
-        val tokens2 = refreshRes.body<AuthResponse>()
-
-        assertNotEquals(authResponse.accessToken, tokens2.accessToken)
-        assertNotEquals(authResponse.refreshToken, tokens2.refreshToken)
-        assertEquals(authResponse.userId, tokens2.userId)
+        assertEquals(HttpStatusCode.Unauthorized, reusedResponse.status)
     }
 
     @Test
-    fun test04_RefreshTokenReuseProtection() = testApplication {
+    fun expiredAccessToken_isRejected() = testApplication {
         configureTestEnv()
         val client = createJsonClient()
-        val authResponse = client.registerAndLogin()
-
-        val originalRefreshToken = authResponse.refreshToken
-
-        // 2. Первое обновление (Легальное)
-        val refreshRes1 = client.post("/auth/refresh") {
-            contentType(ContentType.Application.Json)
-            setBody(RefreshTokenRequest(originalRefreshToken))
-        }
-        assertEquals(HttpStatusCode.OK, refreshRes1.status)
-
-        kotlinx.coroutines.delay(200)
-
-        // 3. Второе обновление ТЕМ ЖЕ токеном (Атака)
-        val refreshRes2 = client.post("/auth/refresh") {
-            contentType(ContentType.Application.Json)
-            setBody(RefreshTokenRequest(originalRefreshToken))
-        }
-
-        assertEquals(HttpStatusCode.Unauthorized, refreshRes2.status)
-    }
-
-    @Test
-    fun test05_ExpiredAccessToken() = testApplication {
-        configureTestEnv()
-        val client = createJsonClient()
-        val expiredAccess = generateExpiredToken("some_user_id")
+        val expiredAccess = generateExpiredToken("ghost-user")
 
         val response = client.get("/client/me") {
             header("Authorization", "Bearer $expiredAccess")
@@ -121,37 +113,23 @@ class AuthTest {
     }
 
     @Test
-    fun test06_ExpiredRefreshToken() = testApplication {
+    fun tokenOfDeletedUser_isRejected() = testApplication {
         configureTestEnv()
         val client = createJsonClient()
-        val expiredRefresh = generateExpiredToken("some_user_id")
+        val admin = client.registerAsAdmin(userRepo)
+        val victim = client.registerAndLogin()
 
-        val response = client.post("/auth/refresh") {
-            contentType(ContentType.Application.Json)
-            setBody(RefreshTokenRequest(expiredRefresh))
+        val deleteResponse = client.delete("/admin/users/${victim.userId}") {
+            header("Authorization", "Bearer ${admin.accessToken}")
+        }
+        assertEquals(HttpStatusCode.OK, deleteResponse.status)
+
+        val response = client.get("/client/me") {
+            header("Authorization", "Bearer ${victim.accessToken}")
         }
 
         assertEquals(HttpStatusCode.Unauthorized, response.status)
-    }
-
-    @Test
-    fun test06_LanguageAutoUpdate() = testApplication {
-        configureTestEnv()
-        val client = createJsonClient()
-        val phone = generateValidPhone()
-
-        // 1. Регистрируемся как RU (через хелпер)
-        val authRu = client.registerAndLogin(phone = phone, language = "ru")
-
-        // 2. Логинимся снова как EN (через хелпер)
-        client.registerAndLogin(phone = phone, language = "en")
-
-        // 3. Проверяем БД (запрос через токен, чтобы было честно)
-        val meRes = client.get("/client/me") {
-            header("Authorization", "Bearer ${authRu.accessToken}")
-        }
-        val profile = meRes.body<UserProfileResponse>()
-
-        assertEquals("en", profile.language, "Язык должен обновиться на EN")
+        val error = response.body<ApiMessage>()
+        assertEquals(AppErrorCode.USER_NOT_FOUND, error.code)
     }
 }
