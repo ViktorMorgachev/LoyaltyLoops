@@ -4,14 +4,16 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
-import io.loyaltyloop.app.data.network.UnauthorizedException
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.NetworkResult
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,7 +82,6 @@ class SplashScreenModel(
 
             repository.getProfile()
                 .onSuccess { profile ->
-                    // Обновляем сессию (воркспейсы)
                     sessionManager.updateWorkspaces(profile.workspaces)
 
                     if (profile.firstName.isNullOrBlank()) {
@@ -91,30 +92,14 @@ class SplashScreenModel(
                         _events.send(Event.NavigateToHome)
                     }
                 }
-                .onFailure { error ->
-                    log.write("Profile check failed", LogType.Error, error)
-                    handleError(error)
+                .onFailure { exception ->
+                    log.write("Profile check failed", LogType.Error, exception)
+                    _state.value = State(isLoading = false, error = UiText.Resource(Res.string.error_network))
                 }
-        }
-    }
-
-    private suspend fun handleError(error: Throwable) {
-        when (error) {
-            is UnauthorizedException -> {
-                // Токен протух окончательно -> Логин
-                tokenStorage.clear()
-                _events.send(Event.NavigateToLogin)
-            }
-            else -> {
-                // Сетевая или серверная ошибка -> Показываем UI ошибки
-                val errorText = when (error) {
-                    is NetworkException -> UiText.Resource(Res.string.error_network)
-                    is ServerException -> UiText.Resource(Res.string.error_server)
-                    else -> UiText.Resource(Res.string.error_unknown)
+                .onError { code, _ ->
+                    log.write("Profile check failed: $code", LogType.Error)
+                    _state.value = State(isLoading = false, error = UiText.Resource(Res.string.error_server))
                 }
-
-                _state.value = State(isLoading = false, error = errorText)
-            }
         }
     }
 }

@@ -91,7 +91,7 @@ private fun ContainerLvl(
             .padding(horizontal = 8.dp, vertical = 4.dp)
     ) {
         Text(
-            text = "LVL $level",
+            text = "Базовый",
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold

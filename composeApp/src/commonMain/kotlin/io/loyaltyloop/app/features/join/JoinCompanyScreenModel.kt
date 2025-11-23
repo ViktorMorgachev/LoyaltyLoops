@@ -2,22 +2,25 @@ package io.loyaltyloop.app.features.join
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import io.loyaltyloop.app.data.network.ClientException
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
-import loyaltyloop.composeapp.generated.resources.*
+import loyaltyloop.composeapp.generated.resources.cashier_join_success
+import loyaltyloop.composeapp.generated.resources.error_network
 
 class JoinCompanyScreenModel(
     private val repository: PartnerRepository
@@ -75,31 +78,35 @@ class JoinCompanyScreenModel(
             log.write("Joining company with invite code: $code")
 
             repository.joinCompany(code)
-                .onSuccess { msg ->
-                    log.write("Successfully joined: $msg")
-
+                .onSuccess { result ->
+                    log.write("Successfully joined: ${result.message}")
                     _events.send(Event.ShowMessage(
-                        UiText.DynamicString(msg),
+                        UiText.Resource(Res.string.cashier_join_success),
                         SnackbarType.Success
                     ))
-
+                    delay(500)
                     _events.send(Event.NavigateBack)
                 }
-                .onFailure { error ->
-                    log.write("Join failed", LogType.Error, error)
-
-                    val errorText = when(error) {
-                        is ClientException -> UiText.DynamicString(error.errorMessage)
-                        is NetworkException -> UiText.Resource(Res.string.error_network)
-                        is ServerException -> UiText.Resource(Res.string.error_server)
-                        else -> UiText.Resource(Res.string.error_unknown)
-                    }
-
-                    // Показываем красный снекбар (или под полем)
-                    // В данном случае можно и в поле подсветить
+                .onFailure { exception ->
+                    log.write("Join failed", LogType.Error, exception)
+                    _events.send(Event.ShowMessage(
+                        message = UiText.Resource(Res.string.error_network),
+                        type = SnackbarType.Error
+                    ))
                     _state.value = _state.value.copy(
                         isLoading = false,
-                        error = errorText
+                        error = null
+                    )
+                }
+                .onError { appCode, _ ->
+                    log.write("Join failed: $appCode", LogType.Error)
+                    _events.send(Event.ShowMessage(
+                        message = UiText.Resource(appCode.toResource()),
+                        type = SnackbarType.Error
+                    ))
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = null
                     )
                 }
         }

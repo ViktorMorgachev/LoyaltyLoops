@@ -3,88 +3,107 @@ package io.loyaltyloop.server.routes
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.route
+import io.loyaltyloop.server.repository.PartnerEntity
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.getUserIdOrRespond
+import io.loyaltyloop.server.utils.requirePartnerWriteAccess // ADDED
+import io.loyaltyloop.server.utils.requirePointReadAccess // ADDED
+import io.loyaltyloop.server.utils.requirePointWriteAccess // ADDED
 import io.loyaltyloop.shared.models.ApiMessage
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
-import io.loyaltyloop.shared.models.ScanQrRequest
-import io.loyaltyloop.shared.models.ScanQrResponse
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.UpdatePartnerRequest
+import io.loyaltyloop.shared.models.TradingPointDetailsDto
+import io.loyaltyloop.shared.models.UpdateTradingPointRequest
+import io.loyaltyloop.server.service.TransactionService
 
-fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: UserRepository) {
+fun Route.partnerRoutes(
+    userRepository: UserRepository,
+    partnerRepository: PartnerRepository,
+    transactionService: TransactionService
+) {
     route("/partners") {
         authenticate("auth-jwt") {
-            
-            post("/create") {
-                // 1. Безопасность: Достаем ID из токена
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@post
+
+            get("/analytics") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+
+                val periodStr = call.request.queryParameters["period"] ?: "WEEK"
                 
-                val request = call.receive<CreatePartnerRequest>()
-                
-                // Валидация
-                if (request.businessName.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, ApiMessage("Название не может быть пустым"))
-                    return@post
+                val period = try {
+                    io.loyaltyloop.shared.models.AnalyticsPeriod.valueOf(periodStr.uppercase())
+                } catch (e: IllegalArgumentException) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid period. Use WEEK, MONTH, SIX_MONTHS, YEAR")
                 }
 
-                // 2. Создаем
+                val analytics = transactionService.getAnalytics(userId, period)
+                call.respond(analytics)
+            }
+
+            get("/history") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                // Service exceptions will be handled by ErrorHandler
+                val history = transactionService.getPartnerHistory(userId)
+                call.respond(history)
+            }
+            
+            post("/create") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val request = call.receive<CreatePartnerRequest>()
+                
+                if (request.businessName.isBlank()) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
+                }
+
                 val partnerId = partnerRepository.createPartner(userId, request)
                 
-                call.respond(HttpStatusCode.Created, ApiMessage("Бизнес создан: $partnerId"))
+                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Business created: $partnerId"))
             }
 
             post("/join") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@post
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
 
                 val request = call.receive<JoinTradingPointRequest>()
 
                 // 1. Ищем точку
                 val point = partnerRepository.findTradingPointByInvite(request.inviteCode)
-                if (point == null) {
-                    call.respond(HttpStatusCode.NotFound, ApiMessage("Неверный код приглашения"))
-                    return@post
-                }
 
                 // 2. Проверяем дубли
                 if (partnerRepository.isUserCashierAtPoint(userId, point.id)) {
-                    call.respond(HttpStatusCode.Conflict, ApiMessage("Вы уже сотрудник этой точки"))
-                    return@post
+                    throw LoyaltyException(AppErrorCode.ALREADY_JOINED)
                 }
 
                 // 3. Получаем PartnerID
-                val partnerId = partnerRepository.getPartnerIdByPoint(point.id)!!
+                val partnerId = partnerRepository.getPartnerIdByPoint(point.id)
 
                 // 4. Добавляем
                 partnerRepository.addCashier(userId, point.id, partnerId)
 
-                call.respond(HttpStatusCode.OK, ApiMessage("Успешно! Вы присоединились к ${point.name}"))
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Success! Joined ${point.name}"))
             }
 
             get("/points") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
-                // Логика поиска партнера
                 val partners = partnerRepository.getPartnersByOwner(userId)
                 val myPartner = partners.firstOrNull()
 
                 if (myPartner == null) {
-                    // Если бизнес не найден, возвращаем пустой список, а не 404,
-                    // чтобы фронтенд не падал с красной ошибкой, а просто показывал "Нет точек"
+                    // Попробуем найти, где он менеджер
+                    // TODO: Реализовать getPartnersByManager(userId) если нужно
                     call.respond(listOf<TradingPointDto>())
                     return@get
                 }
@@ -93,57 +112,173 @@ fun Route.partnerRoutes(partnerRepository: PartnerRepository, userRepository: Us
                 call.respond(points)
             }
 
-            get("/me") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@get
+            // --- NEW: Point Management ---
 
-                val partner = partnerRepository.getPartnerByOwnerId(userId)
-                if (partner == null) {
-                    call.respond(HttpStatusCode.NotFound, ApiMessage("Бизнес не найден"))
-                    return@get
-                }
+            get("/points/{pointId}") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val pointId = call.parameters["pointId"]!!
+                
+                requirePointReadAccess(partnerRepository, userId, pointId)
+
+                val point = partnerRepository.getPointById(pointId)
+                val settings = partnerRepository.getSettingsByPointId(pointId)
+                
+                call.respond(TradingPointDetailsDto(point, settings))
+            }
+
+            put("/points/{pointId}") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@put
+                val pointId = call.parameters["pointId"]!!
+                
+                requirePointWriteAccess(partnerRepository, userId, pointId)
+                
+                val req = call.receive<UpdateTradingPointRequest>()
+                partnerRepository.updateTradingPoint(pointId, req)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+
+            delete("/points/{pointId}") {
+                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                 val pointId = call.parameters["pointId"]!!
+                 
+                 requirePointWriteAccess(partnerRepository, userId, pointId)
+                 
+                 partnerRepository.deleteTradingPoint(pointId)
+                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+            
+            get("/points/{pointId}/cashiers") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val pointId = call.parameters["pointId"]!!
+                
+                requirePointReadAccess(partnerRepository, userId, pointId)
+                
+                val list = partnerRepository.getCashiersByPoint(pointId)
+                call.respond(list)
+            }
+
+            delete("/cashiers/{cashierId}") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                val cashierId = call.parameters["cashierId"]!!
+                
+                // Найти точку или партнера, к которому относится кассир
+                val partnerId = partnerRepository.getPartnerIdByCashierId(cashierId) 
+                    ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "Cashier link not found")
+                
+                requirePartnerWriteAccess(partnerRepository, userId, partnerId)
+                
+                partnerRepository.deleteCashier(cashierId)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+
+            get("/me") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
                 call.respond(partner)
             }
 
             // PUT /partners/me - Обновить настройки
             put("/me") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@put
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@put
 
                 val request = call.receive<UpdatePartnerRequest>()
-                // Валидация
+                
                 if (request.businessName.isBlank()) {
-                    call.respond(HttpStatusCode.BadRequest, ApiMessage("Название не может быть пустым"))
-                    return@put
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
                 }
+                
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
 
                 partnerRepository.updatePartner(userId, request)
-                call.respond(HttpStatusCode.OK, ApiMessage("Настройки сохранены"))
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Settings saved"))
             }
 
             post("/points") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.payload?.getClaim("id")?.asString() ?: return@post
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
 
                 val request = call.receive<CreateTradingPointRequest>()
 
-                // 1. Проверяем, есть ли у юзера бизнес (Partner)
-                val partners = partnerRepository.getPartnersByOwner(userId)
-                val myPartner = partners.firstOrNull()
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
 
-                if (myPartner == null) {
-                    call.respond(HttpStatusCode.Forbidden, ApiMessage("Сначала создайте бизнес"))
-                    return@post
-                }
-
-                // 3. Создаем точку (Репозиторий сам создаст дефолтные настройки лояльности)
                 partnerRepository.createTradingPoint(
-                    partnerId = myPartner.id,
+                    partnerId = partner.id,
                     request = request,
                 )
 
-                call.respond(HttpStatusCode.Created, ApiMessage("Точка создана"))
+                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created"))
+            }
+
+            // --- MANAGERS & CASHIERS ---
+
+            post("/managers/invite") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                val code = partnerRepository.generateManagerInvite(partner.id)
+                call.respond(mapOf("inviteCode" to code))
+            }
+            
+            post("/managers/join") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val request = call.receive<JoinTradingPointRequest>() 
+                
+                val partnerId = partnerRepository.findPartnerByManagerInvite(request.inviteCode) 
+                    ?: throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE)
+                
+                if (partnerRepository.isUserManager(userId, partnerId)) {
+                     throw LoyaltyException(AppErrorCode.ALREADY_JOINED, "Already a manager")
+                }
+                
+                partnerRepository.addManager(userId, partnerId)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Joined as Manager!"))
+            }
+            
+            get("/managers") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                val list = partnerRepository.getManagers(partner.id)
+                call.respond(list)
+            }
+            
+            delete("/managers/{id}") {
+                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                 val managerId = call.parameters["id"]!!
+                 
+                 val partner = partnerRepository.getPartnerByUserId(userId)
+                 ensureOwner(partner, userId)
+                 
+                 // Проверить, принадлежит ли менеджер этому партнеру
+                 if (!partnerRepository.isUserManager(managerId, partner.id)) {
+                     throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "Manager not found in your business")
+                 }
+                 
+                 partnerRepository.deleteManager(managerId)
+                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+
+            get("/cashiers") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                val list = partnerRepository.getAllCashiers(partner.id)
+                call.respond(list)
             }
         }
     }
 }
+
+private fun ensureOwner(partner: PartnerEntity, userId: String) {
+    if (partner.ownerId != userId) {
+        throw LoyaltyException(AppErrorCode.FORBIDDEN, "Only owner can manage this partner")
+    }
+}
+

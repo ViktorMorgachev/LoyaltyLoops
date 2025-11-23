@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
 import {
   Container, Typography, Paper, Table, TableBody, TableCell, TableHead, TableRow, Chip, Button, Box
@@ -9,6 +10,7 @@ import { getErrorMessage } from '../../utils/errorHandler';
 
 export const AllPartnersPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
   const [partners, setPartners] = useState<any[]>([]);
 
@@ -52,7 +54,7 @@ export const AllPartnersPage = () => {
               <TableRow key={p.id}>
                 <TableCell>{p.name}</TableCell>
                 <TableCell>{p.countryCode}</TableCell>
-                <TableCell>{p.ownerId}</TableCell>
+                <TableCell>{p.ownerPhone || "N/A"}</TableCell>
                 <TableCell>
                   <Chip
                     label={p.status === 'ACTIVE' ? t('common.active') : p.status === 'BLOCKED' ? t('common.blocked') : t('common.pending')}
@@ -61,6 +63,9 @@ export const AllPartnersPage = () => {
                 </TableCell>
                 <TableCell>
                   <Box display="flex" gap={1}>
+                    <Button size="small" variant="outlined" onClick={() => navigate(`/admin/partners/${p.id}`)}>
+                        Details
+                    </Button>
                     {p.status === 'PENDING' && (
                       <Button size="small" variant="contained" color="success" onClick={() => changeStatus(p.id, 'ACTIVE')}>
                         {t('common.approve')}

@@ -7,6 +7,7 @@ import io.ktor.server.testing.testApplication
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.*
+import io.loyaltyloop.shared.utils.CryptoUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -36,7 +37,7 @@ class FullCycleTest {
         client.post("/partners/points") {
             header("Authorization", "Bearer ${ownerAuth.accessToken}")
             contentType(ContentType.Application.Json)
-            setBody(CreateTradingPointRequest("Center Point", TradingPointType.COFFEE_SHOP))
+            setBody(CreateTradingPointRequest("Center Point", type = TradingPointType.COFFEE_SHOP, visitsTarget = 10))
         }.apply { assertEquals(HttpStatusCode.Created, status) }
 
         // Получаем данные точки (нам нужен ID и InviteCode) через БД для теста
@@ -63,8 +64,11 @@ class FullCycleTest {
         // Получаем его секрет (он пришел при логине)
         val qrSecret = clientAuth.qrSecret
         // Генерируем QR (пока простая строка, но с секретом в будущем)
-        // Формат: loyalty_v1:USER_ID:TIMESTAMP
-        val qrContent = "loyalty_v1:${clientAuth.userId}:${System.currentTimeMillis()}"
+        // Формат: loyalty_v1:USER_ID:TIMESTAMP:SIGNATURE
+        val timestamp = System.currentTimeMillis() / 1000
+        val data = "${clientAuth.userId}:$timestamp"
+        val signature = CryptoUtils.hmacSha256(qrSecret, data)
+        val qrContent = "loyalty_v1:${clientAuth.userId}:$timestamp:$signature"
 
         // --- АКТ 4: СКАНИРОВАНИЕ ---
         // 7. Кассир сканирует QR клиента

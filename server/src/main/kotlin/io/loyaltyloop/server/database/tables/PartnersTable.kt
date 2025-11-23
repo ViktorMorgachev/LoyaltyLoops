@@ -18,5 +18,11 @@ object PartnersTable : Table("partners") {
 
     val status = enumerationByName("status", 20, PartnerStatus::class).default(PartnerStatus.PENDING)
 
+    // Expiration Policy
+    val burnBonusesDays = integer("burn_bonuses_days").nullable()
+    val downgradeTierDays = integer("downgrade_tier_days").nullable()
+    
+    val managerInviteCode = varchar("manager_invite_code", 20).nullable().uniqueIndex()
+
     override val primaryKey = PrimaryKey(id)
 }

@@ -18,7 +18,9 @@ data class CreatePartnerRequest(
 data class UpdatePartnerRequest(
     val businessName: String,
     val color: String,   // HEX цвет (#FF0000)
-    val logoUrl: String? // Пока просто ссылка текстом
+    val logoUrl: String?, // Пока просто ссылка текстом
+    val burnBonusesDays: Int? = null,
+    val downgradeTierDays: Int? = null
 )
 
 @Serializable
@@ -28,7 +30,10 @@ data class PartnerDto(
     val countryCode: String,
     val status: PartnerStatus,
     val color: String,
-    val logoUrl: String?
+    val logoUrl: String?,
+    val burnBonusesDays: Int? = null,
+    val downgradeTierDays: Int? = null,
+    val ownerPhone: String? = null // NEW: For Admin Panel
 )
 
 @Serializable

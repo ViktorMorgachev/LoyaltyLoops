@@ -1,0 +1,883 @@
+openapi: 3.0.3
+info:
+  title: LoyaltyLoop API
+  description: API for LoyaltyLoop Multiplatform Application (Web Admin + Mobile App)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  
+  schemas:
+    # --- COMMON ---
+    ApiMessage:
+      type: object
+      properties:
+        message: { type: string }
+
+    # --- AUTH & USERS ---
+    UserDto:
+      type: object
+      properties:
+        id: { type: string }
+        phoneNumber: { type: string }
+        countryCode: { type: string }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        qrSecret: { type: string }
+        language: { type: string }
+
+    UserWorkspace:
+      type: object
+      properties:
+        id: { type: string, description: PartnerID or PointID }
+        title: { type: string }
+        role: { type: string, enum: [CLIENT, CASHIER, PARTNER_ADMIN, PARTNER_MANAGER, PLATFORM_SUPER_ADMIN, PLATFORM_MANAGER] }
+        requirePin: { type: boolean }
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken: { type: string }
+        refreshToken: { type: string }
+        userId: { type: string }
+        isNewUser: { type: boolean }
+        workspaces: 
+          type: array
+          items: 
+            $ref: '#/components/schemas/UserWorkspace'
+        qrSecret: { type: string }
+
+    SendCodeRequest:
+      type: object
+      properties:
+        phone: { type: string }
+
+    SendCodeResponse:
+      type: object
+      properties:
+        status: { type: string }
+        debugCode: { type: string }
+
+    VerifyCodeRequest:
+      type: object
+      properties:
+        phone: { type: string }
+        code: { type: string }
+
+    RefreshTokenRequest:
+      type: object
+      properties:
+        refreshToken: { type: string }
+
+    VerifyPinRequest:
+      type: object
+      properties:
+        workspaceId: { type: string }
+        pin: { type: string }
+
+    UserProfileResponse:
+      type: object
+      properties:
+        userId: { type: string }
+        phone: { type: string }
+        countryCode: { type: string }
+        firstName: { type: string, nullable: true }
+        lastName: { type: string, nullable: true }
+        email: { type: string, nullable: true }
+        language: { type: string }
+        workspaces: 
+          type: array
+          items: { $ref: '#/components/schemas/UserWorkspace' }
+
+    UpdateProfileRequest:
+      type: object
+      properties:
+        firstName: { type: string }
+        email: { type: string, nullable: true }
+
+    # --- PARTNER & POINTS ---
+    PartnerEntity:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        countryCode: { type: string }
+        hasPin: { type: boolean }
+        status: { type: string, enum: [PENDING, ACTIVE, BLOCKED] }
+        logoUrl: { type: string, nullable: true }
+        color: { type: string }
+        burnBonusesDays: { type: integer, nullable: true }
+        downgradeTierDays: { type: integer, nullable: true }
+        ownerPhone: { type: string, nullable: true }
+
+    CreatePartnerRequest:
+      type: object
+      properties:
+        businessName: { type: string }
+        countryCode: { type: string }
+        color: { type: string }
+        logoUrl: { type: string }
+
+    UpdatePartnerRequest:
+      type: object
+      properties:
+        businessName: { type: string }
+        color: { type: string }
+        logoUrl: { type: string }
+        burnBonusesDays: { type: integer, nullable: true }
+        downgradeTierDays: { type: integer, nullable: true }
+
+    TradingPointDto:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        active: { type: boolean }
+        type: { type: string, enum: [COFFEE_SHOP, RESTAURANT, RETAIL, SERVICE, OTHER] }
+        address: { type: string, nullable: true }
+        latitude: { type: number, format: double, nullable: true }
+        longitude: { type: number, format: double, nullable: true }
+        inviteCode: { type: string, nullable: true }
+        currency: { type: string, default: 'KGS' }
+
+    CreateTradingPointRequest:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string }
+        address: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        currency: { type: string }
+        programType: { type: string, enum: [TIERED_LTV, VISIT_COUNTER, HYBRID] }
+        visitsTarget: { type: integer, nullable: true }
+        baseCashback: { type: number, format: double, nullable: true }
+
+    UpdateTradingPointRequest:
+      type: object
+      properties:
+        name: { type: string }
+        type: { type: string }
+        address: { type: string }
+        latitude: { type: number, format: double }
+        longitude: { type: number, format: double }
+        currency: { type: string }
+        settings:
+          $ref: '#/components/schemas/UpdateLoyaltySettingsRequest'
+
+    UpdateLoyaltySettingsRequest:
+      type: object
+      properties:
+        programType: { type: string }
+        visitsTarget: { type: integer }
+        maxBurnPercentage: { type: integer }
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/LoyaltyTierDto'
+
+    LoyaltyTierDto:
+      type: object
+      properties:
+        levelIndex: { type: integer }
+        name: { type: string }
+        threshold: { type: number, format: double }
+        cashbackPercent: { type: number, format: double }
+
+    TradingPointDetailsDto:
+      type: object
+      properties:
+        point: { $ref: '#/components/schemas/TradingPointDto' }
+        settings: { $ref: '#/components/schemas/LoyaltySettingsDto' }
+
+    LoyaltySettingsDto:
+      type: object
+      properties:
+        settingsId: { type: string }
+        programType: { type: string }
+        maxBurnPercentage: { type: integer }
+        tiers: { type: array, items: { $ref: '#/components/schemas/LoyaltyTierDto' } }
+
+    CashierDto:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        phone: { type: string }
+        active: { type: boolean }
+        tradingPointId: { type: string, nullable: true }
+        pointName: { type: string, nullable: true }
+        revenue: { type: number, format: double }
+        transactionsCount: { type: integer }
+
+    PartnerStatsDto:
+      type: object
+      properties:
+        partnerId: { type: string }
+        pointsCount: { type: integer }
+        cardsCount: { type: integer }
+        transactionsCount: { type: integer }
+
+    ChangePartnerStatusRequest:
+      type: object
+      properties:
+        status: { type: string, enum: [PENDING, ACTIVE, BLOCKED] }
+
+    ChangePointStatusRequest:
+      type: object
+      properties:
+        isActive: { type: boolean }
+
+    # --- ANALYTICS ---
+    AnalyticsResponse:
+      type: object
+      properties:
+        totalRevenue: { type: number, format: double }
+        totalTransactions: { type: integer }
+        averageCheck: { type: number, format: double }
+        chartData:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string }
+              revenue: { type: number, format: double }
+              transactionsCount: { type: integer }
+
+    # --- TERMINAL & TRANSACTIONS ---
+    TransactionStrategy:
+      type: string
+      enum: [CHARGE, SPEND, VISIT]
+
+    ScanQrRequest:
+      type: object
+      properties:
+        qrContent: { type: string }
+        tradingPointId: { type: string }
+
+    ScanQrResponse:
+      type: object
+      properties:
+        userId: { type: string }
+        userPhone: { type: string }
+        firstName: { type: string }
+        cardId: { type: string }
+        currentBalance: { type: number, format: double }
+        visitsCount: { type: integer }
+        programType: { type: string }
+        visitsTarget: { type: integer, nullable: true }
+        cashbackPercent: { type: number, format: double, nullable: true }
+        maxBurnPercentage: { type: integer }
+        currency: { type: string }
+        isNewCard: { type: boolean }
+
+    CalculateTransactionRequest:
+      type: object
+      properties:
+        tradingPointId: { type: string }
+        cardId: { type: string }
+        purchaseAmount: { type: number, format: double, default: 0.0 }
+        strategy: { $ref: '#/components/schemas/TransactionStrategy' }
+
+    TransactionCalculationDto:
+      type: object
+      properties:
+        purchaseAmount: { type: number, format: double }
+        pointsToSpend: { type: number, format: double }
+        pointsToAward: { type: number, format: double }
+        pointsSpent: { type: number, format: double }
+        moneyPaid: { type: number, format: double }
+        newBalance: { type: number, format: double }
+        newVisits: { type: integer }
+        message: { type: string }
+
+    ProcessTransactionRequest:
+      type: object
+      properties:
+        tradingPointId: { type: string }
+        cardId: { type: string }
+        purchaseAmount: { type: number, format: double }
+        strategy: { $ref: '#/components/schemas/TransactionStrategy' }
+
+    TransactionResult:
+      type: object
+      properties:
+        cardId: { type: string }
+        newBalance: { type: number, format: double }
+        newVisits: { type: integer }
+        message: { type: string }
+
+    TransactionHistoryDto:
+      type: object
+      properties:
+        id: { type: string }
+        timestamp: { type: integer, format: int64 }
+        pointName: { type: string }
+        type: { type: string }
+        amount: { type: number, format: double }
+        pointsDelta: { type: number, format: double }
+        visitsDelta: { type: integer }
+
+    # --- CLIENT ---
+    LoyaltyCardDto:
+      type: object
+      properties:
+        id: { type: string }
+        partnerName: { type: string }
+        cardColor: { type: string }
+        balance: { type: number }
+        tierLevel: { type: integer }
+
+    JoinTradingPointRequest:
+      type: object
+      properties:
+        inviteCode: { type: string }
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: Auth
+  - name: Client
+  - name: Partner
+  - name: Terminal
+  - name: Admin
+
+paths:
+  # --- AUTH ---
+  /auth/send-code:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Send OTP code via SMS
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendCodeRequest' }
+      responses:
+        '200':
+          description: Code sent
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SendCodeResponse' }
+        '400':
+          description: Invalid Phone Number
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Verify OTP and Login
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerifyCodeRequest' }
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401':
+          description: Invalid or Expired Code
+
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      security: []
+      summary: Refresh Access Token
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshTokenRequest' }
+      responses:
+        '200':
+          description: Tokens Refreshed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        '401':
+          description: Invalid Refresh Token
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (Invalidate Refresh Token)
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshTokenRequest' }
+      responses:
+        '200': { description: Logged out }
+
+  /auth/verify-pin:
+    post:
+      tags: [Auth]
+      summary: Verify PIN for sensitive workspace access
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerifyPinRequest' }
+      responses:
+        '200': { description: PIN Correct }
+        '401': { description: Invalid PIN }
+
+  /auth/users:
+    get:
+      tags: [Auth]
+      summary: List all users (Debug)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/UserDto' }
+
+  # --- CLIENT ---
+  /client/profile:
+    post:
+      tags: [Client]
+      summary: Update Profile
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateProfileRequest' }
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiMessage' }
+        '400':
+          description: Validation Error (Invalid email, empty name)
+        '401':
+          description: Unauthorized
+
+  /client/me:
+    get:
+      tags: [Client]
+      summary: Get current user profile
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserProfileResponse' }
+        '401':
+          description: Unauthorized (Invalid Token)
+
+  /client/cards:
+    get:
+      tags: [Client]
+      summary: Get my loyalty cards
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/LoyaltyCardDto' }
+        '401':
+          description: Unauthorized
+
+  # --- PARTNER ---
+  /partners/create:
+    post:
+      tags: [Partner]
+      summary: Register new business
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePartnerRequest' }
+      responses:
+        '201':
+          description: Business created
+        '400':
+          description: User already has a business or invalid data
+        '401':
+          description: Unauthorized
+
+  /partners/me:
+    get:
+      tags: [Partner]
+      summary: Get my business details
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PartnerEntity' }
+        '404':
+          description: User has no business
+    put:
+      tags: [Partner]
+      summary: Update business settings
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePartnerRequest' }
+      responses:
+        '200':
+          description: Updated
+        '400':
+          description: Invalid Data
+
+  /partners/analytics:
+    get:
+      tags: [Partner]
+      summary: Get revenue analytics
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string, enum: [WEEK, MONTH, SIX_MONTHS, YEAR], default: WEEK }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AnalyticsResponse' }
+
+  /partners/history:
+    get:
+      tags: [Partner]
+      summary: Get transaction history for my business
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TransactionHistoryDto' }
+
+  /partners/points:
+    get:
+      tags: [Partner]
+      summary: List my trading points
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TradingPointDto' }
+    post:
+      tags: [Partner]
+      summary: Create new trading point
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTradingPointRequest' }
+      responses:
+        '201':
+          description: Created
+        '403':
+          description: Forbidden (Create business first)
+
+  /partners/points/{id}:
+    get:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TradingPointDetailsDto' }
+        '404':
+          description: Point not found
+    put:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateTradingPointRequest' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: Deleted }
+
+  /partners/points/{id}/cashiers:
+    get:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CashierDto' }
+
+  /partners/cashiers:
+    get:
+      tags: [Partner]
+      summary: List all cashiers of the partner
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CashierDto' }
+
+  /partners/cashiers/{id}:
+    delete:
+      tags: [Partner]
+      summary: Fire cashier
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: Fired }
+
+  /partners/join:
+    post:
+      tags: [Partner]
+      summary: Join existing business as Cashier via Invite Code
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinTradingPointRequest' }
+      responses:
+        '200': { description: Success }
+        '404': { description: Invalid invite code }
+        '409': { description: Already joined }
+
+  # --- MANAGERS ---
+  /partners/managers:
+    get:
+      tags: [Partner]
+      summary: List partner managers
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CashierDto' }
+
+  /partners/managers/invite:
+    post:
+      tags: [Partner]
+      summary: Generate invite code for a manager
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  inviteCode: { type: string }
+
+  /partners/managers/join:
+    post:
+      tags: [Partner]
+      summary: Join as a manager using invite code
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinTradingPointRequest' }
+      responses:
+        '200': { description: Joined }
+        '404': { description: Invalid Code }
+        '409': { description: Already Manager }
+
+  /partners/managers/{id}:
+    delete:
+      tags: [Partner]
+      summary: Fire manager
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Fired }
+
+  # --- TERMINAL ---
+  /terminal/scan:
+    post:
+      tags: [Terminal]
+      summary: Scan Client QR
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScanQrRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScanQrResponse' }
+        '400':
+          description: Invalid QR or Expired
+        '403':
+          description: User is not a cashier at this point
+
+  /terminal/calculate:
+    post:
+      tags: [Terminal]
+      summary: Pre-calculate transaction details
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalculateTransactionRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransactionCalculationDto' }
+        '403': { description: Forbidden }
+
+  /terminal/process:
+    post:
+      tags: [Terminal]
+      summary: Execute Transaction (Earn/Spend)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProcessTransactionRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransactionResult' }
+        '400': { description: Logic Error }
+        '403': { description: Forbidden }
+
+  # --- ADMIN ---
+  /admin/partners:
+    get:
+      tags: [Admin]
+      summary: List all partners (Super Admin)
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PartnerEntity' }
+        '403': { description: Access Denied }
+
+  /admin/partners/{id}/stats:
+    get:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PartnerStatsDto' }
+
+  /admin/partners/{id}/status:
+    post:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangePartnerStatusRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiMessage' }
+
+  /admin/partners/{id}/points:
+    get:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TradingPointDto' }
+
+  /admin/points/{id}/status:
+    put:
+      tags: [Admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          schema: { type: string }
+          required: true
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ChangePointStatusRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiMessage' }

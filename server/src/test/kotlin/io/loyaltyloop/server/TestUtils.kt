@@ -70,7 +70,7 @@ suspend fun HttpClient.createCashierEcosystem(
     // 1. Создаем точку
     // (Мы не можем достать inviteCode через API создания, поэтому лезем в базу или делаем getPoints)
     // Упростим: Создадим точку через API, потом найдем её в БД
-    createTradingPoint(ownerToken, "Cashier Point", TradingPointType.COFFEE_SHOP)
+    createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", TradingPointType.COFFEE_SHOP)
 
     val partnerId = partnerRepo.getPartnersByOwner(ownerId).first().id
     val point = partnerRepo.getPointsByPartnerId(partnerId).first()
@@ -146,18 +146,20 @@ suspend fun HttpClient.createPartner(
  * Хелпер: Создает торговую точку через API.
  */
 suspend fun HttpClient.createTradingPoint(
-    token: String,
+    ownerToken: String,
     name: String = "Test Point",
-    type: TradingPointType = TradingPointType.COFFEE_SHOP
+    type: TradingPointType = TradingPointType.COFFEE_SHOP,
+    visitTarget: Int = 10
 ): String {
     val request = CreateTradingPointRequest(
         name = name,
         type = type,
-        address = "Some Address"
+        address = "Some Address",
+        visitsTarget = visitTarget
     )
 
     val response = post("/partners/points") {
-        header("Authorization", "Bearer $token")
+        header("Authorization", "Bearer $ownerToken")
         contentType(ContentType.Application.Json)
         setBody(request)
     }

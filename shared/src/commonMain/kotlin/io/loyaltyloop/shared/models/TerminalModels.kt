@@ -17,17 +17,13 @@ data class ScanQrResponse(
     val cardId: String,
     val currentBalance: Double, // Для TIERED
     val visitsCount: Int,       // Для VISITS
-
     // Правила игры (Контекст точки)
-    val programType: LoyaltyProgramType, // TIERED или VISITS
+    val programType: LoyaltyProgramType, // TIERED или VISITS  или Hybrid
     val visitsTarget: Int? = null,       // Например, 6 (если VISITS)
     val cashbackPercent: Double? = null,  // Например 0.05 (если TIERED)
+    val maxBurnPercentage: Int = 100,     // Макс % оплаты баллами
+    val currency: String = "KGS",         // Валюта точки
 
     val isNewCard: Boolean
 )
 
-@Serializable
-data class ProcessTransactionRequest(
-    val cardId: String,
-    val amount: Double? = null // Если null, значит это VISIT (+1)
-)

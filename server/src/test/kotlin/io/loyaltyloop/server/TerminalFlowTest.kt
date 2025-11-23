@@ -12,9 +12,9 @@ import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.shared.models.ScanQrResponse
+import io.loyaltyloop.shared.utils.CryptoUtils
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class TerminalFlowTest {
@@ -37,9 +37,12 @@ class TerminalFlowTest {
         // Достаем ID точки, которую создал хелпер (мы знаем, что она одна у этого партнера)
         val pointId = partnerRepo.getPointsByPartnerId(partnerId).first().id
 
-        // 3. Клиент (жертва)
+        // 3. Клиент
         val customerAuth = client.registerAndLogin()
-        val qrContent = "loyalty_v1:${customerAuth.userId}:${System.currentTimeMillis()}"
+        val timestamp = System.currentTimeMillis() / 1000
+        val data = "${customerAuth.userId}:$timestamp"
+        val signature = CryptoUtils.hmacSha256(customerAuth.qrSecret, data)
+        val qrContent = "loyalty_v1:${customerAuth.userId}:$timestamp:$signature"
 
         // 4. СКАНИРОВАНИЕ (С КОНТЕКСТОМ)
         val scanRes = client.post("/terminal/scan") {

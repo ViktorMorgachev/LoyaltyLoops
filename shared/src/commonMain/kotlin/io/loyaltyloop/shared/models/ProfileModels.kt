@@ -5,6 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class UpdateProfileRequest(
     val firstName: String,
-    val lastName: String?, // Опционально
-    val email: String?,
+    val lastName: String? = null,
+    val email: String? = null
 )

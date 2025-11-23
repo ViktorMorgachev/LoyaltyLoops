@@ -10,7 +10,6 @@ import io.ktor.server.testing.testApplication
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.ChangePartnerStatusRequest
-import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.TradingPointType
@@ -79,7 +78,7 @@ class AdminApiTest {
         // 2. Создаем Точку (через API)
         // Важно: Бизнес еще в статусе PENDING, но создавать точки должно быть можно!
         client.createTradingPoint(
-            token = ownerAuth.accessToken,
+            ownerToken = ownerAuth.accessToken,
             name = "Coffee on Main St",
             type = TradingPointType.COFFEE_SHOP
         )

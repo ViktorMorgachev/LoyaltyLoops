@@ -4,14 +4,18 @@ import { api } from '../../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
+import { useNavigate } from 'react-router-dom';
 
 export const BusinessSettingsPage = () => {
     const { t } = useTranslation();
     const { showSuccess, showError } = useNotification();
+    const navigate = useNavigate();
 
     const [name, setName] = useState('');
     const [color, setColor] = useState('#4F46E5'); // Дефолтный Индиго
     const [logo, setLogo] = useState('');
+    const [burnBonusesDays, setBurnBonusesDays] = useState('');
+    const [downgradeTierDays, setDowngradeTierDays] = useState('');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,11 +27,18 @@ export const BusinessSettingsPage = () => {
             // Загружаем текущие настройки
             const res = await api.get('/partners/me');
             const data = res.data;
-            setName(data.name); // В PartnerEntity поле называется name
+            setName(data.name); 
             setColor(data.color || '#4F46E5');
             setLogo(data.logoUrl || '');
+            setBurnBonusesDays(data.burnBonusesDays || '');
+            setDowngradeTierDays(data.downgradeTierDays || '');
         } catch (e: any) {
-            showError(getErrorMessage(e));
+            if (e.response && e.response.status === 404) {
+                // No business yet -> Redirect to create
+                navigate('/partner/onboarding');
+            } else {
+                showError(getErrorMessage(e));
+            }
         } finally {
             setLoading(false);
         }
@@ -38,7 +49,9 @@ export const BusinessSettingsPage = () => {
             await api.put('/partners/me', {
                 businessName: name,
                 color: color,
-                logoUrl: logo
+                logoUrl: logo,
+                burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays) : null,
+                downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays) : null
             });
             showSuccess(t('settings.save_success'));
         } catch (e: any) {
@@ -85,7 +98,29 @@ export const BusinessSettingsPage = () => {
                     placeholder="https://example.com/logo.png"
                 />
 
-                <Button variant="contained" sx={{ mt: 3 }} onClick={handleSave} disabled={loading}>
+                {/* Expiration Policy */}
+                <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>{t('settings.expiration_policy')}</Typography>
+                <Typography variant="caption" color="textSecondary" display="block" mb={2}>{t('settings.expiration_hint')}</Typography>
+                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                    <TextField 
+                        label={t('point_details.burn_bonuses')} 
+                        type="number"
+                        fullWidth 
+                        value={burnBonusesDays} 
+                        onChange={e => setBurnBonusesDays(e.target.value)}
+                        helperText="Leave empty for no expiration"
+                    />
+                    <TextField 
+                        label={t('point_details.downgrade_tier')} 
+                        type="number"
+                        fullWidth 
+                        value={downgradeTierDays} 
+                        onChange={e => setDowngradeTierDays(e.target.value)}
+                        helperText="Leave empty for no reset"
+                    />
+                </Box>
+
+                <Button variant="contained" sx={{ mt: 4 }} onClick={handleSave} disabled={loading}>
                     {t('common.save')}
                 </Button>
             </Paper>

@@ -1,5 +1,6 @@
 package io.loyaltyloop.app.data
 
+import io.loyaltyloop.app.data.network.AuthWatcher
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
 import kotlinx.coroutines.channels.Channel
@@ -20,6 +21,10 @@ class SessionManager(
     // Список всех доступных ролей (загружается с сервера)
     private val _availableWorkspaces = MutableStateFlow<List<UserWorkspace>>(emptyList())
     val availableWorkspaces = _availableWorkspaces.asStateFlow()
+
+    init {
+        AuthWatcher.register(this)
+    }
 
     suspend fun logout() {
         tokenStorage.clear()
@@ -53,11 +58,6 @@ class SessionManager(
         _currentWorkspace.value = workspace
         tokenStorage.saveCurrentWorkspaceId(workspace?.id) // Сохраняем выбор
     }
-
-    // Геттеры для UI
-    fun isClientMode() = _currentWorkspace.value == null
-    fun isCashierMode() = _currentWorkspace.value?.role == UserRole.CASHIER
-    fun isPartnerMode() = _currentWorkspace.value?.role == UserRole.PARTNER_ADMIN
 
     fun getWorkspaces() = availableWorkspaces
 }

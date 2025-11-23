@@ -10,7 +10,8 @@ data class SendCodeRequest(
 @Serializable
 data class VerifyCodeRequest(
     val phone: String,
-    val code: String
+    val code: String,
+    val countryCode: CountryCode = CountryCode.KG
 )
 
 // ОТВЕТ СЕРВЕРА (Самое важное)
@@ -38,7 +39,7 @@ data class UserWorkspace(
 data class UserProfileResponse(
     val userId: String,
     val phone: String,
-    val countryCode: String,
+    val countryCode: CountryCode,
     val firstName: String?,
     val lastName: String?,
     val email: String?,
@@ -46,7 +47,11 @@ data class UserProfileResponse(
     val workspaces: List<UserWorkspace>
 )
 
-
-
 @Serializable
 data class RefreshTokenRequest(val refreshToken: String)
+
+@Serializable
+data class VerifyPinRequest(
+    val workspaceId: String,
+    val pin: String
+)

@@ -2,13 +2,16 @@ package io.loyaltyloop.server.repository
 
 import org.jetbrains.exposed.sql.selectAll
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.CashiersTable
+import io.loyaltyloop.server.database.tables.PartnerCashiersTable
 import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.PartnerManagersTable
 import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CashierJobEntity
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.UpdateProfileRequest
@@ -30,7 +33,7 @@ class UserRepository {
     suspend fun createUser(dto: UserDto) = dbQuery {
 
         if (dto.qrSecret.isBlank()) {
-            throw IllegalArgumentException("SECURITY ERROR: Cannot create user ${dto.phoneNumber}. QR Secret is missing or empty.")
+            throw LoyaltyException(AppErrorCode.SECURITY_QR_SECRET_MISSING, "SECURITY ERROR: QR Secret missing")
         }
         UsersTable.insert {
             it[id] = dto.id.ifEmpty { UUID.randomUUID().toString() } // Генерируем ID если нет
@@ -54,8 +57,6 @@ class UserRepository {
                 lang?.let {
                     dto[language] = it
                 }
-
-
             }
         }
 
@@ -69,23 +70,27 @@ class UserRepository {
 
     // Получить всех (для теста)
     suspend fun getAllUsers(): List<UserDto> = dbQuery {
-        UsersTable.selectAll().map { rowToDto(it) }
+        UsersTable.selectAll().map { rowToUserDto(it) }
     }
 
     suspend fun getUserByPhone(phone: String): UserDto? = dbQuery {
         UsersTable.selectAll().where { UsersTable.phoneNumber eq phone }
-            .map { rowToDto(it) }
+            .map { rowToUserDto(it) }
             .singleOrNull()
     }
 
     suspend fun getUserById(userId: String): UserDto? = dbQuery {
         UsersTable.selectAll().where { UsersTable.id eq userId }
-            .map { rowToDto(it) }
+            .map { rowToUserDto(it) }
             .singleOrNull()
     }
 
+    suspend fun userExists(userId: String): Boolean = dbQuery {
+        !UsersTable.selectAll().where { UsersTable.id eq userId }.empty()
+    }
+
     // Вспомогательная функция: превращает строку БД в класс Kotlin
-    private fun rowToDto(row: ResultRow): UserDto {
+    private fun rowToUserDto(row: ResultRow): UserDto {
         return UserDto(
             id = row[UsersTable.id],
             phoneNumber = row[UsersTable.phoneNumber],
@@ -118,9 +123,10 @@ class UserRepository {
         partnerLogo: String?
     ): Pair<LoyaltyCardDto, Boolean> = dbQuery {
 
-        // 1. Ищем существующую
+        // 1. Ищем существующую (устойчиво к дубликатам)
         val existingRow = LoyaltyCardTable.selectAll()
             .where { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
+            .limit(1) // Если вдруг дубликаты уже есть - берем первую
             .singleOrNull()
 
         if (existingRow != null) {
@@ -128,7 +134,6 @@ class UserRepository {
             // Нюанс: rowToCardDto у нас заточен под JOIN.
             // Если мы тут делаем простой select без join, то rowToCardDto вернет пустые поля.
             // Давай сделаем умнее: вернем DTO, но перезапишем UI поля теми, что мы передали в функцию!
-            // TODO потом если что убрать
             val dto = rowToCardDto(existingRow).copy(
                 partnerName = partnerName,
                 cardColor = partnerColor,
@@ -147,7 +152,7 @@ class UserRepository {
             it[balance] = 0.0
             it[totalSpent] = 0.0
             it[tierLevel] = 1
-            it[this.visitsCount] = visitsCount
+            it[this.visitsCount] = 0
             it[isBlocked] = false
             it[isClosed] = false
         }
@@ -213,7 +218,7 @@ class UserRepository {
     // 2. Найти точки, где я Кассир
     suspend fun getCashierJobs(userId: String): List<CashierJobEntity> = dbQuery {
         // 1. Соединяем Кассиров и Точки (тут связь одна, innerJoin сработает сам)
-        CashiersTable.innerJoin(TradingPointsTable)
+        PartnerCashiersTable.innerJoin(TradingPointsTable)
             // 2. А вот Партнеров присоединяем ЯВНО, указывая колонки
             .join(
                 otherTable = PartnersTable,
@@ -221,7 +226,7 @@ class UserRepository {
                 onColumn = TradingPointsTable.partnerId, // <-- Ключ в таблице Точек
                 otherColumn = PartnersTable.id           // <-- Ключ в таблице Партнеров
             )
-            .selectAll().where { CashiersTable.userId eq userId }
+            .selectAll().where { PartnerCashiersTable.userId eq userId }
             .map {
                 CashierJobEntity(
                     tradingPointId = it[TradingPointsTable.id],
@@ -267,7 +272,11 @@ class UserRepository {
                         hasPin = !it[PartnersTable.adminPinHash].isNullOrBlank(),
                         status = it[PartnersTable.status],
                         logoUrl = it[PartnersTable.logoUrl],
-                        color = it[PartnersTable.color]
+                        color = it[PartnersTable.color],
+                        ownerId = it[PartnersTable.ownerId],
+                        burnBonusesDays = it[PartnersTable.burnBonusesDays],
+                        downgradeTierDays = it[PartnersTable.downgradeTierDays],
+                        countryCode = it[PartnersTable.countryCode]
                     )
                 }
 
@@ -283,14 +292,14 @@ class UserRepository {
         }
 
         // 3. Работа кассиром (Тут тоже перепишем на прямой запрос для чистоты транзакции)
-        val cashierJobs = CashiersTable.innerJoin(TradingPointsTable)
+        val cashierJobs = PartnerCashiersTable.innerJoin(TradingPointsTable)
             .join(
                 otherTable = PartnersTable,
                 joinType = JoinType.INNER,
                 onColumn = TradingPointsTable.partnerId, // Явно говорим: бери партнера из Точки
                 otherColumn = PartnersTable.id
             )
-            .selectAll().where { CashiersTable.userId eq userId }
+            .selectAll().where { PartnerCashiersTable.userId eq userId }
             .map {
                 CashierJobEntity(
                     tradingPointId = it[TradingPointsTable.id],
@@ -310,11 +319,34 @@ class UserRepository {
             )
         }
 
+        // 4. Работа Менеджером Партнера
+        val managerJobs = PartnerManagersTable
+            .join(PartnersTable, JoinType.INNER, PartnerManagersTable.partnerId, PartnersTable.id)
+            .selectAll().where { PartnerManagersTable.userId eq userId }
+            .map {
+                 val businessName = it[PartnersTable.businessName]
+                 val partnerId = it[PartnersTable.id]
+                 partnerId to businessName
+            }
+        
+        managerJobs.forEach { (pId, pName) ->
+            workspaces.add(
+                UserWorkspace(
+                    id = pId,
+                    title = "$pName (Manager)", 
+                    role = UserRole.PARTNER_MANAGER,
+                    requirePin = true // Managers should use PIN if enabled on the partner account? Or their own?
+                    // Currently workspaces.requirePin usually refers to the specific workspace auth.
+                    // Let's set true.
+                )
+            )
+        }
+
         workspaces
     }
 
     // Метод для сидинга (создания админа при старте)
-    suspend fun createSystemStaff(userId: String, role: UserRole, defaultPinHash: String?) =
+    suspend fun createSystemStaff(userId: String, role: UserRole, defaultPinHash: String? = null) =
         dbQuery {
             // Проверяем, нет ли уже такого
             if (SystemStaffTable.selectAll().where { SystemStaffTable.userId eq userId }.empty()) {

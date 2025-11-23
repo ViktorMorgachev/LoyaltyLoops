@@ -9,7 +9,10 @@ import {
   Person as PersonIcon,
   Settings as SettingsIcon,
   AdminPanelSettings as AdminIcon,
-  AddBusiness as AddBusinessIcon
+  AddBusiness as AddBusinessIcon,
+  History as HistoryIcon,
+  Dashboard as DashboardIcon,
+  Group as GroupIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +27,13 @@ export const MainLayout = () => {
   const location = useLocation();
 
   // БЕРЕМ ДАННЫЕ ИЗ КОНТЕКСТА (Они реактивные!)
-  const { isPartner, isSuperAdmin, isNewUser } = useUser();
+  const { isPartner, isPartnerAdmin, isSuperAdmin, isNewUser, workspaces, currentWorkspace, logout } = useUser();
+
+  React.useEffect(() => {
+      if (workspaces.length > 1 && !currentWorkspace && location.pathname !== '/select-role' && location.pathname !== '/profile') {
+          navigate('/select-role');
+      }
+  }, [workspaces, currentWorkspace, location.pathname]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -42,45 +51,55 @@ export const MainLayout = () => {
   };
 
   const handleLogout = () => {
-    localStorage.clear();
-    navigate('/login');
+    logout();
   };
 
   const menuItems = [
     {
       text: t('menu.profile'),
       icon: <PersonIcon />,
-      path: '/profile',
-      show: true
-    },
-    // Кнопка "Создать бизнес" видна ТОЛЬКО новичкам
-    {
-      text: t('menu.create_business'), // Убедись, что есть в resources.ts или используй хардкод для теста
-      icon: <AddBusinessIcon />,
-      path: '/partner/onboarding',
-      show: isNewUser
-    },
-    // Кнопки Партнера видны ТОЛЬКО партнерам
-    {
-      text: t('menu.dashboard'),
-      icon: <StoreIcon />,
-      path: '/partner/dashboard',
-      show: isPartner
-    },
-    {
-      text: t('menu.settings'),
-      icon: <SettingsIcon />,
-      path: '/partner/settings',
-      show: isPartner
-    },
-    // Кнопки Админа
-    {
-      text: t('menu.admin_partners'),
-      icon: <AdminIcon />,
-      path: '/admin/partners',
-      show: isSuperAdmin
-    },
+      path: '/profile'
+    }
   ];
+
+  if (isNewUser) {
+      menuItems.push({
+          text: t('menu.create_business'),
+          icon: <AddBusinessIcon />,
+          path: '/partner/onboarding'
+      });
+  }
+
+  if (isPartner) {
+      menuItems.push(
+          { text: t('menu.dashboard'), icon: <DashboardIcon />, path: '/partner/dashboard' },
+          { text: t('menu.my_points'), icon: <StoreIcon />, path: '/partner/points' }
+      );
+
+      if (isPartnerAdmin) {
+        menuItems.push({ text: t('menu.staff'), icon: <GroupIcon />, path: '/partner/staff' });
+      }
+
+      menuItems.push({ text: t('menu.transactions'), icon: <HistoryIcon />, path: '/partner/transactions' });
+
+      if (isPartnerAdmin) {
+        menuItems.push({ text: t('menu.settings'), icon: <SettingsIcon />, path: '/partner/settings' });
+      }
+  }
+
+  if (isSuperAdmin) {
+      menuItems.push(
+          { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' }
+      );
+  }
+
+  if (workspaces.length > 1) {
+      menuItems.push({
+          text: t('menu.switch_role'),
+          icon: <StoreIcon />, // TODO: Better icon
+          path: '/select-role'
+      });
+  }
 
   const drawer = (
     <div>
@@ -91,7 +110,7 @@ export const MainLayout = () => {
       </Toolbar>
       <Divider />
       <List>
-        {menuItems.filter(item => item.show).map((item) => (
+        {menuItems.map((item) => (
           <ListItem key={item.path} disablePadding>
             <ListItemButton
               selected={location.pathname === item.path}

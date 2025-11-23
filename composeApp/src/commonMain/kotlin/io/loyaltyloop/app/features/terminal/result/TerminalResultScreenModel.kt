@@ -2,52 +2,66 @@ package io.loyaltyloop.app.features.terminal.result
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
-import io.loyaltyloop.app.data.network.ClientException
-import io.loyaltyloop.app.data.network.NetworkException
-import io.loyaltyloop.app.data.network.ServerException
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
+import io.loyaltyloop.app.utils.TransactionResultMapper
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
+import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
-import io.loyaltyloop.shared.models.LoyaltyProgramType
+import io.loyaltyloop.shared.models.NetworkResult
 import io.loyaltyloop.shared.models.ScanQrResponse
+import io.loyaltyloop.shared.models.TransactionCalculationDto
+import io.loyaltyloop.shared.models.TransactionStrategy
+import io.loyaltyloop.shared.models.onError
+import io.loyaltyloop.shared.models.onFailure
+import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
-import loyaltyloop.composeapp.generated.resources.term_msg_success
 
 class TerminalResultScreenModel(
     private val scanData: ScanQrResponse,
+    private val tradingPointId: String,
+    private val initialStrategy: TransactionStrategy,
     private val repository: PartnerRepository
 ) : ScreenModel {
 
     data class State(
         val data: ScanQrResponse,
+        val strategy: TransactionStrategy,
         val purchaseAmount: String = "",
-        val pointsToAward: Double = 0.0,
+        val isSpendingPoints: Boolean = false,
         val isLoading: Boolean = false
     )
 
     sealed interface Action {
         data class OnAmountChanged(val value: String) : Action
-        data object OnProcessClicked : Action
+        data class OnToggleSpend(val isEnabled: Boolean) : Action
+        data object OnNextClicked : Action
         data object OnBackClicked : Action
     }
 
     sealed interface Event {
-        data object NavigateBack : Event // Вернуться к сканеру
+        data object NavigateBack : Event
+        data class NavigateToConfirmation(
+            val calculation: TransactionCalculationDto,
+            val tradingPointId: String,
+            val cardId: String,
+            val strategy: TransactionStrategy
+        ) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
-    private val _state = MutableStateFlow(State(data = scanData))
+    private val _state = MutableStateFlow(State(data = scanData, strategy = initialStrategy))
     val state = _state.asStateFlow()
 
     private val _events = Channel<Event>()
@@ -55,62 +69,90 @@ class TerminalResultScreenModel(
 
     fun onAction(action: Action) {
         when (action) {
-            is Action.OnAmountChanged -> calculatePoints(action.value)
-            is Action.OnProcessClicked -> processTransaction()
+            is Action.OnAmountChanged -> {
+                _state.update { it.copy(purchaseAmount = action.value) }
+            }
+            is Action.OnToggleSpend -> {
+                val newStrategy = if (action.isEnabled) TransactionStrategy.SPEND else TransactionStrategy.CHARGE
+                _state.update { it.copy(isSpendingPoints = action.isEnabled, strategy = newStrategy) }
+            }
+            is Action.OnNextClicked -> {
+                if (_state.value.strategy == TransactionStrategy.VISIT) {
+                    processVisitTransaction()
+                } else {
+                    calculateAndNavigate()
+                }
+            }
             is Action.OnBackClicked -> _events.trySend(Event.NavigateBack)
         }
     }
 
-    private fun calculatePoints(amount: String) {
-        // Разрешаем только цифры
-        if (amount.all { it.isDigit() }) {
-            val value = amount.toDoubleOrNull() ?: 0.0
-            val points = value * (_state.value.data.cashbackPercent ?: 0.0)
+    private fun processVisitTransaction() {
+        screenModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
 
-            _state.value = _state.value.copy(
-                purchaseAmount = amount,
-                pointsToAward = points
+            repository.processTransaction(
+                tradingPointId = tradingPointId,
+                cardId = scanData.cardId,
+                amount = 0.0,
+                strategy = TransactionStrategy.VISIT
             )
+                .onSuccess { result ->
+                    log.write("Visit processed successfully")
+                    _events.send(Event.ShowMessage(TransactionResultMapper.getMessage(result), SnackbarType.Success))
+                    delay(1000)
+                    _events.send(Event.NavigateBack)
+                }
+                .onFailure { exception ->
+                    log.write("Visit failed", LogType.Error, exception)
+                    handleError(UiText.Resource(Res.string.error_network))
+                }
+                .onError { code, _ ->
+                    handleError(UiText.Resource(code.toResource()))
+                }
         }
     }
 
-    private fun processTransaction() {
-        val currentState = _state.value
+    private fun calculateAndNavigate() {
+        val amountStr = _state.value.purchaseAmount.replace(',', '.')
+        val amount = amountStr.toDoubleOrNull()
 
-        // Определяем, что слать: сумму или null (если визиты)
-        val amountToSend = if (currentState.data.programType == LoyaltyProgramType.TIERED_LTV) {
-            currentState.purchaseAmount.toDoubleOrNull()
-        } else {
-            null
-        }
+        if (amount == null) return
 
         screenModelScope.launch {
-            _state.value = currentState.copy(isLoading = true)
-            log.write("Processing transaction for card ${currentState.data.cardId}")
+            _state.update { it.copy(isLoading = true) }
 
-            repository.processTransaction(
-                cardId = currentState.data.cardId,
-                amount = amountToSend
-            ).onSuccess { msg ->
-                log.write("Transaction success: $msg")
-
-                // Показываем успех и уходим
-                _events.send(Event.ShowMessage(UiText.Resource(Res.string.term_msg_success), SnackbarType.Success))
-                _events.send(Event.NavigateBack)
-
-            }.onFailure { error ->
-                log.write("Transaction failed", LogType.Error, error)
-
-                val errorText = when(error) {
-                    is ClientException -> UiText.DynamicString(error.errorMessage)
-                    is NetworkException -> UiText.Resource(Res.string.error_network)
-                    is ServerException -> UiText.Resource(Res.string.error_server)
-                    else -> UiText.Resource(Res.string.error_unknown)
+            repository.calculateTransaction(
+                tradingPointId = tradingPointId,
+                cardId = scanData.cardId,
+                amount = amount,
+                strategy = _state.value.strategy
+            )
+                .onSuccess { calculation ->
+                    _state.update { it.copy(isLoading = false) }
+                    _events.send(
+                        Event.NavigateToConfirmation(
+                            calculation = calculation,
+                            tradingPointId = tradingPointId,
+                            cardId = scanData.cardId,
+                            strategy = _state.value.strategy
+                        )
+                    )
                 }
+                .onFailure { exception ->
+                    log.write("Calc failed", LogType.Error, exception)
+                    handleError(UiText.Resource(Res.string.error_network))
+                }
+                .onError { code, _ ->
+                    handleError(UiText.Resource(code.toResource()))
+                }
+        }
+    }
 
-                _events.send(Event.ShowMessage(errorText, SnackbarType.Error))
-                _state.value = currentState.copy(isLoading = false)
-            }
+    private fun handleError(errorText: UiText) {
+        screenModelScope.launch {
+            _events.send(Event.ShowMessage(errorText, SnackbarType.Error))
+            _state.update { it.copy(isLoading = false) }
         }
     }
 }
