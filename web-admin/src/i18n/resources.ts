@@ -1,4 +1,6 @@
-export const resources = {
+import { autoLanguages } from './autoLanguages.ts';
+
+export const resources: Record<string, { translation: any }> = {
   // --- РУССКИЙ (Russian) ---
   ru: {
     translation: {
@@ -761,5 +763,7 @@ export const resources = {
         id: "ID"
       }
     }
-  }
+  },
+
+  ...autoLanguages,
 };

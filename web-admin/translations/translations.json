@@ -1,0 +1,1571 @@
+{
+  "generatedAt": "2025-11-27T18:43:19.311Z",
+  "totalKeys": 313,
+  "entries": [
+    {
+      "key": "about.contact_text",
+      "ru": "Если есть идеи или предложения, напишите основателю в поддержку — мы быстро реагируем на фидбек.",
+      "en": "Have an idea? Ping the founder via support chat — we iterate fast on real feedback."
+    },
+    {
+      "key": "about.faq.cashback_a",
+      "ru": "Бонусы начисляются только на денежную часть платежа по текущему уровню клиента. Если включена опция «Начислять при смешанной оплате», учитываем сумму после списания баллов.",
+      "en": "We apply the current tier percentage only to the amount paid with money. If the mixed-payment option is enabled, we accrue bonuses after subtracting spent points."
+    },
+    {
+      "key": "about.faq.cashback_q",
+      "ru": "Как считается кешбэк?",
+      "en": "How is cashback calculated?"
+    },
+    {
+      "key": "about.faq.downgrade_a",
+      "ru": "Используйте поле «Срок до сброса уровня». Если клиент не совершает покупок указанное количество дней, уровень автоматически снижается.",
+      "en": "Use the downgrade setting to reduce a tier after N inactive days automatically."
+    },
+    {
+      "key": "about.faq.downgrade_q",
+      "ru": "Что происходит при простое клиента?",
+      "en": "What happens when a client is inactive?"
+    },
+    {
+      "key": "about.faq.staff_a",
+      "ru": "Владелец может менять настройки, увольнять сотрудников и удалять точки. Менеджер в режиме только чтение и не видит критичные действия.",
+      "en": "PARTNER_ADMIN can update settings, delete points and fire staff. PARTNER_MANAGER has read-only access without destructive actions."
+    },
+    {
+      "key": "about.faq.staff_q",
+      "ru": "Чем отличаются владелец и менеджер?",
+      "en": "What is the difference between owner and manager?"
+    },
+    {
+      "key": "about.faq.title",
+      "ru": "FAQ — популярные вопросы",
+      "en": "FAQ"
+    },
+    {
+      "key": "about.faq.visits_a",
+      "ru": "Да. Во вкладке настроек укажите целевое количество визитов. Новое значение применяется ко всем новым посетителям.",
+      "en": "Yes, adjust the visit target in settings and it will be applied for new customers."
+    },
+    {
+      "key": "about.faq.visits_q",
+      "ru": "Можно ли изменить цель по визитам?",
+      "en": "Can I change the visit target?"
+    },
+    {
+      "key": "about.items.architecture",
+      "ru": "Масштабируемая архитектура: единый бэкенд + веб + мобильное приложение.",
+      "en": "Scalable architecture: shared backend + admin web + mobile app."
+    },
+    {
+      "key": "about.items.localization",
+      "ru": "Локализация и удобные интерфейсы на многих языках",
+      "en": "Localization and UI tailored for Russian/English speaking teams."
+    },
+    {
+      "key": "about.items.security",
+      "ru": "Безопасность: централизованная работа с токенами, контроль прав и журналирование действий.",
+      "en": "Security first: centralized token handling, RBAC enforcement and audit logs."
+    },
+    {
+      "key": "about.items.soon",
+      "ru": "Скоро: расширенная аналитика, коммуникации и автоматизация флоу",
+      "en": "Coming soon: advanced analytics, communication layer and marketing automation."
+    },
+    {
+      "key": "about.loyalty_types.hybrid_desc",
+      "ru": "Кассир выбирает стратегию после сканирования: либо начислить визит, либо рассчитать кешбэк с возможностью списания баллов.",
+      "en": "After scanning QR the cashier selects either visit or tiered cashback with optional point burning."
+    },
+    {
+      "key": "about.loyalty_types.hybrid_title",
+      "ru": "Гибридная: Накопительная + Счетчик визитов",
+      "en": "HYBRID: visits + cashback"
+    },
+    {
+      "key": "about.loyalty_types.tiered_desc",
+      "ru": "Клиент копит оборот, повышает уровень и получает больший кешбэк. Проценты задаются по уровням: Start, Silver, Gold.",
+      "en": "Customers climb tiers by spending more and receive a higher cashback percentage. Configure Start, Silver and Gold levels."
+    },
+    {
+      "key": "about.loyalty_types.tiered_title",
+      "ru": "Накопительная",
+      "en": "Tiered cashback (LTV)"
+    },
+    {
+      "key": "about.loyalty_types.title",
+      "ru": "Варианты систем лояльности",
+      "en": "Available loyalty programs"
+    },
+    {
+      "key": "about.loyalty_types.visits_desc",
+      "ru": "Каждый визит приближает к подарку: например, каждый 6-й кофе бесплатно. Подходит для сервисов с частыми покупками.",
+      "en": "Reward every Nth visit. Perfect for coffee shops and services with frequent purchases."
+    },
+    {
+      "key": "about.loyalty_types.visits_title",
+      "ru": "Счетчик визитов",
+      "en": "Visit counter"
+    },
+    {
+      "key": "about.mission_text",
+      "ru": "Мы строим платформу лояльности нового поколения для локальных сетей в странах СНГ. Цель — упростить запуск гибких программ кешбэка, визитов и гибридных сценариев.",
+      "en": "We are building the next-gen loyalty platform for local businesses across CIS countries. The goal is to launch cashback, visits and hybrid programs within minutes."
+    },
+    {
+      "key": "about.section_contact",
+      "ru": "Связь и идеи",
+      "en": "Contact"
+    },
+    {
+      "key": "about.section_focus",
+      "ru": "Фокус развития",
+      "en": "Focus"
+    },
+    {
+      "key": "about.section_mission",
+      "ru": "Миссия",
+      "en": "Mission"
+    },
+    {
+      "key": "about.title",
+      "ru": "О проекте LoyaltyLoop",
+      "en": "About LoyaltyLoop"
+    },
+    {
+      "key": "admin.details_title",
+      "ru": "Детали Партнера",
+      "en": "Partner Details"
+    },
+    {
+      "key": "admin.id",
+      "ru": "ID",
+      "en": "ID"
+    },
+    {
+      "key": "admin.no_points",
+      "ru": "Точек нет",
+      "en": "No points found"
+    },
+    {
+      "key": "admin.table_country",
+      "ru": "Страна",
+      "en": "Country"
+    },
+    {
+      "key": "admin.table_owner",
+      "ru": "Владелец (Тел)",
+      "en": "Owner (Phone)"
+    },
+    {
+      "key": "admin.title",
+      "ru": "Управление Партнерами",
+      "en": "Partner Management"
+    },
+    {
+      "key": "admin.total_clients",
+      "ru": "Всего Клиентов",
+      "en": "Total Clients"
+    },
+    {
+      "key": "admin.total_points",
+      "ru": "Всего Точек",
+      "en": "Total Points"
+    },
+    {
+      "key": "admin.total_revenue",
+      "ru": "Общая Выручка",
+      "en": "Total Revenue"
+    },
+    {
+      "key": "admin.total_transactions",
+      "ru": "Всего Транзакций",
+      "en": "Total Transactions"
+    },
+    {
+      "key": "admin.trading_points",
+      "ru": "Торговые Точки",
+      "en": "Trading Points"
+    },
+    {
+      "key": "auth.change_number",
+      "ru": "Изменить номер",
+      "en": "Change Number"
+    },
+    {
+      "key": "auth.code_label",
+      "ru": "Код из СМС",
+      "en": "SMS Code"
+    },
+    {
+      "key": "auth.code_sent",
+      "ru": "Код отправлен (Смотри логи сервера)",
+      "en": "Code sent"
+    },
+    {
+      "key": "auth.get_code",
+      "ru": "Получить код",
+      "en": "Get Code"
+    },
+    {
+      "key": "auth.login_btn",
+      "ru": "Войти",
+      "en": "Log In"
+    },
+    {
+      "key": "auth.phone_label",
+      "ru": "Номер телефона",
+      "en": "Phone Number"
+    },
+    {
+      "key": "auth.success",
+      "ru": "Успешный вход!",
+      "en": "Login Success!"
+    },
+    {
+      "key": "auth.title",
+      "ru": "Вход в панель управления",
+      "en": "Admin Panel Login"
+    },
+    {
+      "key": "common.actions",
+      "ru": "Действия",
+      "en": "Actions"
+    },
+    {
+      "key": "common.active",
+      "ru": "Активен",
+      "en": "Active"
+    },
+    {
+      "key": "common.add",
+      "ru": "Добавить",
+      "en": "Add"
+    },
+    {
+      "key": "common.approve",
+      "ru": "Одобрить",
+      "en": "Approve"
+    },
+    {
+      "key": "common.block",
+      "ru": "Блок",
+      "en": "Block"
+    },
+    {
+      "key": "common.blocked",
+      "ru": "Заблокирован",
+      "en": "Blocked"
+    },
+    {
+      "key": "common.cancel",
+      "ru": "Отмена",
+      "en": "Cancel"
+    },
+    {
+      "key": "common.copied",
+      "ru": "Скопировано",
+      "en": "Copied"
+    },
+    {
+      "key": "common.create",
+      "ru": "Создать",
+      "en": "Create"
+    },
+    {
+      "key": "common.error",
+      "ru": "Ошибка",
+      "en": "Error"
+    },
+    {
+      "key": "common.loading",
+      "ru": "Загрузка...",
+      "en": "Loading..."
+    },
+    {
+      "key": "common.month",
+      "ru": "Месяц",
+      "en": "Month"
+    },
+    {
+      "key": "common.months",
+      "ru": "Месяцев",
+      "en": "Months"
+    },
+    {
+      "key": "common.no",
+      "ru": "Нет",
+      "en": "No"
+    },
+    {
+      "key": "common.not_selected",
+      "ru": "Не выбрано",
+      "en": "Not selected"
+    },
+    {
+      "key": "common.pending",
+      "ru": "На проверке",
+      "en": "Pending"
+    },
+    {
+      "key": "common.required",
+      "ru": "Обязательно",
+      "en": "Required"
+    },
+    {
+      "key": "common.revenue_chart",
+      "ru": "Динамика Выручки",
+      "en": "Revenue Dynamics"
+    },
+    {
+      "key": "common.save",
+      "ru": "Сохранить",
+      "en": "Save"
+    },
+    {
+      "key": "common.status",
+      "ru": "Статус",
+      "en": "Status"
+    },
+    {
+      "key": "common.status_active",
+      "ru": "Активен",
+      "en": "Active"
+    },
+    {
+      "key": "common.status_not_paid",
+      "ru": "Не оплачена",
+      "en": "Not Paid"
+    },
+    {
+      "key": "common.unblock",
+      "ru": "Разблок",
+      "en": "Unblock"
+    },
+    {
+      "key": "common.week",
+      "ru": "Неделя",
+      "en": "Week"
+    },
+    {
+      "key": "common.year",
+      "ru": "Год",
+      "en": "Year"
+    },
+    {
+      "key": "common.yes",
+      "ru": "Да",
+      "en": "Yes"
+    },
+    {
+      "key": "countries.BY",
+      "ru": "Беларусь",
+      "en": "Belarus"
+    },
+    {
+      "key": "countries.KG",
+      "ru": "Кыргызстан",
+      "en": "Kyrgyzstan"
+    },
+    {
+      "key": "countries.KZ",
+      "ru": "Казахстан",
+      "en": "Kazakhstan"
+    },
+    {
+      "key": "countries.UZ",
+      "ru": "Узбекистан",
+      "en": "Uzbekistan"
+    },
+    {
+      "key": "dashboard.add_point",
+      "ru": "Добавить филиал",
+      "en": "Add Branch"
+    },
+    {
+      "key": "dashboard.country_label",
+      "ru": "Страна",
+      "en": "Country"
+    },
+    {
+      "key": "dashboard.country_placeholder",
+      "ru": "Выберите страну",
+      "en": "Select country"
+    },
+    {
+      "key": "dashboard.create_business_btn",
+      "ru": "Создать Бизнес",
+      "en": "Create Business"
+    },
+    {
+      "key": "dashboard.create_business_subtitle",
+      "ru": "У вас пока нет зарегистрированного бизнеса. Создайте его.",
+      "en": "You don't have a registered business yet. Create one."
+    },
+    {
+      "key": "dashboard.create_business_title",
+      "ru": "Запустите свою систему лояльности",
+      "en": "Launch your Loyalty System"
+    },
+    {
+      "key": "dashboard.create_title",
+      "ru": "Новый филиал",
+      "en": "New Branch"
+    },
+    {
+      "key": "dashboard.empty",
+      "ru": "Нет точек. Создайте первую!",
+      "en": "No points yet. Create the first one!"
+    },
+    {
+      "key": "dashboard.hint_cashback",
+      "ru": "Например: 5 (начнем с 5%)",
+      "en": "E.g.: 5 (start with 5%)"
+    },
+    {
+      "key": "dashboard.hint_target",
+      "ru": "Например: 6 (каждый 6-й бесплатно)",
+      "en": "E.g.: 6 (every 6th is free)"
+    },
+    {
+      "key": "dashboard.hint_tiered_levels",
+      "ru": "Будут созданы 3 уровня: Старт ({{base}}%), Серебро ({{mid}}%), Золото ({{max}}%)",
+      "en": "3 Levels will be created: Start ({{base}}%), Silver ({{mid}}%), Gold ({{max}}%)"
+    },
+    {
+      "key": "dashboard.label_cashback",
+      "ru": "Начальный Кешбэк (%)",
+      "en": "Base Cashback (%)"
+    },
+    {
+      "key": "dashboard.label_currency",
+      "ru": "Валюта",
+      "en": "Currency"
+    },
+    {
+      "key": "dashboard.label_lvl_gold",
+      "ru": "Золото (%)",
+      "en": "Gold (%)"
+    },
+    {
+      "key": "dashboard.label_lvl_silver",
+      "ru": "Серебро (%)",
+      "en": "Silver (%)"
+    },
+    {
+      "key": "dashboard.label_lvl_start",
+      "ru": "Старт (%)",
+      "en": "Start (%)"
+    },
+    {
+      "key": "dashboard.label_point_name",
+      "ru": "Название филиала",
+      "en": "Branch Name"
+    },
+    {
+      "key": "dashboard.label_point_type",
+      "ru": "Тип заведения",
+      "en": "Venue Type"
+    },
+    {
+      "key": "dashboard.label_strategy",
+      "ru": "Стратегия Лояльности",
+      "en": "Loyalty Strategy"
+    },
+    {
+      "key": "dashboard.label_target",
+      "ru": "Цель (сколько собрать?)",
+      "en": "Target (how many?)"
+    },
+    {
+      "key": "dashboard.modal_biz_logo",
+      "ru": "Ссылка на логотип",
+      "en": "Logo URL"
+    },
+    {
+      "key": "dashboard.modal_biz_name",
+      "ru": "Название бизнеса",
+      "en": "Business Name"
+    },
+    {
+      "key": "dashboard.modal_biz_name_required",
+      "ru": "Название бизнеса обязательно",
+      "en": "Business name is required"
+    },
+    {
+      "key": "dashboard.modal_biz_title",
+      "ru": "Регистрация Компании",
+      "en": "Company Registration"
+    },
+    {
+      "key": "dashboard.pin_confirm_error",
+      "ru": "PIN и подтверждение не совпадают",
+      "en": "PIN and confirmation do not match"
+    },
+    {
+      "key": "dashboard.pin_confirm_label",
+      "ru": "Подтвердите PIN",
+      "en": "Confirm PIN"
+    },
+    {
+      "key": "dashboard.pin_hint",
+      "ru": "PIN нужен для всех критичных действий в админке",
+      "en": "PIN protects critical actions in the admin console"
+    },
+    {
+      "key": "dashboard.pin_label",
+      "ru": "PIN владельца (4-12 цифр)",
+      "en": "Owner PIN (4-12 digits)"
+    },
+    {
+      "key": "dashboard.pin_length_error",
+      "ru": "PIN должен состоять минимум из 4 цифр",
+      "en": "PIN must contain at least 4 digits"
+    },
+    {
+      "key": "dashboard.strategies.HYBRID",
+      "ru": "Смешанная (Баллы + Визиты)",
+      "en": "Hybrid (Points + Visits)"
+    },
+    {
+      "key": "dashboard.strategies.TIERED_LTV",
+      "ru": "Накопительная (Кешбэк)",
+      "en": "Cashback (Tiered)"
+    },
+    {
+      "key": "dashboard.strategies.VISIT_COUNTER",
+      "ru": "Счетчик (N-й в подарок)",
+      "en": "Visits (Nth free)"
+    },
+    {
+      "key": "dashboard.table_invite",
+      "ru": "Инвайт для Кассира",
+      "en": "Cashier Invite"
+    },
+    {
+      "key": "dashboard.table_name",
+      "ru": "Название",
+      "en": "Name"
+    },
+    {
+      "key": "dashboard.table_type",
+      "ru": "Тип",
+      "en": "Type"
+    },
+    {
+      "key": "dashboard.title",
+      "ru": "Мои торговые точки",
+      "en": "My Trading Points"
+    },
+    {
+      "key": "dashboard.types.COFFEE_SHOP",
+      "ru": "Кофейня",
+      "en": "Coffee Shop"
+    },
+    {
+      "key": "dashboard.types.OTHER",
+      "ru": "Другое",
+      "en": "Other"
+    },
+    {
+      "key": "dashboard.types.RESTAURANT",
+      "ru": "Ресторан",
+      "en": "Restaurant"
+    },
+    {
+      "key": "dashboard.types.RETAIL",
+      "ru": "Магазин",
+      "en": "Retail"
+    },
+    {
+      "key": "dashboard.types.SERVICE",
+      "ru": "Услуги",
+      "en": "Service"
+    },
+    {
+      "key": "errors.ACCOUNT_FROZEN",
+      "ru": "Аккаунт временно заморожен",
+      "en": "Account is temporarily frozen"
+    },
+    {
+      "key": "errors.ALREADY_JOINED",
+      "ru": "Вы уже присоединены",
+      "en": "Already joined"
+    },
+    {
+      "key": "errors.BUSINESS_ALREADY_EXISTS",
+      "ru": "У вас уже есть бизнес",
+      "en": "You already have a business"
+    },
+    {
+      "key": "errors.BUSINESS_NOT_FOUND",
+      "ru": "Бизнес не найден",
+      "en": "Business not found"
+    },
+    {
+      "key": "errors.CARD_NOT_FOUND",
+      "ru": "Карта лояльности не найдена",
+      "en": "Loyalty card not found"
+    },
+    {
+      "key": "errors.CODE_EXPIRED",
+      "ru": "Код истек",
+      "en": "Code expired"
+    },
+    {
+      "key": "errors.EMAIL_NOT_SET",
+      "ru": "Добавьте e-mail в профиле, чтобы сбросить PIN",
+      "en": "Add email to your profile to reset PIN"
+    },
+    {
+      "key": "errors.FORBIDDEN",
+      "ru": "Доступ запрещен",
+      "en": "Access denied"
+    },
+    {
+      "key": "errors.INTERNAL_ERROR",
+      "ru": "Внутренняя ошибка",
+      "en": "Internal Error"
+    },
+    {
+      "key": "errors.INVALID_AMOUNT",
+      "ru": "Некорректная сумма операции",
+      "en": "Invalid amount"
+    },
+    {
+      "key": "errors.INVALID_CODE",
+      "ru": "Неверный код",
+      "en": "Invalid code"
+    },
+    {
+      "key": "errors.INVALID_INVITE_CODE",
+      "ru": "Неверный инвайт код",
+      "en": "Invalid invite code"
+    },
+    {
+      "key": "errors.INVALID_PHONE",
+      "ru": "Неверный формат номера",
+      "en": "Invalid phone number"
+    },
+    {
+      "key": "errors.INVALID_PIN",
+      "ru": "Неверный PIN",
+      "en": "Invalid PIN"
+    },
+    {
+      "key": "errors.INVALID_QR_SIGNATURE",
+      "ru": "Поддельный QR код",
+      "en": "Fake QR code"
+    },
+    {
+      "key": "errors.INVALID_REQUEST",
+      "ru": "Ошибка запроса",
+      "en": "Invalid request"
+    },
+    {
+      "key": "errors.INVALID_RESET_TOKEN",
+      "ru": "Ссылка для сброса PIN недействительна или истекла",
+      "en": "PIN reset link is invalid or expired"
+    },
+    {
+      "key": "errors.INVALID_TIER_VALUE",
+      "ru": "Нельзя использовать отрицательные значения в уровнях",
+      "en": "Negative tier values are not allowed"
+    },
+    {
+      "key": "errors.LOYALTY_SETTING_NOT_FOUND",
+      "ru": "Настройки лояльности не найдены",
+      "en": "Loyalty settings not found"
+    },
+    {
+      "key": "errors.NOT_FOUND",
+      "ru": "Ресурс не найден",
+      "en": "Resource not found"
+    },
+    {
+      "key": "errors.POINT_INACTIVE",
+      "ru": "Торговая точка не активна",
+      "en": "Trading point is inactive"
+    },
+    {
+      "key": "errors.POINT_NOT_FOUND",
+      "ru": "Точка не найдена",
+      "en": "Point not found"
+    },
+    {
+      "key": "errors.QR_EXPIRED",
+      "ru": "Срок действия QR истек",
+      "en": "QR code expired"
+    },
+    {
+      "key": "errors.SECURITY_QR_SECRET_MISSING",
+      "ru": "Критическая ошибка безопасности (QR Secret)",
+      "en": "Critical Security Error (QR Secret)"
+    },
+    {
+      "key": "errors.SUCCESS",
+      "ru": "Успешно",
+      "en": "Success"
+    },
+    {
+      "key": "errors.TOKEN_EXPIRED",
+      "ru": "Сессия истекла",
+      "en": "Session expired"
+    },
+    {
+      "key": "errors.TOKEN_INVALID",
+      "ru": "Ошибка сессии (Токен невалиден)",
+      "en": "Session error (Token invalid)"
+    },
+    {
+      "key": "errors.UNAUTHORIZED",
+      "ru": "Требуется авторизация",
+      "en": "Unauthorized"
+    },
+    {
+      "key": "errors.UNKNOWN_ERROR",
+      "ru": "Неизвестная ошибка",
+      "en": "Unknown error"
+    },
+    {
+      "key": "errors.USER_CREATION_FAILED",
+      "ru": "Ошибка создания пользователя",
+      "en": "User creation failed"
+    },
+    {
+      "key": "errors.USER_NOT_FOUND",
+      "ru": "Пользователь не найден",
+      "en": "User not found"
+    },
+    {
+      "key": "history.empty",
+      "ru": "Транзакций пока нет",
+      "en": "No transactions yet"
+    },
+    {
+      "key": "history.table_amount",
+      "ru": "Сумма",
+      "en": "Amount"
+    },
+    {
+      "key": "history.table_bonus",
+      "ru": "Бонусы",
+      "en": "Bonus"
+    },
+    {
+      "key": "history.table_date",
+      "ru": "Дата",
+      "en": "Date"
+    },
+    {
+      "key": "history.table_point",
+      "ru": "Точка",
+      "en": "Point"
+    },
+    {
+      "key": "history.table_type",
+      "ru": "Тип",
+      "en": "Type"
+    },
+    {
+      "key": "history.title",
+      "ru": "История Транзакций",
+      "en": "Transaction History"
+    },
+    {
+      "key": "history.type_earn",
+      "ru": "Покупка (Начисление)",
+      "en": "Purchase (Earn)"
+    },
+    {
+      "key": "history.type_spend",
+      "ru": "Списание",
+      "en": "Redeem"
+    },
+    {
+      "key": "history.type_visit",
+      "ru": "Визит (+1)",
+      "en": "Visit (+1)"
+    },
+    {
+      "key": "join_partner.code_label",
+      "ru": "Код приглашения",
+      "en": "Invite Code"
+    },
+    {
+      "key": "join_partner.info",
+      "ru": "После успешного присоединения вам будут доступны разделы персонала и аналитики конкретного партнёра.",
+      "en": "After joining you will gain access to staff, analytics and other partner tools."
+    },
+    {
+      "key": "join_partner.submit",
+      "ru": "Присоединиться",
+      "en": "Join"
+    },
+    {
+      "key": "join_partner.subtitle",
+      "ru": "Введите код приглашения менеджера от владельца бизнеса.",
+      "en": "Enter the invite code provided by the business owner."
+    },
+    {
+      "key": "join_partner.success",
+      "ru": "Готово! Вы стали менеджером партнёра.",
+      "en": "Success! You are now a partner manager."
+    },
+    {
+      "key": "join_partner.title",
+      "ru": "Присоединиться как менеджер партнёра",
+      "en": "Join as Partner Manager"
+    },
+    {
+      "key": "join_platform_manager.code_label",
+      "ru": "Код приглашения",
+      "en": "Invite Code"
+    },
+    {
+      "key": "join_platform_manager.info",
+      "ru": "Менеджеры платформы видят аналитику и статусы, но не могут изменять настройки. Код выдаёт администратор платформы.",
+      "en": "Platform managers can view analytics and partner statuses without edit rights. Codes are issued by platform admins."
+    },
+    {
+      "key": "join_platform_manager.submit",
+      "ru": "Присоединиться",
+      "en": "Join"
+    },
+    {
+      "key": "join_platform_manager.subtitle",
+      "ru": "Введите код приглашения платформы. Менеджеры получают доступ только для чтения.",
+      "en": "Enter the invite code for read-only platform access."
+    },
+    {
+      "key": "join_platform_manager.success",
+      "ru": "Отлично! Вы получили роль менеджера платформы.",
+      "en": "Great! You now have platform manager access."
+    },
+    {
+      "key": "join_platform_manager.title",
+      "ru": "Стать менеджером платформы",
+      "en": "Become a Platform Manager"
+    },
+    {
+      "key": "menu.about_project",
+      "ru": "О проекте",
+      "en": "About Project"
+    },
+    {
+      "key": "menu.admin_dashboard",
+      "ru": "Обзор",
+      "en": "Overview"
+    },
+    {
+      "key": "menu.admin_partners",
+      "ru": "Партнеры",
+      "en": "Partners"
+    },
+    {
+      "key": "menu.create_business",
+      "ru": "Создать Бизнес",
+      "en": "Create Business"
+    },
+    {
+      "key": "menu.dashboard",
+      "ru": "Главная",
+      "en": "Dashboard"
+    },
+    {
+      "key": "menu.join_partner_manager",
+      "ru": "Стать менеджером партнёра",
+      "en": "Join as Partner Manager"
+    },
+    {
+      "key": "menu.join_platform_manager",
+      "ru": "Стать менеджером платформы",
+      "en": "Become Platform Manager"
+    },
+    {
+      "key": "menu.logout",
+      "ru": "Выйти",
+      "en": "Logout"
+    },
+    {
+      "key": "menu.my_clients",
+      "ru": "Клиенты",
+      "en": "Clients"
+    },
+    {
+      "key": "menu.my_points",
+      "ru": "Торговые точки",
+      "en": "Trading Points"
+    },
+    {
+      "key": "menu.profile",
+      "ru": "Профиль",
+      "en": "Profile"
+    },
+    {
+      "key": "menu.settings",
+      "ru": "Настройки",
+      "en": "Settings"
+    },
+    {
+      "key": "menu.staff",
+      "ru": "Сотрудники",
+      "en": "Staff"
+    },
+    {
+      "key": "menu.support_chat",
+      "ru": "Поддержка",
+      "en": "Support"
+    },
+    {
+      "key": "menu.support_inbox",
+      "ru": "Чат с партнёрами",
+      "en": "Partner Inbox"
+    },
+    {
+      "key": "menu.switch_role",
+      "ru": "Сменить роль",
+      "en": "Switch Role"
+    },
+    {
+      "key": "menu.title",
+      "ru": "Консоль",
+      "en": "Console"
+    },
+    {
+      "key": "menu.transactions",
+      "ru": "История",
+      "en": "History"
+    },
+    {
+      "key": "not_found.subtitle",
+      "ru": "Возможно, ссылка устарела или страница была удалена.",
+      "en": "The link might be outdated or the page has been moved."
+    },
+    {
+      "key": "not_found.title",
+      "ru": "Страница не найдена",
+      "en": "Page not found"
+    },
+    {
+      "key": "not_found.to_login",
+      "ru": "На страницу входа",
+      "en": "Back to Login"
+    },
+    {
+      "key": "not_found.to_profile",
+      "ru": "В профиль",
+      "en": "Go to Profile"
+    },
+    {
+      "key": "pin_reset.submit",
+      "ru": "Сменить PIN",
+      "en": "Update PIN"
+    },
+    {
+      "key": "pin_reset.subtitle",
+      "ru": "Мы отправили ссылку на почту. Если письмо не пришло, проверьте спам.",
+      "en": "We sent a link to your email. Check spam if you can't find it."
+    },
+    {
+      "key": "pin_reset.success",
+      "ru": "PIN обновлён. Вы можете войти заново.",
+      "en": "PIN updated. You can sign in again."
+    },
+    {
+      "key": "pin_reset.title",
+      "ru": "Сброс PIN",
+      "en": "Reset PIN"
+    },
+    {
+      "key": "pin_reset.token_label",
+      "ru": "Токен из письма",
+      "en": "Token from email"
+    },
+    {
+      "key": "pin_reset.token_required",
+      "ru": "Укажите токен из письма",
+      "en": "Please provide the token from your email"
+    },
+    {
+      "key": "point_details.address_label",
+      "ru": "Адрес (введите вручную)",
+      "en": "Address (manual entry)"
+    },
+    {
+      "key": "point_details.award_mixed_hint",
+      "ru": "Если клиент списывает бонусы и доплачивает деньгами — начислять кешбэк на денежную часть",
+      "en": "Accrue bonuses on the cash portion even if the client redeems points"
+    },
+    {
+      "key": "point_details.award_mixed_label",
+      "ru": "Начислять кешбэк при смешанной оплате",
+      "en": "Award cashback on mixed payment"
+    },
+    {
+      "key": "point_details.block_title",
+      "ru": "Детали",
+      "en": "Details"
+    },
+    {
+      "key": "point_details.burn_bonuses",
+      "ru": "Срок жизни бонусов (дней)",
+      "en": "Points Expiration (days)"
+    },
+    {
+      "key": "point_details.cashback_rule_hint",
+      "ru": "Кешбэк начисляется по уровню клиента только на денежную часть платежа. При списании баллов учитывается оставшаяся сумма.",
+      "en": "Cashback is based on the client tier and only on the money part of the payment. When points are spent we use the remaining amount."
+    },
+    {
+      "key": "point_details.confirm_delete",
+      "ru": "Вы уверены? Это действие необратимо.",
+      "en": "Are you sure? This action is irreversible."
+    },
+    {
+      "key": "point_details.coords_required",
+      "ru": "Укажите координаты (широту и долготу)",
+      "en": "Latitude and longitude are required"
+    },
+    {
+      "key": "point_details.country_label",
+      "ru": "Страна",
+      "en": "Country"
+    },
+    {
+      "key": "point_details.days",
+      "ru": "дн.",
+      "en": "days"
+    },
+    {
+      "key": "point_details.delete_point",
+      "ru": "Удалить точку",
+      "en": "Delete Branch"
+    },
+    {
+      "key": "point_details.downgrade_tier",
+      "ru": "Срок до сброса уровня (дней)",
+      "en": "Tier Reset (days)"
+    },
+    {
+      "key": "point_details.edit_forbidden",
+      "ru": "Только владелец бизнеса может изменять или удалять точку.",
+      "en": "Only the business owner can modify or delete a point."
+    },
+    {
+      "key": "point_details.edit_on_map",
+      "ru": "Изменить на карте",
+      "en": "Edit on map"
+    },
+    {
+      "key": "point_details.fire_cashier",
+      "ru": "Уволить",
+      "en": "Fire"
+    },
+    {
+      "key": "point_details.invite_code",
+      "ru": "Код для кассира",
+      "en": "Cashier Invite Code"
+    },
+    {
+      "key": "point_details.latitude_label",
+      "ru": "Широта",
+      "en": "Latitude"
+    },
+    {
+      "key": "point_details.levels_config",
+      "ru": "Настройка Уровней",
+      "en": "Levels Configuration"
+    },
+    {
+      "key": "point_details.location_selected",
+      "ru": "Локация выбрана на карте",
+      "en": "Location selected from map"
+    },
+    {
+      "key": "point_details.longitude_label",
+      "ru": "Долгота",
+      "en": "Longitude"
+    },
+    {
+      "key": "point_details.lvl_name",
+      "ru": "Название",
+      "en": "Name"
+    },
+    {
+      "key": "point_details.lvl_percent",
+      "ru": "Кешбэк (%)",
+      "en": "Cashback (%)"
+    },
+    {
+      "key": "point_details.lvl_threshold",
+      "ru": "Порог (сумма)",
+      "en": "Threshold"
+    },
+    {
+      "key": "point_details.map_dialog_title",
+      "ru": "Выбор расположения",
+      "en": "Choose Location"
+    },
+    {
+      "key": "point_details.map_hint",
+      "ru": "Нажмите на карту, чтобы выбрать координаты. Адрес можно отредактировать вручную.",
+      "en": "Click on the map to select coordinates. You can edit the address manually afterwards."
+    },
+    {
+      "key": "point_details.map_location",
+      "ru": "Местоположение на карте",
+      "en": "Map Location"
+    },
+    {
+      "key": "point_details.map_required",
+      "ru": "Пожалуйста, укажите точное расположение на карте",
+      "en": "Please provide a location using the map"
+    },
+    {
+      "key": "point_details.max_burn_hint",
+      "ru": "Сколько процентов от чека можно покрыть бонусами (0-100)",
+      "en": "What percentage of the bill can be paid with points (0-100)"
+    },
+    {
+      "key": "point_details.max_burn_label",
+      "ru": "Макс. % оплаты баллами",
+      "en": "Max Points Payment %"
+    },
+    {
+      "key": "point_details.overview_currency",
+      "ru": "Валюта",
+      "en": "Currency"
+    },
+    {
+      "key": "point_details.overview_program",
+      "ru": "Программа",
+      "en": "Program"
+    },
+    {
+      "key": "point_details.overview_status",
+      "ru": "Статус",
+      "en": "Status"
+    },
+    {
+      "key": "point_details.overview_type",
+      "ru": "Тип",
+      "en": "Type"
+    },
+    {
+      "key": "point_details.readonly_hint",
+      "ru": "Вы работаете как менеджер: действия по изменению настроек и увольнению сотрудников недоступны.",
+      "en": "You are in manager mode — editing settings and firing staff is disabled."
+    },
+    {
+      "key": "point_details.save_settings",
+      "ru": "Сохранить настройки",
+      "en": "Save Settings"
+    },
+    {
+      "key": "point_details.search_button",
+      "ru": "Поиск",
+      "en": "Search"
+    },
+    {
+      "key": "point_details.search_error",
+      "ru": "Не удалось выполнить поиск адреса",
+      "en": "Unable to search address"
+    },
+    {
+      "key": "point_details.search_not_found",
+      "ru": "Ничего не найдено для запроса",
+      "en": "Nothing found for this query"
+    },
+    {
+      "key": "point_details.search_placeholder",
+      "ru": "Введите адрес или место",
+      "en": "Enter address or place"
+    },
+    {
+      "key": "point_details.select_on_map",
+      "ru": "Указать на карте",
+      "en": "Select on map"
+    },
+    {
+      "key": "point_details.selected_address",
+      "ru": "Выбранный адрес",
+      "en": "Selected address"
+    },
+    {
+      "key": "point_details.staff_empty",
+      "ru": "Кассиров пока нет",
+      "en": "No cashiers yet"
+    },
+    {
+      "key": "point_details.status_active",
+      "ru": "Активен",
+      "en": "Active"
+    },
+    {
+      "key": "point_details.status_inactive",
+      "ru": "Не активен",
+      "en": "Inactive"
+    },
+    {
+      "key": "point_details.tab_overview",
+      "ru": "Обзор",
+      "en": "Overview"
+    },
+    {
+      "key": "point_details.tab_settings",
+      "ru": "Настройки",
+      "en": "Settings"
+    },
+    {
+      "key": "point_details.tab_staff",
+      "ru": "Персонал",
+      "en": "Staff"
+    },
+    {
+      "key": "point_details.title",
+      "ru": "Управление Филиалом",
+      "en": "Branch Management"
+    },
+    {
+      "key": "profile.current_role",
+      "ru": "Текущая",
+      "en": "Current"
+    },
+    {
+      "key": "profile.email_label",
+      "ru": "E-mail",
+      "en": "E-mail"
+    },
+    {
+      "key": "profile.freeze_alert",
+      "ru": "Аккаунт заморожен до {{date}}. Изменения временно недоступны.",
+      "en": "Account is frozen until {{date}}. Changes are temporarily unavailable."
+    },
+    {
+      "key": "profile.id_label",
+      "ru": "ID Пользователя (нажмите для копирования)",
+      "en": "User ID (Click to copy)"
+    },
+    {
+      "key": "profile.join_section",
+      "ru": "Дополнительные действия",
+      "en": "Additional actions"
+    },
+    {
+      "key": "profile.language_saved",
+      "ru": "Язык сохранён",
+      "en": "Language updated"
+    },
+    {
+      "key": "profile.my_workspaces",
+      "ru": "Мои рабочие области",
+      "en": "My Workspaces"
+    },
+    {
+      "key": "profile.name_label",
+      "ru": "Имя",
+      "en": "Name"
+    },
+    {
+      "key": "profile.no_workspaces",
+      "ru": "Рабочие области не найдены",
+      "en": "No workspaces found"
+    },
+    {
+      "key": "profile.phone_label",
+      "ru": "Телефон",
+      "en": "Phone"
+    },
+    {
+      "key": "profile.pin_change_btn",
+      "ru": "Сменить PIN",
+      "en": "Change PIN"
+    },
+    {
+      "key": "profile.pin_change_success",
+      "ru": "PIN успешно обновлён",
+      "en": "PIN updated successfully"
+    },
+    {
+      "key": "profile.pin_confirm_error",
+      "ru": "PIN и подтверждение не совпадают",
+      "en": "PIN and confirmation do not match"
+    },
+    {
+      "key": "profile.pin_confirm_label",
+      "ru": "Подтверждение PIN",
+      "en": "Confirm PIN"
+    },
+    {
+      "key": "profile.pin_current_label",
+      "ru": "Текущий PIN",
+      "en": "Current PIN"
+    },
+    {
+      "key": "profile.pin_email_hint",
+      "ru": "Добавьте e-mail и сохраните профиль, чтобы запросить сброс.",
+      "en": "Add email to your profile to request a reset."
+    },
+    {
+      "key": "profile.pin_length_error",
+      "ru": "PIN должен содержать 4-12 цифр",
+      "en": "PIN must contain 4-12 digits"
+    },
+    {
+      "key": "profile.pin_new_label",
+      "ru": "Новый PIN",
+      "en": "New PIN"
+    },
+    {
+      "key": "profile.pin_protected",
+      "ru": "Защищено PIN",
+      "en": "PIN protected"
+    },
+    {
+      "key": "profile.pin_reset_btn",
+      "ru": "Отправить ссылку для сброса PIN",
+      "en": "Send PIN reset link"
+    },
+    {
+      "key": "profile.pin_reset_confirm",
+      "ru": "Сбросить PIN? Все действия будут заблокированы на 24 часа.",
+      "en": "Reset PIN? All actions will be blocked for 24 hours."
+    },
+    {
+      "key": "profile.pin_reset_email_sent",
+      "ru": "Ссылка для сброса PIN отправлена на e-mail",
+      "en": "PIN reset link sent to your email"
+    },
+    {
+      "key": "profile.pin_reset_success",
+      "ru": "PIN сброшен. Аккаунт заморожен на 24 часа.",
+      "en": "PIN reset. Account is frozen for 24 hours."
+    },
+    {
+      "key": "profile.pin_section_title",
+      "ru": "Управление PIN владельца",
+      "en": "Owner PIN management"
+    },
+    {
+      "key": "profile.save_btn",
+      "ru": "Сохранить изменения",
+      "en": "Save Changes"
+    },
+    {
+      "key": "profile.switch_role",
+      "ru": "Перейти",
+      "en": "Switch"
+    },
+    {
+      "key": "profile.switched_success",
+      "ru": "Переключено на {{name}}",
+      "en": "Switched to {{name}}"
+    },
+    {
+      "key": "profile.title",
+      "ru": "Мой Профиль",
+      "en": "My Profile"
+    },
+    {
+      "key": "select_role.subtitle",
+      "ru": "Роли определяют набор доступных разделов и прав. Выберите актуальную задачу.",
+      "en": "Each role unlocks its own dashboard sections. Pick the workspace you want to work with."
+    },
+    {
+      "key": "select_role.title",
+      "ru": "Выберите рабочее пространство",
+      "en": "Select workspace"
+    },
+    {
+      "key": "settings.color_helper",
+      "ru": "Этот цвет будет отображаться на карте клиента",
+      "en": "This color will be displayed on the client card"
+    },
+    {
+      "key": "settings.color_label",
+      "ru": "Фирменный цвет",
+      "en": "Brand Color"
+    },
+    {
+      "key": "settings.expiration_hint",
+      "ru": "Правила сгорания настраиваются здесь и действуют на всю сеть.",
+      "en": "Expiration rules are configured here and apply to all branches."
+    },
+    {
+      "key": "settings.expiration_policy",
+      "ru": "Политика сгорания (для всех точек)",
+      "en": "Expiration Policy (Global)"
+    },
+    {
+      "key": "settings.logo_label",
+      "ru": "Ссылка на логотип",
+      "en": "Logo URL"
+    },
+    {
+      "key": "settings.name_label",
+      "ru": "Название бренда",
+      "en": "Brand Name"
+    },
+    {
+      "key": "settings.save_success",
+      "ru": "Настройки успешно сохранены",
+      "en": "Settings saved"
+    },
+    {
+      "key": "settings.title",
+      "ru": "Настройки Бизнеса",
+      "en": "Business Settings"
+    },
+    {
+      "key": "staff.active",
+      "ru": "Активен",
+      "en": "Active"
+    },
+    {
+      "key": "staff.cashiers",
+      "ru": "Кассиры",
+      "en": "Cashiers"
+    },
+    {
+      "key": "staff.confirm_fire",
+      "ru": "Вы уверены, что хотите уволить этого сотрудника?",
+      "en": "Are you sure you want to fire this employee?"
+    },
+    {
+      "key": "staff.empty_cashiers",
+      "ru": "Кассиров пока нет",
+      "en": "No cashiers yet"
+    },
+    {
+      "key": "staff.empty_managers",
+      "ru": "Менеджеров пока нет",
+      "en": "No managers yet"
+    },
+    {
+      "key": "staff.fire",
+      "ru": "Уволить",
+      "en": "Fire"
+    },
+    {
+      "key": "staff.generate_btn",
+      "ru": "Сгенерировать код",
+      "en": "Generate Code"
+    },
+    {
+      "key": "staff.invite_hint",
+      "ru": "Отправьте этот код сотруднику, чтобы он присоединился как Менеджер:",
+      "en": "Send this code to the employee to join as a Manager:"
+    },
+    {
+      "key": "staff.invite_manager",
+      "ru": "Пригласить менеджера",
+      "en": "Invite Manager"
+    },
+    {
+      "key": "staff.managers",
+      "ru": "Менеджеры",
+      "en": "Managers"
+    },
+    {
+      "key": "staff.multi_points",
+      "ru": "{{count}} Точки",
+      "en": "{{count}} Points"
+    },
+    {
+      "key": "staff.name",
+      "ru": "Имя",
+      "en": "Name"
+    },
+    {
+      "key": "staff.phone",
+      "ru": "Телефон",
+      "en": "Phone"
+    },
+    {
+      "key": "staff.role",
+      "ru": "Роль",
+      "en": "Role"
+    },
+    {
+      "key": "staff.role_cashier",
+      "ru": "Кассир",
+      "en": "Cashier"
+    },
+    {
+      "key": "staff.role_manager",
+      "ru": "Менеджер",
+      "en": "Manager"
+    },
+    {
+      "key": "staff.title",
+      "ru": "Управление Персоналом",
+      "en": "Staff Management"
+    },
+    {
+      "key": "support.admin_title",
+      "ru": "Диалоги партнёров",
+      "en": "Partner Dialogs"
+    },
+    {
+      "key": "support.empty_state",
+      "ru": "Сообщений пока нет",
+      "en": "No messages yet"
+    },
+    {
+      "key": "support.no_messages",
+      "ru": "Пока без сообщений",
+      "en": "No messages yet"
+    },
+    {
+      "key": "support.no_threads",
+      "ru": "Диалогов пока нет",
+      "en": "No conversations yet"
+    },
+    {
+      "key": "support.partner_hint",
+      "ru": "Задайте вопрос команде платформы — ответ придёт сюда же.",
+      "en": "Ask the platform team any question — the reply will appear here."
+    },
+    {
+      "key": "support.partner_hint_secondary",
+      "ru": "Все ответы приходят в этот чат. Не закрывайте страницу, чтобы увидеть их мгновенно.",
+      "en": "All replies arrive in this chat. Keep the page open to see them instantly."
+    },
+    {
+      "key": "support.partner_title",
+      "ru": "Чат с поддержкой платформы",
+      "en": "Chat with platform support"
+    },
+    {
+      "key": "support.placeholder",
+      "ru": "Введите сообщение...",
+      "en": "Type a message..."
+    },
+    {
+      "key": "support.select_thread",
+      "ru": "Выберите диалог, чтобы просмотреть историю",
+      "en": "Select a conversation to view history"
+    },
+    {
+      "key": "support.send",
+      "ru": "Отправить",
+      "en": "Send"
+    },
+    {
+      "key": "support.sent",
+      "ru": "Сообщение отправлено",
+      "en": "Message sent"
+    },
+    {
+      "key": "support.thread_id",
+      "ru": "Диалог #{{id}}",
+      "en": "Thread #{{id}}"
+    },
+    {
+      "key": "support.validation_empty",
+      "ru": "Сообщение не может быть пустым",
+      "en": "Message cannot be empty"
+    }
+  ]
+}
