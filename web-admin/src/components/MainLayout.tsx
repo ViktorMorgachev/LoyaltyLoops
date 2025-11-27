@@ -13,7 +13,8 @@ import {
   History as HistoryIcon,
   Dashboard as DashboardIcon,
   Group as GroupIcon,
-  Info as InfoIcon
+  Info as InfoIcon,
+  ChatBubbleOutline as ChatIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -28,13 +29,23 @@ export const MainLayout = () => {
   const location = useLocation();
 
   // БЕРЕМ ДАННЫЕ ИЗ КОНТЕКСТА (Они реактивные!)
-  const { isPartner, isPartnerAdmin, isSuperAdmin, isNewUser, workspaces, currentWorkspace, logout } = useUser();
+  const { isPartner, isPartnerAdmin, isSuperAdmin, isPlatformManager, isNewUser, workspaces, currentWorkspace, logout } = useUser();
+  const isPlatformStaff = isSuperAdmin || isPlatformManager;
 
   React.useEffect(() => {
-      if (workspaces.length > 1 && !currentWorkspace && location.pathname !== '/select-role' && location.pathname !== '/profile') {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+    if (!token) {
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
+
+  React.useEffect(() => {
+      const relaxedRoutes = ['/select-role', '/profile', '/about', '/login', '/join/partner', '/join/platform-manager'];
+      const isRelaxed = relaxedRoutes.some((route) => location.pathname.startsWith(route));
+      if (workspaces.length > 1 && !currentWorkspace && !isRelaxed) {
           navigate('/select-role');
       }
-  }, [workspaces, currentWorkspace, location.pathname]);
+  }, [workspaces, currentWorkspace, location.pathname, navigate]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -84,6 +95,7 @@ export const MainLayout = () => {
 
       if (isPartnerAdmin) {
         menuItems.push({ text: t('menu.staff'), icon: <GroupIcon />, path: '/partner/staff' });
+        menuItems.push({ text: t('menu.support_chat'), icon: <ChatIcon />, path: '/partner/support' });
       }
 
       menuItems.push({ text: t('menu.transactions'), icon: <HistoryIcon />, path: '/partner/transactions' });
@@ -93,9 +105,10 @@ export const MainLayout = () => {
       }
   }
 
-  if (isSuperAdmin) {
+  if (isPlatformStaff) {
       menuItems.push(
-          { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' }
+          { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' },
+          { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' }
       );
   }
 

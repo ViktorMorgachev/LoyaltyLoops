@@ -14,6 +14,8 @@ import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.PartnerManagersTable
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
+import io.loyaltyloop.server.database.tables.SupportMessagesTable
+import io.loyaltyloop.server.database.tables.SupportThreadsTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -51,7 +53,8 @@ object DatabaseFactory {
         Database.connect(dataSource)
 
         transaction {
-            SchemaUtils.createMissingTablesAndColumns( UsersTable,
+            SchemaUtils.createMissingTablesAndColumns(
+                UsersTable,
                 PartnersTable,
                 TradingPointsTable,
                 PartnerCashiersTable,
@@ -62,7 +65,9 @@ object DatabaseFactory {
                 SystemStaffTable,
                 TransactionsHistoryTable,
                 PartnerManagersTable,
-                PinResetTokensTable
+                PinResetTokensTable,
+                SupportThreadsTable,
+                SupportMessagesTable
             )
         }
     }
@@ -96,12 +101,14 @@ object DatabaseFactory {
                 TradingPointsTable,
                 PartnerCashiersTable,
                 LoyaltyCardTable,
-                LoyaltySettingsTable, 
+                LoyaltySettingsTable,
                 LoyaltyTiersTable,
                 SystemStaffTable,
                 TransactionsHistoryTable,
                 PartnerManagersTable,
-                PinResetTokensTable
+                PinResetTokensTable,
+                SupportThreadsTable,
+                SupportMessagesTable
             )
         }
     }

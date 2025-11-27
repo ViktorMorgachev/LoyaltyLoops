@@ -38,6 +38,9 @@ import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.server.service.EmailService
+import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.shared.models.SendSupportMessageRequest
+import io.loyaltyloop.shared.models.UserRole
 
 private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
 private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
@@ -48,7 +51,8 @@ fun Route.partnerRoutes(
     transactionService: TransactionService,
     pinResetTokenRepository: PinResetTokenRepository,
     emailService: EmailService,
-    webBaseUrl: String
+    webBaseUrl: String,
+    supportChatService: SupportChatService
 ) {
     route("/partners") {
         authenticate("auth-jwt") {
@@ -143,6 +147,32 @@ fun Route.partnerRoutes(
                 emailService.sendPinResetEmail(email, resetLink)
 
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Reset link sent"))
+            }
+
+            route("/support") {
+                get("/thread") {
+                    val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    ensureOwner(partner, userId)
+
+                    val response = supportChatService.getPartnerThread(partner.id)
+                    call.respond(response)
+                }
+
+                post("/messages") {
+                    val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                    val payload = call.receive<SendSupportMessageRequest>()
+                    val text = payload.content.trim()
+                    if (text.isEmpty()) {
+                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Message cannot be empty")
+                    }
+
+                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    ensureOwner(partner, userId)
+
+                    supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
+                    call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Message sent"))
+                }
             }
 
             post("/join") {

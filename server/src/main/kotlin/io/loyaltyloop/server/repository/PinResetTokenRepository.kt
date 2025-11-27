@@ -4,6 +4,7 @@ import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import io.loyaltyloop.server.utils.SecurityUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -35,8 +36,11 @@ class PinResetTokenRepository {
 
     suspend fun findValidToken(token: String): PinResetToken? = dbQuery {
         val hash = SecurityUtils.hashValue(token)
+        val now = System.currentTimeMillis()
         PinResetTokensTable.select {
-            (PinResetTokensTable.tokenHash eq hash) and (PinResetTokensTable.usedAt.isNull())
+            (PinResetTokensTable.tokenHash eq hash) and
+                (PinResetTokensTable.usedAt.isNull()) and
+                (PinResetTokensTable.expiresAt greaterEq now)
         }.map {
             PinResetToken(
                 id = it[PinResetTokensTable.id],

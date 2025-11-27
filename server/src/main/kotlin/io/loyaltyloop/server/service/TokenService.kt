@@ -56,4 +56,17 @@ class TokenService(config: ApplicationConfig) {
             null // Токен подделан или протух
         }
     }
+
+    fun validateAccessToken(token: String): String? {
+        return try {
+            val verifier = JWT.require(Algorithm.HMAC256(secret))
+                .withAudience(audience)
+                .withIssuer(issuer)
+                .build()
+            val decoded = verifier.verify(token)
+            decoded.getClaim("id").asString()
+        } catch (e: Exception) {
+            null
+        }
+    }
 }

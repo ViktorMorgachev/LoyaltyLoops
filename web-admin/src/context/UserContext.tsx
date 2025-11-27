@@ -22,6 +22,8 @@ interface UserContextType {
   isPartnerAdmin: boolean;
   isPartnerManager: boolean;
   isSuperAdmin: boolean;
+  isPlatformManager: boolean;
+  isPlatformStaff: boolean;
   isNewUser: boolean; // Вообще нет ролей
 }
 
@@ -89,19 +91,34 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-      localStorage.clear();
+      const preservedLang = localStorage.getItem('lang') || i18n.language;
+
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('currentWorkspace');
+      localStorage.removeItem('workspaces');
+
+      if (preservedLang) {
+          localStorage.setItem('lang', preservedLang);
+          i18n.changeLanguage(preservedLang);
+          api.defaults.headers.common['Accept-Language'] = preservedLang;
+      }
+
       setUser(null);
       setWorkspaces([]);
       setCurrentWorkspace(null);
+
       window.location.href = '/login';
   };
 
   // Вычисляемые права зависят от ТЕКУЩЕГО выбора
   const role = currentWorkspace?.role;
   const isSuperAdmin = role === 'PLATFORM_SUPER_ADMIN';
+  const isPlatformManager = role === 'PLATFORM_MANAGER';
   const isPartnerAdmin = role === 'PARTNER_ADMIN';
   const isPartnerManager = role === 'PARTNER_MANAGER';
   const isPartner = isPartnerAdmin || isPartnerManager;
+  const isPlatformStaff = isSuperAdmin || isPlatformManager;
   
   // isNewUser - если вообще нет воркспейсов (чистый лист)
   const isNewUser = workspaces.length === 0; 
@@ -118,7 +135,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isPartner,
         isPartnerAdmin,
         isPartnerManager,
-        isSuperAdmin, 
+        isSuperAdmin,
+        isPlatformManager,
+        isPlatformStaff,
         isNewUser 
     }}>
       {children}

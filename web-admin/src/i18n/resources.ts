@@ -90,10 +90,12 @@ export const resources = {
         transactions: "История",
         settings: "Настройки",
         staff: "Сотрудники",
+        support_chat: "Поддержка",
 
         // Админ
         admin_dashboard: "Обзор",
         admin_partners: "Партнеры",
+        support_inbox: "Чат с партнёрами",
         
         // Новичок
         create_business: "Создать Бизнес"
@@ -127,16 +129,16 @@ export const resources = {
         items: {
           architecture: "Масштабируемая архитектура: единый бэкенд + веб + мобильное приложение.",
           security: "Безопасность: централизованная работа с токенами, контроль прав и журналирование действий.",
-          localization: "Локализация и удобные интерфейсы на русском/английском.",
-          soon: "Скоро: расширенная аналитика, коммуникации и автоматизация маркетинга."
+          localization: "Локализация и удобные интерфейсы на многих языках",
+          soon: "Скоро: расширенная аналитика, коммуникации и автоматизация флоу"
         },
         loyalty_types: {
           title: "Варианты систем лояльности",
-          tiered_title: "Накопительная (Tiered LTV)",
+          tiered_title: "Накопительная",
           tiered_desc: "Клиент копит оборот, повышает уровень и получает больший кешбэк. Проценты задаются по уровням: Start, Silver, Gold.",
           visits_title: "Счетчик визитов",
           visits_desc: "Каждый визит приближает к подарку: например, каждый 6-й кофе бесплатно. Подходит для сервисов с частыми покупками.",
-          hybrid_title: "HYBRID: визиты + кешбэк",
+          hybrid_title: "Гибридная: визиты + кешбэк",
           hybrid_desc: "Кассир выбирает стратегию после сканирования: либо начислить визит, либо рассчитать кешбэк с возможностью списания баллов."
         },
         faq: {
@@ -148,7 +150,7 @@ export const resources = {
           downgrade_q: "Что происходит при простое клиента?",
           downgrade_a: "Используйте поле «Срок до сброса уровня». Если клиент не совершает покупок указанное количество дней, уровень автоматически снижается.",
           staff_q: "Чем отличаются владелец и менеджер?",
-          staff_a: "PARTNER_ADMIN может менять настройки, увольнять сотрудников и удалять точки. PARTNER_MANAGER работает в режиме только чтение и не видит критичные действия."
+          staff_a: "Владелец может менять настройки, увольнять сотрудников и удалять точки. Менеджер в режиме только чтение и не видит критичные действия."
         },
         contact_text: "Если есть идеи или предложения, напишите основателю в поддержку — мы быстро реагируем на фидбек."
       },
@@ -297,6 +299,21 @@ export const resources = {
         token_required: "Укажите токен из письма",
         submit: "Сменить PIN",
         success: "PIN обновлён. Вы можете войти заново."
+      },
+      support: {
+        partner_title: "Чат с поддержкой платформы",
+        partner_hint: "Задайте вопрос команде платформы — ответ придёт сюда же.",
+        admin_title: "Диалоги партнёров",
+        placeholder: "Введите сообщение...",
+        send: "Отправить",
+        sent: "Сообщение отправлено",
+        validation_empty: "Сообщение не может быть пустым",
+        empty_state: "Сообщений пока нет",
+        no_messages: "Пока без сообщений",
+        no_threads: "Диалогов пока нет",
+        select_thread: "Выберите диалог, чтобы просмотреть историю",
+        partner_hint_secondary: "Все ответы приходят в этот чат. Не закрывайте страницу, чтобы увидеть их мгновенно.",
+        thread_id: "Диалог #{{id}}",
       },
       point_details: {
         title: "Управление Филиалом",
@@ -454,10 +471,12 @@ export const resources = {
         transactions: "History",
         settings: "Settings",
         staff: "Staff",
+        support_chat: "Support",
 
         // Admin
         admin_dashboard: "Overview",
         admin_partners: "Partners",
+        support_inbox: "Partner Inbox",
         
         // New User
         create_business: "Create Business"
@@ -656,6 +675,21 @@ export const resources = {
         token_required: "Please provide the token from your email",
         submit: "Update PIN",
         success: "PIN updated. You can sign in again."
+      },
+      support: {
+        partner_title: "Chat with platform support",
+        partner_hint: "Ask the platform team any question — the reply will appear here.",
+        admin_title: "Partner Dialogs",
+        placeholder: "Type a message...",
+        send: "Send",
+        sent: "Message sent",
+        validation_empty: "Message cannot be empty",
+        empty_state: "No messages yet",
+        no_messages: "No messages yet",
+        no_threads: "No conversations yet",
+        select_thread: "Select a conversation to view history",
+        partner_hint_secondary: "All replies arrive in this chat. Keep the page open to see them instantly.",
+        thread_id: "Thread #{{id}}",
       },
       point_details: {
         title: "Branch Management",

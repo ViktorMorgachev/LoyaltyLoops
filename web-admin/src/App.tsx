@@ -10,6 +10,7 @@ import { JoinPlatformManagerPage } from './pages/JoinPlatformManagerPage';
 import { JoinPartnerManagerPage } from './pages/JoinPartnerManagerPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PinResetPage } from './pages/PinResetPage';
+import { SupportChatPage } from './pages/SupportChatPage';
 
 // Партнер
 import { PartnerDashboardPage } from './pages/partner/PartnerDashboardPage';
@@ -56,10 +57,12 @@ function App() {
             <Route path="/partner/onboarding" element={<CreateBusinessPage />} />
             <Route path="/partner/settings" element={<BusinessSettingsPage />} />
             <Route path="/partner/staff" element={<PartnerStaffPage />} />
+            <Route path="/partner/support" element={<SupportChatPage mode="partner" />} />
 
             {/* Супер-Админ */}
             <Route path="/admin/partners" element={<AllPartnersPage />} />
             <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
+            <Route path="/admin/support" element={<SupportChatPage mode="admin" />} />
           </Route>
 
           {/* Фоллбэк */}

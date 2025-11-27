@@ -17,11 +17,15 @@ import io.loyaltyloop.shared.models.ChangePartnerStatusRequest
 import io.loyaltyloop.shared.models.JoinPlatformAdminRequest
 import io.loyaltyloop.shared.models.UserRole
 import kotlinx.serialization.Serializable
+import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.shared.models.SendSupportMessageRequest
+import io.loyaltyloop.shared.models.SupportThreadResponse
 
 fun Route.adminRoutes(
     applicationConfig: ApplicationConfig,
     userRepo: UserRepository,
-    partnerRepo: PartnerRepository
+    partnerRepo: PartnerRepository,
+    supportChatService: SupportChatService
 ) {
     authenticate("auth-jwt") {
         route("/admin") {
@@ -123,6 +127,42 @@ fun Route.adminRoutes(
 
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Platform manager role granted"))
             }
+
+            route("/support") {
+                get("/threads") {
+                    val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                    requireAdminRole(userRepo, userId, requireWrite = false)
+
+                    val threads = supportChatService.listThreads()
+                    call.respond(threads)
+                }
+
+                get("/threads/{threadId}") {
+                    val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                    requireAdminRole(userRepo, userId, requireWrite = false)
+
+                    val threadId = call.parameters["threadId"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Thread ID required")
+                    val response = supportChatService.getAdminThread(threadId)
+                        ?: throw LoyaltyException(AppErrorCode.NOT_FOUND, "Thread not found")
+                    call.respond(response)
+                }
+
+                post("/threads/{threadId}/messages") {
+                    val userId = call.getUserIdOrRespond(userRepo) ?: return@post
+                    requireAdminRole(userRepo, userId, requireWrite = false)
+
+                    val threadId = call.parameters["threadId"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Thread ID required")
+                    val payload = call.receive<SendSupportMessageRequest>()
+                    val text = payload.content.trim()
+                    if (text.isEmpty()) {
+                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Message cannot be empty")
+                    }
+
+                    val role = resolveAdminSenderRole(userRepo, userId)
+                    supportChatService.sendAdminMessage(threadId, userId, role, text)
+                    call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Message sent"))
+                }
+            }
         }
     }
 }
@@ -140,5 +180,14 @@ private suspend fun requireAdminRole(userRepo: UserRepository, userId: String, r
 
     if (requireWrite && !isSuperAdmin) {
         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Read-only for Managers")
+    }
+}
+
+private suspend fun resolveAdminSenderRole(userRepo: UserRepository, userId: String): UserRole {
+    val workspaces = userRepo.getUserWorkspaces(userId)
+    return when {
+        workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN } -> UserRole.PLATFORM_SUPER_ADMIN
+        workspaces.any { it.role == UserRole.PLATFORM_MANAGER } -> UserRole.PLATFORM_MANAGER
+        else -> UserRole.CLIENT
     }
 }

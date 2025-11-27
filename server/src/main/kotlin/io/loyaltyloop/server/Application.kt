@@ -35,12 +35,18 @@ import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.service.ConsoleEmailService
+import io.loyaltyloop.server.repository.SupportChatRepository
+import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.HealthResponse
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
 import io.loyaltyloop.server.utils.handleError
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.UserRole
+import io.ktor.server.websocket.*
+import io.ktor.websocket.*
+import java.time.Duration
 
 
 fun main(args: Array<String>) {
@@ -72,6 +78,13 @@ fun Application.module() {
         allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
     }
 
+    install(WebSockets) {
+        pingPeriod = Duration.ofSeconds(30)
+        timeout = Duration.ofSeconds(60)
+        maxFrameSize = Long.MAX_VALUE
+        masking = false
+    }
+
     val jwtSecret = environment.config.property("jwt.secret").getString()
     val jwtIssuer = environment.config.property("jwt.issuer").getString()
     val jwtAudience = environment.config.property("jwt.audience").getString()
@@ -84,9 +97,11 @@ fun Application.module() {
     val partnerRepository = PartnerRepository()
     val transactionRepository = TransactionRepository()
     val pinResetTokenRepository = PinResetTokenRepository()
+    val supportChatRepository = SupportChatRepository()
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository)
+    val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
     val webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
 
@@ -218,12 +233,80 @@ fun Application.module() {
             transactionService = transactionService,
             pinResetTokenRepository = pinResetTokenRepository,
             emailService = emailService,
-            webBaseUrl = webBaseUrl
+            webBaseUrl = webBaseUrl,
+            supportChatService = supportChatService
         )
-        adminRoutes(applicationConfig = environment!!.config,   userRepo = userRepository, partnerRepo = partnerRepository)
+        adminRoutes(
+            applicationConfig = environment!!.config,
+            userRepo = userRepository,
+            partnerRepo = partnerRepository,
+            supportChatService = supportChatService
+        )
         val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
         if (enableTestSupport) {
             testSupportRoutes(userRepository)
+        }
+
+        webSocket("/ws/support/partner") {
+            val token = call.request.queryParameters["token"]
+            if (token.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Missing token"))
+                return@webSocket
+            }
+
+            val userId = tokenService.validateAccessToken(token)
+            if (userId.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid token"))
+                return@webSocket
+            }
+
+            val partner = runCatching { partnerRepository.getPartnerByUserId(userId) }.getOrNull()
+            if (partner == null || partner.ownerId != userId) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Access denied"))
+                return@webSocket
+            }
+
+            supportChatService.registerPartnerSession(partner.id, this)
+            try {
+                for (frame in incoming) {
+                    // Нет двустороннего ввода пока
+                }
+            } finally {
+                supportChatService.unregisterPartnerSession(partner.id, this)
+            }
+        }
+
+        webSocket("/ws/support/admin") {
+            val token = call.request.queryParameters["token"]
+            if (token.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Missing token"))
+                return@webSocket
+            }
+
+            val userId = tokenService.validateAccessToken(token)
+            if (userId.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid token"))
+                return@webSocket
+            }
+
+            val workspaces = userRepository.getUserWorkspaces(userId)
+            val isStaff = workspaces.any {
+                it.role == UserRole.PLATFORM_SUPER_ADMIN || it.role == UserRole.PLATFORM_MANAGER
+            }
+
+            if (!isStaff) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Admins only"))
+                return@webSocket
+            }
+
+            supportChatService.registerAdminSession(userId, this)
+            try {
+                for (frame in incoming) {
+                    // Нет двустороннего ввода пока
+                }
+            } finally {
+                supportChatService.unregisterAdminSession(userId, this)
+            }
         }
     }
 }

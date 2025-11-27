@@ -52,7 +52,7 @@ export const AllPartnersPage = () => {
           <TableBody>
             {partners.map((p) => (
               <TableRow key={p.id}>
-                <TableCell>{p.name}</TableCell>
+                <TableCell>{p.businessName || p.name || t('dashboard.table_name')}</TableCell>
                 <TableCell>{p.countryCode}</TableCell>
                 <TableCell>{p.ownerPhone || "N/A"}</TableCell>
                 <TableCell>
