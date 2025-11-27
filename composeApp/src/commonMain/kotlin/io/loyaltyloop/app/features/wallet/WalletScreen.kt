@@ -23,6 +23,7 @@ import io.loyaltyloop.app.ui.components.LoyaltyCardItem
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.QrCard
 import io.loyaltyloop.app.ui.components.show
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -35,6 +36,8 @@ class WalletScreen : Screen {
         val state by viewModel.state.collectAsState()
 
         var showQrSheet by remember { mutableStateOf(false) }
+        var shouldRefreshAfterQr by remember { mutableStateOf(false) }
+        val refreshScope = rememberCoroutineScope()
         val sheetState = rememberModalBottomSheetState()
 
         // Снекбар для ошибок
@@ -58,11 +61,31 @@ class WalletScreen : Screen {
 
         // Pull To Refresh
         val pullRefreshState = rememberPullToRefreshState()
-        if (pullRefreshState.isRefreshing) {
-            LaunchedEffect(Unit) { viewModel.onAction(WalletScreenModel.Action.OnRefresh) }
+        LaunchedEffect(pullRefreshState.isRefreshing) {
+            if (pullRefreshState.isRefreshing) {
+                viewModel.onAction(WalletScreenModel.Action.OnRefresh)
+            }
         }
         LaunchedEffect(state.isLoading) {
-            if (!state.isLoading) pullRefreshState.endRefresh()
+            if (!state.isLoading && pullRefreshState.isRefreshing) {
+                pullRefreshState.endRefresh()
+            }
+        }
+
+        LaunchedEffect(showQrSheet) {
+            if (!showQrSheet && shouldRefreshAfterQr) {
+                shouldRefreshAfterQr = false
+                refreshScope.launch {
+                    delay(1200)
+                    viewModel.loadCards()
+                }
+            }
+        }
+
+        val openQrSheet: () -> Unit = {
+            shouldRefreshAfterQr = true
+            viewModel.onAction(WalletScreenModel.Action.OnQrCodeClicked)
+            showQrSheet = true
         }
 
         LoyaltyScaffold(
@@ -71,10 +94,7 @@ class WalletScreen : Screen {
             floatingActionButton = {
                 if (!state.isLoading && state.cards.isNotEmpty()) {
                     ExtendedFloatingActionButton(
-                        onClick = {
-                            viewModel.onAction(WalletScreenModel.Action.OnQrCodeClicked)
-                            showQrSheet = true
-                        },
+                        onClick = { openQrSheet() },
                         icon = { Icon(Icons.Default.QrCode, null) },
                         text = { Text(stringResource(Res.string.wallet_my_qr)) },
                         containerColor = MaterialTheme.colorScheme.primary,
@@ -90,7 +110,10 @@ class WalletScreen : Screen {
                     .nestedScroll(pullRefreshState.nestedScrollConnection)
             ) {
                 if (state.cards.isEmpty() && !state.isLoading) {
-                    EmptyWalletView(onShowQrClicked = { showQrSheet = true })
+                    EmptyWalletView(
+                        onShowQrClicked = { openQrSheet() },
+                        onRefreshClicked = { viewModel.loadCards() }
+                    )
                 } else {
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
@@ -153,7 +176,10 @@ class WalletScreen : Screen {
 }
 
 @Composable
-fun EmptyWalletView(onShowQrClicked: () -> Unit) {
+fun EmptyWalletView(
+    onShowQrClicked: () -> Unit,
+    onRefreshClicked: () -> Unit
+) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -185,5 +211,12 @@ fun EmptyWalletView(onShowQrClicked: () -> Unit) {
             onClick = onShowQrClicked,
             modifier = Modifier.fillMaxWidth()
         )
+        Spacer(modifier = Modifier.height(12.dp))
+        OutlinedButton(
+            onClick = onRefreshClicked,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = stringResource(Res.string.wallet_empty_refresh))
+        }
     }
 }

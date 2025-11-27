@@ -74,6 +74,7 @@ kotlin {
             implementation(libs.multiplatform.settings)
             implementation(libs.qrose)
             implementation(libs.kotlinx.datetime)
+            implementation(libs.kamel.image)
 
         }
 

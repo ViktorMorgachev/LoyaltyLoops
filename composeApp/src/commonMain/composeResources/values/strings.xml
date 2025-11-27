@@ -141,6 +141,7 @@
     <string name="wallet_empty_title">У вас пока нет карт лояльности</string>
     <string name="wallet_empty_desc">Покажите свой QR-код кассиру при первой покупке, чтобы получить карту.</string>
     <string name="wallet_show_qr_btn">Показать мой QR</string>
+    <string name="wallet_empty_refresh">Обновить список</string>
 
     <!-- Terminal Screen -->
     <string name="terminal_title">Терминал</string>

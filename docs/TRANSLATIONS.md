@@ -42,6 +42,8 @@ DRY_RUN=1 npx ts-node --esm scripts/autoTranslate.ts
 
 This copies the Russian strings into every target language so the UI still builds.
 
+> Скрипт вычисляет пути относительно файла `scripts/autoTranslate.ts`, поэтому можно запускать команду из любого каталога. Главное — чтобы репозиторий оставался по пути `../web-admin`. Для простоты всё равно рекомендую `cd /Users/viktormorgachev/LoyaltyLoop && npx ...`.
+
 ### Tweaking targets
 
 - Use `TARGET_LANGS=ky` to translate a single locale.

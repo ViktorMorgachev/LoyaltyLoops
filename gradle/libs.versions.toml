@@ -4,6 +4,7 @@ kotlin = "2.0.0"
 agp = "8.3.1"
 compose-plugin = "1.6.11"
 androidx-activityCompose = "1.9.0"
+kamel = "0.9.5"
 
 # Server
 ktor = "2.3.11"
@@ -93,6 +94,7 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 # Коррутины для настроек (опционально, но полезно)
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatformSettings" }
+kamel-image = { module = "media.kamel:kamel-image", version.ref = "kamel" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
