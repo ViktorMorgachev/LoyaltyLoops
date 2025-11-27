@@ -24,6 +24,7 @@ import io.loyaltyloop.shared.models.ChangePointStatusRequest
 import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
+import io.loyaltyloop.shared.models.Currency
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.ProcessTransactionRequest
@@ -85,7 +86,7 @@ suspend fun HttpClient.createCashierEcosystem(
     // 1. Создаем точку
     // (Мы не можем достать inviteCode через API создания, поэтому лезем в базу или делаем getPoints)
     // Упростим: Создадим точку через API, потом найдем её в БД
-    createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", TradingPointType.COFFEE_SHOP)
+    createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", currency = Currency.KGS, type =  TradingPointType.COFFEE_SHOP)
 
     val partnerId = partnerRepo.getPartnersByOwner(ownerId).first().id
     val point = partnerRepo.getPointsByPartnerId(partnerId).first()
@@ -183,6 +184,7 @@ suspend fun HttpClient.createPartner(
 suspend fun HttpClient.createTradingPoint(
     ownerToken: String,
     name: String = "Test Point",
+    currency: Currency,
     type: TradingPointType = TradingPointType.COFFEE_SHOP,
     address: String = "Test Street",
     latitude: Double = 42.8746,
@@ -197,6 +199,7 @@ suspend fun HttpClient.createTradingPoint(
         latitude = latitude,
         longitude = longitude,
         visitsTarget = visitTarget,
+        currency = currency,
         awardOnMixedPayment = awardOnMixedPayment
     )
 

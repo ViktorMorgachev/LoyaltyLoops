@@ -26,6 +26,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.FORBIDDEN,
                 AppErrorCode.ACCOUNT_FROZEN,
+                AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.CODE_EXPIRED,
                 AppErrorCode.INVALID_PIN -> HttpStatusCode.Forbidden
 
@@ -46,7 +47,6 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.INVALID_QR_SIGNATURE,
                 AppErrorCode.INVALID_AMOUNT,
                 AppErrorCode.INVALID_TIER_VALUE,
-                AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.INVALID_RESET_TOKEN,
                 AppErrorCode.INVALID_CODE-> HttpStatusCode.BadRequest
 

@@ -20,7 +20,7 @@ data class TradingPointDto(
     val latitude: Double?,
     val longitude: Double?,
     val inviteCode: String?,
-    val currency: String = "KGS"
+    val currency: String
 )
 
 @Serializable
@@ -32,9 +32,9 @@ data class TradingPointDetailsDto(
 @Serializable
 data class CreateTradingPointRequest(
     val name: String,
-    val type: TradingPointType, // JSON: "type": "COFFEE_SHOP"
+    val type: TradingPointType,
     val address: String,
-    val currency: String = "KGS",
+    val currency: Currency,
     val latitude: Double,
     val longitude: Double,
     val programType: LoyaltyProgramType = LoyaltyProgramType.TIERED_LTV,

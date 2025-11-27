@@ -12,6 +12,7 @@ import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.Currency
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.LoyaltyTierDto
 import io.loyaltyloop.shared.models.TradingPointDto
@@ -34,7 +35,7 @@ class TradingPointValidationTest {
             setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz", ownerPin = "1234"))
         }.apply { assertEquals(HttpStatusCode.Created, status) }
 
-        client.createTradingPoint(ownerToken = owner.accessToken)
+        client.createTradingPoint(ownerToken = owner.accessToken, currency = Currency.KGS)
 
         val point = client.get("/partners/points") {
             header("Authorization", "Bearer ${owner.accessToken}")
@@ -82,7 +83,7 @@ class TradingPointValidationTest {
             setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz 2", ownerPin = "1234"))
         }.apply { assertEquals(HttpStatusCode.Created, status) }
 
-        client.createTradingPoint(ownerToken = owner.accessToken)
+        client.createTradingPoint(ownerToken = owner.accessToken, currency = Currency.KGS)
 
         val point = client.get("/partners/points") {
             header("Authorization", "Bearer ${owner.accessToken}")

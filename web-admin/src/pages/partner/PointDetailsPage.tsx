@@ -49,15 +49,27 @@ export const PointDetailsPage = () => {
   const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
+  const overviewCurrency = React.useMemo(() => {
+    const normalized = details?.point?.currency?.trim();
+    if (!normalized) {
+      return t('common.not_selected');
+    }
+    const upper = normalized.toUpperCase();
+    const option = countryOptions.find(opt => opt.currency === upper || opt.code === upper);
+    if (option) {
+      return `${option.label} (${option.currency})`;
+    }
+    return normalized.toUpperCase();
+  }, [details?.point?.currency, countryOptions, t]);
 
   const normalizePercentForDisplay = (value: any) => {
     if (value === null || value === undefined || value === '') return '';
     const numeric = typeof value === 'string' ? parseFloat(value) : value;
     if (isNaN(numeric)) return '';
     if (numeric > 0 && numeric < 1) {
-      return (numeric * 100).toString();
+      return parseFloat((numeric * 100).toFixed(4)).toString();
     }
-    return numeric.toString();
+    return parseFloat(numeric.toFixed(4)).toString();
   };
 
   const sanitizeNumber = (value: any) => {
@@ -108,9 +120,21 @@ export const PointDetailsPage = () => {
       
       setProgramType(data.settings.programType);
       setMaxBurnPercentage(data.settings.maxBurnPercentage || 100);
-      setCurrency(data.point.currency || 'KGS');
-      const matchedCountry = countryOptions.find(opt => opt.currency === (data.point.currency || 'KGS'));
-      setCountry(matchedCountry?.code || 'KG');
+
+      const backendCurrency = data.point.currency?.trim();
+      const normalizedCurrency = backendCurrency ? backendCurrency.toUpperCase() : '';
+      const matchedCountry = countryOptions.find(
+        opt => opt.currency === normalizedCurrency || opt.code === normalizedCurrency
+      );
+
+      if (matchedCountry) {
+        setCurrency(matchedCountry.currency);
+        setCountry(matchedCountry.code);
+      } else {
+        setCurrency('KGS');
+        setCountry('KG');
+      }
+
       setAwardOnMixedPayment(Boolean(data.settings.awardOnMixedPayment));
 
       // Sort tiers by index just in case
@@ -273,7 +297,7 @@ export const PointDetailsPage = () => {
        {tab === 0 && (
          <Box>
             <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>Details</Typography>
+                <Typography variant="h6" gutterBottom>{t('point_details.block_title')}</Typography>
                 <Typography component="div">
                     <strong>{t('point_details.overview_type')}:</strong> {t(`dashboard.types.${details.point.type}`)}
                 </Typography>
@@ -290,7 +314,7 @@ export const PointDetailsPage = () => {
                     <strong>{t('point_details.overview_program')}:</strong> {t(`dashboard.strategies.${details.settings.programType}`)}
                 </Typography>
                 <Typography component="div">
-                    <strong>{t('point_details.overview_currency')}:</strong> {details.point.currency || '—'}
+                    <strong>{t('point_details.overview_currency')}:</strong> {overviewCurrency}
                 </Typography>
             </Paper>
          </Box>

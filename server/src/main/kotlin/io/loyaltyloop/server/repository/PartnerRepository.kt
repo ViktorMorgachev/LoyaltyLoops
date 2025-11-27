@@ -141,7 +141,7 @@ class PartnerRepository {
             it[this.address] = request.address
             it[this.latitude] = request.latitude
             it[this.longitude] = request.longitude
-            it[this.currency] = request.currency
+            it[this.currency] = request.currency.name
             it[this.inviteCode] = generateUniqueInviteCode()
 
             // По умолчанию точка НЕ АКТИВНА (ждет оплаты)

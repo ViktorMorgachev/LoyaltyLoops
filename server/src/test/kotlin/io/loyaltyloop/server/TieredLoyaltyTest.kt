@@ -14,6 +14,7 @@ import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
+import io.loyaltyloop.shared.models.Currency
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.LoyaltyProgramType
@@ -62,7 +63,7 @@ class TieredLoyaltyTest {
         }
 
         println("${testDescr}: Создание торговой точки")
-        assertEquals(HttpStatusCode.Created.description,  client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point", TradingPointType.SERVICE))
+        assertEquals(HttpStatusCode.Created.description,  client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point", currency = Currency.KGS, TradingPointType.SERVICE))
 
         val points = client.get("/partners/points") {
             header("Authorization", "Bearer ${owner.accessToken}")

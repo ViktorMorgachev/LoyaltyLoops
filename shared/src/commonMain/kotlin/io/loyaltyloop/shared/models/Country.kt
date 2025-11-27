@@ -45,3 +45,16 @@ enum class CountryCode{
     KG, KZ, UZ, BY
 }
 
+fun CountryCode.toCurrency(): Currency{
+    return when(this){
+        CountryCode.KG -> Currency.KGS
+        CountryCode.KZ -> Currency.KZT
+        CountryCode.UZ -> Currency.UZS
+        CountryCode.BY -> Currency.BYN
+    }
+}
+
+enum class Currency{
+    KGS, KZT, UZS,BYN
+}
+

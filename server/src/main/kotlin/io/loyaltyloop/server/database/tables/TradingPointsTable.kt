@@ -20,7 +20,7 @@ object TradingPointsTable : Table("trading_points") {
     val type = enumerationByName("type", 20, TradingPointType::class).default(TradingPointType.OTHER)
     val latitude = double("latitude").nullable()
     val longitude = double("longitude").nullable()
-    val currency = varchar("currency", 10).default("KGS")
+    val currency = varchar("currency", 10)
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -27,7 +27,8 @@ export const resources = {
         months: "Месяцев",
         year: "Год",
         revenue_chart: "Динамика Выручки",
-        required: "Обязательно"
+        required: "Обязательно",
+        not_selected: "Не выбрано"
       },
       errors: {
         INVALID_PHONE: "Неверный формат номера",
@@ -138,7 +139,7 @@ export const resources = {
           tiered_desc: "Клиент копит оборот, повышает уровень и получает больший кешбэк. Проценты задаются по уровням: Start, Silver, Gold.",
           visits_title: "Счетчик визитов",
           visits_desc: "Каждый визит приближает к подарку: например, каждый 6-й кофе бесплатно. Подходит для сервисов с частыми покупками.",
-          hybrid_title: "Гибридная: визиты + кешбэк",
+          hybrid_title: "Гибридная: Накопительная + Счетчик визитов",
           hybrid_desc: "Кассир выбирает стратегию после сканирования: либо начислить визит, либо рассчитать кешбэк с возможностью списания баллов."
         },
         faq: {
@@ -228,6 +229,8 @@ export const resources = {
         label_cashback: "Начальный Кешбэк (%)",
         label_currency: "Валюта",
         country_label: "Страна",
+        country_placeholder: "Выберите страну",
+        country_placeholder: "Выберите страну",
         pin_label: "PIN владельца (4-12 цифр)",
         pin_confirm_label: "Подтвердите PIN",
         pin_hint: "PIN нужен для всех критичных действий в админке",
@@ -316,6 +319,7 @@ export const resources = {
         thread_id: "Диалог #{{id}}",
       },
       point_details: {
+        block_title: "Детали",
         title: "Управление Филиалом",
         tab_overview: "Обзор",
         tab_settings: "Настройки",
@@ -408,7 +412,8 @@ export const resources = {
         months: "Months",
         year: "Year",
         revenue_chart: "Revenue Dynamics",
-        required: "Required"
+        required: "Required",
+        not_selected: "Not selected"
       },
       errors: {
         INVALID_PHONE: "Invalid phone number",
@@ -605,6 +610,7 @@ export const resources = {
         label_cashback: "Base Cashback (%)",
         label_currency: "Currency",
         country_label: "Country",
+        country_placeholder: "Select country",
         pin_label: "Owner PIN (4-12 digits)",
         pin_confirm_label: "Confirm PIN",
         pin_hint: "PIN protects critical actions in the admin console",
@@ -692,6 +698,7 @@ export const resources = {
         thread_id: "Thread #{{id}}",
       },
       point_details: {
+        block_title: "Details",
         title: "Branch Management",
         tab_overview: "Overview",
         tab_settings: "Settings",
