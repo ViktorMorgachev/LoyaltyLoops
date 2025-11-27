@@ -32,6 +32,8 @@
     <string name="error_forbidden">Доступ запрещен</string>
     <string name="error_not_found">Ресурс не найден</string>
     <string name="error_account_frozen">Аккаунт временно заморожен</string>
+    <string name="error_email_required">Укажите e-mail для сброса PIN</string>
+    <string name="error_invalid_reset_token">Ссылка для сброса PIN недействительна</string>
     
     <string name="error_invalid_phone">Неверный формат телефона</string>
     <string name="error_invalid_code">Неверный код подтверждения</string>

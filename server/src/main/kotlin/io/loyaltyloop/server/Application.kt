@@ -24,6 +24,7 @@ import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.TransactionRepository
+import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.routes.adminRoutes
 import io.loyaltyloop.server.routes.authRoutes
 import io.loyaltyloop.server.routes.clientRoutes
@@ -33,7 +34,7 @@ import io.loyaltyloop.server.routes.testSupportRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
-import io.loyaltyloop.shared.models.ApiMessage
+import io.loyaltyloop.server.service.ConsoleEmailService
 import io.loyaltyloop.shared.models.HealthResponse
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
@@ -82,9 +83,12 @@ fun Application.module() {
     val userRepository = UserRepository()
     val partnerRepository = PartnerRepository()
     val transactionRepository = TransactionRepository()
+    val pinResetTokenRepository = PinResetTokenRepository()
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository)
+    val emailService = ConsoleEmailService()
+    val webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
 
     // Start Background Jobs
     val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService()
@@ -211,7 +215,10 @@ fun Application.module() {
         partnerRoutes(
             userRepository = userRepository,
             partnerRepository = partnerRepository,
-            transactionService = transactionService
+            transactionService = transactionService,
+            pinResetTokenRepository = pinResetTokenRepository,
+            emailService = emailService,
+            webBaseUrl = webBaseUrl
         )
         adminRoutes(applicationConfig = environment!!.config,   userRepo = userRepository, partnerRepo = partnerRepository)
         val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false

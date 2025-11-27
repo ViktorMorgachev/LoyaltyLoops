@@ -35,6 +35,7 @@ export const ProfilePage = () => {
     const hasPartnerManager = workspaces.some((ws: any) => ws.role === 'PARTNER_MANAGER');
     const isPartnerOwner = workspaces.some((ws: any) => ws.role === 'PARTNER_ADMIN');
     const isFrozen = Boolean(profile?.isFrozenUntil && profile.isFrozenUntil > Date.now());
+    const hasEmail = Boolean(profile?.email && profile.email.trim().length > 0);
     const frozenLabel = isFrozen && profile?.isFrozenUntil
         ? new Date(profile.isFrozenUntil).toLocaleString()
         : null;
@@ -58,6 +59,7 @@ export const ProfilePage = () => {
         try {
             await api.post('/client/profile', { firstName: profile.firstName, email: profile.email });
             showSuccess(t('common.save') + " OK");
+            await refreshUser();
         } catch (e: any) {
             showError(getErrorMessage(e));
         }
@@ -97,15 +99,11 @@ export const ProfilePage = () => {
         }
     };
 
-    const handlePinReset = async () => {
-        if (!window.confirm(t('profile.pin_reset_confirm'))) {
-            return;
-        }
+    const handlePinResetRequest = async () => {
         setResetLoading(true);
         try {
-            await api.post('/partners/pin/reset', { confirm: true });
-            showSuccess(t('profile.pin_reset_success'));
-            await refreshUser();
+            await api.post('/partners/pin/reset/request');
+            showSuccess(t('profile.pin_reset_email_sent'));
         } catch (e: any) {
             showError(getErrorMessage(e));
         } finally {
@@ -194,9 +192,14 @@ export const ProfilePage = () => {
                         <Button variant="contained" onClick={handlePinChange} disabled={pinLoading || resetLoading || isFrozen}>
                             {pinLoading ? t('common.loading') : t('profile.pin_change_btn')}
                         </Button>
-                        <Button color="error" variant="outlined" onClick={handlePinReset} disabled={resetLoading || isFrozen}>
+                        <Button color="error" variant="outlined" onClick={handlePinResetRequest} disabled={resetLoading || !hasEmail}>
                             {resetLoading ? t('common.loading') : t('profile.pin_reset_btn')}
                         </Button>
+                        {!hasEmail && (
+                            <Typography variant="body2" color="textSecondary">
+                                {t('profile.pin_email_hint')}
+                            </Typography>
+                        )}
                     </Box>
                 </Paper>
             )}

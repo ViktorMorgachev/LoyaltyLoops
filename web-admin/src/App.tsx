@@ -9,6 +9,7 @@ import { AboutPage } from './pages/AboutPage';
 import { JoinPlatformManagerPage } from './pages/JoinPlatformManagerPage';
 import { JoinPartnerManagerPage } from './pages/JoinPartnerManagerPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { PinResetPage } from './pages/PinResetPage';
 
 // Партнер
 import { PartnerDashboardPage } from './pages/partner/PartnerDashboardPage';
@@ -35,6 +36,7 @@ function App() {
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/reset-pin" element={<PinResetPage />} />
           <Route path="/" element={<Navigate to="/profile" />} />
 
           {/* Внутри Лейаута */}

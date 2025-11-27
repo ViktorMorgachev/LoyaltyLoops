@@ -13,6 +13,7 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.requirePartnerWriteAccess // ADDED
@@ -31,17 +32,23 @@ import io.loyaltyloop.shared.models.TradingPointDetailsDto
 import io.loyaltyloop.shared.models.UpdateTradingPointRequest
 import io.loyaltyloop.shared.models.UpdatePinRequest
 import io.loyaltyloop.shared.models.ResetPinRequest
+import io.loyaltyloop.shared.models.PinResetConfirmRequest
 import io.loyaltyloop.shared.models.UpdateLoyaltySettingsRequest
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.server.utils.SecurityUtils
+import io.loyaltyloop.server.service.EmailService
 
 private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
+private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
 
 fun Route.partnerRoutes(
     userRepository: UserRepository,
     partnerRepository: PartnerRepository,
-    transactionService: TransactionService
+    transactionService: TransactionService,
+    pinResetTokenRepository: PinResetTokenRepository,
+    emailService: EmailService,
+    webBaseUrl: String
 ) {
     route("/partners") {
         authenticate("auth-jwt") {
@@ -118,6 +125,24 @@ fun Route.partnerRoutes(
                 val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
                 userRepository.setFrozenUntil(userId, freezeUntil)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN reset. Account frozen for 24h"))
+            }
+
+            post("/pin/reset/request") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val user = userRepository.getUserById(userId) ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
+                val email = user.email ?: throw LoyaltyException(AppErrorCode.EMAIL_NOT_SET, "Email is required for PIN reset")
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+
+                pinResetTokenRepository.revokeAll(userId)
+                val rawToken = SecurityUtils.generateToken()
+                val expiresAt = System.currentTimeMillis() + PIN_RESET_TOKEN_TTL
+                pinResetTokenRepository.createToken(userId, rawToken, expiresAt)
+
+                val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
+                emailService.sendPinResetEmail(email, resetLink)
+
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Reset link sent"))
             }
 
             post("/join") {
@@ -321,6 +346,34 @@ fun Route.partnerRoutes(
                 val list = partnerRepository.getAllCashiers(partner.id)
                 call.respond(list)
             }
+        }
+
+        post("/pin/reset/confirm") {
+            val request = call.receive<PinResetConfirmRequest>()
+
+            if (!SecurityUtils.isStrongPin(request.newPin)) {
+                throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "PIN must contain 4-12 digits")
+            }
+
+            val record = pinResetTokenRepository.findValidToken(request.token)
+                ?: throw LoyaltyException(AppErrorCode.INVALID_RESET_TOKEN, "Invalid token")
+
+            if (record.expiresAt < System.currentTimeMillis()) {
+                pinResetTokenRepository.markUsed(record.id)
+                throw LoyaltyException(AppErrorCode.INVALID_RESET_TOKEN, "Token expired")
+            }
+
+            val user = userRepository.getUserById(record.userId)
+                ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
+
+            val partner = partnerRepository.getPartnerByUserId(record.userId)
+
+            partnerRepository.updatePartnerPin(partner.id, request.newPin)
+            pinResetTokenRepository.markUsed(record.id)
+            val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
+            userRepository.setFrozenUntil(record.userId, freezeUntil)
+
+            call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN updated"))
         }
     }
 }

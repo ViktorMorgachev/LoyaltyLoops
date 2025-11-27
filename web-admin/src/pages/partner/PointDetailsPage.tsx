@@ -168,7 +168,7 @@ export const PointDetailsPage = () => {
       }
   };
 
-  const handleSaveSettings = async () => {
+    const handleSaveSettings = async () => {
      if (!canEdit) {
         showError(t('point_details.edit_forbidden'));
         return;
@@ -274,18 +274,24 @@ export const PointDetailsPage = () => {
          <Box>
             <Paper sx={{ p: 3 }}>
                 <Typography variant="h6" gutterBottom>Details</Typography>
-                <Typography component="div"><strong>Type:</strong> {t(`dashboard.types.${details.point.type}`)}</Typography>
                 <Typography component="div">
-                    <strong>Status:</strong>{" "}
+                    <strong>{t('point_details.overview_type')}:</strong> {t(`dashboard.types.${details.point.type}`)}
+                </Typography>
+                <Typography component="div">
+                    <strong>{t('point_details.overview_status')}:</strong>{" "}
                     <Chip
-                        label={details.point.active ? t('common.active') : t('common.blocked')}
+                        label={details.point.active ? t('point_details.status_active') : t('point_details.status_inactive')}
                         color={details.point.active ? "success" : "default"}
                         size="small"
                         sx={{ ml: 1 }}
                     />
                 </Typography>
-                <Typography component="div"><strong>Program:</strong> {t(`dashboard.strategies.${details.settings.programType}`)}</Typography>
-                <Typography component="div"><strong>Currency:</strong> {details.point.currency}</Typography>
+                <Typography component="div">
+                    <strong>{t('point_details.overview_program')}:</strong> {t(`dashboard.strategies.${details.settings.programType}`)}
+                </Typography>
+                <Typography component="div">
+                    <strong>{t('point_details.overview_currency')}:</strong> {details.point.currency || '—'}
+                </Typography>
             </Paper>
          </Box>
        )}

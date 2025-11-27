@@ -13,6 +13,7 @@ import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.PartnerManagersTable
+import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -60,7 +61,8 @@ object DatabaseFactory {
                 LoyaltyTiersTable,
                 SystemStaffTable,
                 TransactionsHistoryTable,
-                PartnerManagersTable
+                PartnerManagersTable,
+                PinResetTokensTable
             )
         }
     }
@@ -98,7 +100,8 @@ object DatabaseFactory {
                 LoyaltyTiersTable,
                 SystemStaffTable,
                 TransactionsHistoryTable,
-                PartnerManagersTable
+                PartnerManagersTable,
+                PinResetTokensTable
             )
         }
     }

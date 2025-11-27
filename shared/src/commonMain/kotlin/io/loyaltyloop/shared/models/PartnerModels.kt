@@ -35,6 +35,12 @@ data class ResetPinRequest(
     val confirm: Boolean = false
 )
 
+@Serializable
+data class PinResetConfirmRequest(
+    val token: String,
+    val newPin: String
+)
+
 
 @Serializable
 data class PartnerEntity(

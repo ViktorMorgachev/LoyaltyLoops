@@ -21,8 +21,6 @@ class TokenStorage(private val settings: Settings) {
     private var cachedAccessToken: String? = settings.getStringOrNull(KEY_ACCESS_TOKEN)
     private var cachedRefreshToken: String? = settings.getStringOrNull(KEY_REFRESH_TOKEN)
 
-    // Остальные поля можно не кешировать так жестко, но для токенов это критично
-
     fun saveAuthData(accessToken: String, refreshToken: String, userId: String, qrSecret: String) {
         log.write("💾 STORAGE: Writing to Memory & Disk...")
 

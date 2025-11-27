@@ -12,6 +12,8 @@ enum class AppErrorCode {
     FORBIDDEN,
     NOT_FOUND,
     ACCOUNT_FROZEN,
+    EMAIL_NOT_SET,
+    INVALID_RESET_TOKEN,
 
     // Auth
     INVALID_PHONE,

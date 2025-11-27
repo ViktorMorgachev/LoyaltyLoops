@@ -46,6 +46,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.INVALID_QR_SIGNATURE,
                 AppErrorCode.INVALID_AMOUNT,
                 AppErrorCode.INVALID_TIER_VALUE,
+                AppErrorCode.EMAIL_NOT_SET,
+                AppErrorCode.INVALID_RESET_TOKEN,
                 AppErrorCode.INVALID_CODE-> HttpStatusCode.BadRequest
 
 

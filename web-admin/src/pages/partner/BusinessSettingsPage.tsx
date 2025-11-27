@@ -24,14 +24,13 @@ export const BusinessSettingsPage = () => {
 
     const loadData = async () => {
         try {
-            // Загружаем текущие настройки
             const res = await api.get('/partners/me');
             const data = res.data;
-            setName(data.name); 
+            setName(data.businessName || '');
             setColor(data.color || '#4F46E5');
             setLogo(data.logoUrl || '');
-            setBurnBonusesDays(data.burnBonusesDays || '');
-            setDowngradeTierDays(data.downgradeTierDays || '');
+            setBurnBonusesDays(data.burnBonusesDays !== null && data.burnBonusesDays !== undefined ? String(data.burnBonusesDays) : '');
+            setDowngradeTierDays(data.downgradeTierDays !== null && data.downgradeTierDays !== undefined ? String(data.downgradeTierDays) : '');
         } catch (e: any) {
             if (e.response && e.response.status === 404) {
                 // No business yet -> Redirect to create
@@ -50,10 +49,11 @@ export const BusinessSettingsPage = () => {
                 businessName: name,
                 color: color,
                 logoUrl: logo,
-                burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays) : null,
-                downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays) : null
+                burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays, 10) : null,
+                downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays, 10) : null
             });
             showSuccess(t('settings.save_success'));
+            await loadData();
         } catch (e: any) {
             showError(getErrorMessage(e));
         }

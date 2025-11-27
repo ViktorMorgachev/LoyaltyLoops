@@ -5,13 +5,11 @@ import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.utils.io.errors.IOException
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.NetworkResult
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 val jsonParser = Json { ignoreUnknownKeys = true }

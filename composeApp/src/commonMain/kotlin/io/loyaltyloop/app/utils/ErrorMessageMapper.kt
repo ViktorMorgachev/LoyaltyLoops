@@ -14,6 +14,8 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.FORBIDDEN -> Res.string.error_forbidden
         AppErrorCode.NOT_FOUND -> Res.string.error_not_found
         AppErrorCode.ACCOUNT_FROZEN -> Res.string.error_account_frozen
+        AppErrorCode.EMAIL_NOT_SET -> Res.string.error_email_required
+        AppErrorCode.INVALID_RESET_TOKEN -> Res.string.error_invalid_reset_token
         AppErrorCode.INVALID_PHONE -> Res.string.error_invalid_phone
         AppErrorCode.INVALID_CODE -> Res.string.error_invalid_code
         AppErrorCode.CODE_EXPIRED -> Res.string.error_code_expired
@@ -34,7 +36,6 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.LOYALTY_SETTING_NOT_FOUND -> Res.string.error_loyalty_setting_not_found
         AppErrorCode.CARD_NOT_FOUND -> Res.string.error_card_not_found
         AppErrorCode.TOKEN_EXPIRED -> Res.string.error_token_expired
-        AppErrorCode.INVALID_TIER_VALUE -> TODO()
     }
 }
 

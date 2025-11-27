@@ -27,8 +27,6 @@ import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
-import kotlinx.serialization.json.Json
-
 
 object NetworkClient {
 
@@ -36,14 +34,14 @@ object NetworkClient {
 
     fun create(engine: HttpClientEngine, tokenStorage: TokenStorage,  sessionManager: SessionManager): HttpClient {
         return HttpClient(engine) {
-            // 1. JSON
+
             install(ContentNegotiation) {
                 json(jsonParser)
             }
 
             // 2. LOGS
             install(Logging) {
-                // Связываем Ktor с Kermit
+
                 logger = object : Logger {
                     override fun log(message: String) {
                         netLog.write(message)
@@ -54,7 +52,6 @@ object NetworkClient {
 
             install(Auth) {
                 bearer {
-                    // А. Загрузка токена из памяти при старте запроса
                     loadTokens {
                         val accessToken = tokenStorage.getAccessToken()
                         val refreshToken = tokenStorage.getRefreshToken()
@@ -79,8 +76,6 @@ object NetworkClient {
                         netLog.write("Attempting to refresh token...${refreshToken.takeLast(8)}", LogType.Debug)
 
                         try {
-                            // Делаем запрос на /refresh
-                            // Важно: используем `client` из скоупа, он знает базовый URL
                             val response = client.post("/auth/refresh") {
                                 contentType(ContentType.Application.Json)
                                 setBody(RefreshTokenRequest(refreshToken))
@@ -88,7 +83,6 @@ object NetworkClient {
                             }
 
                             if (response.status == HttpStatusCode.OK) {
-                                // Успех! Сохраняем новые
                                 netLog.write("Token refreshed successfully")
                                 val newAuth = response.body<AuthResponse>()
                                 tokenStorage.saveAuthData(
@@ -99,13 +93,11 @@ object NetworkClient {
                                 )
                                 BearerTokens(newAuth.accessToken, newAuth.refreshToken)
                             } else {
-                                // Рефреш протух - разлогин
                                 netLog.write("⛔ Refresh failed: ${response.status}. Logging out...", LogType.Warning)
                                 sessionManager.logout()
                                 null
                             }
                         } catch (e: Exception) {
-                            // Ошибка сети при рефреше
                             netLog.write("💥 Network error during refresh", LogType.Error, e)
                             null
                         }
