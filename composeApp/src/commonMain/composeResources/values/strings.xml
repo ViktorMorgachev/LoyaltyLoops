@@ -40,6 +40,7 @@
     <string name="error_code_expired">Код истек</string>
     <string name="error_user_not_found">Пользователь не найден</string>
     <string name="error_token_expired">Сессия истекла</string>
+    <string name="error_client_card_blocked">Карта клиента заблокирована</string>
     <string name="error_invalid_tier_value">Неверные настройки лояльности торговой точки</string>
     <string name="error_token_invalid">Ошибка сессии (Токен невалиден)</string>
     <string name="error_invalid_pin">Неверный PIN-код</string>
@@ -58,14 +59,20 @@
     <string name="error_invalid_amount">Некорректная сумма</string>
     <string name="error_loyalty_setting_not_found">Настройки лояльности не найдены</string>
     <string name="error_card_not_found">Карта лояльности не найдена</string>
+    <string name="error_card_blocked">Карта заблокирована</string>
+    <string name="error_card_paused">Карта приостановлена</string>
 
     <!-- Transaction Results (NEW) -->
-    <string name="msg_points_earned">Начислено: %s Б</string>
-    <string name="msg_points_spent">Списано: %s Б</string>
-    <string name="msg_points_spent_earned">Списано: %s, Начислено: %s</string>
-    <string name="msg_visit_progress">Визит учтен! Всего: %s из %s</string>
-    <string name="msg_visit_reward">Цель достигнута! Подарок доступен! (%s)</string>
-    <string name="msg_balance_info">Баланс: %s</string>
+    <string name="msg_points_earned">Начислено: </string>
+    <string name="msg_points_spent">Списано: </string>
+    <string name="msg_points_spent_earned">Списано: </string>
+    <string name="msg_points_spent_earned_middle">, Начислено: </string>
+    <string name="msg_points_suffix"> Б</string>
+    <string name="msg_visit_progress">Визит учтен! Всего: </string>
+    <string name="msg_visit_progress_suffix"> из </string>
+    <string name="msg_visit_reward">Цель достигнута! Подарок доступен! (</string>
+    <string name="msg_visit_reward_suffix">)</string>
+    <string name="msg_balance_info">Баланс: </string>
     <string name="msg_success_default">Операция успешна!</string>
 
     <!-- Join Company Screen -->
@@ -142,6 +149,26 @@
     <string name="wallet_empty_desc">Покажите свой QR-код кассиру при первой покупке, чтобы получить карту.</string>
     <string name="wallet_show_qr_btn">Показать мой QR</string>
     <string name="wallet_empty_refresh">Обновить список</string>
+    <string name="wallet_card_type">Бонусная карта</string>
+    <string name="wallet_card_balance_label">Баланс</string>
+    <string name="wallet_card_visits_label">Визиты</string>
+    <string name="wallet_card_points_suffix">Б</string>
+    <string name="wallet_card_visit_suffix">визитов</string>
+    <string name="wallet_card_new_level">Новый уровень</string>
+    <string name="wallet_card_reward_badge">Подарок готов!</string>
+    <string name="wallet_card_inactive">Карта неактивна</string>
+    <string name="wallet_card_blocked">Карта заблокирована</string>
+    <string name="wallet_card_blocked_until">Заблокирована до </string>
+    <string name="wallet_card_closed_reason">Приостановлена: </string>
+    <string name="wallet_card_closed_default">Программа временно приостановлена</string>
+    <string name="wallet_card_paused">Временно отключена</string>
+    <string name="wallet_card_back_progress_title">Прогресс и правила</string>
+    <string name="wallet_card_back_total_prefix">Всего визитов: </string>
+    <string name="wallet_card_back_remaining_prefix">До подарка осталось </string>
+    <string name="wallet_card_back_remaining_suffix"> визитов.</string>
+    <string name="wallet_card_back_reward_ready">Поздравляем! Цель выполнена — спросите кассира про подарок.</string>
+    <string name="wallet_card_back_goal_prefix">Цель: </string>
+    <string name="wallet_card_back_goal_suffix"> визитов</string>
 
     <!-- Terminal Screen -->
     <string name="terminal_title">Терминал</string>
@@ -174,6 +201,7 @@
     <!-- Tiered Strategy -->
     <string name="term_res_tiered_title">Накопительная система</string>
     <string name="term_res_amount_label">Сумма чека</string>
+    <string name="term_res_amount_hint">Итоговую стоимость и списание рассчитаем на следующем шаге по правилам точки.</string>
     <string name="term_res_calc_prefix">Будет начислено:</string>
     <string name="term_res_points_suffix">Б</string>
     <string name="term_res_balance_prefix">Текущий баланс:</string>
@@ -185,6 +213,7 @@
     <string name="term_res_spend_will_spend">Будет списано:</string>
     <string name="term_res_award_will_earn">Будет начислено:</string>
     <string name="term_res_award_hint">Даже при списании бонусов начислим кешбэк на оплату деньгами</string>
+    <string name="term_res_spend_explain">Списываем максимум по правилам точки — детали на следующем шаге</string>
     <string name="term_res_total_pay">Итого к оплате:</string>
     <string name="term_res_calculating">Считаем...</string>
     <string name="term_calc_msg_visit">Визит будет учтён</string>
@@ -223,5 +252,22 @@
     <string name="hybrid_action_bonus">Бонусы / Кешбэк</string>
     <string name="hybrid_action_visit">Добавить визит</string>
     <string name="term_btn_next">Далее</string>
+
+    <!-- Celebration Overlay -->
+    <string name="celebration_new_balance_prefix">Новый баланс: </string>
+    <string name="celebration_rules_hint">Правила акций уточняйте на месте. Скоро здесь появятся рейтинг точки и детали визитов.</string>
+    <string name="celebration_visit_logged">Визит учтён</string>
+    <string name="celebration_visit_reward_ready">Подарок уже ждёт!</string>
+    <string name="celebration_visit_remaining_prefix">До подарка осталось </string>
+    <string name="celebration_visit_increment_prefix">+</string>
+    <string name="celebration_visit_increment_suffix"> визит</string>
+    <string name="celebration_reward_text">Подарок можно забрать сейчас!</string>
+    <string name="celebration_close">Закрыть</string>
+    <string name="celebration_title_earn">Начисление бонусов</string>
+    <string name="celebration_title_spend">Списание бонусов</string>
+    <string name="celebration_title_visit">Визит засчитан</string>
+    <string name="celebration_title_reward">Награда готова!</string>
+    <string name="celebration_title_tier_prefix">Новый уровень: </string>
+    <string name="celebration_title_created">Новая карта</string>
 
 </resources>

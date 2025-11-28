@@ -49,6 +49,9 @@ export const PartnerDashboardPage = () => {
         }
     };
 
+    const formatRevenue = (value?: number | null) =>
+        (value ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={4} flexWrap="wrap" gap={2}>
@@ -90,7 +93,7 @@ export const PartnerDashboardPage = () => {
                 <Box>
                     <KpiCard 
                         title={t('admin.total_revenue')} 
-                        value={analytics?.totalRevenue.toFixed(0) || 0} 
+                        value={formatRevenue(analytics?.totalRevenue)} 
                         icon={<GroupIcon sx={{ color: '#ed6c02', fontSize: 32 }} />} 
                         color="#ed6c02"
                     />

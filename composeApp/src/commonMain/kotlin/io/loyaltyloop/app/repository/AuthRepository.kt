@@ -41,7 +41,7 @@ class AuthRepository(private val client: HttpClient) {
         }
     }
 
-    // 3. Профиль (Check Session)
+
     suspend fun getProfile(): NetworkResult<UserProfileResponse> {
         return safeNetworkCall {
             client.get("/client/me")

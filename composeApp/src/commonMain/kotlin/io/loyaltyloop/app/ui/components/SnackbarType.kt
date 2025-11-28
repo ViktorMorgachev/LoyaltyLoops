@@ -1,11 +1,21 @@
 package io.loyaltyloop.app.ui.components
 
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import io.loyaltyloop.app.ui.theme.LoyaltyCoral
 import io.loyaltyloop.app.ui.theme.LoyaltyEmerald
 import io.loyaltyloop.app.utils.UiText
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.SnackbarVisuals
 
 enum class SnackbarType {
     Success, Error, Info
@@ -64,6 +74,14 @@ fun LoyaltySnackbar(snackbarData: SnackbarData) {
 
     Snackbar(
         snackbarData = snackbarData,
+        modifier = Modifier
+            .fillMaxWidth()
+            .shadow(
+                elevation = 12.dp,
+                shape = RoundedCornerShape(18.dp),
+                clip = false
+            ),
+        shape = RoundedCornerShape(18.dp),
         containerColor = backgroundColor,
         contentColor = contentColor,
         actionColor = contentColor

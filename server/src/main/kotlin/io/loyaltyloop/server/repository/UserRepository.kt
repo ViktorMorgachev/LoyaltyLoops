@@ -13,6 +13,8 @@ import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CashierJobEntity
+import io.loyaltyloop.shared.models.CardBlockStatus
+import io.loyaltyloop.shared.models.CardPauseStatus
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.shared.models.UpdateProfileRequest
@@ -132,12 +134,23 @@ class UserRepository {
             .singleOrNull() == true
     }
 
+    suspend fun hasAnyPlatformRole(userId: String): Boolean = dbQuery {
+        !SystemStaffTable.select { SystemStaffTable.userId eq userId }.empty()
+    }
+
+    suspend fun hasPlatformRole(userId: String, role: UserRole): Boolean = dbQuery {
+        !SystemStaffTable.select {
+            (SystemStaffTable.userId eq userId) and (SystemStaffTable.role eq role)
+        }.empty()
+    }
+
     suspend fun findOrCreateCard(
         userId: String,
         partnerId: String,
         partnerName: String,
         partnerColor: String,
-        partnerLogo: String?
+        partnerLogo: String?,
+        defaultVisitsTarget: Int
     ): Pair<LoyaltyCardDto, Boolean> = dbQuery {
 
         // 1. Ищем существующую (устойчиво к дубликатам)
@@ -154,7 +167,8 @@ class UserRepository {
             val dto = rowToCardDto(existingRow).copy(
                 partnerName = partnerName,
                 cardColor = partnerColor,
-                logoUrl = partnerLogo
+                logoUrl = partnerLogo,
+                visitsTarget = defaultVisitsTarget
             )
             return@dbQuery dto to false
         }
@@ -170,8 +184,10 @@ class UserRepository {
             it[totalSpent] = 0.0
             it[tierLevel] = 1
             it[this.visitsCount] = 0
-            it[isBlocked] = false
-            it[isClosed] = false
+            it[blockedUntil] = null
+            it[blockedReason] = null
+            it[isPaused] = false
+            it[pauseReason] = null
         }
 
         // 3. Собираем полный DTO сразу
@@ -182,8 +198,9 @@ class UserRepository {
             balance = 0.0,
             totalSpent = 0.0,
             tierLevel = 1,
-            isBlocked = false,
-            isClosed = false,
+            block = null,
+            pause = null,
+            visitsTarget = defaultVisitsTarget,
             // Используем переданные параметры
             partnerName = partnerName,
             cardColor = partnerColor,
@@ -196,6 +213,18 @@ class UserRepository {
 
     // 1. Обновленный маппер (теперь учитывает данные партнера)
     private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
+        val block = row[LoyaltyCardTable.blockedUntil]?.let {
+            CardBlockStatus(
+                until = it,
+                reason = row[LoyaltyCardTable.blockedReason]
+            )
+        }
+        val pause = if (row[LoyaltyCardTable.isPaused]) {
+            CardPauseStatus(reason = row[LoyaltyCardTable.pauseReason])
+        } else {
+            null
+        }
+
         return LoyaltyCardDto(
             id = row[LoyaltyCardTable.id],
             userId = row[LoyaltyCardTable.userId],
@@ -203,8 +232,8 @@ class UserRepository {
             balance = row[LoyaltyCardTable.balance],
             totalSpent = row[LoyaltyCardTable.totalSpent],
             tierLevel = row[LoyaltyCardTable.tierLevel],
-            isBlocked = row[LoyaltyCardTable.isBlocked],
-            isClosed = row[LoyaltyCardTable.isClosed],
+            block = block,
+            pause = pause,
             partnerName = "",
             cardColor = "#000000",
             logoUrl = null,
@@ -227,7 +256,8 @@ class UserRepository {
                 rowToCardDto(it).copy(
                     partnerName = it[PartnersTable.businessName],
                     cardColor = it[PartnersTable.color],
-                    logoUrl = it[PartnersTable.logoUrl]
+                    logoUrl = it[PartnersTable.logoUrl],
+                    visitsTarget = it[PartnersTable.defaultVisitsTarget]
                 )
             }
     }

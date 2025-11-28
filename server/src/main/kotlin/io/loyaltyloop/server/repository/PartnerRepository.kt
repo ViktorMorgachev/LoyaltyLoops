@@ -64,6 +64,7 @@ class PartnerRepository {
             it[countryCode] = request.countryCode.name
             it[status] = PartnerStatus.PENDING
             it[adminPinHash] = pinHash
+            it[defaultVisitsTarget] = 10 // Вынести в конфиги
         }
 
         newPartnerId
@@ -85,12 +86,24 @@ class PartnerRepository {
 
     // Обновить настройки партнера
     suspend fun updatePartner(ownerId: String, request: UpdatePartnerRequest) = dbQuery {
-        PartnersTable.update({ PartnersTable.ownerId eq ownerId }) {
+        val updated = PartnersTable.update({ PartnersTable.ownerId eq ownerId }) {
             it[businessName] = request.businessName
             it[color] = request.color
             it[logoUrl] = request.logoUrl
             it[burnBonusesDays] = request.burnBonusesDays
             it[downgradeTierDays] = request.downgradeTierDays
+            it[defaultVisitsTarget] = request.defaultVisitsTarget
+        }
+
+        if (updated > 0) {
+            val partnerId = PartnersTable
+                .select { PartnersTable.ownerId eq ownerId }
+                .map { it[PartnersTable.id] }
+                .single()
+
+            LoyaltySettingsTable.update({ LoyaltySettingsTable.partnerId eq partnerId }) {
+                it[visitsTarget] = request.defaultVisitsTarget
+            }
         }
     }
 
@@ -151,12 +164,14 @@ class PartnerRepository {
         // Создаем настройки
         val settingsId = UUID.randomUUID().toString()
 
+        val effectiveVisitsTarget = request.visitsTarget.coerceAtLeast(1)
+
         LoyaltySettingsTable.insert {
             it[id] = settingsId
             it[this.partnerId] = partnerId
             it[this.tradingPointId] = pointID
             it[programType] = request.programType.name
-            it[visitsTarget] = request.visitsTarget
+            it[visitsTarget] = effectiveVisitsTarget
             it[maxBurnPercentage] = 100
             it[awardOnMixedPayment] = request.awardOnMixedPayment
         }
@@ -196,6 +211,7 @@ class PartnerRepository {
         color = row[PartnersTable.color],
         burnBonusesDays = row[PartnersTable.burnBonusesDays],
         downgradeTierDays = row[PartnersTable.downgradeTierDays],
+        defaultVisitsTarget = row[PartnersTable.defaultVisitsTarget],
         ownerPhone = null
     )
 
@@ -370,16 +386,18 @@ class PartnerRepository {
 
         val settingsReq = request.settings
 
-        // 2. Find Settings ID
-        val settingsId = LoyaltySettingsTable
+        // 2. Find Settings row and partner
+        val settingsRow = LoyaltySettingsTable
             .selectAll().where { LoyaltySettingsTable.tradingPointId eq pointId }
-            .map { it[LoyaltySettingsTable.id] }
             .single()
+        val settingsId = settingsRow[LoyaltySettingsTable.id]
+        val partnerId = settingsRow[LoyaltySettingsTable.partnerId]
+        val effectiveVisitsTarget = getDefaultVisitsTarget(partnerId)
 
         // 3. Update Settings
         LoyaltySettingsTable.update({ LoyaltySettingsTable.id eq settingsId }) {
             it[programType] = settingsReq.programType.name
-            it[visitsTarget] = settingsReq.visitsTarget
+            it[visitsTarget] = effectiveVisitsTarget
             it[maxBurnPercentage] = settingsReq.maxBurnPercentage
             it[awardOnMixedPayment] = settingsReq.awardOnMixedPayment
         }
@@ -469,6 +487,12 @@ class PartnerRepository {
         }
         throw LoyaltyException(AppErrorCode.INTERNAL_ERROR, "Failed to generate unique invite code")
     }
+
+    private fun getDefaultVisitsTarget(partnerId: String): Int =
+        PartnersTable
+            .select { PartnersTable.id eq partnerId }
+            .map { it[PartnersTable.defaultVisitsTarget] }
+            .single()
 
     // --- MANAGERS ---
     

@@ -5,6 +5,7 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.AuthRepository
+import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.*
 import io.loyaltyloop.shared.models.Country
@@ -29,7 +30,8 @@ import loyaltyloop.composeapp.generated.resources.error_unknown
 class LoginScreenModel(
     private val repository: AuthRepository,
     private val tokenStorage: TokenStorage,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val pushService: PushService
 ) : ScreenModel {
 
     // --- ВЛОЖЕННЫЕ КЛАССЫ (Контракт) ---
@@ -180,6 +182,7 @@ class LoginScreenModel(
                         .onSuccess { userProfile ->
                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.auth_success), SnackbarType.Success))
                             sessionManager.updateWorkspaces(userProfile.workspaces)
+                            pushService.register()
                             if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
                                 _events.send(Event.NavigateToOnboarding)
                             } else {

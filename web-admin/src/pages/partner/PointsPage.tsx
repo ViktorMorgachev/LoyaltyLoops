@@ -41,7 +41,7 @@ export const PointsPage = () => {
   const [currency, setCurrency] = useState('KGS');
 
   const [strategy, setStrategy] = useState('TIERED_LTV');
-  const [visitsTarget, setVisitsTarget] = useState('6');
+  const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
   const [cashback, setCashback] = useState('5');
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [mapSearch, setMapSearch] = useState('');
@@ -50,7 +50,10 @@ export const PointsPage = () => {
   const [mapSeed, setMapSeed] = useState(0);
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
 
-  useEffect(() => { loadPoints(); }, []);
+  useEffect(() => {
+    loadPoints();
+    loadPartnerDefaults();
+  }, []);
 
   const loadPoints = async () => {
     try {
@@ -60,6 +63,18 @@ export const PointsPage = () => {
       if (e.response && e.response.status !== 404) {
           showError(getErrorMessage(e));
       }
+    }
+  };
+
+  const loadPartnerDefaults = async () => {
+    try {
+      const res = await api.get('/partners/me');
+      const target = res.data?.defaultVisitsTarget;
+      if (target !== undefined && target !== null) {
+        setDefaultVisitsTarget(String(target));
+      }
+    } catch (_ignored) {
+      // Managers may not have access; ignore errors here
     }
   };
 
@@ -185,6 +200,8 @@ export const PointsPage = () => {
       const isTiered = strategy === 'TIERED_LTV' || strategy === 'HYBRID';
       const baseCashbackValue = parseFloat(cashback || '0') || 0;
 
+      const visitsGoal = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
+      const visitTargetForPayload = (strategy === 'VISIT_COUNTER' || strategy === 'HYBRID') ? visitsGoal : undefined;
       const payload = {
         name,
         type,
@@ -193,9 +210,9 @@ export const PointsPage = () => {
         longitude: lng,
         currency,
         programType: strategy,
-        visitsTarget: (strategy === 'VISIT_COUNTER' || strategy === 'HYBRID') ? parseInt(visitsTarget) : 0,
         baseCashback: isTiered ? baseCashbackValue : 0,
-        awardOnMixedPayment
+        awardOnMixedPayment,
+        ...(visitTargetForPayload !== undefined ? { visitsTarget: visitTargetForPayload } : {})
       };
 
       await api.post('/partners/points', payload);
@@ -354,9 +371,10 @@ export const PointsPage = () => {
                 <TextField
                     label={t('dashboard.label_target')}
                     type="number"
-                    value={visitsTarget}
-                    onChange={e => setVisitsTarget(e.target.value)}
-                    helperText={t('dashboard.hint_target')}
+                    value={defaultVisitsTarget}
+                    InputProps={{ readOnly: true }}
+                    disabled
+                    helperText={t('point_details.visits_target_locked_hint')}
                     sx={{ mt: 1 }}
                 />
             )}

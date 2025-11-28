@@ -43,7 +43,8 @@ class LoyaltyCalculatorTest {
         totalSpent = totalSpent,
         visitsCount = 0,
         tierLevel = tierLevel,
-        isBlocked = false
+        block = null,
+        pause = null
     )
 
     @Test

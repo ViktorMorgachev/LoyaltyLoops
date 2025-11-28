@@ -6,6 +6,7 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.loyaltyloop.server.repository.DeviceTokenRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
@@ -13,21 +14,27 @@ import io.loyaltyloop.server.utils.resolveLanguage
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CountryCode
+import io.loyaltyloop.shared.models.DeviceTokenContext
+import io.loyaltyloop.shared.models.RegisterDeviceTokenRequest
 import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
 
-fun Route.clientRoutes(repository: UserRepository) {
+@Suppress("ThrowsCount")
+fun Route.clientRoutes(
+    userRepository: UserRepository,
+    deviceTokenRepository: DeviceTokenRepository
+) {
     route("/client") {
         authenticate("auth-jwt") {
 
             
            post("/profile") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
 
                 // 1. Получаем текущего юзера
 
-                val user = repository.getUserById(userId)
+                val user = userRepository.getUserById(userId)
 
                 if (user == null){
                     call.respond(HttpStatusCode.Unauthorized, "User not found")
@@ -48,13 +55,13 @@ fun Route.clientRoutes(repository: UserRepository) {
                     }
                 }
 
-                repository.updateUserProfile(userDto = user, lang = lang, request)
+                userRepository.updateUserProfile(userDto = user, lang = lang, request)
 
                 call.respond(HttpStatusCode.OK, ApiMessage(code = AppErrorCode.SUCCESS, message = AppErrorCode.SUCCESS.name))
             }
 
             post("/language") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<UpdateLanguageRequest>()
                 val normalized = request.language.lowercase()
                 val allowed = setOf("ru", "en", "ky", "kk", "uz", "be")
@@ -62,24 +69,51 @@ fun Route.clientRoutes(repository: UserRepository) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Unsupported language code: ${request.language}")
                 }
 
-                repository.updateUserLanguage(userId, normalized)
+                userRepository.updateUserLanguage(userId, normalized)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
 
             // GET /client/cards - Список карт для кошелька
             get("/cards") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@get
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
-                val cards = repository.getUserCards(userId)
+                val cards = userRepository.getUserCards(userId)
                 call.respond(cards)
+            }
+
+            post("/device-token") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val request = call.receive<RegisterDeviceTokenRequest>()
+
+                deviceTokenRepository.upsertToken(
+                    userId = userId,
+                    platform = request.platform,
+                    role = request.role,
+                    workspaceId = request.workspaceId,
+                    token = request.token
+                )
+
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+
+            delete("/device-token") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                val request = call.receive<DeviceTokenContext>()
+                deviceTokenRepository.deleteToken(
+                    userId = userId,
+                    platform = request.platform,
+                    role = request.role,
+                    workspaceId = request.workspaceId
+                )
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
         }
         authenticate("auth-jwt") {
             get("/me") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@get
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
                 // 1. Проверяем, существует ли юзер реально
-                val user = repository.getUserById(userId)
+                val user = userRepository.getUserById(userId)
 
                 if (user == null){
                     call.respond(HttpStatusCode.Unauthorized, "User not found")
@@ -88,7 +122,7 @@ fun Route.clientRoutes(repository: UserRepository) {
 
 
                 // 2. Если юзер есть, собираем его актуальные роли
-                val workspaces = repository.getUserWorkspaces(userId)
+                val workspaces = userRepository.getUserWorkspaces(userId)
 
                 val countryCodeByPhone = if (user.phoneNumber.startsWith("+996")) CountryCode.KG else CountryCode.KG
 

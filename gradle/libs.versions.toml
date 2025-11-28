@@ -4,6 +4,10 @@ kotlin = "2.0.0"
 agp = "8.3.1"
 compose-plugin = "1.6.11"
 androidx-activityCompose = "1.9.0"
+androidx-core = "1.13.1"
+firebaseBom = "33.5.1"
+googleServicesPlugin = "4.4.2"
+coroutinesPlayServices = "1.8.1"
 kamel = "0.9.5"
 
 # Server
@@ -45,6 +49,7 @@ kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 # --- ANDROID SPECIFIC ---
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "compose-plugin" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
 
 # --- SERVER ---
 ktor-server-core = { module = "io.ktor:ktor-server-core-jvm", version.ref = "ktor" }
@@ -94,7 +99,12 @@ kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 # Коррутины для настроек (опционально, но полезно)
 multiplatform-settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatformSettings" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-play-services", version.ref = "coroutinesPlayServices" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 kamel-image = { module = "media.kamel:kamel-image", version.ref = "kamel" }
+ktor-client-websocket = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -107,3 +117,4 @@ kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }

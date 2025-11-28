@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="4.3">
+<file name="/Users/viktormorgachev/LoyaltyLoop/server/src/main/kotlin/io/loyaltyloop/server/repository/TransactionRepository.kt">
+	<error line="22" column="7" severity="warning" message="Class &apos;TransactionRepository&apos; with &apos;11&apos; functions detected. Defined threshold inside classes is set to &apos;11&apos;" source="detekt.TooManyFunctions" />
+</file>
+<file name="/Users/viktormorgachev/LoyaltyLoop/server/src/main/kotlin/io/loyaltyloop/server/routes/TestSupportRoutes.kt">
+	<error line="27" column="11" severity="warning" message="The function testSupportRoutes appears to be too complex based on Cyclomatic Complexity (complexity: 16). Defined complexity threshold for methods is set to &apos;15&apos;" source="detekt.CyclomaticComplexMethod" />
+	<error line="27" column="11" severity="warning" message="Too many throw statements in the function testSupportRoutes. The maximum number of allowed throw statements is 2." source="detekt.ThrowsCount" />
+	<error line="176" column="21" severity="warning" message="Too many throw statements in the function ensurePlatformUser. The maximum number of allowed throw statements is 2." source="detekt.ThrowsCount" />
+</file>
+</checkstyle>

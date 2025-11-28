@@ -24,3 +24,11 @@ val DarkBackground = Color(0xFF111827)
 val DarkSurface = Color(0xFF1F2937)
 val DarkTextPrimary = Color(0xFFF9FAFB)
 val DarkTextSecondary = Color(0xFF9CA3AF)
+
+// Tier borders
+
+
+val TierBronze = Color(0xFF696969)
+val TierSilver = Color(0xFFC9D2E3)
+val TierGold = Color(0xFFFFD166)
+val TierPlatinum = Color(0xFFB8E1FF)

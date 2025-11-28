@@ -6,6 +6,10 @@ import io.ktor.client.engine.darwin.Darwin
 import io.loyaltyloop.app.data.NetworkClient
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
+import io.loyaltyloop.app.services.CardRealtimeService
+import io.loyaltyloop.app.services.DefaultCardRealtimeService
+import io.loyaltyloop.app.services.NoopPushService
+import io.loyaltyloop.app.services.PushService
 import org.koin.dsl.module
 import platform.Foundation.NSUserDefaults
 
@@ -23,4 +27,7 @@ actual val platformModule = module {
             sessionManager = get<SessionManager>()
         )
     }
+
+    single<PushService> { NoopPushService() }
+    single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
 }

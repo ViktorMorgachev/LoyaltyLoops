@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Container, Typography, Paper, Box, Tabs, Tab, TextField, Button, 
-  Grid, Table, TableHead, TableRow, TableCell, TableBody, Chip,
+  Table, TableHead, TableRow, TableCell, TableBody, Chip,
   Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel,
   Alert
 } from '@mui/material';
@@ -166,7 +166,7 @@ export const PointDetailsPage = () => {
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTab(newValue);
     if (newValue === 2) loadCashiers();
   };
@@ -214,7 +214,6 @@ export const PointDetailsPage = () => {
             settings: {
                 programType: programType, 
                 tiers: normalizedTiers, 
-                visitsTarget: formData.visitsTarget,
                 maxBurnPercentage: maxBurnPercentage,
                 awardOnMixedPayment
             }
@@ -373,7 +372,9 @@ export const PointDetailsPage = () => {
                     type="number"
                     fullWidth margin="normal"
                     value={formData.visitsTarget}
-                    onChange={e => setFormData({...formData, visitsTarget: parseInt(e.target.value)})}
+                    InputProps={{ readOnly: true }}
+                    disabled
+                    helperText={t('point_details.visits_target_locked_hint')}
                 />
             )}
 

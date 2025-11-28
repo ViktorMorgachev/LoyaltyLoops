@@ -291,6 +291,9 @@ fun Route.partnerRoutes(
                 if (request.businessName.isBlank()) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
                 }
+                if (request.defaultVisitsTarget < 1) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Default visits target must be at least 1")
+                }
                 
                 val partner = partnerRepository.getPartnerByUserId(userId)
                 ensureOwner(partner, userId)

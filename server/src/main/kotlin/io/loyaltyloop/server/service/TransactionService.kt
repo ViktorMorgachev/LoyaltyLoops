@@ -3,6 +3,7 @@ package io.loyaltyloop.server.service
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.shared.config.SecurityDefaults
 import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.shared.models.ScanQrResponse
@@ -11,15 +12,19 @@ import io.loyaltyloop.shared.models.TransactionResult
 import io.loyaltyloop.shared.models.TransactionStrategy
 import io.loyaltyloop.shared.models.TransactionSuccessType
 import io.loyaltyloop.shared.models.UserDto
+import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.shared.models.CardRealtimeEventType
+import io.loyaltyloop.shared.models.CardRealtimePayload
 import io.loyaltyloop.shared.utils.CryptoUtils
 import kotlin.math.abs
 
 class TransactionService(
     private val userRepository: UserRepository,
     private val transactionRepository: TransactionRepository,
-    private val partnerRepository: PartnerRepository
+    private val partnerRepository: PartnerRepository,
+    private val realtimeService: CardRealtimeService
 ) {
 
     suspend fun scanQr(cashierUserId: String, request: ScanQrRequest): ScanQrResponse {
@@ -47,7 +52,7 @@ class TransactionService(
 
         // 4. Проверка времени (защита от replay атак)
         val now = System.currentTimeMillis() / 1000
-        if (abs(now - qrData.timestamp) > 30) {
+        if (abs(now - qrData.timestamp) > SecurityDefaults.QR_TOKEN_TTL_SECONDS) {
             throw LoyaltyException(
                 AppErrorCode.QR_EXPIRED,
                 "QR code expired. Please refresh the screen."
@@ -67,8 +72,28 @@ class TransactionService(
             partnerId = partner.id,
             partnerName = partner.businessName,
             partnerColor = partner.color,
-            partnerLogo = partner.logoUrl
+            partnerLogo = partner.logoUrl,
+            defaultVisitsTarget = partner.defaultVisitsTarget
         )
+
+        if (card.legacyIsBlocked){
+            throw LoyaltyException(AppErrorCode.CARD_BLOCKED)
+        }
+
+        if (!isCreatedNow) {
+            ensureCardActive(card)
+        }
+
+        if (isCreatedNow) {
+            realtimeService.notifyUser(
+                userId = customer.id,
+                payload = CardRealtimePayload(
+                    eventType = CardRealtimeEventType.CARD_CREATED,
+                    cardId = card.id,
+                    cardSnapshot = card
+                )
+            )
+        }
 
         // 8. Получение настроек лояльности текущей точки
         val settings = partnerRepository.getSettingsByPointId(request.tradingPointId)
@@ -112,6 +137,8 @@ class TransactionService(
         val card = transactionRepository.getCardById(cardId)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
 
+        ensureCardActive(card)
+
         val settings = partnerRepository.getSettingsByPointId(tradingPointId)
 
         return LoyaltyCalculator.calculate(
@@ -125,6 +152,7 @@ class TransactionService(
         )
     }
 
+    @Suppress("LongMethod", "ThrowsCount", "CyclomaticComplexMethod")
     suspend fun processTransaction(
         cashierUserId: String,
         tradingPointId: String,
@@ -150,6 +178,8 @@ class TransactionService(
         // 2. Получаем карту и проверяем валидность
         val card = transactionRepository.getCardById(cardId)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
+
+        ensureCardActive(card)
 
         // 3. Получаем настройки ТОЧКИ (чтобы понять, какую стратегию применять)
         val settings = partnerRepository.getSettingsByPointId(tradingPointId)
@@ -236,6 +266,12 @@ class TransactionService(
         val successType: TransactionSuccessType
         val successArgs: List<String>
 
+        val visitIncrement = if (strategy == TransactionStrategy.VISIT) {
+            (calc.newVisits - card.visitsCount).coerceAtLeast(1)
+        } else {
+            0
+        }
+
         if (strategy == TransactionStrategy.VISIT) {
             val target = settings.visitsTarget
             if (target > 0 && calc.newVisits % target == 0 && calc.newVisits > 0) {
@@ -243,7 +279,11 @@ class TransactionService(
                 successArgs = listOf(target.toString())
             } else {
                 successType = TransactionSuccessType.VISIT_PROGRESS
-                successArgs = listOf(calc.newVisits.toString(), target.toString())
+                successArgs = listOf(
+                    calc.newVisits.toString(),
+                    target.toString(),
+                    visitIncrement.toString()
+                )
             }
         } else {
             // MONEY
@@ -265,13 +305,26 @@ class TransactionService(
             }
         }
 
-        return TransactionResult(
+        val result = TransactionResult(
             cardId = card.id,
             newBalance = calc.newBalance,
             newVisits = calc.newVisits,
             type = successType,
             args = successArgs
         )
+        realtimeService.notifyUser(
+            userId = card.userId,
+            payload = CardRealtimePayload(
+                eventType = CardRealtimeEventType.TRANSACTION,
+                cardId = card.id,
+                successType = successType,
+                args = successArgs,
+                newBalance = calc.newBalance,
+                newVisits = calc.newVisits
+            )
+        )
+
+        return result
     }
 
     private fun fmt(value: Double): String {
@@ -410,5 +463,15 @@ class TransactionService(
         val data = "${customer.id}:$timestamp"
         val expected = CryptoUtils.hmacSha256(customer.qrSecret, data)
         if (expected != clientSignature) throw LoyaltyException(AppErrorCode.INVALID_QR_SIGNATURE)
+    }
+
+    private fun ensureCardActive(card: LoyaltyCardDto) {
+        val now = System.currentTimeMillis()
+        card.block?.takeIf { it.until > now }?.let { block ->
+            throw LoyaltyException(AppErrorCode.CARD_BLOCKED, block.reason ?: "Card is blocked")
+        }
+        card.pause?.let { pause ->
+            throw LoyaltyException(AppErrorCode.CARD_PAUSED, pause.reason ?: "Card is paused")
+        }
     }
 }

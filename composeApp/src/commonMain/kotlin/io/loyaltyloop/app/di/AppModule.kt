@@ -37,12 +37,12 @@ val appModule = module {
     single { WalletRepository(get()) }
 
     // ViewModels
-    factory { SplashScreenModel(get(), get(), get()) }
-    factory { LoginScreenModel(get(),get(), get()) }
-    factory { OnboardingScreenModel(get(), get()) }
+    factory { SplashScreenModel(get(), get(), get(), get()) }
+    factory { LoginScreenModel(get(), get(), get(), get()) }
+    factory { OnboardingScreenModel(get(), get(), get()) }
     factory { RoleSelectionScreenModel(get()) }
-    factory { WalletScreenModel(get(),get()) }
-    factory { ProfileScreenModel(get(), get(), get()) }
+    factory { WalletScreenModel(get(),get(), get()) }
+    factory { ProfileScreenModel(get(), get(), get(), get()) }
     factory { JoinCompanyScreenModel(get()) }
 
     factory { TerminalScreenModel(get(), get()) }

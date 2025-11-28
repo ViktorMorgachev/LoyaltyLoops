@@ -26,6 +26,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.FORBIDDEN,
                 AppErrorCode.ACCOUNT_FROZEN,
+                AppErrorCode.CARD_BLOCKED,
+                AppErrorCode.CARD_PAUSED,
                 AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.CODE_EXPIRED,
                 AppErrorCode.INVALID_PIN -> HttpStatusCode.Forbidden
@@ -48,6 +50,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.INVALID_AMOUNT,
                 AppErrorCode.INVALID_TIER_VALUE,
                 AppErrorCode.INVALID_RESET_TOKEN,
+                AppErrorCode.CARD_IS_BLOCKED,
                 AppErrorCode.INVALID_CODE-> HttpStatusCode.BadRequest
 
 
@@ -65,7 +68,6 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                     )
                     return
                 }
-
             }
 
             call.respond(

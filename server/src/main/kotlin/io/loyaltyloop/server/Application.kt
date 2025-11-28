@@ -32,12 +32,15 @@ import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.routes.testSupportRoutes
 import io.loyaltyloop.server.service.OtpService
+import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.service.ConsoleEmailService
+import io.loyaltyloop.server.repository.DeviceTokenRepository
 import io.loyaltyloop.server.repository.SupportChatRepository
 import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.HealthResponse
+import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
 import io.loyaltyloop.server.utils.handleError
@@ -98,12 +101,20 @@ fun Application.module() {
     val transactionRepository = TransactionRepository()
     val pinResetTokenRepository = PinResetTokenRepository()
     val supportChatRepository = SupportChatRepository()
+    val deviceTokenRepository = DeviceTokenRepository()
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
-    val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository)
+    val cardRealtimeService = CardRealtimeService()
+    val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository, cardRealtimeService)
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
     val webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
+    val supportChatWebSocketHandler = SupportChatWebSocketHandler(
+        tokenService = tokenService,
+        partnerRepository = partnerRepository,
+        userRepository = userRepository,
+        supportChatService = supportChatService
+    )
 
     // Start Background Jobs
     val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService()
@@ -225,7 +236,7 @@ fun Application.module() {
 
         // Подключаем наши новые маршруты
         authRoutes(userRepository, partnerRepository, tokenService, otpService)
-        clientRoutes(userRepository)
+        clientRoutes(userRepository, deviceTokenRepository)
         terminalRoutes(userRepository = userRepository, transactionService = transactionService)
         partnerRoutes(
             userRepository = userRepository,
@@ -244,69 +255,41 @@ fun Application.module() {
         )
         val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
         if (enableTestSupport) {
-            testSupportRoutes(userRepository)
+            testSupportRoutes(
+                userRepository = userRepository,
+                transactionRepository = transactionRepository,
+                cardRealtimeService = cardRealtimeService
+            )
+        }
+
+        webSocket("/ws/cards") {
+            val token = call.request.queryParameters["token"]
+            if (token.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Missing token"))
+                return@webSocket
+            }
+            val userId = tokenService.validateAccessToken(token)
+            if (userId.isNullOrBlank()) {
+                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid token"))
+                return@webSocket
+            }
+
+            cardRealtimeService.register(userId, this)
+            try {
+                for (frame in incoming) {
+                    // client stream is one-way for now
+                }
+            } finally {
+                cardRealtimeService.unregister(userId, this)
+            }
         }
 
         webSocket("/ws/support/partner") {
-            val token = call.request.queryParameters["token"]
-            if (token.isNullOrBlank()) {
-                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Missing token"))
-                return@webSocket
-            }
-
-            val userId = tokenService.validateAccessToken(token)
-            if (userId.isNullOrBlank()) {
-                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid token"))
-                return@webSocket
-            }
-
-            val partner = runCatching { partnerRepository.getPartnerByUserId(userId) }.getOrNull()
-            if (partner == null || partner.ownerId != userId) {
-                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Access denied"))
-                return@webSocket
-            }
-
-            supportChatService.registerPartnerSession(partner.id, this)
-            try {
-                for (frame in incoming) {
-                    // Нет двустороннего ввода пока
-                }
-            } finally {
-                supportChatService.unregisterPartnerSession(partner.id, this)
-            }
+            supportChatWebSocketHandler.handlePartner(call, this)
         }
 
         webSocket("/ws/support/admin") {
-            val token = call.request.queryParameters["token"]
-            if (token.isNullOrBlank()) {
-                close(CloseReason(CloseReason.Codes.CANNOT_ACCEPT, "Missing token"))
-                return@webSocket
-            }
-
-            val userId = tokenService.validateAccessToken(token)
-            if (userId.isNullOrBlank()) {
-                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Invalid token"))
-                return@webSocket
-            }
-
-            val workspaces = userRepository.getUserWorkspaces(userId)
-            val isStaff = workspaces.any {
-                it.role == UserRole.PLATFORM_SUPER_ADMIN || it.role == UserRole.PLATFORM_MANAGER
-            }
-
-            if (!isStaff) {
-                close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Admins only"))
-                return@webSocket
-            }
-
-            supportChatService.registerAdminSession(userId, this)
-            try {
-                for (frame in incoming) {
-                    // Нет двустороннего ввода пока
-                }
-            } finally {
-                supportChatService.unregisterAdminSession(userId, this)
-            }
+            supportChatWebSocketHandler.handleAdmin(call, this)
         }
     }
 }

@@ -18,6 +18,8 @@ object PartnersTable : Table("partners") {
     val logoUrl = varchar("logo_url", 255).nullable()
     val color = varchar("color", 9).default("#4F46E5") // Default Indigo
 
+    val defaultVisitsTarget = integer("default_visits_target").default(10)
+
     val status = enumerationByName("status", 20, PartnerStatus::class).default(PartnerStatus.PENDING)
 
     // Expiration Policy

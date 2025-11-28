@@ -40,9 +40,9 @@ data class CreateTradingPointRequest(
     val programType: LoyaltyProgramType = LoyaltyProgramType.TIERED_LTV,
 
     // Для VISITS
-    val visitsTarget: Int,       // Например: 10
+    val visitsTarget: Int = 10,       //TODO Вынести в конфиги
 
     // Для TIERED (можно передать базовый процент или список, для простоты возьмем базовый)
-    val baseCashback: Double  = 5.0,  // Например: 0.05 (5%)
+    val baseCashback: Double  = 5.0,
     val awardOnMixedPayment: Boolean = false
 )
