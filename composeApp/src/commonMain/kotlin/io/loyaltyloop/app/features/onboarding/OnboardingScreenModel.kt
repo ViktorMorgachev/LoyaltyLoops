@@ -4,6 +4,7 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.repository.AuthRepository
+import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
@@ -26,7 +27,8 @@ import loyaltyloop.composeapp.generated.resources.onboarding_success
 
 class OnboardingScreenModel(
     private val repository: AuthRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val pushService: PushService
 ) : ScreenModel {
 
     // --- КОНТРАКТ ---
@@ -86,6 +88,7 @@ class OnboardingScreenModel(
                     repository.getProfile()
                         .onSuccess { data ->
                             sessionManager.updateWorkspaces(data.workspaces)
+                            runCatching { pushService.register() }
                         }
                         .onFailure { exception ->
                             log.write("Profile refresh failed", LogType.Error, exception)

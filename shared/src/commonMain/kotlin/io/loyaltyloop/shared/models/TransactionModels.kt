@@ -25,7 +25,10 @@ enum class TransactionSuccessType {
     POINTS_SPENT,   // Args: spent
     POINTS_SPENT_EARNED, // Args: spent, earned
     BALANCE_INFO,   // Args: balance
-    SUCCESS_DEFAULT // No args
+    SUCCESS_DEFAULT, // No args
+    CARD_CREATED,
+    CARD_UPDATED,
+    CARD_DELETED
 }
 
 @Serializable

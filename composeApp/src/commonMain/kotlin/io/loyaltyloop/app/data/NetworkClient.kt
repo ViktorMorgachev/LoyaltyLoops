@@ -13,6 +13,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.request.header
 import co.touchlab.kermit.Logger as KermitLogger
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
@@ -21,6 +22,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.loyaltyloop.app.config.SERVER_URL
 import io.loyaltyloop.app.data.network.jsonParser
 import io.loyaltyloop.app.utils.LogType
@@ -37,6 +39,11 @@ object NetworkClient {
 
             install(ContentNegotiation) {
                 json(jsonParser)
+            }
+
+            install(WebSockets) {
+                contentConverter = KotlinxWebsocketSerializationConverter(jsonParser)
+                maxFrameSize = Long.MAX_VALUE
             }
 
             // 2. LOGS

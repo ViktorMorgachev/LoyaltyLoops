@@ -5,12 +5,11 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.AuthRepository
+import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.write
-import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.NetworkResult
 import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
 import io.loyaltyloop.shared.models.onSuccess
@@ -23,12 +22,12 @@ import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
 
 class SplashScreenModel(
     private val repository: AuthRepository,
     private val tokenStorage: TokenStorage,
     private val sessionManager: SessionManager,
+    private val pushService: PushService
 ) : ScreenModel {
 
     // --- КОНТРАКТ ---
@@ -80,7 +79,7 @@ class SplashScreenModel(
             repository.getProfile()
                 .onSuccess { profile ->
                     sessionManager.updateWorkspaces(profile.workspaces)
-
+                    pushService.register()
                     if (profile.firstName.isNullOrBlank()) {
                         log.write("Profile incomplete -> Go to Onboarding")
                         _events.send(Event.NavigateToOnboarding)

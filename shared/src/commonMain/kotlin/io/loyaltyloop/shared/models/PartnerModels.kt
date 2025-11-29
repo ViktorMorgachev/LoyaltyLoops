@@ -21,7 +21,8 @@ data class UpdatePartnerRequest(
     val color: String,   // HEX цвет (#FF0000)
     val logoUrl: String?, // Пока просто ссылка текстом
     val burnBonusesDays: Int? = null,
-    val downgradeTierDays: Int? = null
+    val downgradeTierDays: Int? = null,
+    val defaultVisitsTarget: Int = 10 //TODO Вынести в преференсы (можно в конфиги)
 )
 
 @Serializable
@@ -54,6 +55,7 @@ data class PartnerEntity(
     val color: String,
     val burnBonusesDays: Int?,
     val downgradeTierDays: Int?,
+    val defaultVisitsTarget: Int = 10,
     val ownerPhone: String? = null
 )
 

@@ -12,18 +12,17 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
+import io.loyaltyloop.app.navigation.NavigatorHolder
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.LoyaltyCardItem
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.QrCard
 import io.loyaltyloop.app.ui.components.show
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -34,11 +33,11 @@ class WalletScreen : Screen {
     override fun Content() {
         val viewModel = koinScreenModel<WalletScreenModel>()
         val state by viewModel.state.collectAsState()
+        val celebration by viewModel.celebrationState.collectAsState()
 
         var showQrSheet by remember { mutableStateOf(false) }
-        var shouldRefreshAfterQr by remember { mutableStateOf(false) }
-        val refreshScope = rememberCoroutineScope()
-        val sheetState = rememberModalBottomSheetState()
+        var flippedCardId by remember { mutableStateOf<String?>(null) }
+        val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
         // Снекбар для ошибок
         val snackbarHostState = remember { SnackbarHostState() }
@@ -72,102 +71,122 @@ class WalletScreen : Screen {
             }
         }
 
-        LaunchedEffect(showQrSheet) {
-            if (!showQrSheet && shouldRefreshAfterQr) {
-                shouldRefreshAfterQr = false
-                refreshScope.launch {
-                    delay(1200)
-                    viewModel.loadCards()
-                }
-            }
-        }
-
         val openQrSheet: () -> Unit = {
-            shouldRefreshAfterQr = true
             viewModel.onAction(WalletScreenModel.Action.OnQrCodeClicked)
             showQrSheet = true
         }
 
-        LoyaltyScaffold(
-            snackbarHostState = snackbarHostState,
-            containerColor = MaterialTheme.colorScheme.background,
-            floatingActionButton = {
-                if (!state.isLoading && state.cards.isNotEmpty()) {
-                    ExtendedFloatingActionButton(
-                        onClick = { openQrSheet() },
-                        icon = { Icon(Icons.Default.QrCode, null) },
-                        text = { Text(stringResource(Res.string.wallet_my_qr)) },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                }
+        LaunchedEffect(state.cards) {
+            if (flippedCardId != null && state.cards.none { it.id == flippedCardId }) {
+                flippedCardId = null
             }
-        ) { padding ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .nestedScroll(pullRefreshState.nestedScrollConnection)
-            ) {
-                if (state.cards.isEmpty() && !state.isLoading) {
-                    EmptyWalletView(
-                        onShowQrClicked = { openQrSheet() },
-                        onRefreshClicked = { viewModel.loadCards() }
-                    )
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
-                        item {
-                            Text(
-                                text = stringResource(Res.string.wallet_my_cards),
-                                style = MaterialTheme.typography.headlineMedium,
-                                modifier = Modifier.padding(bottom = 16.dp)
-                            )
-                        }
-                        items(state.cards) { card ->
-                            LoyaltyCardItem(card) { /* Детали */ }
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-                        item { Spacer(modifier = Modifier.height(80.dp)) }
+        }
+
+        LaunchedEffect(celebration) {
+            if (celebration != null) {
+                showQrSheet = false
+            }
+        }
+
+        LaunchedEffect(celebration?.id) {
+            celebration?.let {
+                showQrSheet = false
+                NavigatorHolder.lastNavigator?.push(CelebrationScreen(it))
+                viewModel.consumeCelebration()
+            }
+        }
+
+        Box(modifier = Modifier.fillMaxSize()) {
+            LoyaltyScaffold(
+                snackbarHostState = snackbarHostState,
+                containerColor = MaterialTheme.colorScheme.background,
+                floatingActionButton = {
+                    if (!state.isLoading && state.cards.isNotEmpty()) {
+                        ExtendedFloatingActionButton(
+                            onClick = { openQrSheet() },
+                            icon = { Icon(Icons.Default.QrCode, null) },
+                            text = { Text(stringResource(Res.string.wallet_my_qr)) },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
-
-                PullToRefreshContainer(
-                    state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            if (showQrSheet) {
-                ModalBottomSheet(
-                    onDismissRequest = { showQrSheet = false },
-                    sheetState = sheetState,
-                    containerColor = MaterialTheme.colorScheme.surface
+            ) { padding ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding)
+                        .nestedScroll(pullRefreshState.nestedScrollConnection)
                 ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 48.dp)
-                            .padding(horizontal = 16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                    if (state.cards.isEmpty()) {
+                        EmptyWalletView(
+                            onShowQrClicked = { openQrSheet() },
+                        )
+                    } else if (!state.isLoading) {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            if (state.cards.isEmpty()){
+                                item {
+                                    Text(
+                                        text = stringResource(Res.string.wallet_my_cards),
+                                        style = MaterialTheme.typography.headlineMedium,
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+                                }
+                            }
+
+                            items(state.cards) { card ->
+                                LoyaltyCardItem(
+                                    card = card,
+                                    isFlipped = flippedCardId == card.id,
+                                    onFlipToggle = {
+                                        flippedCardId = if (flippedCardId == card.id) null else card.id
+                                    },
+                                    eventFlow = viewModel.cardEvents
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+                            item { Spacer(modifier = Modifier.height(80.dp)) }
+                        }
+                    }
+
+                    PullToRefreshContainer(
+                        state = pullRefreshState,
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        contentColor = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                if (showQrSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showQrSheet = false },
+                        sheetState = sheetState,
+                        containerColor = MaterialTheme.colorScheme.surface
                     ) {
-                        Text(
-                            text = stringResource(Res.string.qr_sheet_title),
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(bottom = 24.dp)
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 48.dp)
+                                .padding(horizontal = 16.dp)
+                                .navigationBarsPadding(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.qr_sheet_title),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier.padding(bottom = 24.dp)
+                            )
 
-                        // Вызов компонента
-                        QrCard(
-                            qrContent = state.qrContent,
-                            secondsRemaining = state.secondsRemaining
-                        )
+                            QrCard(
+                                qrContent = state.qrContent,
+                                secondsRemaining = state.secondsRemaining
+                            )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
                     }
                 }
             }
@@ -177,8 +196,7 @@ class WalletScreen : Screen {
 
 @Composable
 fun EmptyWalletView(
-    onShowQrClicked: () -> Unit,
-    onRefreshClicked: () -> Unit
+    onShowQrClicked: () -> Unit
 ) {
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),
@@ -212,11 +230,5 @@ fun EmptyWalletView(
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(modifier = Modifier.height(12.dp))
-        OutlinedButton(
-            onClick = onRefreshClicked,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(text = stringResource(Res.string.wallet_empty_refresh))
-        }
     }
 }

@@ -1,0 +1,85 @@
+package io.loyaltyloop.app.features.wallet
+
+import io.loyaltyloop.shared.models.LoyaltyCardDto
+import kotlinx.datetime.Clock
+
+enum class CelebrationType {
+    Earn, Spend, Visit, Reward, Tier, Created
+}
+
+data class CelebrationState(
+    val id: Long = Clock.System.now().toEpochMilliseconds(),
+    val cardId: String,
+    val cardName: String,
+    val type: CelebrationType,
+    val amount: Double? = null,
+    val remainingVisits: Int? = null,
+    val visitsIncrement: Int? = null,
+    val tierLevel: Int? = null,
+    val newBalance: Double? = null,
+    val newVisits: Int? = null,
+    val visitsTarget: Int? = null,
+    val dismissAfterMs: Long = 6_400L
+) {
+    companion object {
+        fun from(
+            card: LoyaltyCardDto,
+            event: CardAnimationEvent,
+            newBalance: Double?,
+            newVisits: Int?
+        ): CelebrationState? {
+            return when (event) {
+                is CardAnimationEvent.BalanceEarned -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Earn,
+                    amount = event.amount,
+                    newBalance = newBalance ?: card.balance
+                )
+
+                is CardAnimationEvent.BalanceSpent -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Spend,
+                    amount = event.amount,
+                    newBalance = newBalance ?: card.balance
+                )
+
+                is CardAnimationEvent.VisitProgress -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Visit,
+                    visitsIncrement = event.increment,
+                    remainingVisits = event.remainingToReward,
+                    newVisits = newVisits ?: card.visitsCount,
+                    visitsTarget = card.visitsTarget
+                )
+
+                CardAnimationEvent.RewardUnlocked -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Reward,
+                    newVisits = newVisits ?: card.visitsCount,
+                    visitsTarget = card.visitsTarget
+                )
+
+                is CardAnimationEvent.TierUpgrade -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Tier,
+                    tierLevel = event.newLevel
+                )
+
+                CardAnimationEvent.CardCreated -> CelebrationState(
+                    cardId = card.id,
+                    cardName = card.partnerName,
+                    type = CelebrationType.Created
+                )
+
+                CardAnimationEvent.CardSynced,
+                CardAnimationEvent.CardDeleted -> null
+            }
+        }
+    }
+}
+

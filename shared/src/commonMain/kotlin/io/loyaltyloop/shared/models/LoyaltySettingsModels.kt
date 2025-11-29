@@ -57,7 +57,7 @@ data class UpdateTradingPointRequest(
 data class UpdateLoyaltySettingsRequest(
     val programType: LoyaltyProgramType,
     val tiers: List<LoyaltyTierDto>,
-    val visitsTarget: Int,
+    val visitsTarget: Int? = null,
     val burnBonusesAfterDays: Int? = null,
     val downgradeTierAfterDays: Int? = null,
     val maxBurnPercentage: Int = 100,

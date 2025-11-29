@@ -35,7 +35,10 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.INVALID_TIER_VALUE -> Res.string.error_invalid_tier_value
         AppErrorCode.LOYALTY_SETTING_NOT_FOUND -> Res.string.error_loyalty_setting_not_found
         AppErrorCode.CARD_NOT_FOUND -> Res.string.error_card_not_found
+        AppErrorCode.CARD_BLOCKED -> Res.string.error_card_blocked
+        AppErrorCode.CARD_PAUSED -> Res.string.error_card_paused
         AppErrorCode.TOKEN_EXPIRED -> Res.string.error_token_expired
+        AppErrorCode.CARD_IS_BLOCKED -> Res.string.error_token_expired
     }
 }
 

@@ -13,6 +13,7 @@ import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.PartnerManagersTable
+import io.loyaltyloop.server.database.tables.DeviceTokensTable
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import io.loyaltyloop.server.database.tables.SupportMessagesTable
 import io.loyaltyloop.server.database.tables.SupportThreadsTable
@@ -67,7 +68,8 @@ object DatabaseFactory {
                 PartnerManagersTable,
                 PinResetTokensTable,
                 SupportThreadsTable,
-                SupportMessagesTable
+                SupportMessagesTable,
+                DeviceTokensTable
             )
         }
     }
@@ -108,7 +110,8 @@ object DatabaseFactory {
                 PartnerManagersTable,
                 PinResetTokensTable,
                 SupportThreadsTable,
-                SupportMessagesTable
+                SupportMessagesTable,
+                DeviceTokensTable
             )
         }
     }

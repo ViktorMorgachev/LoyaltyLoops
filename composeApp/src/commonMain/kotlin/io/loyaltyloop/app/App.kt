@@ -4,8 +4,8 @@ import androidx.compose.runtime.*
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import io.loyaltyloop.app.data.SessionManager
-import io.loyaltyloop.app.features.auth.LoginScreen
 import io.loyaltyloop.app.features.splash.SplashScreen
+import io.loyaltyloop.app.navigation.NavigatorHolder
 import io.loyaltyloop.app.ui.theme.LoyaltyTheme
 import org.koin.compose.koinInject
 
@@ -27,6 +27,7 @@ fun App() {
         // Оборачиваем Navigator в key
         key(restartKey) {
             Navigator(SplashScreen()) { navigator ->
+                NavigatorHolder.lastNavigator = navigator
                 SlideTransition(navigator)
             }
         }

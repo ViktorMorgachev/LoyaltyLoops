@@ -127,6 +127,7 @@ components:
         color: { type: string }
         burnBonusesDays: { type: integer, nullable: true }
         downgradeTierDays: { type: integer, nullable: true }
+        defaultVisitsTarget: { type: integer }
         ownerPhone: { type: string, nullable: true }
 
     CreatePartnerRequest:
@@ -150,6 +151,7 @@ components:
         logoUrl: { type: string }
         burnBonusesDays: { type: integer, nullable: true }
         downgradeTierDays: { type: integer, nullable: true }
+        defaultVisitsTarget: { type: integer, default: 10 }
 
     UpdatePinRequest:
       type: object
@@ -235,7 +237,7 @@ components:
 
     CreateTradingPointRequest:
       type: object
-      required: [name, type, address, latitude, longitude, programType, visitsTarget]
+      required: [name, type, address, latitude, longitude, programType]
       properties:
         name: { type: string }
         type: { type: string, enum: [COFFEE_SHOP, RESTAURANT, RETAIL, SERVICE, OTHER] }
@@ -244,7 +246,9 @@ components:
         longitude: { type: number, format: double }
         currency: { type: string, default: KGS }
         programType: { type: string, enum: [TIERED_LTV, VISIT_COUNTER, HYBRID] }
-        visitsTarget: { type: integer }
+        visitsTarget:
+          type: integer
+          description: "Visit goal (defaults to partner setting if omitted)."
         baseCashback: { type: number, format: double, nullable: true }
         awardOnMixedPayment: { type: boolean, default: false }
 
@@ -265,7 +269,10 @@ components:
       type: object
       properties:
         programType: { type: string }
-        visitsTarget: { type: integer }
+        visitsTarget:
+          type: integer
+          nullable: true
+          description: "Deprecated. Visit goal is managed at business level."
         maxBurnPercentage: { type: integer }
         awardOnMixedPayment: { type: boolean, default: false }
         tiers:

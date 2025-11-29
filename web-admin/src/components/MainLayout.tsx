@@ -14,7 +14,8 @@ import {
   Dashboard as DashboardIcon,
   Group as GroupIcon,
   Info as InfoIcon,
-  ChatBubbleOutline as ChatIcon
+  ChatBubbleOutline as ChatIcon,
+  Science as ScienceIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -110,6 +111,14 @@ export const MainLayout = () => {
           { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' },
           { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' }
       );
+
+      if (isSuperAdmin) {
+        menuItems.push({
+          text: t('menu.test_lab'),
+          icon: <ScienceIcon />,
+          path: '/test-lab'
+        });
+      }
   }
 
   if (workspaces.length > 1) {

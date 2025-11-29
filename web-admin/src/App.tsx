@@ -11,6 +11,7 @@ import { JoinPartnerManagerPage } from './pages/JoinPartnerManagerPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PinResetPage } from './pages/PinResetPage';
 import { SupportChatPage } from './pages/SupportChatPage';
+import { TestLabPage } from './pages/TestLabPage';
 
 // Партнер
 import { PartnerDashboardPage } from './pages/partner/PartnerDashboardPage';
@@ -48,6 +49,7 @@ function App() {
             <Route path="/about" element={<AboutPage />} />
             <Route path="/join/platform-manager" element={<JoinPlatformManagerPage />} />
             <Route path="/join/partner" element={<JoinPartnerManagerPage />} />
+            <Route path="/test-lab" element={<TestLabPage />} />
 
             {/* Партнер */}
             <Route path="/partner/dashboard" element={<PartnerDashboardPage />} />

@@ -15,8 +15,9 @@ object LoyaltyCardTable : Table("loyalty_cards") {
     // ФИНАНСЫ (накопления в этом конкретном заведении)
     val balance = double("balance").default(0.0)       // Доступные баллы
 
-    // Флаг: закрыта ли карта (архивная)
-    val isClosed = bool("is_closed").default(false)
+    // Приостановка карты (архивная)
+    val isPaused = bool("is_closed").default(false)
+    val pauseReason = varchar("pause_reason", 255).nullable()
     val totalSpent = double("total_spent").default(0.0) // Сколько денег потратил всего (LTV)
 
     // УРОВЕНЬ (Кешируем текущий уровень, чтобы не пересчитывать каждый раз)
@@ -26,7 +27,8 @@ object LoyaltyCardTable : Table("loyalty_cards") {
     val visitsCount = integer("visits_count").default(0)
 
     // Блокировка конкретно в этом заведении
-    val isBlocked = bool("is_blocked").default(false)
+    val blockedUntil = long("blocked_until").nullable()
+    val blockedReason = varchar("blocked_reason", 255).nullable()
 
     // Дата последней активности (для сгорания бонусов)
     val lastActivityAt = long("last_activity_at").default(System.currentTimeMillis())

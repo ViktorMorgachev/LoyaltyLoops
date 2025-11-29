@@ -16,6 +16,7 @@ export const BusinessSettingsPage = () => {
     const [logo, setLogo] = useState('');
     const [burnBonusesDays, setBurnBonusesDays] = useState('');
     const [downgradeTierDays, setDowngradeTierDays] = useState('');
+    const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -31,6 +32,7 @@ export const BusinessSettingsPage = () => {
             setLogo(data.logoUrl || '');
             setBurnBonusesDays(data.burnBonusesDays !== null && data.burnBonusesDays !== undefined ? String(data.burnBonusesDays) : '');
             setDowngradeTierDays(data.downgradeTierDays !== null && data.downgradeTierDays !== undefined ? String(data.downgradeTierDays) : '');
+            setDefaultVisitsTarget(data.defaultVisitsTarget !== null && data.defaultVisitsTarget !== undefined ? String(data.defaultVisitsTarget) : '10');
         } catch (e: any) {
             if (e.response && e.response.status === 404) {
                 // No business yet -> Redirect to create
@@ -45,12 +47,14 @@ export const BusinessSettingsPage = () => {
 
     const handleSave = async () => {
         try {
+            const parsedVisits = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
             await api.put('/partners/me', {
                 businessName: name,
                 color: color,
                 logoUrl: logo,
                 burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays, 10) : null,
-                downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays, 10) : null
+                downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays, 10) : null,
+                defaultVisitsTarget: parsedVisits
             });
             showSuccess(t('settings.save_success'));
             await loadData();
@@ -96,6 +100,17 @@ export const BusinessSettingsPage = () => {
                     onChange={(e) => setLogo(e.target.value)}
                     fullWidth margin="normal"
                     placeholder="https://example.com/logo.png"
+                />
+
+                <TextField
+                    label={t('settings.visits_target_label')}
+                    value={defaultVisitsTarget}
+                    onChange={(e) => setDefaultVisitsTarget(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1 }}
+                    fullWidth
+                    margin="normal"
+                    helperText={t('settings.visits_target_hint')}
                 />
 
                 {/* Expiration Policy */}

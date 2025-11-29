@@ -4,8 +4,8 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
-import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
+import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.UiText
@@ -29,7 +29,8 @@ import loyaltyloop.composeapp.generated.resources.profile_loading
 class ProfileScreenModel(
     private val repository: AuthRepository,
     private val sessionManager: SessionManager,
-    private val tokenStorage: TokenStorage
+    private val tokenStorage: TokenStorage,
+    private val pushService: PushService
 ) : ScreenModel {
 
     data class State(
@@ -71,6 +72,10 @@ class ProfileScreenModel(
             is Action.OnWorkspaceClicked -> {
                 log.write("Switching to workspace: ${action.workspace.title}")
                 sessionManager.switchWorkspace(action.workspace)
+                screenModelScope.launch {
+                    pushService.unregister()
+                    pushService.register()
+                }
             }
 
             is Action.OnJoinTeamClicked -> {
@@ -100,6 +105,7 @@ class ProfileScreenModel(
                         isLoading = false
                     )
                     sessionManager.updateWorkspaces(profile.workspaces)
+                   pushService.register()
                 }
                 .onFailure { exception ->
                     log.write("Failed to load profile", LogType.Error, exception)
@@ -122,6 +128,7 @@ class ProfileScreenModel(
 
     private fun logout() {
         screenModelScope.launch {
+            pushService.unregister()
             tokenStorage.clear()
             sessionManager.logout()
             _events.send(Event.NavigateToSplash)
