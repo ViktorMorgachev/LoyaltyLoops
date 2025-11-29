@@ -302,7 +302,7 @@ class UserRepository {
                     id = "platform_admin_panel",
                     title = "LoyaltyLoop (Platform)",
                     role = role,
-                    requirePin = true
+                    requirePin = false
                 )
             )
         }

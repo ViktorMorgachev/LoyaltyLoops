@@ -1,12 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert } from '@mui/material';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress } from '@mui/material';
 import { ContentCopy as ContentCopyIcon, Store as StoreIcon, AdminPanelSettings as AdminIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
 import { api } from '../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import { useUser } from '../context/UserContext';
+import type { Workspace } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
+import { usePinVerification } from '../hooks/usePinVerification';
 
 export const ProfilePage = () => {
     const { t } = useTranslation();
@@ -18,10 +20,12 @@ export const ProfilePage = () => {
     const [pinForm, setPinForm] = useState({ current: '', next: '', confirm: '' });
     const [pinLoading, setPinLoading] = useState(false);
     const [resetLoading, setResetLoading] = useState(false);
+    const [hasOwnerPin, setHasOwnerPin] = useState<boolean | null>(null);
+    const [pinMetaLoading, setPinMetaLoading] = useState(false);
     const uniqueWorkspaces = useMemo(() => {
-        const list: any[] = [];
+        const list: Workspace[] = [];
         const seen = new Set<string>();
-        workspaces.forEach((ws: any) => {
+        workspaces.forEach((ws) => {
             const key = `${ws.id}-${ws.role}`;
             if (!seen.has(key)) {
                 seen.add(key);
@@ -31,14 +35,20 @@ export const ProfilePage = () => {
         return list;
     }, [workspaces]);
 
-    const hasPlatformManager = workspaces.some((ws: any) => ws.role === 'PLATFORM_MANAGER');
-    const hasPartnerManager = workspaces.some((ws: any) => ws.role === 'PARTNER_MANAGER');
-    const isPartnerOwner = workspaces.some((ws: any) => ws.role === 'PARTNER_ADMIN');
+    const hasPlatformRole = workspaces.some(
+        (ws) => ws.role === 'PLATFORM_MANAGER' || ws.role === 'PLATFORM_SUPER_ADMIN'
+    );
+    const hasPartnerRole = workspaces.some(
+        (ws) => ws.role === 'PARTNER_MANAGER' || ws.role === 'PARTNER_ADMIN'
+    );
+    const isPartnerOwner = workspaces.some((ws) => ws.role === 'PARTNER_ADMIN');
     const isFrozen = Boolean(profile?.isFrozenUntil && profile.isFrozenUntil > Date.now());
     const hasEmail = Boolean(profile?.email && profile.email.trim().length > 0);
     const frozenLabel = isFrozen && profile?.isFrozenUntil
         ? new Date(profile.isFrozenUntil).toLocaleString()
         : null;
+    const requiresCurrentPin = hasOwnerPin !== false;
+    const pinInputsDisabled = pinLoading || resetLoading || isFrozen || pinMetaLoading;
 
     useEffect(() => {
         if (!user && !loading) {
@@ -47,6 +57,28 @@ export const ProfilePage = () => {
             setProfile(user);
         }
     }, [user, loading, refreshUser]);
+
+    const loadPartnerMeta = useCallback(async () => {
+        if (!isPartnerOwner) return;
+        setPinMetaLoading(true);
+        try {
+            const res = await api.get('/partners/me');
+            setHasOwnerPin(Boolean(res.data?.hasPin));
+        } catch (error) {
+            console.error('Failed to load partner data', error);
+            setHasOwnerPin(true);
+        } finally {
+            setPinMetaLoading(false);
+        }
+    }, [isPartnerOwner]);
+
+    useEffect(() => {
+        if (isPartnerOwner) {
+            loadPartnerMeta();
+        } else {
+            setHasOwnerPin(null);
+        }
+    }, [isPartnerOwner, loadPartnerMeta]);
 
     const copyId = () => {
         if (profile.userId) {
@@ -65,17 +97,27 @@ export const ProfilePage = () => {
         }
     };
 
-    const handleSwitch = (ws: any) => {
+    const proceedWorkspaceSwitch = useCallback((ws: Workspace) => {
         selectWorkspace(ws);
-        
+
         if (ws.role === 'PLATFORM_SUPER_ADMIN') navigate('/admin/partners');
         else if (ws.role === 'PARTNER_ADMIN') navigate('/partner/dashboard');
         else navigate('/dashboard');
-        
+
         showSuccess(t('profile.switched_success', { name: ws.title }));
+    }, [navigate, selectWorkspace, showSuccess, t]);
+
+    const { requestPinVerification, PinDialog } = usePinVerification(proceedWorkspaceSwitch);
+
+    const handleSwitch = (ws: Workspace) => {
+        requestPinVerification(ws);
     };
 
     const handlePinChange = async () => {
+        if (requiresCurrentPin && pinForm.current.trim().length < 4) {
+            showError(t('profile.pin_current_required'));
+            return;
+        }
         if (pinForm.next.length < 4) {
             showError(t('profile.pin_length_error'));
             return;
@@ -87,11 +129,16 @@ export const ProfilePage = () => {
         setPinLoading(true);
         try {
             await api.put('/partners/pin', {
-                currentPin: pinForm.current || undefined,
+                currentPin: requiresCurrentPin ? pinForm.current : undefined,
                 newPin: pinForm.next
             });
             setPinForm({ current: '', next: '', confirm: '' });
-            showSuccess(t('profile.pin_change_success'));
+            if (!requiresCurrentPin) {
+                setHasOwnerPin(true);
+                showSuccess(t('profile.pin_set_success'));
+            } else {
+                showSuccess(t('profile.pin_change_success'));
+            }
         } catch (e: any) {
             showError(getErrorMessage(e));
         } finally {
@@ -112,6 +159,7 @@ export const ProfilePage = () => {
     };
 
     return (
+        <>
         <Box maxWidth={800}>
             <Typography variant="h4" gutterBottom>{t('profile.title')}</Typography>
 
@@ -163,51 +211,85 @@ export const ProfilePage = () => {
 
             {isPartnerOwner && (
                 <Paper sx={{ p: 3, mb: 4 }}>
-                    <Typography variant="h6" gutterBottom>{t('profile.pin_section_title')}</Typography>
-                    <Box display="flex" flexDirection="column" gap={2}>
-                        <TextField
-                            label={t('profile.pin_current_label')}
-                            type="password"
-                            value={pinForm.current}
-                            onChange={(e) => setPinForm({ ...pinForm, current: e.target.value.replaceAll(" ", "") })}
-                            inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
-                            disabled={pinLoading || resetLoading || isFrozen}
-                        />
-                        <TextField
-                            label={t('profile.pin_new_label')}
-                            type="password"
-                            value={pinForm.next}
-                            onChange={(e) => setPinForm({ ...pinForm, next: e.target.value.replaceAll(" ", "") })}
-                            inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
-                            disabled={pinLoading || resetLoading || isFrozen}
-                        />
-                        <TextField
-                            label={t('profile.pin_confirm_label')}
-                            type="password"
-                            value={pinForm.confirm}
-                            onChange={(e) => setPinForm({ ...pinForm, confirm: e.target.value.replaceAll(" ", "") })}
-                            inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
-                            disabled={pinLoading || resetLoading || isFrozen}
-                        />
-                        <Button variant="contained" onClick={handlePinChange} disabled={pinLoading || resetLoading || isFrozen}>
-                            {pinLoading ? t('common.loading') : t('profile.pin_change_btn')}
-                        </Button>
-                        <Button color="error" variant="outlined" onClick={handlePinResetRequest} disabled={resetLoading || !hasEmail}>
-                            {resetLoading ? t('common.loading') : t('profile.pin_reset_btn')}
-                        </Button>
-                        {!hasEmail && (
-                            <Typography variant="body2" color="textSecondary">
-                                {t('profile.pin_email_hint')}
-                            </Typography>
-                        )}
-                    </Box>
+                    <Typography variant="h6" gutterBottom>
+                        {hasOwnerPin === false ? t('profile.pin_set_title') : t('profile.pin_section_title')}
+                    </Typography>
+                    {pinMetaLoading ? (
+                        <LinearProgress />
+                    ) : (
+                        <Box display="flex" flexDirection="column" gap={2}>
+                            {hasOwnerPin === false && (
+                                <Typography variant="body2" color="text.secondary">
+                                    {t('profile.pin_set_hint')}
+                                </Typography>
+                            )}
+                            {requiresCurrentPin && (
+                                <TextField
+                                    label={t('profile.pin_current_label')}
+                                    type="password"
+                                    value={pinForm.current}
+                            autoComplete="off"
+                                    onChange={(e) => {
+                                        const digitsOnly = e.target.value.replace(/\D+/g, '');
+                                        setPinForm({ ...pinForm, current: digitsOnly });
+                                    }}
+                                    inputProps={{ maxLength: 12, inputMode: 'numeric' }}
+                                    disabled={pinInputsDisabled}
+                                />
+                            )}
+                            <TextField
+                                label={t('profile.pin_new_label')}
+                                type="password"
+                                value={pinForm.next}
+                            autoComplete="new-password"
+                                onChange={(e) => {
+                                    const digitsOnly = e.target.value.replace(/\D+/g, '');
+                                    setPinForm({ ...pinForm, next: digitsOnly });
+                                }}
+                                inputProps={{ maxLength: 12, inputMode: 'numeric' }}
+                                disabled={pinInputsDisabled}
+                            />
+                            <TextField
+                                label={t('profile.pin_confirm_label')}
+                                type="password"
+                                value={pinForm.confirm}
+                            autoComplete="new-password"
+                                onChange={(e) => {
+                                    const digitsOnly = e.target.value.replace(/\D+/g, '');
+                                    setPinForm({ ...pinForm, confirm: digitsOnly });
+                                }}
+                                inputProps={{ maxLength: 12, inputMode: 'numeric' }}
+                                disabled={pinInputsDisabled}
+                            />
+                            <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled}>
+                                {pinLoading ? t('common.loading') : hasOwnerPin === false ? t('profile.pin_set_btn') : t('profile.pin_change_btn')}
+                            </Button>
+                            {requiresCurrentPin && (
+                                <>
+                                    <Button
+                                        color="error"
+                                        variant="outlined"
+                                        onClick={handlePinResetRequest}
+                                        disabled={resetLoading || !hasEmail || isFrozen || pinMetaLoading}
+                                    >
+                                        {resetLoading ? t('common.loading') : t('profile.pin_reset_btn')}
+                                    </Button>
+                                    {!hasEmail && (
+                                        <Typography variant="body2" color="text.secondary">
+                                            {t('profile.pin_email_hint')}
+                                        </Typography>
+                                    )}
+                                </>
+                            )}
+                        </Box>
+                    )}
                 </Paper>
             )}
 
             <Typography variant="h5" gutterBottom>{t('profile.my_workspaces')}</Typography>
             <Paper>
                 <List>
-                    {uniqueWorkspaces.map((ws: any) => {
+                    {uniqueWorkspaces.map((ws) => {
                         const isCurrent = currentWorkspace?.id === ws.id && currentWorkspace?.role === ws.role;
                         return (
                             <React.Fragment key={`${ws.id}-${ws.role}`}>
@@ -250,12 +332,12 @@ export const ProfilePage = () => {
             <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>{t('profile.join_section')}</Typography>
             <Paper sx={{ p: 3 }}>
                 <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} flexWrap="wrap">
-                    {!hasPlatformManager && (
+                    {!hasPlatformRole && (
                         <Button variant="outlined" onClick={() => navigate('/join/platform-manager')}>
                             {t('menu.join_platform_manager')}
                         </Button>
                     )}
-                    {!hasPartnerManager && (
+                    {!hasPartnerRole && (
                         <Button variant="outlined" onClick={() => navigate('/join/partner')}>
                             {t('menu.join_partner_manager')}
                         </Button>
@@ -266,5 +348,7 @@ export const ProfilePage = () => {
                 </Box>
             </Paper>
         </Box>
+        {PinDialog}
+        </>
     );
 };

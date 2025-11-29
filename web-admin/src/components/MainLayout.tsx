@@ -43,7 +43,7 @@ export const MainLayout = () => {
   React.useEffect(() => {
       const relaxedRoutes = ['/select-role', '/profile', '/about', '/login', '/join/partner', '/join/platform-manager'];
       const isRelaxed = relaxedRoutes.some((route) => location.pathname.startsWith(route));
-      if (workspaces.length > 1 && !currentWorkspace && !isRelaxed) {
+      if (workspaces.length > 0 && !currentWorkspace && !isRelaxed) {
           navigate('/select-role');
       }
   }, [workspaces, currentWorkspace, location.pathname, navigate]);

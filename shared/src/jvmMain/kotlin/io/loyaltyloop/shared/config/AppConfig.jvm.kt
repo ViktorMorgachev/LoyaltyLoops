@@ -5,4 +5,6 @@ actual object AppConfig {
         get() = FeatureFlags(realtimeEnabled = true, pushEnabled = true)
     actual val webBaseUrl: String
         get() =""// BuildConfig.WEB_BASE_URL
+    actual val appVersion: String
+        get() = ""// TODO("Not yet implemented")
 }

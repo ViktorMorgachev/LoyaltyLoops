@@ -275,6 +275,7 @@ private fun LoyaltyCardFront(
 
     Box(
         modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
             .fillMaxSize()
             .graphicsLayer {
                 scaleX = scale
@@ -284,11 +285,13 @@ private fun LoyaltyCardFront(
     ) {
         Column(
             modifier = Modifier
+                .clip(RoundedCornerShape(20.dp))
                 .fillMaxSize()
                 .padding(20.dp)
         ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
+
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     PartnerLogo(
@@ -399,6 +402,7 @@ private fun LoyaltyCardBackContent(card: LoyaltyCardDto, cardColor: Color) {
 
     Column(
         modifier = Modifier
+            .clip(RoundedCornerShape(20.dp))
             .fillMaxSize()
             .background(Brush.linearGradient(listOf(cardColor, cardColor.copy(alpha = 0.85f))))
             .padding(20.dp),

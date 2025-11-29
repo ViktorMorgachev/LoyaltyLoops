@@ -123,7 +123,7 @@ export const BusinessSettingsPage = () => {
                         fullWidth 
                         value={burnBonusesDays} 
                         onChange={e => setBurnBonusesDays(e.target.value)}
-                        helperText="Leave empty for no expiration"
+                        helperText={t('settings.burn_hint')}
                     />
                     <TextField 
                         label={t('point_details.downgrade_tier')} 
@@ -131,7 +131,7 @@ export const BusinessSettingsPage = () => {
                         fullWidth 
                         value={downgradeTierDays} 
                         onChange={e => setDowngradeTierDays(e.target.value)}
-                        helperText="Leave empty for no reset"
+                        helperText={t('settings.downgrade_hint')}
                     />
                 </Box>
 

@@ -2,10 +2,11 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { api } from '../api/axiosConfig';
 import i18n from '../i18n';
 
-interface Workspace {
+export interface Workspace {
     id: string;
     title: string;
     role: string;
+    requirePin: boolean;
 }
 
 interface UserContextType {
@@ -13,7 +14,7 @@ interface UserContextType {
   workspaces: Workspace[];
   currentWorkspace: Workspace | null;
   loading: boolean;
-  refreshUser: () => Promise<void>;
+  refreshUser: () => Promise<any | null>;
   selectWorkspace: (ws: Workspace) => void;
   logout: () => void;
   
@@ -27,6 +28,8 @@ interface UserContextType {
   isNewUser: boolean; // Вообще нет ролей
 }
 
+const CURRENT_WORKSPACE_KEY = 'currentWorkspaceId';
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -35,11 +38,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const PIN_BYPASS_ROLES = new Set([
+    'PARTNER_ADMIN',
+    'PLATFORM_SUPER_ADMIN',
+    'PLATFORM_MANAGER'
+  ]);
+
+  const canBypassPin = (ws?: Workspace | null) =>
+    !!ws && (!ws.requirePin || PIN_BYPASS_ROLES.has(ws.role));
+
   useEffect(() => {
-    const cachedWs = localStorage.getItem('currentWorkspace');
-    if (cachedWs) {
-        setCurrentWorkspace(JSON.parse(cachedWs));
-    }
     refreshUser();
   }, []);
 
@@ -71,15 +79,23 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
           const stillExists = newWorkspaces.find((w: any) => w.id === currentWorkspace.id);
           if (!stillExists) {
               setCurrentWorkspace(null);
-              localStorage.removeItem('currentWorkspace');
           }
-      } else if (newWorkspaces.length === 1) {
-          // Автовыбор, если всего один вариант
-          selectWorkspace(newWorkspaces[0]);
       }
+
+      const cachedId = typeof window !== 'undefined' ? localStorage.getItem(CURRENT_WORKSPACE_KEY) : null;
+      if (!currentWorkspace && cachedId) {
+          const match = newWorkspaces.find((w: any) => w.id === cachedId);
+          if (match) {
+              setCurrentWorkspace(match);
+          } else {
+              localStorage.removeItem(CURRENT_WORKSPACE_KEY);
+          }
+      }
+      return profile;
 
     } catch (e) {
       console.error("Failed to refresh user profile", e);
+      return null;
     } finally {
       setLoading(false);
     }
@@ -87,7 +103,10 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const selectWorkspace = (ws: Workspace) => {
       setCurrentWorkspace(ws);
-      localStorage.setItem('currentWorkspace', JSON.stringify(ws));
+      if (typeof window !== 'undefined') {
+          localStorage.setItem(CURRENT_WORKSPACE_KEY, ws.id);
+          localStorage.removeItem('currentWorkspace'); // cleanup legacy key
+      }
   };
 
   const logout = () => {
@@ -95,8 +114,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       localStorage.removeItem('accessToken');
       localStorage.removeItem('refreshToken');
-      localStorage.removeItem('currentWorkspace');
       localStorage.removeItem('workspaces');
+      localStorage.removeItem(CURRENT_WORKSPACE_KEY);
 
       if (preservedLang) {
           localStorage.setItem('lang', preservedLang);

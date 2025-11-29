@@ -61,7 +61,7 @@ fun Route.clientRoutes(
             }
 
             post("/language") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@post
                 val request = call.receive<UpdateLanguageRequest>()
                 val normalized = request.language.lowercase()
                 val allowed = setOf("ru", "en", "ky", "kk", "uz", "be")

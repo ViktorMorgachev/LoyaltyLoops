@@ -23,7 +23,10 @@ fun ApplicationCall.getUserId(): String? {
 /**
  * Извлекает userId из JWT токена или отвечает 401
  */
-suspend fun ApplicationCall.getUserIdOrRespond(userRepository: UserRepository? = null): String? {
+suspend fun ApplicationCall.getUserIdOrRespond(
+    userRepository: UserRepository? = null,
+    allowFrozenActions: Boolean = false
+): String? {
     val userId = getUserId()
     if (userId.isNullOrBlank()) {
         respond(
@@ -43,7 +46,7 @@ suspend fun ApplicationCall.getUserIdOrRespond(userRepository: UserRepository? =
             }
 
         user.isFrozenUntil?.also {
-            if (isMutatingRequest() && it > System.currentTimeMillis() ){
+            if (!allowFrozenActions && isMutatingRequest() && it > System.currentTimeMillis()){
                 respond(
                     HttpStatusCode.Forbidden,
                     ApiMessage(AppErrorCode.ACCOUNT_FROZEN, "Account is temporarily frozen")

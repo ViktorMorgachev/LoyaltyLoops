@@ -151,7 +151,7 @@ fun Route.partnerRoutes(
 
             route("/support") {
                 get("/thread") {
-                    val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                    val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
                     val partner = partnerRepository.getPartnerByUserId(userId)
                     ensureOwner(partner, userId)
 
@@ -160,7 +160,7 @@ fun Route.partnerRoutes(
                 }
 
                 post("/messages") {
-                    val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                    val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@post
                     val payload = call.receive<SendSupportMessageRequest>()
                     val text = payload.content.trim()
                     if (text.isEmpty()) {

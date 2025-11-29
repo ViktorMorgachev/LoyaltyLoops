@@ -4,7 +4,6 @@ import {
   Button,
   CircularProgress,
   Divider,
-  Grid,
   List,
   ListItemButton,
   ListItemText,
@@ -197,7 +196,16 @@ const PartnerSupportChat: React.FC = () => {
   }
 
   return (
-    <Paper sx={{ p: 3 }}>
+    <Paper
+      sx={{
+        p: 3,
+        width: '100%',
+        maxWidth: 1200,
+        mx: 'auto',
+        boxShadow: 3,
+        borderRadius: 3
+      }}
+    >
       <Typography variant="h5" gutterBottom>{t('support.partner_title')}</Typography>
       <Typography variant="body2" color="text.secondary" mb={3}>
         {t('support.partner_hint')}
@@ -205,7 +213,8 @@ const PartnerSupportChat: React.FC = () => {
 
       <Box
         sx={{
-          height: 420,
+          minHeight: 520,
+          maxHeight: '70vh',
           overflowY: 'auto',
           bgcolor: '#f8f9fb',
           borderRadius: 2,
@@ -222,7 +231,7 @@ const PartnerSupportChat: React.FC = () => {
         <div ref={bottomRef} />
       </Box>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: '100%' }}>
         <TextField
           fullWidth
           multiline
@@ -348,9 +357,8 @@ const AdminSupportChat: React.FC = () => {
   );
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12} md={4}>
-        <Paper sx={{ p: 2, height: '100%', overflow: 'hidden' }}>
+    <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3}>
+      <Paper sx={{ p: 2, width: { xs: '100%', md: 320 }, flexShrink: 0, overflow: 'hidden' }}>
           <Typography variant="h6" gutterBottom>
             {t('support.admin_title')}
           </Typography>
@@ -407,11 +415,9 @@ const AdminSupportChat: React.FC = () => {
               </Typography>
             )}
           </List>
-        </Paper>
-      </Grid>
+      </Paper>
 
-      <Grid item xs={12} md={8}>
-        <Paper sx={{ p: 3, minHeight: 600, display: 'flex', flexDirection: 'column' }}>
+      <Paper sx={{ flex: 1, p: 3, minHeight: 600, display: 'flex', flexDirection: 'column' }}>
           {selected ? (
             <>
               <Typography variant="h6">{selected.partnerName}</Typography>
@@ -446,9 +452,8 @@ const AdminSupportChat: React.FC = () => {
               <Typography color="text.secondary">{t('support.select_thread')}</Typography>
             </Box>
           )}
-        </Paper>
-      </Grid>
-    </Grid>
+      </Paper>
+    </Box>
   );
 };
 

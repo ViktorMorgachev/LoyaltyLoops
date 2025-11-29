@@ -150,7 +150,7 @@ fun Route.authRoutes(
 
         authenticate("auth-jwt") {
             post("/verify-pin") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val userId = call.getUserIdOrRespond(repository, allowFrozenActions = true) ?: return@post
                 val request = call.receive<io.loyaltyloop.shared.models.VerifyPinRequest>()
 
                 // TODO проверить что пользователь не кассир и не обычный пользователь и имеет доступ к workspaceId

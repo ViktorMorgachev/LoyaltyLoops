@@ -39,6 +39,7 @@ import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.count
+import org.jetbrains.exposed.sql.Op
 import java.util.UUID
 import kotlin.jvm.Throws
 
@@ -330,6 +331,13 @@ class PartnerRepository {
     suspend fun clearPartnerPin(partnerId: String) = dbQuery {
         PartnersTable.update({ PartnersTable.id eq partnerId }) {
             it[adminPinHash] = null
+        }
+    }
+
+    suspend fun resetAllPartnerPins(defaultPin: String): Int = dbQuery {
+        val hashed = SecurityUtils.hashPin(defaultPin)
+        PartnersTable.update({ Op.TRUE }) {
+            it[adminPinHash] = hashed
         }
     }
 

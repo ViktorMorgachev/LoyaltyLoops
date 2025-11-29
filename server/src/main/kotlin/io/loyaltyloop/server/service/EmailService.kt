@@ -12,6 +12,7 @@ class ConsoleEmailService : EmailService {
     override suspend fun sendPinResetEmail(email: String, resetLink: String) {
         EmailDebugStore.capturePinReset(resetLink)
         logger.info("PIN reset link for $email: $resetLink")
+        println("[PIN RESET LINK] $resetLink")
     }
 }
 

@@ -94,7 +94,13 @@ export const CreateBusinessPage = () => {
           margin="normal"
           value={pin}
           onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
-          inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
+          required
+          autoComplete="new-password"
+          inputProps={{
+            maxLength: 12,
+            inputMode: 'numeric',
+            pattern: '[0-9]*'
+          }}
           helperText={t('dashboard.pin_hint')}
         />
 
@@ -105,7 +111,13 @@ export const CreateBusinessPage = () => {
           margin="normal"
           value={pinConfirm}
           onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
-          inputProps={{ maxLength: 12, inputMode: 'numeric', pattern: '[0-9]*' }}
+          required
+          autoComplete="new-password"
+          inputProps={{
+            maxLength: 12,
+            inputMode: 'numeric',
+            pattern: '[0-9]*'
+          }}
         />
 
         <Button

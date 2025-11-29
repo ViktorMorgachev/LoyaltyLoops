@@ -170,6 +170,14 @@ fun Application.module() {
 
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
+    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()
+        ?.takeIf { it.isNotBlank() }
+    if (forcePartnerPin != null) {
+        launch {
+            val affected = partnerRepository.resetAllPartnerPins(forcePartnerPin)
+            log.warn("Force-set PIN for $affected partners to the configured default.")
+        }
+    }
     if (superPhone != null) {
         launch {
             // 1. Пытаемся найти
