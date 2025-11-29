@@ -45,7 +45,11 @@ kotlin {
 android {
     namespace = "io.loyaltyloop.shared"
     compileSdk = 34
+
+    buildFeatures.buildConfig = true
+
     defaultConfig {
         minSdk = 24
+        buildConfigField("String", "WEB_BASE_URL", "\"http://web\"")
     }
 }

@@ -42,7 +42,7 @@ val appModule = module {
     factory { OnboardingScreenModel(get(), get(), get()) }
     factory { RoleSelectionScreenModel(get()) }
     factory { WalletScreenModel(get(),get(), get()) }
-    factory { ProfileScreenModel(get(), get(), get()) }
+    factory { ProfileScreenModel(get(), get(), get(), get()) }
     factory { JoinCompanyScreenModel(get()) }
 
     factory { TerminalScreenModel(get(), get()) }

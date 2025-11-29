@@ -5,5 +5,6 @@ actual object AppConfig {
         realtimeEnabled = true,
         pushEnabled = false
     )
+    actual val webBaseUrl: String = "https://app.loyaltyloop.io"
 }
 

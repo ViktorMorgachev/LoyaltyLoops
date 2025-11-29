@@ -126,6 +126,10 @@
 
     <string name="profile_btn_join_team">Ввести инвайт-код</string>
     <string name="profile_desc_join_team">Для сотрудников</string>
+    <string name="profile_web_error_token">Не удалось открыть портал. Перезапустите приложение и войдите заново.</string>
+    <string name="web_error_title">Не удалось загрузить портал</string>
+    <string name="web_error_retry">Повторить</string>
+    <string name="web_loading_message">Загружаем кабинет…</string>
 
     <string name="profile_version">Версия %s</string>
     <!-- Profile Roles -->

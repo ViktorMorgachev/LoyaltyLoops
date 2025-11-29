@@ -29,6 +29,7 @@ import io.loyaltyloop.app.features.profile.components.SectionTitle
 import io.loyaltyloop.app.features.profile.components.SettingsItem
 import io.loyaltyloop.app.features.profile.components.WorkspaceItem
 import io.loyaltyloop.app.features.splash.SplashScreen
+import io.loyaltyloop.app.features.web.WebPortalScreen
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.show
 import kotlinx.coroutines.launch
@@ -61,6 +62,9 @@ class ProfileScreen : Screen {
                     // ОБРАБОТКА ОШИБОК
                     is ProfileScreenModel.Event.ShowMessage -> {
                         launch { snackbarHostState.show(event.message, event.type) }
+                    }
+                    is ProfileScreenModel.Event.NavigateToWeb -> {
+                        navigator.push(WebPortalScreen(event.url, event.headers))
                     }
                 }
             }

@@ -3,6 +3,7 @@ package io.loyaltyloop.app.features.profile
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
+import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
@@ -11,6 +12,7 @@ import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.config.AppConfig
 import io.loyaltyloop.shared.models.UserWorkspace
 import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
@@ -24,10 +26,12 @@ import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.profile_error_load
 import loyaltyloop.composeapp.generated.resources.profile_loading
+import loyaltyloop.composeapp.generated.resources.profile_web_error_token
 
 class ProfileScreenModel(
     private val repository: AuthRepository,
     private val sessionManager: SessionManager,
+    private val tokenStorage: TokenStorage,
     private val pushService: PushService
 ) : ScreenModel {
 
@@ -51,7 +55,7 @@ class ProfileScreenModel(
     sealed interface Event {
         data object NavigateToSplash : Event
         data object NavigateToJoinCompany : Event
-        // Добавляем событие показа сообщения
+        data class NavigateToWeb(val url: String, val headers: Map<String, String>) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -80,10 +84,7 @@ class ProfileScreenModel(
                 _events.trySend(Event.NavigateToJoinCompany)
             }
 
-            is Action.OnCreateBusinessClicked -> {
-                log.write("Create Business clicked")
-                // TODO: Показать тост "Используйте веб-версию"
-            }
+            is Action.OnCreateBusinessClicked -> openBusinessPortal()
 
             is Action.OnLanguageClicked -> log.write("Click: Change Language")
             is Action.OnSupportClicked -> log.write("Click: Support")
@@ -129,5 +130,24 @@ class ProfileScreenModel(
             pushService.unregister()
             sessionManager.logout()
         }
+    }
+
+    private fun openBusinessPortal() {
+        val access = tokenStorage.getAccessToken()
+        val refresh = tokenStorage.getRefreshToken()
+        if (access.isNullOrBlank() || refresh.isNullOrBlank()) {
+            _events.trySend(
+                Event.ShowMessage(
+                    UiText.Resource(Res.string.profile_web_error_token),
+                    SnackbarType.Error
+                )
+            )
+            return
+        }
+        val headers = mapOf(
+            "Authorization" to "Bearer $access",
+            "X-Refresh-Token" to refresh
+        )
+        _events.trySend(Event.NavigateToWeb(AppConfig.webBaseUrl, headers))
     }
 }
