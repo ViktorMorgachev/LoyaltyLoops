@@ -42,6 +42,7 @@ kotlin {
             implementation(project.dependencies.platform(libs.firebase.bom))
             implementation(libs.firebase.messaging)
             implementation(libs.kotlinx.coroutines.play.services)
+            implementation(libs.process.phoenix)
 
             // Движок превью (важно для отображения @Preview)
             implementation(compose.uiTooling)

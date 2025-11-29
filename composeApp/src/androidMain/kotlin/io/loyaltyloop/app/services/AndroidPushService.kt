@@ -81,8 +81,7 @@ class AndroidPushService(
                 FirebaseMessaging.getInstance().deleteToken().await()
                 isRegistered = false
                 Logger.d { "FCM unregistered" }
-            } catch (error: CancellationException) {
-                throw error
+            } catch (t: CancellationException) {
             } catch (error: Exception) {
                 Logger.e(error) { "Failed to unregister FCM" }
             }

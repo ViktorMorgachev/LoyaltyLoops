@@ -80,13 +80,7 @@ class TokenStorage(private val settings: Settings) {
         // Чистим память
         cachedAccessToken = null
         cachedRefreshToken = null
-
-        // Чистим диск
-        settings.remove(KEY_ACCESS_TOKEN)
-        settings.remove(KEY_REFRESH_TOKEN)
-        settings.remove(KEY_USER_ID)
-        settings.remove(KEY_QR_SECRET)
-        settings.remove(KEY_CURRENT_WORKSPACE_ID)
-        settings.remove(KEY_IS_ROLE_SELECTED)
+        settings.clear()
+        log.write("💾 STORAGE: accessToken: ${getAccessToken()?.takeLast(8)}:${ settings.getStringOrNull(KEY_ACCESS_TOKEN)} in memory: ${cachedAccessToken}")
     }
 }

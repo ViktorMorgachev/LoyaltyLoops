@@ -31,6 +31,7 @@ kermit = "2.0.3"
 multiplatformSettings = "1.1.1"
 qrose = "1.0.1"
 kotlinx-datetime = "0.6.0"
+processPhoenix = "2.1.2"
 
 # Config
 minSdk = "24"
@@ -104,6 +105,7 @@ kotlinx-coroutines-play-services = { module = "org.jetbrains.kotlinx:kotlinx-cor
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
 kamel-image = { module = "media.kamel:kamel-image", version.ref = "kamel" }
+process-phoenix = { module = "com.jakewharton:process-phoenix", version.ref = "processPhoenix" }
 ktor-client-websocket = { module = "io.ktor:ktor-client-websockets", version.ref = "ktor" }
 
 [plugins]

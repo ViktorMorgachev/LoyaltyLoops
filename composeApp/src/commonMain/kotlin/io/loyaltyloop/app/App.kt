@@ -6,30 +6,26 @@ import cafe.adriel.voyager.transitions.SlideTransition
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.features.splash.SplashScreen
 import io.loyaltyloop.app.navigation.NavigatorHolder
+import io.loyaltyloop.app.platform.AppRestarter
 import io.loyaltyloop.app.ui.theme.LoyaltyTheme
 import org.koin.compose.koinInject
 
 @Composable
 fun App() {
-    LoyaltyTheme {
-        val sessionManager = koinInject<SessionManager>()
 
-        // Ключ для перезапуска всего графа навигации
-        var restartKey by remember { mutableStateOf(0) }
+    val appRestarter = koinInject<AppRestarter>()
+    val sessionManager = koinInject<SessionManager>()
 
-        // Слушаем логаут глобально
-        LaunchedEffect(Unit) {
-            sessionManager.logoutEvent.collect {
-                // Увеличиваем ключ -> Компоновка Navigator пересоздастся с нуля!
-                restartKey++
-            }
+    LaunchedEffect(Unit) {
+        sessionManager.logoutEvent.collect {
+            appRestarter.restartApp()
         }
-        // Оборачиваем Navigator в key
-        key(restartKey) {
-            Navigator(SplashScreen()) { navigator ->
-                NavigatorHolder.lastNavigator = navigator
-                SlideTransition(navigator)
-            }
+    }
+
+    LoyaltyTheme {
+        Navigator(SplashScreen()) { navigator ->
+            NavigatorHolder.lastNavigator = navigator
+            SlideTransition(navigator)
         }
     }
 }

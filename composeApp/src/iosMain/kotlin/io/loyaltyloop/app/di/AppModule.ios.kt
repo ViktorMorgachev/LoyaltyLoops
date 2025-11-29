@@ -6,6 +6,8 @@ import io.ktor.client.engine.darwin.Darwin
 import io.loyaltyloop.app.data.NetworkClient
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
+import io.loyaltyloop.app.platform.AppRestarter
+import io.loyaltyloop.app.platform.IosAppRestarter
 import io.loyaltyloop.app.services.CardRealtimeService
 import io.loyaltyloop.app.services.DefaultCardRealtimeService
 import io.loyaltyloop.app.services.NoopPushService
@@ -30,4 +32,5 @@ actual val platformModule = module {
 
     single<PushService> { NoopPushService() }
     single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
+    single<AppRestarter> { IosAppRestarter() }
 }
