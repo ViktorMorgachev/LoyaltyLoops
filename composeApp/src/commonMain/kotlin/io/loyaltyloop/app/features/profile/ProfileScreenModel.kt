@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.profile_error_load
+import loyaltyloop.composeapp.generated.resources.profile_language_updated
 import loyaltyloop.composeapp.generated.resources.profile_loading
 import loyaltyloop.composeapp.generated.resources.profile_web_error_token
 
@@ -39,7 +40,9 @@ class ProfileScreenModel(
         val name: UiText = UiText.Resource(Res.string.profile_loading),
         val phone: String = "",
         val workspaces: List<UserWorkspace> = emptyList(),
-        val isLoading: Boolean = false
+        val isLoading: Boolean = false,
+        val languageCode: String = "ru",
+        val appVersion: String = AppConfig.appVersion
     )
 
     sealed interface Action {
@@ -49,6 +52,7 @@ class ProfileScreenModel(
         data object OnJoinTeamClicked : Action
         data object OnCreateBusinessClicked : Action
         data object OnLanguageClicked : Action
+        data class OnLanguageSelected(val code: String) : Action
         data object OnSupportClicked : Action
     }
 
@@ -59,7 +63,12 @@ class ProfileScreenModel(
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
-    private val _state = MutableStateFlow(State())
+    private val _state = MutableStateFlow(
+        State(
+            languageCode = tokenStorage.getAppLanguageCode() ?: "ru",
+            appVersion = AppConfig.appVersion
+        )
+    )
     val state = _state.asStateFlow()
 
     private val _events = Channel<Event>()
@@ -87,6 +96,7 @@ class ProfileScreenModel(
             is Action.OnCreateBusinessClicked -> openBusinessPortal()
 
             is Action.OnLanguageClicked -> log.write("Click: Change Language")
+            is Action.OnLanguageSelected -> updateLanguage(action.code)
             is Action.OnSupportClicked -> log.write("Click: Support")
         }
     }
@@ -97,11 +107,13 @@ class ProfileScreenModel(
 
             repository.getProfile()
                 .onSuccess { profile ->
+                    val resolvedLanguage = resolveLanguage(profile.language)
                     _state.value = _state.value.copy(
                         name = UiText.DynamicString("${profile.firstName ?: ""} ${profile.lastName ?: ""}".trim()),
                         phone = profile.phone,
                         workspaces = profile.workspaces,
-                        isLoading = false
+                        isLoading = false,
+                        languageCode = resolvedLanguage
                     )
                     sessionManager.updateWorkspaces(profile.workspaces)
                    pushService.register()
@@ -149,5 +161,46 @@ class ProfileScreenModel(
             "X-Refresh-Token" to refresh
         )
         _events.trySend(Event.NavigateToWeb(AppConfig.webBaseUrl, headers))
+    }
+
+    private fun resolveLanguage(serverLanguage: String?): String {
+        val current = tokenStorage.getAppLanguageCode()
+        return when {
+            current != null -> current
+            !serverLanguage.isNullOrBlank() -> {
+                tokenStorage.setAppLanguageCode(serverLanguage)
+                serverLanguage
+            }
+            else -> "ru"
+        }
+    }
+
+    private fun updateLanguage(code: String) {
+        if (_state.value.languageCode == code) return
+        screenModelScope.launch {
+            repository.updateLanguage(code)
+                .onSuccess {
+                    tokenStorage.setAppLanguageCode(code)
+                    _state.value = _state.value.copy(languageCode = code)
+                    _events.send(
+                        Event.ShowMessage(
+                            UiText.Resource(Res.string.profile_language_updated),
+                            SnackbarType.Success
+                        )
+                    )
+                }
+                .onError { errorCode, _ ->
+                    log.write("Failed to update language: $errorCode", LogType.Warning)
+                    _events.send(
+                        Event.ShowMessage(UiText.Resource(errorCode.toResource()), SnackbarType.Error)
+                    )
+                }
+                .onFailure { throwable ->
+                    log.write("Failed to update language", LogType.Error, throwable)
+                    _events.send(
+                        Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error)
+                    )
+                }
+        }
     }
 }

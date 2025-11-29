@@ -14,7 +14,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -34,6 +36,7 @@ import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.show
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.*
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
 class ProfileScreen : Screen {
@@ -46,6 +49,12 @@ class ProfileScreen : Screen {
 
         // Состояние снекбара
         val snackbarHostState = remember { SnackbarHostState() }
+        var showLanguageDialog by remember { mutableStateOf(false) }
+        var pendingLanguage by remember(state.languageCode) { mutableStateOf(state.languageCode) }
+        var showAboutDialog by remember { mutableStateOf(false) }
+        val languageLabel = languageOptions.firstOrNull { it.code == state.languageCode }?.let {
+            stringResource(it.labelRes)
+        } ?: "—"
 
         LaunchedEffect(Unit) {
             // При первом входе грузим данные (можно убрать, если init блока достаточно)
@@ -158,8 +167,11 @@ class ProfileScreen : Screen {
                             SettingsItem(
                                 icon = Icons.Default.Language,
                                 title = stringResource(Res.string.profile_item_language),
-                                value = "Русский",
-                                onClick = { viewModel.onAction(ProfileScreenModel.Action.OnLanguageClicked) }
+                                value = languageLabel,
+                                onClick = {
+                                    pendingLanguage = state.languageCode
+                                    showLanguageDialog = true
+                                }
                             )
                             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
 
@@ -167,6 +179,12 @@ class ProfileScreen : Screen {
                                 icon = Icons.AutoMirrored.Filled.Help,
                                 title = stringResource(Res.string.profile_item_support),
                                 onClick = { viewModel.onAction(ProfileScreenModel.Action.OnSupportClicked) }
+                            )
+                            SettingsItem(
+                                icon = Icons.Default.Info,
+                                title = stringResource(Res.string.profile_about_title),
+                                subtitle = stringResource(Res.string.profile_about_version, state.appVersion),
+                                onClick = { showAboutDialog = true }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
                         }
@@ -193,5 +211,98 @@ class ProfileScreen : Screen {
                 )
             }
         }
+
+        if (showLanguageDialog) {
+            LanguageSelectorDialog(
+                selectedCode = pendingLanguage,
+                onSelect = { pendingLanguage = it },
+                onApply = {
+                    viewModel.onAction(ProfileScreenModel.Action.OnLanguageSelected(it))
+                    showLanguageDialog = false
+                },
+                onDismiss = { showLanguageDialog = false }
+            )
+        }
+
+        if (showAboutDialog) {
+            AboutDialog(
+                appVersion = state.appVersion,
+                onDismiss = { showAboutDialog = false }
+            )
+        }
     }
+}
+
+private data class LanguageOption(val code: String, val labelRes: StringResource)
+
+private val languageOptions = listOf(
+    LanguageOption("ru", Res.string.language_ru),
+    LanguageOption("ky", Res.string.language_ky),
+    LanguageOption("kk", Res.string.language_kk),
+    LanguageOption("uz", Res.string.language_uz),
+    LanguageOption("be", Res.string.language_be)
+)
+
+@Composable
+private fun LanguageSelectorDialog(
+    selectedCode: String,
+    onSelect: (String) -> Unit,
+    onApply: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.profile_language_dialog_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                languageOptions.forEach { option ->
+                    val label = stringResource(option.labelRes)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    ) {
+                        RadioButton(
+                            selected = option.code == selectedCode,
+                            onClick = { onSelect(option.code) }
+                        )
+                        Text(text = label, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onApply(selectedCode) }) {
+                Text(stringResource(Res.string.profile_language_dialog_apply))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.profile_language_dialog_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun AboutDialog(
+    appVersion: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.profile_about_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(text = stringResource(Res.string.profile_about_version, appVersion))
+                Text(text = stringResource(Res.string.profile_about_description))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(Res.string.profile_language_dialog_cancel))
+            }
+        }
+    )
 }

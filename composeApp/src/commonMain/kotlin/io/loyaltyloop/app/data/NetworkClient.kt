@@ -112,14 +112,11 @@ object NetworkClient {
                 }
             }
 
-            // 4. URL
-            defaultRequest {
-                url(SERVER_URL)
-                // TODO: Локаль добить функционал (думаю по умолчанию при старте приложения устанавливать локаль с
-                //  системы но и давать сменить локаль в личном профиле и тут его слать а так же при получении профиля
-                //  устанавливать локаль с его профиля и добавить флаг для реализации (isNotSetLocale чтобы понимать откуда брать язык (с системы или с профиля)
-                header(HttpHeaders.AcceptLanguage, "ru")
-            }
+        defaultRequest {
+            url(SERVER_URL)
+            val language = tokenStorage.getAppLanguageCode() ?: "ru"
+            header(HttpHeaders.AcceptLanguage, language)
+        }
         }
     }
 }

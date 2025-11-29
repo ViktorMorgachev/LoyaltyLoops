@@ -8,5 +8,6 @@ data class FeatureFlags(
 expect object AppConfig {
     val featureFlags: FeatureFlags
     val webBaseUrl: String
+    val appVersion: String
 }
 

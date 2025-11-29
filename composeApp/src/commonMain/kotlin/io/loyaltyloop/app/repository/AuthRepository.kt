@@ -15,6 +15,7 @@ import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.NetworkResult
 import io.loyaltyloop.shared.models.SendCodeRequest
 import io.loyaltyloop.shared.models.TestApiErrors
+import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
 import io.loyaltyloop.shared.models.VerifyCodeRequest
@@ -70,6 +71,15 @@ class AuthRepository(private val client: HttpClient) {
                     lastName = lastName?.ifBlank { null },
                     email = email?.ifBlank { null }
                 ))
+            }
+        }
+    }
+
+    suspend fun updateLanguage(languageCode: String): NetworkResult<ApiMessage> {
+        return safeNetworkCall {
+            client.post("/client/language") {
+                contentType(ContentType.Application.Json)
+                setBody(UpdateLanguageRequest(languageCode))
             }
         }
     }

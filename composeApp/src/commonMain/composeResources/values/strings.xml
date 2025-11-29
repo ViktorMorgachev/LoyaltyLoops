@@ -120,6 +120,18 @@
 
     <string name="profile_item_language">Язык приложения</string>
     <string name="profile_item_support">Поддержка</string>
+    <string name="profile_language_dialog_title">Выберите язык</string>
+    <string name="profile_language_dialog_apply">Применить</string>
+    <string name="profile_language_dialog_cancel">Отмена</string>
+    <string name="profile_language_updated">Язык обновлён</string>
+    <string name="language_ru">Русский</string>
+    <string name="language_ky">Кыргызча</string>
+    <string name="language_kk">Qazaqşa</string>
+    <string name="language_uz">Oʻzbekcha</string>
+    <string name="language_be">Bielaruskaja</string>
+    <string name="profile_about_title">О приложении</string>
+    <string name="profile_about_version">Версия: %1$s</string>
+    <string name="profile_about_description">LoyaltyLoop помогает управлять программами лояльности и филиалами из одного приложения.</string>
 
     <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
     <string name="profile_desc_create_business">Для владельцев заведений</string>

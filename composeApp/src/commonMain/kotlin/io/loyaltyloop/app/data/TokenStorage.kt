@@ -14,6 +14,7 @@ class TokenStorage(private val settings: Settings) {
         private const val KEY_QR_SECRET = "qr_secret"
         private const val KEY_CURRENT_WORKSPACE_ID = "current_workspace_id"
         private const val KEY_IS_ROLE_SELECTED = "is_role_selected"
+        private const val KEY_APP_LANGUAGE = "app_language"
     }
 
     // --- IN-MEMORY CACHE (Мгновенный доступ) ---
@@ -74,6 +75,12 @@ class TokenStorage(private val settings: Settings) {
     fun isRoleSelected(): Boolean {
         return settings.getBoolean(KEY_IS_ROLE_SELECTED, false)
     }
+
+    fun setAppLanguageCode(code: String) {
+        settings.putString(KEY_APP_LANGUAGE, code)
+    }
+
+    fun getAppLanguageCode(): String? = settings.getStringOrNull(KEY_APP_LANGUAGE)
 
     fun clear() {
         log.write("💾 STORAGE: Clearing all data")

@@ -8,5 +8,6 @@ actual object AppConfig {
         pushEnabled = true
     )
     actual val webBaseUrl: String = BuildConfig.WEB_BASE_URL
+    actual val appVersion: String = BuildConfig.APP_VERSION
 }
 
