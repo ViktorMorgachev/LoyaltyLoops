@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
@@ -24,12 +25,16 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import kotlin.math.absoluteValue
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.UserWorkspace
 import loyaltyloop.composeapp.generated.resources.Res
@@ -42,13 +47,23 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ProfileHeader(name: String, phone: String) {
+    val initials = remember(name) { extractInitials(name) }
+    val colorScheme = MaterialTheme.colorScheme
+    val avatarGradient = remember(name, colorScheme) {
+        val palette = listOf(colorScheme.primary, colorScheme.tertiary, colorScheme.secondary)
+        val baseColor = palette[(name.hashCode().absoluteValue) % palette.size]
+        listOf(baseColor.copy(alpha = 0.9f), baseColor.copy(alpha = 0.6f))
+    }
+
     Surface(
         color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)
+        tonalElevation = 4.dp,
+        shape = RoundedCornerShape(24.dp),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(24.dp),
+            modifier = Modifier
+                .padding(horizontal = 20.dp, vertical = 18.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Аватарка (Градиент или цвет)
@@ -56,14 +71,23 @@ fun ProfileHeader(name: String, phone: String) {
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(Brush.linearGradient(avatarGradient)),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = name.take(1).uppercase(),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
+                if (initials != null) {
+                    Text(
+                        text = initials,
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.ManageAccounts,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -90,8 +114,14 @@ fun SectionTitle(text: String) {
         text = text,
         style = MaterialTheme.typography.labelLarge,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 24.dp, bottom = 8.dp)
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 8.dp)
     )
+}
+
+private fun extractInitials(name: String): String? {
+    if (name.isBlank()) return null
+    val candidate = name.firstOrNull { it.isLetterOrDigit() }
+    return candidate?.uppercaseChar()?.toString()
 }
 
 @Composable

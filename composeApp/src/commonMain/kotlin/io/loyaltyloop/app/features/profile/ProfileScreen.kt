@@ -104,12 +104,12 @@ class ProfileScreen : Screen {
                     // Основной список
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(bottom = 24.dp, top = 16.dp, start = 16.dp, end = 16.dp)
+                        contentPadding = PaddingValues(bottom = 24.dp, top = 8.dp, start = 16.dp, end = 16.dp)
                     ) {
                         // 1. Header
                         item {
                             ProfileHeader(name = state.name.asString(), phone = state.phone)
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
 
                         // 2. Рабочие места
@@ -144,7 +144,7 @@ class ProfileScreen : Screen {
                                 subtitle = stringResource(Res.string.profile_desc_join_team),
                                 onClick = { viewModel.onAction(ProfileScreenModel.Action.OnJoinTeamClicked) }
                             )
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
 
                         // 4. Настройки и Футер
@@ -164,7 +164,7 @@ class ProfileScreen : Screen {
                                 title = stringResource(Res.string.profile_item_support),
                                 onClick = { viewModel.onAction(ProfileScreenModel.Action.OnSupportClicked) }
                             )
-                            Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
 
                         item {
