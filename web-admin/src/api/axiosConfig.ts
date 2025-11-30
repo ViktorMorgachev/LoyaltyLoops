@@ -2,8 +2,8 @@ import axios from 'axios';
 import i18n from '../i18n';
 
 // Адрес твоего Ktor сервера
-// Важно: Сервер должен быть запущен на порту 8080
-const BASE_URL = 'http://localhost:8080';
+// В продакшене он должен быть задан через переменную окружения VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 export const API_BASE_URL = BASE_URL;
 export const WS_BASE_URL = BASE_URL.replace('http', 'ws');
 const resolveInitialLanguage = (): string => {
