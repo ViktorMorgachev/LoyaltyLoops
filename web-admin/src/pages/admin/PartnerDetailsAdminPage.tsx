@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { api } from '../../api/axiosConfig';
-import { Container, Typography, Grid, Paper, Box, Table, TableHead, TableRow, TableCell, TableBody, Chip, Button, Switch } from '@mui/material';
+import { Container, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch, Box } from '@mui/material';
 import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
 import { useTranslation } from 'react-i18next';
@@ -47,26 +47,25 @@ export const PartnerDetailsAdminPage = () => {
             <Typography variant="subtitle1" mb={3} color="textSecondary">{t('admin.id')}: {id}</Typography>
 
             {/* STATS */}
-            <Grid container spacing={3} mb={4}>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 2, textAlign: 'center' }}>
-                        <Typography variant="h4" color="primary">{stats?.pointsCount || 0}</Typography>
-                        <Typography variant="subtitle2">{t('admin.total_points')}</Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 2, textAlign: 'center' }}>
-                        <Typography variant="h4" color="primary">{stats?.cardsCount || 0}</Typography>
-                        <Typography variant="subtitle2">{t('admin.total_clients')}</Typography>
-                    </Paper>
-                </Grid>
-                <Grid item xs={12} md={4}>
-                    <Paper sx={{ p: 2, textAlign: 'center' }}>
-                        <Typography variant="h4" color="primary">{stats?.transactionsCount || 0}</Typography>
-                        <Typography variant="subtitle2">{t('admin.total_transactions')}</Typography>
-                    </Paper>
-                </Grid>
-            </Grid>
+            <Box
+                mb={4}
+                display="grid"
+                gridTemplateColumns={{ xs: '1fr', md: 'repeat(3, 1fr)' }}
+                gap={3}
+            >
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">{stats?.pointsCount || 0}</Typography>
+                    <Typography variant="subtitle2">{t('admin.total_points')}</Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">{stats?.cardsCount || 0}</Typography>
+                    <Typography variant="subtitle2">{t('admin.total_clients')}</Typography>
+                </Paper>
+                <Paper sx={{ p: 2, textAlign: 'center' }}>
+                    <Typography variant="h4" color="primary">{stats?.transactionsCount || 0}</Typography>
+                    <Typography variant="subtitle2">{t('admin.total_transactions')}</Typography>
+                </Paper>
+            </Box>
 
             {/* POINTS LIST */}
             <Typography variant="h5" mb={2}>{t('admin.trading_points')}</Typography>

@@ -39,6 +39,7 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.CARD_PAUSED -> Res.string.error_card_paused
         AppErrorCode.TOKEN_EXPIRED -> Res.string.error_token_expired
         AppErrorCode.CARD_IS_BLOCKED -> Res.string.error_token_expired
+        AppErrorCode.POINT_PAUSED -> Res.string.error_token_expired
     }
 }
 

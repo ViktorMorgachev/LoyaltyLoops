@@ -8,6 +8,7 @@ import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
+import io.loyaltyloop.app.utils.PlatformManager
 import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.toResource
@@ -18,6 +19,7 @@ import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
 import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -33,7 +35,8 @@ class ProfileScreenModel(
     private val repository: AuthRepository,
     private val sessionManager: SessionManager,
     private val tokenStorage: TokenStorage,
-    private val pushService: PushService
+    private val pushService: PushService,
+    private val platformManager: PlatformManager
 ) : ScreenModel {
 
     data class State(
@@ -58,7 +61,11 @@ class ProfileScreenModel(
 
     sealed interface Event {
         data object NavigateToSplash : Event
+
+        data object ShowLanguageDialog : Event
         data object NavigateToJoinCompany : Event
+
+        data object ShowAboutDialog: Event
         data class NavigateToWeb(val url: String, val headers: Map<String, String>) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
@@ -73,7 +80,6 @@ class ProfileScreenModel(
 
     private val _events = Channel<Event>()
     val events = _events.receiveAsFlow()
-
 
     fun onAction(action: Action) {
         when (action) {
@@ -95,12 +101,11 @@ class ProfileScreenModel(
 
             is Action.OnCreateBusinessClicked -> openBusinessPortal()
 
-            is Action.OnLanguageClicked -> log.write("Click: Change Language")
+            is Action.OnLanguageClicked -> _events.trySend(Event.ShowLanguageDialog)
             is Action.OnLanguageSelected -> updateLanguage(action.code)
             is Action.OnSupportClicked -> log.write("Click: Support")
         }
     }
-
     private fun loadProfile() {
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
@@ -136,14 +141,12 @@ class ProfileScreenModel(
                 }
         }
     }
-
     private fun logout() {
         screenModelScope.launch {
             pushService.unregister()
             sessionManager.logout()
         }
     }
-
     private fun openBusinessPortal() {
         val access = tokenStorage.getAccessToken()
         val refresh = tokenStorage.getRefreshToken()
@@ -162,7 +165,6 @@ class ProfileScreenModel(
         )
         _events.trySend(Event.NavigateToWeb(AppConfig.webBaseUrl, headers))
     }
-
     private fun resolveLanguage(serverLanguage: String?): String {
         val current = tokenStorage.getAppLanguageCode()
         return when {
@@ -201,6 +203,13 @@ class ProfileScreenModel(
                         Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error)
                     )
                 }
+            platformManager.applyLanguage(code)
+
+            // 4. Обновляем стейт UI (на всякий случай)
+            _state.value = _state.value.copy(languageCode = code)
+
+            delay(300)
+            platformManager.reloadUI()
         }
     }
 }

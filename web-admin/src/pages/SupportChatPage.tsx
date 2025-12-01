@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -207,6 +207,11 @@ const PartnerSupportChat: React.FC = () => {
       }}
     >
       <Typography variant="h5" gutterBottom>{t('support.partner_title')}</Typography>
+      {thread && (
+        <Typography variant="body2" color="text.secondary" mb={1}>
+          {t('support.thread_id', { id: thread.id })}
+        </Typography>
+      )}
       <Typography variant="body2" color="text.secondary" mb={3}>
         {t('support.partner_hint')}
       </Typography>
@@ -369,7 +374,7 @@ const AdminSupportChat: React.FC = () => {
           )}
           <List sx={{ maxHeight: 520, overflowY: 'auto' }}>
             {sortedThreads.map((thread) => (
-              <React.Fragment key={thread.id}>
+                <Fragment key={thread.id}>
                 <ListItemButton
                   selected={selected?.id === thread.id}
                   onClick={() => loadThreadDetails(thread.id)}
@@ -407,7 +412,7 @@ const AdminSupportChat: React.FC = () => {
                 />
                 </ListItemButton>
                 <Divider component="li" />
-              </React.Fragment>
+                </Fragment>
             ))}
             {sortedThreads.length === 0 && (
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

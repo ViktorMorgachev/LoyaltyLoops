@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { 
     Container, Typography, Paper, Box, Button, Table, TableHead, TableBody, 
     TableRow, TableCell, Tabs, Tab, Dialog, DialogTitle, DialogContent, 
-    DialogActions, Alert, Tooltip 
+    DialogActions, Tooltip 
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
@@ -48,7 +48,7 @@ export const PartnerStaffPage = () => {
     };
 
     // Group cashiers by userId to avoid duplicates
-    const uniqueCashiers = React.useMemo(() => {
+    const uniqueCashiers = useMemo(() => {
         const map = new Map();
         cashiers.forEach(c => {
             if (!map.has(c.userId)) {
@@ -111,7 +111,7 @@ export const PartnerStaffPage = () => {
                 )}
             </Box>
 
-            <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 3 }}>
+            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
                 <Tab label={t('staff.managers')} />
                 <Tab label={t('staff.cashiers')} />
             </Tabs>

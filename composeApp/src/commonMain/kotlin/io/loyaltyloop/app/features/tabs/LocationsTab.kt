@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import io.loyaltyloop.app.features.map.PointsMapScreen
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.tab_locations
 import org.jetbrains.compose.resources.stringResource
@@ -35,9 +36,7 @@ object LocationsTab : Tab {
 
     @Composable
     override fun Content() {
-        // Пока заглушка, в будущем тут будет LocationsScreen().Content()
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(stringResource(Res.string.tab_locations))
-        }
+        PointsMapScreen().Content()
+
     }
 }

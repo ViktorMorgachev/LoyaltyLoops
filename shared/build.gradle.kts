@@ -1,7 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -50,6 +49,7 @@ android {
 
     defaultConfig {
         minSdk = 24
+        buildConfigField("String", "MAP_API_KEY", "\"913bd734-3e88-42fd-ae0d-b5f16c05110c\"")
         buildConfigField("String", "WEB_BASE_URL", "\"http://10.0.2.2:3000\"")
         buildConfigField("String", "APP_VERSION", "\"1.0.0\"")
     }

@@ -1,6 +1,6 @@
 [versions]
 # Core
-kotlin = "2.0.0"
+kotlin = "2.0.21"
 agp = "8.3.1"
 compose-plugin = "1.6.11"
 androidx-activityCompose = "1.9.0"
@@ -32,6 +32,8 @@ multiplatformSettings = "1.1.1"
 qrose = "1.0.1"
 kotlinx-datetime = "0.6.0"
 processPhoenix = "2.1.2"
+yandex-maps = "4.5.1-full"
+moko-permissions = "0.18.0"
 
 # Config
 minSdk = "24"
@@ -96,6 +98,8 @@ ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktor" }
 ktor-server-cors = { module = "io.ktor:ktor-server-cors", version.ref = "ktor" }
 qrose = { module = "io.github.alexzhirkevich:qrose", version.ref = "qrose" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+yandex-maps-mobile = { module = "com.yandex.android:maps.mobile", version.ref = "yandex-maps" }
+moko-permissions-compose = { module = "dev.icerock.moko:permissions-compose", version.ref = "moko-permissions" }
 # Хранилище настроек
 multiplatform-settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "multiplatformSettings" }
 # Коррутины для настроек (опционально, но полезно)
@@ -120,3 +124,4 @@ ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
+kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }

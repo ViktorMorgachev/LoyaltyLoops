@@ -30,6 +30,7 @@ enum class AppErrorCode {
     BUSINESS_NOT_FOUND,
     POINT_NOT_FOUND,
     POINT_INACTIVE,
+    POINT_PAUSED,
     ALREADY_JOINED,
     INVALID_INVITE_CODE,
     

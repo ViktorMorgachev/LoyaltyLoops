@@ -25,6 +25,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import io.loyaltyloop.app.features.join.*
 import io.loyaltyloop.app.features.profile.components.LogoutButton
 import io.loyaltyloop.app.features.profile.components.ProfileHeader
 import io.loyaltyloop.app.features.profile.components.SectionTitle
@@ -62,19 +63,12 @@ class ProfileScreen : Screen {
 
             viewModel.events.collect { event ->
                 when (event) {
-                    is ProfileScreenModel.Event.NavigateToSplash -> {
-                        navigator.replaceAll(SplashScreen())
-                    }
-                    is ProfileScreenModel.Event.NavigateToJoinCompany -> {
-                        navigator.push(io.loyaltyloop.app.features.join.JoinCompanyScreen())
-                    }
-                    // ОБРАБОТКА ОШИБОК
-                    is ProfileScreenModel.Event.ShowMessage -> {
-                        launch { snackbarHostState.show(event.message, event.type) }
-                    }
-                    is ProfileScreenModel.Event.NavigateToWeb -> {
-                        navigator.push(WebPortalScreen(event.url, event.headers))
-                    }
+                    is ProfileScreenModel.Event.NavigateToSplash -> navigator.replaceAll(SplashScreen())
+                    is ProfileScreenModel.Event.NavigateToJoinCompany -> navigator.push(JoinCompanyScreen())
+                    is ProfileScreenModel.Event.ShowMessage -> launch { snackbarHostState.show(event.message, event.type) }
+                    is ProfileScreenModel.Event.NavigateToWeb -> navigator.push(WebPortalScreen(event.url, event.headers))
+                    ProfileScreenModel.Event.ShowLanguageDialog -> showLanguageDialog = true
+                    ProfileScreenModel.Event.ShowAboutDialog -> showAboutDialog = true
                 }
             }
         }
@@ -170,7 +164,7 @@ class ProfileScreen : Screen {
                                 value = languageLabel,
                                 onClick = {
                                     pendingLanguage = state.languageCode
-                                    showLanguageDialog = true
+                                    viewModel.onAction(ProfileScreenModel.Action.OnLanguageClicked)
                                 }
                             )
                             HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f))
@@ -233,6 +227,7 @@ class ProfileScreen : Screen {
     }
 }
 
+// ... Остальной код (LanguageOption, Dialogs) без изменений ...
 private data class LanguageOption(val code: String, val labelRes: StringResource)
 
 private val languageOptions = listOf(

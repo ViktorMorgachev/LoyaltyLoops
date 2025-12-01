@@ -14,6 +14,7 @@ object TradingPointsTable : Table("trading_points") {
     val inviteCode = varchar("invite_code", 20).nullable().uniqueIndex()
 
     val isActive = bool("is_active").default(false) // Оплачено?
+    val isTemporarilyPaused = bool("is_temporarily_paused").default(false)
 
 
     // --- НОВЫЕ ПОЛЯ ---
@@ -21,6 +22,13 @@ object TradingPointsTable : Table("trading_points") {
     val latitude = double("latitude").nullable()
     val longitude = double("longitude").nullable()
     val currency = varchar("currency", 10)
+    val workingHoursJson = text("working_hours_json").nullable()
+    val rating = double("rating").default(0.0)
+    val ratingCount = integer("rating_count").default(0)
+
+    val contactPhone = varchar("contact_phone", 30).nullable()
+    val contactLink = varchar("contact_link", 50).nullable()
+    val additionalInfo = varchar("additional_info", 20).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }

@@ -1,6 +1,7 @@
 package io.loyaltyloop.app
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -14,6 +15,7 @@ import co.touchlab.kermit.Logger
 import io.loyaltyloop.app.navigation.NavigatorHolder
 import io.loyaltyloop.app.features.wallet.LoyaltyCardDetailsScreen
 import io.loyaltyloop.app.services.LoyaltyFirebaseMessagingService
+import io.loyaltyloop.app.utils.LocaleManager
 import io.loyaltyloop.shared.config.AppConfig
 
 class MainActivity : ComponentActivity() {
@@ -27,11 +29,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         handleNotificationIntent(intent)
 
-        requestNotificationPermissionIfNeeded()
-
         setContent {
             App()
         }
+    }
+
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("loyalty_prefs", Context.MODE_PRIVATE)
+        val lang = prefs.getString("app_language", "ru") ?: "ru" // "ru" - дефолт
+
+        val context = LocaleManager.applyLocale(newBase, lang)
+        super.attachBaseContext(context)
     }
 
     override fun onNewIntent(intent: Intent) {

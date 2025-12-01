@@ -1,0 +1,18 @@
+package io.loyaltyloop.app.utils
+
+import android.content.Context
+import android.content.res.Configuration
+import java.util.Locale
+
+object LocaleManager {
+    fun applyLocale(context: Context, languageCode: String): Context {
+        val locale = Locale(languageCode)
+        Locale.setDefault(locale)
+
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(locale)
+
+        // Для новых версий Android создаем новый контекст
+        return context.createConfigurationContext(config)
+    }
+}

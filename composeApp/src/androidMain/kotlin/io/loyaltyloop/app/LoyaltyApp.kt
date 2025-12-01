@@ -9,6 +9,8 @@ import org.koin.core.context.startKoin
 import co.touchlab.kermit.LogcatWriter
 import co.touchlab.kermit.Logger
 import co.touchlab.kermit.Severity
+import com.yandex.mapkit.MapKitFactory
+import io.loyaltyloop.app.config.MAP_API_KEY
 import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.shared.config.AppConfig
 import kotlinx.coroutines.CoroutineScope
@@ -29,6 +31,9 @@ class LoyaltyApp : Application() {
 
         // 2. ВАЖНО: Разрешаем писать ВСЕ логи (даже самые мелкие)
         Logger.setMinSeverity(Severity.Verbose)
+
+        MapKitFactory.setApiKey(MAP_API_KEY)
+        MapKitFactory.initialize(this)
 
         // Запускаем DI
         startKoin {
