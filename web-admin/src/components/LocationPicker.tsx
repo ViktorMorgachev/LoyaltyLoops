@@ -1,65 +1,96 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
-import { LatLngExpression } from 'leaflet';
-import 'leaflet/dist/leaflet.css';
-// Fix for Leaflet icons in React
-import L from 'leaflet';
-// @ts-ignore
-import icon from 'leaflet/dist/images/marker-icon.png';
-// @ts-ignore
-import iconShadow from 'leaflet/dist/images/marker-shadow.png';
-
-let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
-});
-L.Marker.prototype.options.icon = DefaultIcon;
+import React, { useCallback, useMemo, useState } from 'react';
+import { Alert } from '@mui/material';
+import { YandexMap } from './map/YandexMap';
+import type { MapPoint } from './map/YandexMap';
+import { useAppConfig } from '../context/ConfigContext';
 
 interface LocationPickerProps {
     initialLat?: number;
     initialLng?: number;
-    onLocationChange: (lat: number, lng: number) => void;
+    onLocationChange?: (lat: number, lng: number) => void;
     height?: number;
+    interactive?: boolean;
+    radiusMeters?: number;
+    markerLabel?: string;
 }
 
-const LocationMarker = ({ position, setPosition, onChange }: any) => {
-    useMapEvents({
-        click(e) {
-            setPosition(e.latlng);
-            onChange(e.latlng.lat, e.latlng.lng);
-        },
+const DEFAULT_CENTER: [number, number] = [42.8746, 74.5698];
+
+export const LocationPicker: React.FC<LocationPickerProps> = ({
+    initialLat,
+    initialLng,
+    onLocationChange,
+    height = 320,
+    interactive = true,
+    radiusMeters,
+    markerLabel,
+}) => {
+    const { config } = useAppConfig();
+    const fallbackKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+    const [overrideCoords, setOverrideCoords] = useState<[number, number] | null>(() => {
+        if (typeof initialLat === 'number' && typeof initialLng === 'number') {
+            return [initialLat, initialLng];
+        }
+        return null;
     });
 
-    return position === null ? null : (
-        <Marker position={position}></Marker>
-    );
-}
-
-export const LocationPicker: React.FC<LocationPickerProps> = ({ initialLat, initialLng, onLocationChange, height = 300 }) => {
-    // Default to Bishkek center if none provided
-    const defaultCenter: LatLngExpression = [42.8746, 74.5698]; 
-    const center = (initialLat && initialLng) ? [initialLat, initialLng] as LatLngExpression : defaultCenter;
-    
-    const [position, setPosition] = useState<LatLngExpression | null>(
-        (initialLat && initialLng) ? [initialLat, initialLng] as LatLngExpression : null
-    );
-
-    useEffect(() => {
-         if (initialLat && initialLng) {
-             setPosition([initialLat, initialLng]);
-         }
+    const initialCoords = useMemo<[number, number] | null>(() => {
+        if (
+            typeof initialLat === 'number' &&
+            !Number.isNaN(initialLat) &&
+            typeof initialLng === 'number' &&
+            !Number.isNaN(initialLng)
+        ) {
+            return [initialLat, initialLng];
+        }
+        return null;
     }, [initialLat, initialLng]);
 
+    const displayCoords = overrideCoords ?? initialCoords;
+
+    const center = useMemo<[number, number]>(() => {
+        if (displayCoords) return displayCoords;
+        return DEFAULT_CENTER;
+    }, [displayCoords]);
+
+    const markers: MapPoint[] = useMemo(() => {
+        if (!displayCoords) return [];
+        return [
+            {
+                id: 'selected-point',
+                coordinates: displayCoords,
+                active: true,
+                label: markerLabel ?? 'Торговая точка',
+            },
+        ];
+    }, [displayCoords, markerLabel]);
+
+    const handleMapClick = useCallback(
+        (lat: number, lng: number) => {
+            if (!interactive) return;
+            setOverrideCoords([lat, lng]);
+            onLocationChange?.(lat, lng);
+        },
+        [interactive, onLocationChange]
+    );
+
+    if (!fallbackKey) {
+        return (
+            <Alert severity="warning">
+                Ключ Yandex Maps не задан. Добавьте его в конфиг сервера или установите <code>VITE_YMAPS_API_KEY</code>.
+            </Alert>
+        );
+    }
+
     return (
-        <MapContainer center={center} zoom={13} style={{ height: `${height}px`, width: '100%', borderRadius: '8px', marginTop: '10px' }}>
-            <TileLayer
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; OpenStreetMap contributors'
-            />
-            <LocationMarker position={position} setPosition={setPosition} onChange={onLocationChange} />
-        </MapContainer>
+        <YandexMap
+            apiKey={fallbackKey}
+            center={center}
+            markers={markers}
+            onMapClick={handleMapClick}
+            interactive={interactive}
+            height={height}
+            radiusMeters={radiusMeters}
+        />
     );
 };
-

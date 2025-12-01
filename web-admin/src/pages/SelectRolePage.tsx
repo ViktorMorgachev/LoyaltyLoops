@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { Container, Typography, Paper, List, ListItem, ListItemButton, ListItemText, ListItemAvatar, Avatar } from '@mui/material';
 import { Store as StoreIcon, AdminPanelSettings as AdminIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';

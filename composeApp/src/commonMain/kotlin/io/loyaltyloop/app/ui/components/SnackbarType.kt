@@ -75,12 +75,7 @@ fun LoyaltySnackbar(snackbarData: SnackbarData) {
     Snackbar(
         snackbarData = snackbarData,
         modifier = Modifier
-            .fillMaxWidth()
-            .shadow(
-                elevation = 12.dp,
-                shape = RoundedCornerShape(18.dp),
-                clip = false
-            ),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(18.dp),
         containerColor = backgroundColor,
         contentColor = contentColor,

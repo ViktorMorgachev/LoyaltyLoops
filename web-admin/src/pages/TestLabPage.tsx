@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Alert,
   Box,
   Button,
   Divider,
-  Grid,
   MenuItem,
   Paper,
   Stack,
@@ -222,9 +221,12 @@ export const TestLabPage: React.FC = () => {
         {t('test_lab.subtitle')}
       </Typography>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+      <Box
+        display="grid"
+        gridTemplateColumns={{ xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }}
+        gap={3}
+      >
+        <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6">{t('test_lab.delete_user_title')}</Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('test_lab.delete_user_desc')}
@@ -245,11 +247,9 @@ export const TestLabPage: React.FC = () => {
                 {t('test_lab.delete_user_btn')}
               </Button>
             </Stack>
-          </Paper>
-        </Grid>
+        </Paper>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+        <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6">{t('test_lab.delete_card_title')}</Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('test_lab.delete_card_desc')}
@@ -270,11 +270,9 @@ export const TestLabPage: React.FC = () => {
                 {t('test_lab.delete_card_btn')}
               </Button>
             </Stack>
-          </Paper>
-        </Grid>
+        </Paper>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+        <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6">{t('test_lab.push_title')}</Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('test_lab.push_desc')}
@@ -283,10 +281,8 @@ export const TestLabPage: React.FC = () => {
               {t('test_lab.push_btn')}
             </Button>
           </Paper>
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+        <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6">{t('test_lab.card_mutation_title')}</Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('test_lab.card_mutation_desc')}
@@ -385,10 +381,8 @@ export const TestLabPage: React.FC = () => {
               </Button>
             </Stack>
           </Paper>
-        </Grid>
 
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ p: 3, height: '100%' }}>
+        <Paper sx={{ p: 3, height: '100%' }}>
             <Typography variant="h6">{t('test_lab.event_title')}</Typography>
             <Typography variant="body2" color="text.secondary" mb={2}>
               {t('test_lab.event_desc')}
@@ -438,19 +432,21 @@ export const TestLabPage: React.FC = () => {
                 {t('test_lab.event_btn')}
               </Button>
             </Stack>
-          </Paper>
-        </Grid>
+        </Paper>
 
-        <Grid item xs={12}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6" gutterBottom>{t('test_lab.log_title')}</Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box component="pre" sx={{ maxHeight: 240, overflowY: 'auto', m: 0 }}>
-              {logs.length === 0 ? t('test_lab.log_empty') : logs.join('\n')}
-            </Box>
-          </Paper>
-        </Grid>
-      </Grid>
+        <Paper
+          sx={{
+            p: 3,
+            gridColumn: { md: 'span 2' }
+          }}
+        >
+          <Typography variant="h6" gutterBottom>{t('test_lab.log_title')}</Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Box component="pre" sx={{ maxHeight: 240, overflowY: 'auto', m: 0 }}>
+            {logs.length === 0 ? t('test_lab.log_empty') : logs.join('\n')}
+          </Box>
+        </Paper>
+      </Box>
     </Box>
   );
 };

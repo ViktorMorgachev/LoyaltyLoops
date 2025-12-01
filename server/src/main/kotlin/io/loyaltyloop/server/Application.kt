@@ -31,6 +31,7 @@ import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.routes.testSupportRoutes
+import io.loyaltyloop.server.routes.publicRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
@@ -79,6 +80,8 @@ fun Application.module() {
         // Разрешаем только наш фиксированный порт
         allowHost("localhost:3000", schemes = listOf("http", "https"))
         allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
+        allowHost("localhost:5173", schemes = listOf("http", "https"))
+        allowHost("127.0.0.1:5173", schemes = listOf("http", "https"))
     }
 
     install(WebSockets) {
@@ -243,6 +246,10 @@ fun Application.module() {
         }
 
         // Подключаем наши новые маршруты
+        publicRoutes(
+            applicationConfig = environment!!.config,
+            partnerRepository = partnerRepository
+        )
         authRoutes(userRepository, partnerRepository, tokenService, otpService)
         clientRoutes(userRepository, deviceTokenRepository)
         terminalRoutes(userRepository = userRepository, transactionService = transactionService)

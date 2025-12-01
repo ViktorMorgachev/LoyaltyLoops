@@ -11,10 +11,12 @@ export interface AnalyticsResponse {
     chartData: RevenueChartPoint[];
 }
 
-export enum AnalyticsPeriod {
-    WEEK = 'WEEK',
-    MONTH = 'MONTH',
-    SIX_MONTHS = 'SIX_MONTHS',
-    YEAR = 'YEAR'
-}
+export const AnalyticsPeriod = {
+    WEEK: 'WEEK',
+    MONTH: 'MONTH',
+    SIX_MONTHS: 'SIX_MONTHS',
+    YEAR: 'YEAR',
+} as const;
+
+export type AnalyticsPeriod = (typeof AnalyticsPeriod)[keyof typeof AnalyticsPeriod];
 

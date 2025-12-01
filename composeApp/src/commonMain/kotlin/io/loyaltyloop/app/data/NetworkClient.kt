@@ -78,7 +78,12 @@ object NetworkClient {
 
                     // Б. Логика обновления, если пришел 401
                     refreshTokens {
-                        val refreshToken = tokenStorage.getRefreshToken().orEmpty()
+                        val refreshToken = tokenStorage.getRefreshToken()
+
+                        if (refreshToken.isNullOrBlank()){
+                            return@refreshTokens null
+                        }
+
 
                         netLog.write("Attempting to refresh token...${refreshToken.takeLast(8)}", LogType.Debug)
 

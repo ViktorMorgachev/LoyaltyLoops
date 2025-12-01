@@ -50,7 +50,12 @@ data class UpdateTradingPointRequest(
     val latitude: Double,
     val longitude: Double,
     val currency: String = "KGS",
-    val settings: UpdateLoyaltySettingsRequest
+    val settings: UpdateLoyaltySettingsRequest,
+    val schedule: WeeklyScheduleDto? = null,
+    val temporarilyPaused: Boolean = false,
+    val contactPhone: String? = null,
+    val contactLink: String? = null,
+    val additionalInfo: String? = null
 )
 
 @Serializable

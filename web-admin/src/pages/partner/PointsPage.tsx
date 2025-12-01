@@ -13,8 +13,9 @@ import { getErrorMessage } from '../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
 import { LocationPicker } from '../../components/LocationPicker';
 import SearchIcon from '@mui/icons-material/Search';
-import { IconButton } from '@mui/material';
 import { useUser } from '../../context/UserContext';
+import { useAppConfig } from '../../context/ConfigContext';
+import { geocodeAddress, reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 
 export const PointsPage = () => {
   const { t } = useTranslation();
@@ -22,6 +23,8 @@ export const PointsPage = () => {
   const navigate = useNavigate();
   const { currentWorkspace } = useUser();
   const canManage = currentWorkspace?.role === 'PARTNER_ADMIN';
+  const { config } = useAppConfig();
+  const mapApiKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
 
   const [points, setPoints] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
@@ -31,6 +34,9 @@ export const PointsPage = () => {
   const [address, setAddress] = useState('');
   const [latitude, setLatitude] = useState<string>('');
   const [longitude, setLongitude] = useState<string>('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [contactLink, setContactLink] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
   const countryOptions = React.useMemo(() => ([
     { code: 'KG', currency: 'KGS', label: t('countries.KG') },
     { code: 'KZ', currency: 'KZT', label: t('countries.KZ') },
@@ -47,7 +53,6 @@ export const PointsPage = () => {
   const [mapSearch, setMapSearch] = useState('');
   const [tempCoords, setTempCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [tempAddress, setTempAddress] = useState('');
-  const [mapSeed, setMapSeed] = useState(0);
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
 
   useEffect(() => {
@@ -78,46 +83,7 @@ export const PointsPage = () => {
     }
   };
 
-  const handleMapSelection = async (lat: number, lng: number) => {
-    setLatitude(lat.toString());
-    setLongitude(lng.toString());
-
-    try {
-      const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-      const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
-      if (response.ok) {
-        const data = await response.json();
-        if (data?.display_name) {
-          setAddress(data.display_name);
-        }
-      }
-    } catch (error) {
-      console.warn('Geocoding error', error);
-    }
-  };
-
-  const openLocationDialog = () => {
-    setLocationDialogOpen(true);
-    if (latitude && longitude) {
-      const lat = parseFloat(latitude);
-      const lng = parseFloat(longitude);
-      if (!isNaN(lat) && !isNaN(lng)) {
-        setTempCoords({ lat, lng });
-        setMapSeed(prev => prev + 1);
-      }
-    } else {
-      setTempCoords(null);
-      setMapSeed(prev => prev + 1);
-    }
-    setTempAddress(address);
-    setMapSearch(address);
-  };
-
-  const closeLocationDialog = () => {
-    setLocationDialogOpen(false);
-  };
-
-  const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
+  const reverseGeocodeFallback = async (lat: number, lng: number): Promise<string | null> => {
     try {
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
       const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
@@ -133,16 +99,9 @@ export const PointsPage = () => {
     return null;
   };
 
-  const handleMapLocationChange = async (lat: number, lng: number) => {
-    setTempCoords({ lat, lng });
-    const addr = await reverseGeocode(lat, lng);
-    if (addr) setTempAddress(addr);
-  };
-
-  const handleAddressSearch = async () => {
-    if (!mapSearch.trim()) return;
+  const geocodeAddressFallback = async (query: string): Promise<{ lat: number; lng: number; address: string } | null> => {
     try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(mapSearch)}&format=json&limit=1`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
       const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
       if (response.ok) {
         const data = await response.json();
@@ -150,13 +109,75 @@ export const PointsPage = () => {
           const lat = parseFloat(data[0].lat);
           const lng = parseFloat(data[0].lon);
           if (!isNaN(lat) && !isNaN(lng)) {
-            setTempCoords({ lat, lng });
-            setTempAddress(data[0].display_name || mapSearch);
-            setMapSeed(prev => prev + 1);
+            return {
+              lat,
+              lng,
+              address: data[0].display_name || query,
+            };
           }
-        } else {
-          showError(t('point_details.search_not_found', 'Nothing found for this query'));
         }
+      }
+    } catch (error) {
+      console.warn('Geocoding error', error);
+    }
+    return null;
+  };
+
+  const resolveAddress = React.useCallback(
+    async (lat: number, lng: number): Promise<string | null> => {
+      if (mapApiKey) {
+        const address = await reverseGeocodeYandex(mapApiKey, lat, lng);
+        if (address) return address;
+      }
+      return reverseGeocodeFallback(lat, lng);
+    },
+    [mapApiKey]
+  );
+
+  const openLocationDialog = () => {
+    setLocationDialogOpen(true);
+    if (latitude && longitude) {
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        setTempCoords({ lat, lng });
+      }
+    } else {
+      setTempCoords(null);
+    }
+    setTempAddress(address);
+    setMapSearch(address);
+  };
+
+  const closeLocationDialog = () => {
+    setLocationDialogOpen(false);
+  };
+
+  const handleMapLocationChange = React.useCallback(
+    async (lat: number, lng: number) => {
+      setTempCoords({ lat, lng });
+      const addr = await resolveAddress(lat, lng);
+      if (addr) setTempAddress(addr);
+    },
+    [resolveAddress]
+  );
+
+  const handleAddressSearch = async () => {
+    if (!mapSearch.trim()) return;
+    try {
+      let result: { lat: number; lng: number; address?: string } | null = null;
+      if (mapApiKey) {
+        result = await geocodeAddress(mapApiKey, mapSearch.trim());
+      }
+      if (!result) {
+        result = await geocodeAddressFallback(mapSearch.trim());
+      }
+
+      if (result) {
+        setTempCoords({ lat: result.lat, lng: result.lng });
+        setTempAddress(result.address || mapSearch.trim());
+      } else {
+        showError(t('point_details.search_not_found', 'Nothing found for this query'));
       }
     } catch (error) {
       showError(t('point_details.search_error', 'Failed to search address'));
@@ -202,6 +223,10 @@ export const PointsPage = () => {
 
       const visitsGoal = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
       const visitTargetForPayload = (strategy === 'VISIT_COUNTER' || strategy === 'HYBRID') ? visitsGoal : undefined;
+      const trimmedPhone = contactPhone.trim();
+      const trimmedLink = contactLink.trim();
+      const trimmedInfo = additionalInfo.trim().slice(0, 20);
+
       const payload = {
         name,
         type,
@@ -212,6 +237,9 @@ export const PointsPage = () => {
         programType: strategy,
         baseCashback: isTiered ? baseCashbackValue : 0,
         awardOnMixedPayment,
+        contactPhone: trimmedPhone || undefined,
+        contactLink: trimmedLink || undefined,
+        additionalInfo: trimmedInfo ? trimmedInfo : undefined,
         ...(visitTargetForPayload !== undefined ? { visitsTarget: visitTargetForPayload } : {})
       };
 
@@ -223,6 +251,9 @@ export const PointsPage = () => {
       setLatitude('');
       setLongitude('');
       setAwardOnMixedPayment(false);
+      setContactPhone('');
+      setContactLink('');
+      setAdditionalInfo('');
       showSuccess(t('common.create') + " OK");
       loadPoints();
     } catch (e: any) {
@@ -317,6 +348,32 @@ export const PointsPage = () => {
               label={t('point_details.address_label')}
               fullWidth value={address} onChange={e => setAddress(e.target.value)} sx={{ mt: 1 }}
           />
+        <TextField
+            label={t('point_details.contact_phone_label')}
+            fullWidth
+            value={contactPhone}
+            onChange={(e) => setContactPhone(e.target.value)}
+            sx={{ mt: 1 }}
+            inputProps={{ maxLength: 30, inputMode: 'tel' }}
+        />
+        <TextField
+            label={t('point_details.contact_link_label')}
+            fullWidth
+            value={contactLink}
+            onChange={(e) => setContactLink(e.target.value)}
+            helperText={t('point_details.contact_link_hint')}
+            sx={{ mt: 1 }}
+            inputProps={{ maxLength: 80 }}
+        />
+        <TextField
+            label={t('point_details.additional_info_label')}
+            fullWidth
+            value={additionalInfo}
+            onChange={(e) => setAdditionalInfo(e.target.value)}
+            helperText={`${t('point_details.additional_info_hint')} (${additionalInfo.length}/20)`}
+            sx={{ mt: 1 }}
+            inputProps={{ maxLength: 20 }}
+        />
           <Box mt={1} display="flex" flexDirection="column" gap={1}>
               <Button variant="outlined" onClick={openLocationDialog}>
                   {latitude && longitude ? t('point_details.edit_on_map', 'Edit on map') : t('point_details.select_on_map', 'Select on map')}
@@ -436,7 +493,7 @@ export const PointsPage = () => {
                 {t('point_details.map_hint', 'Click on the map to set coordinates. You can edit the address manually afterwards.')}
             </Typography>
             <LocationPicker
-                key={mapSeed}
+                key={`${tempCoords?.lat ?? latitude ?? 'no-lat'}-${tempCoords?.lng ?? longitude ?? 'no-lng'}`}
                 initialLat={tempCoords?.lat ?? (latitude ? parseFloat(latitude) : undefined)}
                 initialLng={tempCoords?.lng ?? (longitude ? parseFloat(longitude) : undefined)}
                 onLocationChange={handleMapLocationChange}

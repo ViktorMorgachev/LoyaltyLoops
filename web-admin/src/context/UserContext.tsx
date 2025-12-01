@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { api } from '../api/axiosConfig';
 import i18n from '../i18n';
 
@@ -37,15 +38,6 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [currentWorkspace, setCurrentWorkspace] = useState<Workspace | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const PIN_BYPASS_ROLES = new Set([
-    'PARTNER_ADMIN',
-    'PLATFORM_SUPER_ADMIN',
-    'PLATFORM_MANAGER'
-  ]);
-
-  const canBypassPin = (ws?: Workspace | null) =>
-    !!ws && (!ws.requirePin || PIN_BYPASS_ROLES.has(ws.role));
 
   useEffect(() => {
     refreshUser();

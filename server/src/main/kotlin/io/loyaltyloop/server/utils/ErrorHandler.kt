@@ -28,6 +28,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.ACCOUNT_FROZEN,
                 AppErrorCode.CARD_BLOCKED,
                 AppErrorCode.CARD_PAUSED,
+                AppErrorCode.POINT_PAUSED,
                 AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.CODE_EXPIRED,
                 AppErrorCode.INVALID_PIN -> HttpStatusCode.Forbidden

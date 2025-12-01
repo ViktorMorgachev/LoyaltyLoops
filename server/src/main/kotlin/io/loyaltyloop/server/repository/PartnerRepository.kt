@@ -24,11 +24,17 @@ import io.loyaltyloop.shared.models.LoyaltyTierDto
 import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.TradingPointDto
+import io.loyaltyloop.shared.models.TradingPointSearchResponse
+import io.loyaltyloop.shared.models.TradingPointType
 import io.loyaltyloop.shared.models.UpdatePartnerRequest
 import io.loyaltyloop.shared.models.UpdateTradingPointRequest
 import io.loyaltyloop.shared.models.PartnerStatsDto
+import io.loyaltyloop.shared.models.WeeklyScheduleDto
 import org.jetbrains.exposed.sql.JoinType
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
@@ -40,10 +46,15 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.sum
 import org.jetbrains.exposed.sql.count
 import org.jetbrains.exposed.sql.Op
+import java.time.Instant
 import java.util.UUID
 import kotlin.jvm.Throws
+import io.loyaltyloop.server.utils.haversineMeters
+import io.loyaltyloop.server.utils.isOpen
 
 class PartnerRepository {
+
+    private val scheduleJson = Json { ignoreUnknownKeys = true }
 
     suspend fun createPartner(userID: String, request: CreatePartnerRequest): String = dbQuery {
         val alreadyExists = PartnersTable.selectAll().where { PartnersTable.ownerId eq userID }.count() > 0
@@ -141,6 +152,47 @@ class PartnerRepository {
             .singleOrNull() ?: throw LoyaltyException(AppErrorCode.POINT_NOT_FOUND)
     }
 
+    suspend fun searchPublicPoints(criteria: TradingPointSearchCriteria): TradingPointSearchResponse = dbQuery {
+        val now = Instant.now()
+        val baseQuery = TradingPointsTable
+            .join(PartnersTable, JoinType.INNER, TradingPointsTable.partnerId, PartnersTable.id)
+            .select {
+                (TradingPointsTable.isActive eq true) and (PartnersTable.status eq PartnerStatus.ACTIVE)
+            }
+
+        val filtered = baseQuery.mapNotNull { row ->
+            val lat = row[TradingPointsTable.latitude] ?: return@mapNotNull null
+            val lon = row[TradingPointsTable.longitude] ?: return@mapNotNull null
+            val distance = haversineMeters(criteria.latitude, criteria.longitude, lat, lon)
+            if (distance > criteria.radiusMeters) return@mapNotNull null
+
+            val schedule = row.parseSchedule()
+            val paused = row[TradingPointsTable.isTemporarilyPaused]
+            val isOpenNow = if (paused) false else schedule?.isOpen(now)
+            val dto = mapTradingPointEntity(
+                row = row,
+                schedule = schedule,
+                distanceMeters = distance,
+                isOpenNow = isOpenNow
+            )
+
+            if (!criteria.matches(dto)) return@mapNotNull null
+            dto
+        }.sortedBy { it.distanceMeters ?: Double.MAX_VALUE }
+
+        val limited = filtered.take(criteria.limit + 1)
+        val hasMore = limited.size > criteria.limit
+        val finalList = if (hasMore) limited.dropLast(1) else limited
+
+        TradingPointSearchResponse(
+            points = finalList,
+            total = finalList.size,
+            radiusMeters = criteria.radiusMeters,
+            limit = criteria.limit,
+            hasMore = hasMore
+        )
+    }
+
     // --- СОЗДАНИЕ ТОЧКИ (Исправлено) ---
     suspend fun createTradingPoint(
         partnerId: String,
@@ -157,6 +209,11 @@ class PartnerRepository {
             it[this.longitude] = request.longitude
             it[this.currency] = request.currency.name
             it[this.inviteCode] = generateUniqueInviteCode()
+            it[this.workingHoursJson] = request.schedule?.let { scheduleJson.encodeToString<WeeklyScheduleDto>(it) }
+            it[this.isTemporarilyPaused] = request.temporarilyPaused
+            it[this.contactPhone] = request.contactPhone
+            it[this.contactLink] = request.contactLink
+            it[this.additionalInfo] = request.additionalInfo
 
             // По умолчанию точка НЕ АКТИВНА (ждет оплаты)
             it[this.isActive] = false
@@ -216,7 +273,12 @@ class PartnerRepository {
         ownerPhone = null
     )
 
-    private fun mapTradingPointEntity(row: ResultRow) = TradingPointDto(
+    private fun mapTradingPointEntity(
+        row: ResultRow,
+        schedule: WeeklyScheduleDto? = row.parseSchedule(),
+        distanceMeters: Double? = null,
+        isOpenNow: Boolean? = null
+    ) = TradingPointDto(
         id = row[TradingPointsTable.id],
         name = row[TradingPointsTable.name],
         address = row[TradingPointsTable.address],
@@ -225,8 +287,22 @@ class PartnerRepository {
         longitude = row[TradingPointsTable.longitude],
         active = row[TradingPointsTable.isActive],
         inviteCode = row[TradingPointsTable.inviteCode],
-        currency = row[TradingPointsTable.currency]
+        currency = row[TradingPointsTable.currency],
+        schedule = schedule,
+        rating = row[TradingPointsTable.rating],
+        reviewCount = row[TradingPointsTable.ratingCount],
+        distanceMeters = distanceMeters,
+        isOpenNow = isOpenNow,
+        temporarilyPaused = row[TradingPointsTable.isTemporarilyPaused],
+        contactPhone = row[TradingPointsTable.contactPhone],
+        contactLink = row[TradingPointsTable.contactLink],
+        additionalInfo = row[TradingPointsTable.additionalInfo]
     )
+
+    private fun ResultRow.parseSchedule(): WeeklyScheduleDto? {
+        val raw = this[TradingPointsTable.workingHoursJson] ?: return null
+        return runCatching { scheduleJson.decodeFromString<WeeklyScheduleDto>(raw) }.getOrNull()
+    }
 
     @Throws(LoyaltyException::class)
     suspend fun getSettingsByPointId(pointId: String): LoyaltySettingsDto = dbQuery {
@@ -390,6 +466,11 @@ class PartnerRepository {
             it[latitude] = request.latitude
             it[longitude] = request.longitude
             it[currency] = request.currency
+            it[workingHoursJson] = request.schedule?.let { scheduleJson.encodeToString<WeeklyScheduleDto>(it) }
+            it[isTemporarilyPaused] = request.temporarilyPaused
+            it[contactPhone] = request.contactPhone
+            it[contactLink] = request.contactLink
+            it[additionalInfo] = request.additionalInfo
         }
 
         val settingsReq = request.settings

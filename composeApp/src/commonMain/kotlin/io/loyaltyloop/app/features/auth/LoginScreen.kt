@@ -163,6 +163,7 @@ fun PhoneInputCard(
 
             OutlinedTextField(
                 value = state.phoneInput,
+                maxLines = 1,
                 onValueChange = { onAction(LoginScreenModel.Action.OnPhoneChanged(it)) },
                 leadingIcon = {
                     Row(

@@ -8,4 +8,7 @@ export default defineConfig({
      port: 3000,       // Жестко задаем порт
      strictPort: true, // Если порт 3000 занят — выдать ошибку, а не переходить на 3001
    }
+   esbuild: {
+       drop: mode === 'production' ? ['console', 'debugger'] : [],
+     },
  })

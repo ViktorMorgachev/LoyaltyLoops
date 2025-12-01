@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.kotlinSerialization) apply false
     alias(libs.plugins.sqlDelight) apply false
     alias(libs.plugins.detekt) apply false
+    alias(libs.plugins.kotlinCocoapods) apply false
 }
 
 allprojects {

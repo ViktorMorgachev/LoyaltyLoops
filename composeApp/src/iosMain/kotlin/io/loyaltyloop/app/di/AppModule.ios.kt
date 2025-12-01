@@ -12,6 +12,9 @@ import io.loyaltyloop.app.services.CardRealtimeService
 import io.loyaltyloop.app.services.DefaultCardRealtimeService
 import io.loyaltyloop.app.services.NoopPushService
 import io.loyaltyloop.app.services.PushService
+import io.loyaltyloop.app.utils.IosPlatformManager
+import io.loyaltyloop.app.utils.LocationService
+import io.loyaltyloop.app.utils.PlatformManager
 import org.koin.dsl.module
 import platform.Foundation.NSUserDefaults
 
@@ -30,7 +33,10 @@ actual val platformModule = module {
         )
     }
 
+    single<PlatformManager> { IosPlatformManager() }
+
     single<PushService> { NoopPushService() }
     single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
     single<AppRestarter> { IosAppRestarter() }
+    single { LocationService() }
 }

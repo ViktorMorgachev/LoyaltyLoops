@@ -11,6 +11,9 @@ import io.loyaltyloop.app.services.AndroidPushService
 import io.loyaltyloop.app.services.CardRealtimeService
 import io.loyaltyloop.app.services.DefaultCardRealtimeService
 import io.loyaltyloop.app.services.PushService
+import io.loyaltyloop.app.utils.AndroidPlatformManager
+import io.loyaltyloop.app.utils.LocationService
+import io.loyaltyloop.app.utils.PlatformManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
@@ -32,7 +35,10 @@ actual val platformModule = module {
         )
     }
 
+    single<PlatformManager> { AndroidPlatformManager(androidContext()) }
+
     single<PushService> { AndroidPushService(androidContext(), get(), get()) }
     single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
     single<AppRestarter> { AndroidAppRestarter(androidContext()) }
+    single { LocationService(androidContext()) }
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Container, Paper, Typography, Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
@@ -43,7 +43,7 @@ export const PartnerDashboardPage = () => {
         }
     };
 
-    const handlePeriodChange = (event: React.MouseEvent<HTMLElement>, newPeriod: AnalyticsPeriod | null) => {
+    const handlePeriodChange = (_event: React.MouseEvent<HTMLElement>, newPeriod: AnalyticsPeriod | null) => {
         if (newPeriod !== null) {
             setPeriod(newPeriod);
         }

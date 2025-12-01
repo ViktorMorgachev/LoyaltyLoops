@@ -42,6 +42,9 @@ class TransactionService(
         if (!point.active) {
             throw LoyaltyException(AppErrorCode.POINT_INACTIVE, "Trading point is inactive")
         }
+        if (point.temporarilyPaused) {
+            throw LoyaltyException(AppErrorCode.POINT_PAUSED, "Trading point temporarily paused")
+        }
 
         val partnerIdFromRepo = partnerRepository.getPartnerIdByPoint(request.tradingPointId)
 
@@ -134,6 +137,14 @@ class TransactionService(
             )
         }
 
+        val point = partnerRepository.getPointById(tradingPointId)
+        if (!point.active) {
+            throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
+        }
+        if (point.temporarilyPaused) {
+            throw LoyaltyException(AppErrorCode.POINT_PAUSED)
+        }
+
         val card = transactionRepository.getCardById(cardId)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
 
@@ -173,6 +184,9 @@ class TransactionService(
 
         if (!point.active) {
             throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
+        }
+        if (point.temporarilyPaused) {
+            throw LoyaltyException(AppErrorCode.POINT_PAUSED)
         }
 
         // 2. Получаем карту и проверяем валидность

@@ -3,7 +3,6 @@ package io.loyaltyloop.app.features.wallet
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.*
@@ -101,6 +100,7 @@ class WalletScreen : Screen {
                 snackbarHostState = snackbarHostState,
                 containerColor = MaterialTheme.colorScheme.background,
                 floatingActionButton = {
+                    // Показываем кнопку QR только если есть карты и не идет загрузка
                     if (!state.isLoading && state.cards.isNotEmpty()) {
                         ExtendedFloatingActionButton(
                             onClick = { openQrSheet() },
@@ -198,8 +198,13 @@ class WalletScreen : Screen {
 fun EmptyWalletView(
     onShowQrClicked: () -> Unit
 ) {
+    // ВАЖНО: Чтобы PullToRefresh работал на пустом экране,
+    // контент должен быть "скроллящимся", даже если он влезает в экран.
+    // Либо PullToRefreshBox должен это обрабатывать (в 1.3+ обрабатывает).
     Column(
-        modifier = Modifier.fillMaxSize().padding(32.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState } from 'react';
+import type { ReactNode } from 'react';
 // 1. УБРАЛИ AlertColor из импорта, оставили только компоненты
 import { Snackbar, Alert } from '@mui/material';
 
@@ -18,7 +19,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [message, setMessage] = useState('');
   const [severity, setSeverity] = useState<AlertColor>('info');
 
-  const handleClose = (event?: React.SyntheticEvent | Event, reason?: string) => {
+  const handleClose = (_event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') return;
     setOpen(false);
   };

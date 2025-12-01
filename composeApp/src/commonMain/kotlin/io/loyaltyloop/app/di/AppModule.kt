@@ -4,6 +4,7 @@ import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
 import io.loyaltyloop.app.features.join.JoinCompanyScreenModel
+import io.loyaltyloop.app.features.map.PointsMapScreenModel
 import io.loyaltyloop.app.features.onboarding.OnboardingScreenModel
 import io.loyaltyloop.app.features.profile.ProfileScreenModel
 import io.loyaltyloop.app.features.role.RoleSelectionScreenModel
@@ -42,7 +43,7 @@ val appModule = module {
     factory { OnboardingScreenModel(get(), get(), get()) }
     factory { RoleSelectionScreenModel(get()) }
     factory { WalletScreenModel(get(),get(), get()) }
-    factory { ProfileScreenModel(get(), get(), get(), get()) }
+    factory { ProfileScreenModel(get(), get(), get(), get(), get()) }
     factory { JoinCompanyScreenModel(get()) }
 
     factory { TerminalScreenModel(get(), get()) }
@@ -52,5 +53,6 @@ val appModule = module {
     factory { (calc: TransactionCalculationDto, tpId: String, cardId: String, strategy: TransactionStrategy) ->
         TransactionConfirmationScreenModel(calc, tpId, cardId, strategy, get())
     }
+    factory { PointsMapScreenModel(get(), get()) }
 
 }

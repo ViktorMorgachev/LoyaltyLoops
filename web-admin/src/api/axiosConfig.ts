@@ -4,8 +4,10 @@ import i18n from '../i18n';
 // Адрес твоего Ktor сервера
 // В продакшене он должен быть задан через переменную окружения VITE_API_URL
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export const API_BASE_URL = BASE_URL;
 export const WS_BASE_URL = BASE_URL.replace('http', 'ws');
+
 const resolveInitialLanguage = (): string => {
     if (typeof window !== 'undefined' && window.localStorage) {
         return localStorage.getItem('lang') || i18n.language || 'ru';
@@ -85,7 +87,7 @@ api.interceptors.request.use((config) => {
     }
     // Обновляем заголовок языка при каждом запросе (если пользователь сменил язык)
     config.headers['Accept-Language'] = i18n.language;
-    
+
     return config;
 }, (error) => {
     return Promise.reject(error);
@@ -96,16 +98,13 @@ api.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config || {};
-        if (process.env.NODE_ENV !== 'production') {
-            console.warn(
-                '[API] Error response',
-                {
-                    status: error.response?.status,
-                    code: error.response?.data?.code,
-                    url: originalRequest?.url,
-                }
-            );
-        }
+
+    logger.warn('[API] Error response',
+                                {
+                                    status: error.response?.status,
+                                    code: error.response?.data?.code,
+                                    url: originalRequest?.url,
+                                })
 
         // Локализация ошибок
         if (error.response?.data?.code) {
@@ -129,22 +128,16 @@ api.interceptors.response.use(
         if (canAttemptRefresh) {
             originalRequest._retry = true;
             try {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn('[API] Trying to refresh access token…');
-                }
+                logger.warn('[API] Trying to refresh access token…');
                 const newToken = await refreshAccessToken();
                 if (newToken) {
                     originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    if (process.env.NODE_ENV !== 'production') {
-                        console.warn('[API] Token refreshed, repeating request', originalRequest?.url);
-                    }
+                    console.warn('[API] Token refreshed, repeating request', originalRequest?.url);
                     return api(originalRequest);
                 }
             } catch (refreshError) {
-                if (process.env.NODE_ENV !== 'production') {
-                    console.warn('[API] Refresh failed, forcing logout');
-                }
+                console.warn('[API] Refresh failed, forcing logout');
                 performLogout();
                 return Promise.reject(refreshError);
             }

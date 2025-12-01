@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.googleServices)
+    alias(libs.plugins.kotlinCocoapods) // Плагин CocoaPods
 }
 
 kotlin {
@@ -18,21 +19,34 @@ kotlin {
         }
     }
 
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+    // 1. Просто объявляем цели (Targets)
+    // Убрали блок .binaries.framework, так как он настраивается ниже в cocoapods
+    iosX64()
+    iosArm64()
+    iosSimulatorArm64()
+
+    // 2. Настройка через CocoaPods
+    cocoapods {
+        summary = "LoyaltyLoop Shared Module"
+        homepage = "https://github.com/LoyaltyLoop"
+        version = "1.0" // Версия обязательна!
+
+        ios.deploymentTarget = "14.0"
+
+        framework {
             baseName = "LoyaltyLoop"
             isStatic = true
+            export(compose.components.resources)
+        }
+
+        // Подключение Yandex Maps
+        pod("YandexMapsMobile") {
+            version = "4.5.1-full"
+            extraOpts += listOf("-compiler-option", "-fmodules")
         }
     }
 
     sourceSets {
-        // --- ЗДЕСЬ МЫ УБРАЛИ getByName("main") ---
-        // KMP сам найдет ресурсы, не нужно их прописывать вручную здесь.
-
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.androidx.activity.compose)
@@ -44,10 +58,11 @@ kotlin {
             implementation(libs.kotlinx.coroutines.play.services)
             implementation(libs.process.phoenix)
 
-            // Движок превью (важно для отображения @Preview)
             implementation(compose.uiTooling)
 
-            // Ресурсы (важно для запуска на Android)
+            // Зависимость Яндекса для Android (нативная)
+            implementation(libs.yandex.maps.mobile)
+
             implementation(compose.components.resources)
         }
 
@@ -61,10 +76,8 @@ kotlin {
             implementation(compose.animation)
 
             implementation(libs.kermit)
-            // Основная библиотека ресурсов
             implementation(compose.components.resources)
             implementation(compose.materialIconsExtended)
-            // Аннотации для превью
             implementation(compose.components.uiToolingPreview)
 
             implementation(libs.voyager.navigator)
@@ -79,12 +92,14 @@ kotlin {
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.websocket)
 
-            implementation(libs.ktor.client.auth) // Для рефреша токенов
+            implementation(libs.ktor.client.auth)
             implementation(libs.multiplatform.settings)
             implementation(libs.qrose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kamel.image)
 
+            // Пермишены (Moko)
+            implementation(libs.moko.permissions.compose)
         }
 
         iosMain.dependencies {
@@ -103,9 +118,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+        // KMP ресурсы подхватят языки сами, но это полезно для Android манифеста
+        resConfigs("en", "ru", "be", "kk", "ky", "uz")
     }
-
-    // Если вдруг понадобятся специфичные Android настройки ресурсов,
-    // они пишутся здесь, в блоке android { sourceSets { ... } },
-    // но сейчас они нам НЕ НУЖНЫ.
 }
