@@ -1,0 +1,59 @@
+# --- System ---
+.DS_Store
+Thumbs.db
+
+# --- IDE (Android Studio, IntelliJ, Cursor) ---
+.idea/
+.cursor/
+*.iml
+*.iws
+*.ipr
+*.watch
+.vscode/
+
+# --- Gradle & Build ---
+.gradle/
+build/
+*/build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# --- Kotlin Multiplatform & Native ---
+.kotlin/
+*.cinteropLibraries
+*.cinteropLibraries.json
+kotlin-js-store/
+
+# --- Android ---
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.ap_
+
+# --- iOS ---
+iosApp/*.xcodeproj/project.xcworkspace/xcuserdata
+iosApp/*.xcodeproj/xcuserdata
+iosApp/Pods/
+iosApp/DerivedData/
+*.xcworkspace
+!iosApp/*.xcworkspace/contents.xcworkspacedata
+
+# --- Web (если есть node_modules) ---
+node_modules/
+**/node_modules/
+dist/
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# --- Docker ---
+# Обычно docker-compose.yml мы КОММИТИМ, но если там пароли — добавь его сюда.
+# Если пароли вынесены в .env, то игнорируем только .env:
+.env
+
+# --- Vite & Web Cache ---
+.vite/
+**/.vite/
