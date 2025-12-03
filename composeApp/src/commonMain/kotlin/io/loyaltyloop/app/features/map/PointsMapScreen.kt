@@ -49,6 +49,7 @@ import io.loyaltyloop.shared.models.TradingPointType
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.ui.graphics.graphicsLayer
+import io.loyaltyloop.app.ui.components.map.formatDistance
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.*
 
@@ -129,6 +130,7 @@ class PointsMapScreen : Screen {
 
         var showRationaleDialog by remember { mutableStateOf(false) }
         var showSettingsDialog by remember { mutableStateOf(false) }
+        var showRadiusMenu by remember { mutableStateOf(false) }
 
         val requestLocationPermission = remember {
             suspend {
@@ -331,6 +333,16 @@ class PointsMapScreen : Screen {
                             }
                             item {
                                 FilterChip(
+                                    selected = true, // Всегда активен, так как радиус есть всегда
+                                    onClick = { showRadiusMenu = true },
+                                    label = { Text("Радиус: ${formatDistance(state.radiusMeters)}") },
+                                    trailingIcon = { Icon(Icons.Default.KeyboardArrowDown, null, modifier = Modifier.size(16.dp)) },
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = FilterChipDefaults.filterChipColors(containerColor = MaterialTheme.colorScheme.surface)
+                                )
+                            }
+                            item {
+                                FilterChip(
                                     selected = state.openNow,
                                     onClick = { viewModel.onOpenNowChanged(!state.openNow) },
                                     label = { Text(stringResource(Res.string.map_filter_open)) },
@@ -450,6 +462,61 @@ class PointsMapScreen : Screen {
                     }
                 }
             }
+
+            if (showRadiusMenu) {
+                ModalBottomSheet(
+                    onDismissRequest = { showRadiusMenu = false },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                            // Учитываем отступ снизу для навигации
+                            .padding(bottom = 24.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())
+                    ) {
+                        Text(
+                            text = "Радиус поиска",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        Text(
+                            text = formatDistance(state.radiusMeters),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+
+                        Slider(
+                            value = state.radiusMeters.toFloat(),
+                            onValueChange = { viewModel.onRadiusChanged(it.toInt()) },
+                            valueRange = 500f..15000f, // От 500м до 15км
+                            steps = ((15000-500)/500 - 1),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("500 м", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            Text("15 км", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Button(
+                            onClick = { showRadiusMenu = false },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Text(stringResource(Res.string.common_apply)) // Или "Готово"
+                        }
+                    }
+                }
+                }
         }
 
     }
@@ -520,12 +587,7 @@ class PointsMapScreen : Screen {
 
                     // Расстояние справа сверху
                     point.distanceMeters?.let { meters ->
-                        val dist = if (meters >= 1000) {
-                            val km = kotlin.math.round(meters / 100.0) / 10.0
-                            "$km км"
-                        } else {
-                            "${meters.toInt()} м"
-                        }
+                        val dist = formatDistance(meters.toInt())
                         Text(
                             text = dist,
                             style = MaterialTheme.typography.bodySmall,

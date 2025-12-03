@@ -4,6 +4,7 @@ import io.loyaltyloop.shared.models.TradingPointType
 import loyaltyloop.composeapp.generated.resources.Res
 import org.jetbrains.compose.resources.StringResource
 import loyaltyloop.composeapp.generated.resources.*
+import kotlin.math.roundToInt
 
 fun getEmojiForType(type: TradingPointType): String {
     return when (type) {
@@ -46,5 +47,15 @@ fun getLabelResource(type: TradingPointType): StringResource {
         TradingPointType.AUTO_PARTS -> Res.string.map_type_auto_parts
         TradingPointType.BANK -> Res.string.map_type_bank
         else -> Res.string.map_type_other
+    }
+}
+
+fun formatDistance(meters: Int): String {
+    return if (meters >= 1000) {
+        // Округляем до 1 знака после запятой
+        val km = (meters / 100.0).roundToInt() / 10.0
+        "$km км"
+    } else {
+        "$meters м"
     }
 }

@@ -5,9 +5,8 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.ui.components.map.CameraPosition
 import io.loyaltyloop.app.ui.components.map.MapMarker
-import io.loyaltyloop.app.ui.components.map.getLabelResource
-import io.loyaltyloop.app.utils.GeoLocation
 import io.loyaltyloop.app.utils.LocationService
+import io.loyaltyloop.shared.models.GeoLocation
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
 import io.loyaltyloop.shared.models.onFailure
@@ -133,6 +132,17 @@ class PointsMapScreenModel(
         searchJob = screenModelScope.launch {
             delay(500)
             loadPoints()
+        }
+    }
+
+    fun onRadiusChanged(radius: Int) {
+        // Ограничиваем радиус от 500м до 15км (как в конфигах)
+        val clampedRadius = radius.coerceIn(500, 15000)
+
+        // Обновляем только если значение реально изменилось
+        if (_state.value.radiusMeters != clampedRadius) {
+            _state.update { it.copy(radiusMeters = clampedRadius) }
+            debouncedLoad()
         }
     }
 

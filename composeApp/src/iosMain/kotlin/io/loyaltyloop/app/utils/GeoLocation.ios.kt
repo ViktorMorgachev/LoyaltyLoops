@@ -1,6 +1,7 @@
 package io.loyaltyloop.app.utils
 
 
+import io.loyaltyloop.shared.models.GeoLocation
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
 import platform.CoreLocation.CLLocation

@@ -328,6 +328,7 @@
     <string name="point_no_address">Адрес не указан</string>
     <string name="common_open">Открыто</string>
     <string name="common_closed">Закрыто</string>
+    <string name="common_apply">Применить</string>
     <string name="empty"> </string>
 
 </resources>

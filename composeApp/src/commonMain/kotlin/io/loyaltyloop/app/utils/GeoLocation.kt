@@ -1,6 +1,7 @@
 package io.loyaltyloop.app.utils
 
-data class GeoLocation(val lat: Double, val lon: Double)
+import io.loyaltyloop.shared.models.GeoLocation
+
 
 expect class LocationService {
     suspend fun getCurrentLocation(): GeoLocation?

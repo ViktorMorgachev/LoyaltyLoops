@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
+import io.loyaltyloop.shared.models.GeoLocation
 import kotlinx.coroutines.tasks.await
 
 // Мы передаем Context через Koin

@@ -16,8 +16,9 @@ import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.FeatureToggleDto
-import io.loyaltyloop.shared.models.MapProvider
+import io.loyaltyloop.shared.models.GeoLocation
 import io.loyaltyloop.shared.models.MapSettingsDto
 import io.loyaltyloop.shared.models.PublicConfigResponse
 import io.loyaltyloop.shared.models.TradingPointType
@@ -39,25 +40,17 @@ fun Route.publicRoutes(
                 testLabEnabled = applicationConfig.bool("features.testLabEnabled", false)
             )
 
-            val providerRaw = applicationConfig.string("app.maps.provider", "YANDEX")
-            val provider = runCatching { MapProvider.valueOf(providerRaw.uppercase()) }
-                .getOrElse { MapProvider.YANDEX }
+
 
             val mapSettings = MapSettingsDto(
-                provider = provider,
                 minRadiusMeters = mapMinRadius,
                 defaultRadiusMeters = mapDefaultRadius,
                 maxRadiusMeters = mapMaxRadius,
                 clusterRadiusMeters = applicationConfig.int("app.maps.clusterRadiusMeters", 80),
                 searchDebounceMs = applicationConfig.long("app.maps.searchDebounceMs", 350),
-                showFilters = applicationConfig.bool("app.maps.showFilters", true),
                 showRatings = applicationConfig.bool("app.maps.showRatings", true),
                 showWorkingHours = applicationConfig.bool("app.maps.showWorkingHours", true),
-                yandexAndroidKey = applicationConfig.string("app.maps.yandexAndroidKey", "").ifBlank { null },
-                yandexIosKey = applicationConfig.string("app.maps.yandexIosKey", "").ifBlank { null },
-                defaultLat = applicationConfig.double("app.maps.defaultLat", 42.8746),
-                defaultLon = applicationConfig.double("app.maps.defaultLon", 74.5698),
-                yandexWebKey = applicationConfig.string("app.maps.yandexWebKey", "").ifBlank { null },
+                basePoints = mapOf(CountryCode.KG to GeoLocation(42.8746, 74.5698)),
             )
 
             call.respond(PublicConfigResponse(features = features, map = mapSettings))
