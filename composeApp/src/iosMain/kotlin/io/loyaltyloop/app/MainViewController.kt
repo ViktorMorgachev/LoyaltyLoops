@@ -4,7 +4,7 @@ import androidx.compose.ui.window.ComposeUIViewController
 import cocoapods.YandexMapsMobile.YMKMapKit
 import cocoapods.YandexMapsMobile.setApiKey
 import cocoapods.YandexMapsMobile.sharedInstance
-import io.loyaltyloop.app.config.MAP_API_KEY
+import io.loyaltyloop.app.config.AppConfig
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIViewController
 
@@ -25,7 +25,7 @@ fun MainViewController(): UIViewController {
 private fun initializeYandexMaps() {
     // Устанавливаем ключ.
     // Важно: на iOS это статический метод класса YMKMapKit
-    YMKMapKit.setApiKey(MAP_API_KEY)
+    YMKMapKit.setApiKey(AppConfig.MAP_API_KEY)
 
     // В Android мы вызывали initialize(), в iOS это обычно делает setApiKey + старт инстанса
     YMKMapKit.sharedInstance().onStart()

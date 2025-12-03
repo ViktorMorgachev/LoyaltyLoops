@@ -2,9 +2,8 @@ package io.loyaltyloop.shared.config
 
 actual object AppConfig {
     actual val featureFlags: FeatureFlags
-        get() = FeatureFlags(realtimeEnabled = true, pushEnabled = true)
-    actual val webBaseUrl: String
-        get() =""// BuildConfig.WEB_BASE_URL
+        get() = FeatureFlags(realtimeEnabled = true)
+
     actual val appVersion: String
-        get() = ""// TODO("Not yet implemented")
+        get() = "1.0.0"
 }

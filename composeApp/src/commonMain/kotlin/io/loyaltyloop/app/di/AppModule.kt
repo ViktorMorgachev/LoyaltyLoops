@@ -15,6 +15,8 @@ import io.loyaltyloop.app.features.terminal.confirmation.TransactionConfirmation
 import io.loyaltyloop.app.features.terminal.result.TerminalResultScreenModel
 import io.loyaltyloop.app.features.wallet.WalletScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
+import io.loyaltyloop.app.repository.ConfigRepository
+import io.loyaltyloop.app.repository.MapRepository
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.repository.WalletRepository
 import io.loyaltyloop.shared.models.ScanQrResponse
@@ -37,6 +39,8 @@ val appModule = module {
     // Репозитории
     single { AuthRepository(get()) }
     single { PartnerRepository(get()) }
+    single { MapRepository(get()) }
+    single { ConfigRepository(get()) }
     single { WalletRepository(get()) }
 
     // ViewModels
@@ -55,6 +59,6 @@ val appModule = module {
     factory { (calc: TransactionCalculationDto, tpId: String, cardId: String, strategy: TransactionStrategy) ->
         TransactionConfirmationScreenModel(calc, tpId, cardId, strategy, get())
     }
-    factory { PointsMapScreenModel(get(), get()) }
+    factory { PointsMapScreenModel(get(), get(), get()) }
 
 }

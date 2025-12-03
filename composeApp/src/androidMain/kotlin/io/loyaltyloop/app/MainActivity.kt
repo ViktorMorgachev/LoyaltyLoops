@@ -20,6 +20,7 @@ import io.loyaltyloop.shared.config.AppConfig
 
 class MainActivity : ComponentActivity() {
 
+
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             Logger.d { "Notification permission granted = $granted" }
@@ -48,7 +49,6 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestNotificationPermissionIfNeeded() {
-        if (!AppConfig.featureFlags.pushEnabled) return
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         val granted = ContextCompat.checkSelfPermission(
             this,

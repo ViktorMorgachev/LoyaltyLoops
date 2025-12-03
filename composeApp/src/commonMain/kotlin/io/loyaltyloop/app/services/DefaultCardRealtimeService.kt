@@ -8,7 +8,7 @@ import io.ktor.websocket.Frame
 import io.ktor.websocket.close
 import io.ktor.websocket.readText
 import io.ktor.websocket.WebSocketSession
-import io.loyaltyloop.app.config.SERVER_URL
+import io.loyaltyloop.app.config.AppConfig
 import io.loyaltyloop.app.data.network.jsonParser
 import io.loyaltyloop.app.features.wallet.CardAnimationEvent
 import io.loyaltyloop.app.features.wallet.CardAnimationMessage
@@ -44,7 +44,7 @@ class DefaultCardRealtimeService(
         onClosed: (() -> Unit)?
     ): Boolean {
         disconnect()
-        val url = URLBuilder().takeFrom(SERVER_URL).apply {
+        val url = URLBuilder().takeFrom(AppConfig.SERVER_URL).apply {
             protocol = when (protocol) {
                 URLProtocol.HTTPS -> URLProtocol.WSS
                 URLProtocol.HTTP -> URLProtocol.WS

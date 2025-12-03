@@ -24,7 +24,7 @@ export const PointsPage = () => {
   const { currentWorkspace } = useUser();
   const canManage = currentWorkspace?.role === 'PARTNER_ADMIN';
   const { config } = useAppConfig();
-  const mapApiKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+  const mapApiKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
 
   const [points, setPoints] = useState<any[]>([]);
   const [open, setOpen] = useState(false);

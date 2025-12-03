@@ -31,7 +31,7 @@ import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.routes.testSupportRoutes
-import io.loyaltyloop.server.routes.publicRoutes
+import io.loyaltyloop.server.routes.configRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
@@ -47,9 +47,9 @@ import org.slf4j.event.*
 import io.loyaltyloop.server.utils.handleError
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.UserRole
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
+import io.loyaltyloop.server.routes.mapsRoutes
 import java.time.Duration
 
 
@@ -246,9 +246,13 @@ fun Application.module() {
         }
 
         // Подключаем наши новые маршруты
-        publicRoutes(
+        configRoutes(
             applicationConfig = environment!!.config,
-            partnerRepository = partnerRepository
+        )
+        mapsRoutes(
+            applicationConfig = environment!!.config,
+            partnerRepository = partnerRepository,
+            userRepository = userRepository
         )
         authRoutes(userRepository, partnerRepository, tokenService, otpService)
         clientRoutes(userRepository, deviceTokenRepository)

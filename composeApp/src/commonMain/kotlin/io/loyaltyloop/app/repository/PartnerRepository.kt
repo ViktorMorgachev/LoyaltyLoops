@@ -18,6 +18,7 @@ import io.loyaltyloop.shared.models.TransactionResult
 import io.loyaltyloop.shared.models.TransactionStrategy
 import io.loyaltyloop.app.data.network.safeNetworkCall
 import io.loyaltyloop.shared.models.NetworkResult
+import io.loyaltyloop.shared.models.PublicConfigResponse
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointSearchResponse
 import io.loyaltyloop.shared.models.TradingPointType
@@ -78,29 +79,6 @@ class PartnerRepository(private val client: HttpClient) {
                     purchaseAmount = amount ?: 0.0, 
                     strategy = strategy
                 ))
-            }
-        }
-    }
-
-    // 1. Поиск публичных точек (для карты)
-    // TODO вынести в отдельный репозиторий
-    suspend fun searchPublicPoints(
-        lat: Double,
-        lon: Double,
-        radius: Int,
-        query: String = "",
-        type: TradingPointType? = null,
-        openNow: Boolean = false
-    ): NetworkResult<TradingPointSearchResponse> {
-        return safeNetworkCall {
-            client.get("/public/points/search") {
-                parameter("lat", lat)
-                parameter("lon", lon)
-                parameter("radius", radius)
-                parameter("limit", 50)
-                if (query.isNotBlank()) parameter("query", query)
-                if (type != null) parameter("type", type.name)
-                if (openNow) parameter("openNow", true)
             }
         }
     }

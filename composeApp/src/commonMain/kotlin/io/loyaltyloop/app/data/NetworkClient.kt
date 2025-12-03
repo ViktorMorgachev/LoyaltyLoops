@@ -23,7 +23,7 @@ import io.ktor.http.contentType
 import io.ktor.http.encodedPath
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
-import io.loyaltyloop.app.config.SERVER_URL
+import io.loyaltyloop.app.config.AppConfig
 import io.loyaltyloop.app.data.network.jsonParser
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
@@ -118,7 +118,7 @@ object NetworkClient {
             }
 
         defaultRequest {
-            url(SERVER_URL)
+            url(AppConfig.SERVER_URL)
             val language = tokenStorage.getAppLanguageCode() ?: "ru"
             header(HttpHeaders.AcceptLanguage, language)
         }

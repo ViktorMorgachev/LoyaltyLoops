@@ -1,12 +1,21 @@
-import axios from 'axios';
+import axios, { type InternalAxiosRequestConfig } from 'axios';
 import i18n from '../i18n';
 
+// --- CONFIG ---
 // Адрес твоего Ktor сервера
-// В продакшене он должен быть задан через переменную окружения VITE_API_URL
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const IS_DEV = import.meta.env.DEV; // Флаг разработки от Vite
 
 export const API_BASE_URL = BASE_URL;
 export const WS_BASE_URL = BASE_URL.replace('http', 'ws');
+
+// --- LOGGER HELPER ---
+// Объявляем логгер, чтобы он работал только в режиме разработки
+const logger = {
+    log: (...args: any[]) => IS_DEV && console.log(...args),
+    warn: (...args: any[]) => IS_DEV && console.warn(...args),
+    error: (...args: any[]) => IS_DEV && console.error(...args),
+};
 
 const resolveInitialLanguage = (): string => {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -28,6 +37,7 @@ api.defaults.headers.common['Accept-Language'] = initialLanguage;
 const performLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('workspaces'); // Не забываем чистить воркспейсы
     window.location.href = '/login';
 };
 
@@ -79,13 +89,11 @@ const refreshAccessToken = () => {
 };
 
 // --- ИНТЕРЦЕПТОР ЗАПРОСА ---
-// Автоматически добавляет токен, если он есть в localStorage
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
-    // Обновляем заголовок языка при каждом запросе (если пользователь сменил язык)
     config.headers['Accept-Language'] = i18n.language;
 
     return config;
@@ -99,20 +107,20 @@ api.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config || {};
 
-    logger.warn('[API] Error response',
-                                {
-                                    status: error.response?.status,
-                                    code: error.response?.data?.code,
-                                    url: originalRequest?.url,
-                                })
+        // 1. ЛОГИРОВАНИЕ (Теперь logger определен и ошибки не будет)
+        logger.warn('[API] Error response', {
+            status: error.response?.status,
+            code: error.response?.data?.code,
+            url: originalRequest?.url,
+        });
 
-        // Локализация ошибок
+        // 2. ЛОКАЛИЗАЦИЯ
         if (error.response?.data?.code) {
             const code = error.response.data.code;
             const key = `errors.${code}`;
-            const translated = i18n.t(key);
-            if (translated && translated !== key) {
-                error.message = translated;
+            // Проверка exists, чтобы не показывать ключи, если перевода нет
+            if (i18n.exists(key)) {
+                error.message = i18n.t(key);
             }
         }
 
@@ -125,19 +133,20 @@ api.interceptors.response.use(
             !originalRequest._retry &&
             (refreshableStatuses.includes(status) || (code && refreshableCodes.includes(code)));
 
+        // 3. ПОПЫТКА ОБНОВИТЬ ТОКЕН
         if (canAttemptRefresh) {
             originalRequest._retry = true;
             try {
-                logger.warn('[API] Trying to refresh access token…');
+                logger.warn('[API] Trying to refresh access token…'); // Используем logger
                 const newToken = await refreshAccessToken();
                 if (newToken) {
                     originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    console.warn('[API] Token refreshed, repeating request', originalRequest?.url);
+                    logger.warn('[API] Token refreshed, repeating request', originalRequest?.url); // Используем logger
                     return api(originalRequest);
                 }
             } catch (refreshError) {
-                console.warn('[API] Refresh failed, forcing logout');
+                logger.warn('[API] Refresh failed, forcing logout'); // Используем logger
                 performLogout();
                 return Promise.reject(refreshError);
             }

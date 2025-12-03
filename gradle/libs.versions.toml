@@ -9,6 +9,7 @@ firebaseBom = "33.5.1"
 googleServicesPlugin = "4.4.2"
 coroutinesPlayServices = "1.8.1"
 kamel = "0.9.5"
+buildConfig = "5.3.5"
 
 # Server
 ktor = "2.3.11"
@@ -125,3 +126,4 @@ kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", versio
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqlDelight" }
 googleServices = { id = "com.google.gms.google-services", version.ref = "googleServicesPlugin" }
 kotlinCocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }

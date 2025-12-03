@@ -4,10 +4,8 @@ import io.loyaltyloop.shared.BuildConfig
 
 actual object AppConfig {
     actual val featureFlags: FeatureFlags = FeatureFlags(
-        realtimeEnabled = true,
-        pushEnabled = true
+        realtimeEnabled = true
     )
-    actual val webBaseUrl: String = BuildConfig.WEB_BASE_URL
     actual val appVersion: String = BuildConfig.APP_VERSION
 }
 

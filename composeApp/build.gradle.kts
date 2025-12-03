@@ -9,7 +9,41 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.googleServices)
-    alias(libs.plugins.kotlinCocoapods) // Плагин CocoaPods
+    alias(libs.plugins.kotlinCocoapods)
+    alias(libs.plugins.buildConfig)
+}
+
+// Читаем свойство из командной строки (например: ./gradlew assemble -Penv=prod)
+// По умолчанию 'dev'
+val activeEnv = project.findProperty("env") as? String ?: "dev"
+
+buildConfig {
+    packageName("io.loyaltyloop.app.config")
+    className("AppConfig")
+
+    // Логика выбора URL
+    val serverUrl = when(activeEnv) {
+        "prod" -> "https://api.loyaltyloop.kg"
+        "stage" -> "https://api-test.loyaltyloop.kg"
+        // Локалхост для Android эмулятора.
+        // Для iOS эмулятора это должен быть localhost или 127.0.0.1, но 10.0.2.2 тоже иногда мапится, но надежнее localhost.
+        // Однако, 10.0.2.2 - стандарт Android.
+        // Для универсальности в локальной разработке часто используют IP машины в сети, но пока оставим так.
+        else -> "http://10.0.2.2:8080"
+    }
+
+    val webUrl = when(activeEnv) {
+        "prod" -> "https://admin.loyaltyloop.kg"
+        "stage" -> "https://admin-stage.loyaltyloop.kg"
+        else -> "http://10.0.2.2:3000"
+    }
+
+    buildConfigField("String", "WEB_URL", "\"$webUrl\"")
+    buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
+    buildConfigField("String", "MAP_API_KEY", "\"ffb31301-c998-483f-95a7-729f5f29ac1d\"")
+    
+    // Добавляем инфо о текущем окружении
+    buildConfigField("String", "ENV_NAME", "\"$activeEnv\"")
 }
 
 kotlin {
@@ -19,17 +53,14 @@ kotlin {
         }
     }
 
-    // 1. Просто объявляем цели (Targets)
-    // Убрали блок .binaries.framework, так как он настраивается ниже в cocoapods
     iosX64()
     iosArm64()
     iosSimulatorArm64()
 
-    // 2. Настройка через CocoaPods
     cocoapods {
         summary = "LoyaltyLoop Shared Module"
         homepage = "https://github.com/LoyaltyLoop"
-        version = "1.0" // Версия обязательна!
+        version = "1.0"
 
         ios.deploymentTarget = "14.0"
 
@@ -39,7 +70,6 @@ kotlin {
             export(compose.components.resources)
         }
 
-        // Подключение Yandex Maps
         pod("YandexMapsMobile") {
             version = "4.5.1-full"
             extraOpts += listOf("-compiler-option", "-fmodules")
@@ -60,7 +90,6 @@ kotlin {
 
             implementation(compose.uiTooling)
 
-            // Зависимость Яндекса для Android (нативная)
             implementation(libs.yandex.maps.mobile)
 
             implementation(compose.components.resources)
@@ -98,7 +127,6 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.kamel.image)
 
-            // Пермишены (Moko)
             implementation(libs.moko.permissions.compose)
         }
 
@@ -118,7 +146,6 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-        // KMP ресурсы подхватят языки сами, но это полезно для Android манифеста
         resConfigs("en", "ru", "be", "kk", "ky", "uz")
     }
 }

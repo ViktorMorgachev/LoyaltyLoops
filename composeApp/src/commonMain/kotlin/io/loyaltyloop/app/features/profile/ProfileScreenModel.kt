@@ -2,6 +2,7 @@ package io.loyaltyloop.app.features.profile
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.loyaltyloop.app.config.AppConfig.WEB_URL
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.AuthRepository
@@ -163,7 +164,7 @@ class ProfileScreenModel(
             "Authorization" to "Bearer $access",
             "X-Refresh-Token" to refresh
         )
-        _events.trySend(Event.NavigateToWeb(AppConfig.webBaseUrl, headers))
+        _events.trySend(Event.NavigateToWeb(WEB_URL, headers))
     }
     private fun resolveLanguage(serverLanguage: String?): String {
         val current = tokenStorage.getAppLanguageCode()

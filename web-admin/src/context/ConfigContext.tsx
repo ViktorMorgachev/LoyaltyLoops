@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState, useCallback } from 'react';
 import { API_BASE_URL } from '../api/axiosConfig';
 
-export type MapProvider = 'YANDEX';
 
 export interface GeoLocation {
     lat: number;
@@ -24,7 +23,6 @@ export interface MapSettingsConfig {
     searchDebounceMs: number;
     showRatings: boolean;
     showWorkingHours: boolean;
-    yandexWebKey: string | null;
 }
 
 export interface PublicConfig {
@@ -47,7 +45,6 @@ const DEFAULT_CONFIG: PublicConfig = {
         testLabEnabled: false,
     },
     map: {
-        provider: 'YANDEX',
         minRadiusMeters: 50,
         defaultRadiusMeters: 2000,
         maxRadiusMeters: 15000,
@@ -56,9 +53,6 @@ const DEFAULT_CONFIG: PublicConfig = {
         showFilters: true,
         showRatings: true,
         showWorkingHours: true,
-        yandexAndroidKey: null,
-        yandexIosKey: null,
-        yandexWebKey: null,
     },
 };
 
@@ -77,7 +71,7 @@ export const ConfigProvider: React.FC<React.PropsWithChildren> = ({ children }) 
     const fetchConfig = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/public/config`);
+            const response = await fetch(`${API_BASE_URL}/config`);
             if (!response.ok) {
                 throw new Error(`Config request failed with status ${response.status}`);
             }

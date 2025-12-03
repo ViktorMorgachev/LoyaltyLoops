@@ -66,8 +66,8 @@ export const YandexMap: React.FC<YandexMapProps> = ({
 
     const { config } = useAppConfig();
     const fallbackKey = useMemo(() => {
-        return apiKey ?? config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
-    }, [apiKey, config?.map?.yandexWebKey]);
+        return apiKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+    }, [apiKey]);
 
     const { ready, error, ymaps } = useYandexMaps(fallbackKey, lang);
 

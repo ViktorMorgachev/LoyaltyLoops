@@ -26,7 +26,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     markerLabel,
 }) => {
     const { config } = useAppConfig();
-    const fallbackKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+    const fallbackKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
     const [overrideCoords, setOverrideCoords] = useState<[number, number] | null>(() => {
         if (typeof initialLat === 'number' && typeof initialLng === 'number') {
             return [initialLat, initialLng];

@@ -213,7 +213,7 @@ export const PointDetailsPage = () => {
   const { currentWorkspace } = useUser();
   const canEdit = currentWorkspace?.role === 'PARTNER_ADMIN';
   const { config } = useAppConfig();
-  const mapApiKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+  const mapApiKey = import.meta.env.VITE_YMAPS_API_KEY as string | undefined;
 
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);

@@ -492,8 +492,8 @@ class PointsMapScreen : Screen {
                         Slider(
                             value = state.radiusMeters.toFloat(),
                             onValueChange = { viewModel.onRadiusChanged(it.toInt()) },
-                            valueRange = 500f..15000f, // От 500м до 15км
-                            steps = ((15000-500)/500 - 1),
+                            valueRange = state.minRadiusMeters.toFloat()..state.maxRadiusMeters.toFloat(), // От 500м до 15км
+                            steps = ((state.maxRadiusMeters-state.minRadiusMeters)/500 - 1),
                             modifier = Modifier.fillMaxWidth()
                         )
 
@@ -501,8 +501,8 @@ class PointsMapScreen : Screen {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("500 м", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
-                            Text("15 км", style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            Text(formatDistance(state.minRadiusMeters), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+                            Text(formatDistance(state.maxRadiusMeters), style = MaterialTheme.typography.bodySmall, color = Color.Gray)
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))

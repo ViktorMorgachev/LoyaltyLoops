@@ -2,6 +2,8 @@ package io.loyaltyloop.app.features.map
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import io.loyaltyloop.app.repository.ConfigRepository
+import io.loyaltyloop.app.repository.MapRepository
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.ui.components.map.CameraPosition
 import io.loyaltyloop.app.ui.components.map.MapMarker
@@ -22,8 +24,9 @@ import kotlinx.coroutines.launch
 private val bishkekLocation = GeoLocation(42.8746, 74.5698)
 
 class PointsMapScreenModel(
-    private val repository: PartnerRepository,
-    private val locationService: LocationService
+    private val locationService: LocationService,
+    private val mapRepository: MapRepository,
+    private val configRepository: ConfigRepository,
 ) : ScreenModel {
 
     data class State(
@@ -48,6 +51,8 @@ class PointsMapScreenModel(
         val query: String = "",
         val typeFilter: TradingPointType? = null,
         val radiusMeters: Int = 3000,
+        val minRadiusMeters: Int = 50,
+        val maxRadiusMeters: Int = 15000,
         val openNow: Boolean = false
     )
 
@@ -57,11 +62,26 @@ class PointsMapScreenModel(
     private var searchJob: Job? = null
 
     init {
-        // Стартовая загрузка
-        loadPoints()
+        loadConfig()
     }
 
     // --- Actions ---
+
+    private fun loadConfig() {
+        screenModelScope.launch {
+            configRepository.getPublicConfig().onSuccess { config ->
+                _state.update {
+                    it.copy(
+                        minRadiusMeters = config.map.minRadiusMeters,
+                        maxRadiusMeters = config.map.maxRadiusMeters,
+                        radiusMeters = config.map.defaultRadiusMeters
+                    )
+                }
+                // Reload points with new radius if needed
+                loadPoints()
+            }
+        }
+    }
 
     fun onSearchQueryChanged(query: String) {
         _state.update { it.copy(query = query) }
@@ -137,7 +157,7 @@ class PointsMapScreenModel(
 
     fun onRadiusChanged(radius: Int) {
         // Ограничиваем радиус от 500м до 15км (как в конфигах)
-        val clampedRadius = radius.coerceIn(500, 15000)
+        val clampedRadius = radius.coerceIn(_state.value.minRadiusMeters, _state.value.maxRadiusMeters)
 
         // Обновляем только если значение реально изменилось
         if (_state.value.radiusMeters != clampedRadius) {
@@ -151,7 +171,7 @@ class PointsMapScreenModel(
             _state.update { it.copy(isLoading = true, error = null) }
             val s = _state.value
 
-            val result = repository.searchPublicPoints(
+            val result = mapRepository.searchPublicPoints(
                 lat = s.searchCenter.lat,
                 lon = s.searchCenter.lon,
                 radius = s.radiusMeters,

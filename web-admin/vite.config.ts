@@ -1,15 +1,34 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  server: {
-    port: 3000,       // Жестко задаем порт
-    strictPort: true, // Если порт 3000 занят — выдать ошибку, а не переходить на 3001
+
+  // (Опционально) Удобные импорты через @
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
   },
+
+  // Настройки для 'npm run dev'
+  server: {
+    port: 3000,
+    strictPort: true,
+  },
+
+  // Настройки для 'npm run preview' (тестирование собранного билда)
+  // Это полезно, если вы захотите запустить собранную версию локально или в Docker
+  preview: {
+    port: 3000,
+    strictPort: true,
+    host: true, // Разрешает доступ по сети (0.0.0.0), нужно для Docker/Railway
+  },
+
   esbuild: {
+    // Удаляем console.log и debugger только в продакшене
     drop: mode === 'production' ? ['console', 'debugger'] : [],
   }
 }))
-ё

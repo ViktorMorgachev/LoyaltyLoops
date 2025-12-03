@@ -28,15 +28,15 @@ fun App() {
         sessionManager.logoutEvent.collect {
             appRestarter.restartApp()
         }
-        if (AppConfig.featureFlags.pushEnabled) {
-            try {
-                // Запрашиваем разрешение.
-                // Moko сам проверит версию Android. Если < 13, он ничего не сделает (считает granted).
-                // На iOS покажет системный алерт.
-                controller.providePermission(Permission.REMOTE_NOTIFICATION)
-            } catch (e: Exception) {
-                println("Push permission denied: $e")
-            }
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            controller.providePermission(Permission.REMOTE_NOTIFICATION)
+        } catch (e: Exception) {
+            // Moko-permissions кидает ошибку, если отказали.
+            // Мы ее ловим, чтобы приложение не крашнулось.
+            println("Push permission denied: $e")
         }
     }
 

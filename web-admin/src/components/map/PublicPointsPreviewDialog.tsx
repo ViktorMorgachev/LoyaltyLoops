@@ -197,6 +197,7 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
 
     const [showOnlyMine, setShowOnlyMine] = useState(true);
     const [ownPointIds, setOwnPointIds] = useState<string[]>([]);
+    const [ownPoints, setOwnPoints] = useState<TradingPointDto[]>([]);
     const [ownFilterAvailable, setOwnFilterAvailable] = useState(true);
     const [loadingOwnPoints, setLoadingOwnPoints] = useState(false);
 
@@ -214,7 +215,7 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
 
     const zoomAnimationRef = useRef<number | null>(null);
-    const markersApiKey = config?.map?.yandexWebKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+    const markersApiKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
 
     useEffect(() => {
         if (initialPoint?.latitude && initialPoint.longitude) {
@@ -236,7 +237,8 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
         if (!ownFilterAvailable || ownPointIds.length > 0) return;
         setLoadingOwnPoints(true);
         try {
-            const response = await api.get<TradingPointDto[]>('/partners/points');
+            const response = await api.get<TradingPointDto[]>('/map/partners/points');
+            setOwnPoints(response.data);
             setOwnPointIds(response.data.map((p) => p.id));
             setOwnFilterAvailable(true);
         } catch (err) {
@@ -266,9 +268,8 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
             if (openNowOnly) params.append('openNow', 'true');
             if (typeFilter !== 'ALL') params.append('type', typeFilter);
 
-            const response = await fetch(`${API_BASE_URL}/public/points/search?${params.toString()}`);
-            if (!response.ok) throw new Error(`Request failed: ${response.status}`);
-            const data = (await response.json()) as TradingPointSearchResponse;
+            const response = await api.get<TradingPointSearchResponse>(`/map/points/search?${params.toString()}`);
+            const data = response.data;
 
             // ВАЖНО: Проверка на изменение данных перед обновлением стейта
             setPoints(currentPoints => {
@@ -291,16 +292,13 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
     const ownPointIdSet = useMemo(() => new Set(ownPointIds), [ownPointIds]);
 
     const visiblePoints = useMemo(() => {
-        let result = points;
         if (showOnlyMine && ownFilterAvailable) {
-            if (ownPointIds.length === 0 && !loadingOwnPoints) {
-                result = result.filter(p => ownPointIdSet.has(p.id));
-            } else if (ownPointIds.length > 0) {
-                result = result.filter(p => ownPointIdSet.has(p.id));
+            if (ownPointIds.length > 0 || !loadingOwnPoints) {
+                return ownPoints;
             }
         }
-        return result;
-    }, [points, showOnlyMine, ownFilterAvailable, ownPointIdSet, ownPointIds.length, loadingOwnPoints]);
+        return points;
+    }, [points, showOnlyMine, ownFilterAvailable, ownPointIds.length, loadingOwnPoints, ownPoints]);
 
     const handleMapClick = useCallback(() => {
         setSelectedPointId(null);
