@@ -3,6 +3,11 @@ import { API_BASE_URL } from '../api/axiosConfig';
 
 export type MapProvider = 'YANDEX';
 
+export interface GeoLocation {
+    lat: number;
+    lon: number;
+}
+
 export interface FeatureToggleConfig {
     realtimeEnabled: boolean;
     pushEnabled: boolean;
@@ -11,20 +16,15 @@ export interface FeatureToggleConfig {
 }
 
 export interface MapSettingsConfig {
-    provider: MapProvider;
+    basePoints: Record<string, GeoLocation>; // CountryCode -> GeoLocation
     minRadiusMeters: number;
     defaultRadiusMeters: number;
     maxRadiusMeters: number;
     clusterRadiusMeters: number;
     searchDebounceMs: number;
-    showFilters: boolean;
     showRatings: boolean;
     showWorkingHours: boolean;
-    yandexAndroidKey: string | null;
-    yandexIosKey: string | null;
     yandexWebKey: string | null;
-    defaultLat: double;
-    defaultLon: double;
 }
 
 export interface PublicConfig {

@@ -3,10 +3,12 @@ package io.loyaltyloop.app.di
 import android.content.Context.MODE_PRIVATE
 import com.russhwolf.settings.SharedPreferencesSettings
 import io.ktor.client.engine.okhttp.OkHttp
+import io.loyaltyloop.app.data.ConfigStore
 import io.loyaltyloop.app.data.NetworkClient
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.platform.AndroidAppRestarter
 import io.loyaltyloop.app.platform.AppRestarter
+import io.loyaltyloop.app.platform.MapInitializer
 import io.loyaltyloop.app.services.AndroidPushService
 import io.loyaltyloop.app.services.CardRealtimeService
 import io.loyaltyloop.app.services.DefaultCardRealtimeService
@@ -41,4 +43,5 @@ actual val platformModule = module {
     single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
     single<AppRestarter> { AndroidAppRestarter(androidContext()) }
     single { LocationService(androidContext()) }
+    single { MapInitializer(androidContext()) }
 }

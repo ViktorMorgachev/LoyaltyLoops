@@ -1,5 +1,6 @@
 package io.loyaltyloop.app.di
 
+import io.loyaltyloop.app.data.ConfigStore
 import io.loyaltyloop.app.data.SessionManager
 import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.features.auth.LoginScreenModel
@@ -31,6 +32,7 @@ val appModule = module {
     // TokenStorage зависит от Settings (которые придут из platformModule)
     single { TokenStorage(get()) }
     single { SessionManager(get()) }
+    single { ConfigStore() }
 
     // Репозитории
     single { AuthRepository(get()) }
