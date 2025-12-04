@@ -1,4 +1,4 @@
-import axios, { type InternalAxiosRequestConfig } from 'axios';
+import axios from 'axios';
 import i18n from '../i18n';
 
 // --- CONFIG ---

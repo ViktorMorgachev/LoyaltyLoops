@@ -2,7 +2,6 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { Alert } from '@mui/material';
 import { YandexMap } from './map/YandexMap';
 import type { MapPoint } from './map/YandexMap';
-import { useAppConfig } from '../context/ConfigContext';
 
 interface LocationPickerProps {
     initialLat?: number;
@@ -25,7 +24,6 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     radiusMeters,
     markerLabel,
 }) => {
-    const { config } = useAppConfig();
     const fallbackKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
     const [overrideCoords, setOverrideCoords] = useState<[number, number] | null>(() => {
         if (typeof initialLat === 'number' && typeof initialLng === 'number') {

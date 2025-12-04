@@ -21,6 +21,7 @@ export interface MapSettingsConfig {
     maxRadiusMeters: number;
     clusterRadiusMeters: number;
     searchDebounceMs: number;
+    showFilters: boolean;
     showRatings: boolean;
     showWorkingHours: boolean;
 }
@@ -45,6 +46,7 @@ const DEFAULT_CONFIG: PublicConfig = {
         testLabEnabled: false,
     },
     map: {
+        basePoints: {},
         minRadiusMeters: 50,
         defaultRadiusMeters: 2000,
         maxRadiusMeters: 15000,

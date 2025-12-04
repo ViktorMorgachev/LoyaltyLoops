@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     Alert, Box, Button, Chip, CircularProgress, Dialog, Divider, Fab, IconButton, InputBase,
     List, ListItem, ListItemButton, Menu, MenuItem, Paper, Popover, Slider, Stack,
-    Typography, useTheme
+    Typography
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
@@ -16,8 +16,8 @@ import type { TFunction } from 'i18next';
 import { YandexMap } from './YandexMap';
 import type { MapPoint } from './YandexMap';
 import { useAppConfig } from '../../context/ConfigContext';
-import { API_BASE_URL, api } from '../../api/axiosConfig';
-import { formatIntervals, normalizeSchedule, WEEK_DAY_ORDER } from '../../utils/scheduleUtils';
+import { api } from '../../api/axiosConfig';
+import { formatIntervals, normalizeSchedule } from '../../utils/scheduleUtils';
 import type { TradingPointDto, TradingPointSearchResponse, TradingPointType } from '../../types/points';
 
 interface PublicPointsPreviewDialogProps {
@@ -179,7 +179,6 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
 }) => {
     const { t } = useTranslation();
     const { config } = useAppConfig();
-    const theme = useTheme();
 
     const defaultRadius = Math.min(config?.map?.defaultRadiusMeters ?? 2000, 3000);
     const minRadius = config?.map?.minRadiusMeters ?? 50;
@@ -201,8 +200,8 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
     const [ownFilterAvailable, setOwnFilterAvailable] = useState(true);
     const [loadingOwnPoints, setLoadingOwnPoints] = useState(false);
 
-    const [radiusAnchor, setRadiusAnchor] = useState<HTMLButtonElement | null>(null);
-    const [typeAnchor, setTypeAnchor] = useState<HTMLButtonElement | null>(null);
+    const [radiusAnchor, setRadiusAnchor] = useState<HTMLElement | null>(null);
+    const [typeAnchor, setTypeAnchor] = useState<HTMLElement | null>(null);
 
     const [points, setPoints] = useState<TradingPointDto[]>([]);
     const [loading, setLoading] = useState(false);
@@ -241,7 +240,7 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
             setOwnPoints(response.data);
             setOwnPointIds(response.data.map((p) => p.id));
             setOwnFilterAvailable(true);
-        } catch (err) {
+        } catch (_err) {
             setOwnFilterAvailable(false);
             setShowOnlyMine(false);
         } finally {
@@ -288,8 +287,6 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
     }, [searchCenter, radius, query, openNowOnly, typeFilter, config?.features?.mapEnabled, t]);
 
     useEffect(() => { if (open) loadPoints(); }, [open, loadPoints]);
-
-    const ownPointIdSet = useMemo(() => new Set(ownPointIds), [ownPointIds]);
 
     const visiblePoints = useMemo(() => {
         if (showOnlyMine && ownFilterAvailable) {
@@ -369,7 +366,7 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                 setMapZoom(15);
                 loadPoints({ lat: coords[0], lon: coords[1] });
             },
-            (err) => { setGeoLoading(false); setAutoLocateTried(true); },
+            () => { setGeoLoading(false); setAutoLocateTried(true); },
             { enableHighAccuracy: true, timeout: 8000 }
         );
     }, [loadPoints]);

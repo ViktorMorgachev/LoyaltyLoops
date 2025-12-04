@@ -14,7 +14,6 @@ import { useNavigate } from 'react-router-dom';
 import { LocationPicker } from '../../components/LocationPicker';
 import SearchIcon from '@mui/icons-material/Search';
 import { useUser } from '../../context/UserContext';
-import { useAppConfig } from '../../context/ConfigContext';
 import { geocodeAddress, reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 
 export const PointsPage = () => {
@@ -23,7 +22,6 @@ export const PointsPage = () => {
   const navigate = useNavigate();
   const { currentWorkspace } = useUser();
   const canManage = currentWorkspace?.role === 'PARTNER_ADMIN';
-  const { config } = useAppConfig();
   const mapApiKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
 
   const [points, setPoints] = useState<any[]>([]);

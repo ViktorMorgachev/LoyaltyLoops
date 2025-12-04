@@ -30,5 +30,5 @@ export default defineConfig(({ mode }) => ({
   esbuild: {
     // Удаляем console.log и debugger только в продакшене
     drop: mode === 'production' ? ['console', 'debugger'] : [],
-  }
+  } as any
 }))

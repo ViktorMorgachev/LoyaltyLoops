@@ -1,13 +1,13 @@
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Alert, Box, CircularProgress } from '@mui/material';
 import { useYandexMaps } from '../../hooks/useYandexMaps';
-import { useAppConfig } from '../../context/ConfigContext';
 
 export type MapPoint = {
     id: string;
     coordinates: [number, number];
     // Опции для стандартных пинов
     color?: string;
+    iconColor?: string;
     label?: string;
     preset?: string;
     active?: boolean;
@@ -64,7 +64,6 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     onMapClickRef.current = onMapClick;
     onMarkerClickRef.current = onMarkerClick;
 
-    const { config } = useAppConfig();
     const fallbackKey = useMemo(() => {
         return apiKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
     }, [apiKey]);

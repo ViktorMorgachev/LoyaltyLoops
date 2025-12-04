@@ -15,7 +15,6 @@ import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
 import { LocationPicker } from '../../components/LocationPicker';
 import { useUser } from '../../context/UserContext';
-import { useAppConfig } from '../../context/ConfigContext';
 import { reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 import { PublicPointsPreviewDialog } from '../../components/map/PublicPointsPreviewDialog';
 
@@ -212,7 +211,6 @@ export const PointDetailsPage = () => {
   const { showSuccess, showError } = useNotification();
   const { currentWorkspace } = useUser();
   const canEdit = currentWorkspace?.role === 'PARTNER_ADMIN';
-  const { config } = useAppConfig();
   const mapApiKey = import.meta.env.VITE_YMAPS_API_KEY as string | undefined;
 
   const [tab, setTab] = useState(0);
