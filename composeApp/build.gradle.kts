@@ -16,6 +16,7 @@ plugins {
 // Читаем свойство из командной строки (например: ./gradlew assemble -Penv=prod)
 // По умолчанию 'dev'
 val activeEnv = project.findProperty("env") as? String ?: "dev"
+val isServerBuild = project.hasProperty("serverBuild")
 
 buildConfig {
     packageName("io.loyaltyloop.app.config")
@@ -47,54 +48,40 @@ buildConfig {
 }
 
 kotlin {
-    androidTarget {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+    if (!isServerBuild){
+        androidTarget {
+            compilerOptions {
+                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
+            }
+        }
+
+        iosX64()
+        iosArm64()
+        iosSimulatorArm64()
+
+        cocoapods {
+            summary = "LoyaltyLoop Shared Module"
+            homepage = "https://github.com/LoyaltyLoop"
+            version = "1.0"
+
+            ios.deploymentTarget = "14.0"
+
+            framework {
+                baseName = "LoyaltyLoop"
+                isStatic = true
+                export(compose.components.resources)
+            }
+
+            pod("YandexMapsMobile") {
+                version = "4.5.1-full"
+                extraOpts += listOf("-compiler-option", "-fmodules")
+            }
         }
     }
 
-    iosX64()
-    iosArm64()
-    iosSimulatorArm64()
 
-    cocoapods {
-        summary = "LoyaltyLoop Shared Module"
-        homepage = "https://github.com/LoyaltyLoop"
-        version = "1.0"
-
-        ios.deploymentTarget = "14.0"
-
-        framework {
-            baseName = "LoyaltyLoop"
-            isStatic = true
-            export(compose.components.resources)
-        }
-
-        pod("YandexMapsMobile") {
-            version = "4.5.1-full"
-            extraOpts += listOf("-compiler-option", "-fmodules")
-        }
-    }
 
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-            implementation(libs.androidx.activity.compose)
-            implementation(libs.koin.android)
-            implementation(libs.androidx.core.ktx)
-            implementation(libs.kotlinx.coroutines.android)
-            implementation(project.dependencies.platform(libs.firebase.bom))
-            implementation(libs.firebase.messaging)
-            implementation(libs.kotlinx.coroutines.play.services)
-            implementation(libs.process.phoenix)
-
-            implementation(compose.uiTooling)
-
-            implementation(libs.yandex.maps.mobile)
-
-            implementation(compose.components.resources)
-        }
-
         commonMain.dependencies {
             implementation(project(":shared"))
 
@@ -129,9 +116,30 @@ kotlin {
 
             implementation(libs.moko.permissions.compose)
         }
+        if (!isServerBuild){
+            androidMain.dependencies {
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.koin.android)
+                implementation(libs.androidx.core.ktx)
+                implementation(libs.kotlinx.coroutines.android)
+                implementation(project.dependencies.platform(libs.firebase.bom))
+                implementation(libs.firebase.messaging)
+                implementation(libs.kotlinx.coroutines.play.services)
+                implementation(libs.process.phoenix)
 
-        iosMain.dependencies {
-            implementation(libs.ktor.client.darwin)
+                implementation(compose.uiTooling)
+
+                implementation(libs.yandex.maps.mobile)
+
+                implementation(compose.components.resources)
+            }
+
+
+
+            iosMain.dependencies {
+                implementation(libs.ktor.client.darwin)
+            }
         }
     }
 }
