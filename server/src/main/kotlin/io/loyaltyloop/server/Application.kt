@@ -78,25 +78,40 @@ fun Application.module() {
         allowHeader(HttpHeaders.AcceptLanguage)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
 
+        // Разрешаем куки/токены
         allowCredentials = true
+        allowNonSimpleContentTypes = true
 
-        // 1. Локалхост (оставляем для разработки)
-        allowHost("localhost:3000", schemes = listOf("http", "https"))
-        allowHost("localhost:5173", schemes = listOf("http", "https"))
+        // --- ЛОГИКА ПРОВЕРКИ ДОМЕНОВ ---
 
-        // 2. Читаем из ENV и логируем
-        val envHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
-        val hosts = envHosts.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        // Читаем список разрешенных доменов из ENV
+        // Превращаем в список и чистим от пробелов
+
+        // 2. Разрешаем домены из ENV (Production/Stage)
+        val envHostsString = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
+        val allowedHosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+
+        println("🛡️ CORS Configured. Allowed hosts from ENV: $allowedHosts")
+
+        // Используем allowHost c ЛЯМБДОЙ (Предикатом).
+        // В переменную 'host' Ktor передает только домен (без https://), например "loyaltyloop.up.railway.app"
+
+
+
+        // Разбиваем строку по запятой и убираем пробелы
+        val hosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }
 
         if (hosts.isNotEmpty()) {
-            println("✅ CORS: Enabling access for hosts: $hosts") // Лог для отладки
+            println("🛡️ CORS: Adding allowed hosts from ENV: $hosts")
 
             hosts.forEach { host ->
-                // Разрешаем и http, и https для надежности за прокси
+                // САМЫЙ ВАЖНЫЙ МОМЕНТ:
+                // Мы разрешаем этот домен И для http, И для https.
+                // Это решает проблему, когда Railway внутри своей сети обращается к контейнеру по http.
                 allowHost(host, schemes = listOf("http", "https"))
             }
         } else {
-            println("⚠️ CORS: No hosts found in CORS_ALLOWED_HOSTS variable!")
+            println("⚠️ CORS: Variable CORS_ALLOWED_HOSTS is empty! External requests might be blocked.")
         }
     }
 
