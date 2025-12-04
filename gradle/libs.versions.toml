@@ -72,6 +72,9 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 # Тестирование (Сервер)
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 
+ktor-server-forwarded-header = { module = "io.ktor:ktor-server-forwarded-header", version.ref = "ktor" }
+
+
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 # Database
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }

@@ -15,6 +15,7 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.plugins.swagger.swaggerUI
 import io.ktor.server.response.*
@@ -63,6 +64,8 @@ val startTime = System.currentTimeMillis()
 @Suppress("unused")
 fun Application.module() {
 
+    install(XForwardedHeaders)
+
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
@@ -96,6 +99,7 @@ fun Application.module() {
             println("⚠️ CORS: No hosts found in CORS_ALLOWED_HOSTS variable!")
         }
     }
+
 
     install(WebSockets) {
         pingPeriod = Duration.ofSeconds(30)

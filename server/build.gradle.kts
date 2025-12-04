@@ -37,6 +37,7 @@ dependencies {
     implementation(libs.exposed.jdbc)
     implementation(libs.postgresql.driver)
     implementation(libs.hikaricp)
+    implementation(libs.ktor.server.forwarded.header)
 
 
     // 1. Логирование
