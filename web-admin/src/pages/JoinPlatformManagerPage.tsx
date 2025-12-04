@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { Box, Paper, Typography, TextField, Button, Alert } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Alert, Avatar } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../api/axiosConfig';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
+import HandshakeIcon from '@mui/icons-material/Handshake';
 
 export const JoinPlatformManagerPage = () => {
   const { t } = useTranslation();
@@ -27,33 +28,45 @@ export const JoinPlatformManagerPage = () => {
   };
 
   return (
-    <Box maxWidth="sm">
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        {t('join_platform_manager.title')}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" gutterBottom>
-        {t('join_platform_manager.subtitle')}
-      </Typography>
+    <Box maxWidth="sm" mx="auto" mt={8}>
+      <Paper sx={{ p: 5, borderRadius: 4, textAlign: 'center', border: '1px solid', borderColor: 'divider' }} elevation={0}>
+        <Avatar sx={{ bgcolor: 'secondary.light', color: 'secondary.main', width: 64, height: 64, mx: 'auto', mb: 3 }}>
+            <HandshakeIcon fontSize="large" />
+        </Avatar>
 
-      <Paper sx={{ p: 3, mt: 2 }} component="form" onSubmit={handleSubmit}>
-        <TextField
-          fullWidth
-          label={t('join_platform_manager.code_label')}
-          value={inviteCode}
-          onChange={(e) => setInviteCode(e.target.value)}
-          margin="normal"
-        />
-        <Button
-          variant="contained"
-          type="submit"
-          disabled={loading || !inviteCode.trim()}
-        >
-          {t('join_platform_manager.submit')}
-        </Button>
+        <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #9333ea 30%, #db2777 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          {t('join_platform_manager.title')}
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
+          {t('join_platform_manager.subtitle')}
+        </Typography>
 
-        <Alert severity="info" sx={{ mt: 3 }}>
-          {t('join_platform_manager.info')}
-        </Alert>
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+            <TextField
+              fullWidth
+              label={t('join_platform_manager.code_label')}
+              value={inviteCode}
+              onChange={(e) => setInviteCode(e.target.value)}
+              margin="normal"
+              variant="outlined"
+              placeholder="PM-..."
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              type="submit"
+              fullWidth
+              size="large"
+              disabled={loading || !inviteCode.trim()}
+              sx={{ mt: 3, py: 1.5, borderRadius: 2, fontSize: '1.1rem', fontWeight: 'bold' }}
+            >
+              {loading ? t('common.loading') : t('join_platform_manager.submit')}
+            </Button>
+
+            <Alert severity="info" sx={{ mt: 4, borderRadius: 2, textAlign: 'left' }}>
+              {t('join_platform_manager.info')}
+            </Alert>
+        </Box>
       </Paper>
     </Box>
   );

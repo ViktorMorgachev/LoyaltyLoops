@@ -24,6 +24,7 @@ export interface MapSettingsConfig {
     showFilters: boolean;
     showRatings: boolean;
     showWorkingHours: boolean;
+    showFilters: boolean;
 }
 
 export interface PublicConfig {

@@ -534,115 +534,147 @@ export const PointDetailsPage = () => {
   if (loading) return <Container sx={{ mt: 4 }}><Typography>{t('common.loading')}</Typography></Container>;
   if (!details) return <Container sx={{ mt: 4 }}><Typography>Not found</Typography></Container>;
 
-  return (
-    <>
-    <Container maxWidth="lg" sx={{ mt: 4 }}>
-       {/* HEADER */}
-       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Box>
-            <Typography variant="h4">{details.point.name}</Typography>
-            <Typography color="textSecondary">{details.point.address || "No address"}</Typography>
-          </Box>
-          <Box textAlign="right">
-             <Paper elevation={3} sx={{ p: 1, px: 2, bgcolor: 'primary.light', color: 'white' }}>
-                <Typography variant="h6" fontWeight="bold">{details.point.inviteCode}</Typography>
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>{t('point_details.invite_code')}</Typography>
-             </Paper>
-          </Box>
-       </Box>
-
-       {!canEdit && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-            {t('point_details.readonly_hint')}
-        </Alert>
-       )}
-
-       <Paper sx={{ mb: 3 }}>
-         <Tabs value={tab} onChange={handleTabChange} centered>
-           <Tab label={t('point_details.tab_overview')} />
-           <Tab label={t('point_details.tab_settings')} />
-           <Tab label={t('point_details.tab_staff')} />
-         </Tabs>
-       </Paper>
-
-       {/* TAB 0: OVERVIEW */}
-       {tab === 0 && (
-         <Box>
-            <Paper sx={{ p: 3 }}>
-                <Typography variant="h6" gutterBottom>{t('point_details.block_title')}</Typography>
-                <Typography component="div">
-                    <strong>{t('point_details.overview_type')}:</strong> {t(`dashboard.types.${details.point.type}`)}
+    return (
+        <>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
+           {/* HEADER */}
+           <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={4} flexWrap="wrap" gap={2}>
+              <Box>
+                <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    {details.point.name}
                 </Typography>
-                <Typography component="div">
-                    <strong>{t('point_details.overview_status')}:</strong>{" "}
-                    <Chip
-                        label={overviewStatus}
-                        color={overviewStatusColor}
-                        size="small"
-                        sx={{ ml: 1 }}
-                    />
-                </Typography>
-                {details.point.temporarilyPaused && (
-                    <Typography component="div" sx={{ mt: 1 }}>
-                        <strong>{t('point_details.overview_pause')}:</strong>
-                        <Chip
-                            label={t('point_details.status_paused')}
-                            color="warning"
-                            size="small"
-                            sx={{ ml: 1 }}
-                        />
-                    </Typography>
-                )}
-                <Typography component="div">
-                    <strong>{t('point_details.overview_program')}:</strong> {t(`dashboard.strategies.${details.settings.programType}`)}
-                </Typography>
-                <Typography component="div">
-                    <strong>{t('point_details.overview_currency')}:</strong> {overviewCurrency}
-                </Typography>
-            </Paper>
-         </Box>
-       )}
+                <Box display="flex" alignItems="center" gap={1}>
+                     <Typography color="text.secondary" fontWeight="500">
+                        {details.point.address || t('point_details.no_address')}
+                     </Typography>
+                     {overviewStatusColor === 'success' && <Chip label={t('common.status_active')} color="success" size="small" sx={{ height: 20, fontSize: '0.65rem' }} />}
+                     {overviewStatusColor === 'warning' && <Chip label={t('point_details.status_paused')} color="warning" size="small" sx={{ height: 20, fontSize: '0.65rem' }} />}
+                </Box>
+              </Box>
+              
+              <Paper 
+                elevation={0} 
+                sx={{ 
+                    p: 2, 
+                    bgcolor: 'primary.50', 
+                    color: 'primary.main', 
+                    borderRadius: 3, 
+                    border: '1px dashed', 
+                    borderColor: 'primary.main',
+                    textAlign: 'center',
+                    minWidth: 120
+                }}
+              >
+                 <Typography variant="caption" display="block" sx={{ textTransform: 'uppercase', letterSpacing: 1, fontWeight: 600, mb: 0.5 }}>
+                    {t('point_details.invite_code')}
+                 </Typography>
+                 <Typography variant="h5" fontWeight="900" sx={{ letterSpacing: 2 }}>
+                    {details.point.inviteCode}
+                 </Typography>
+              </Paper>
+           </Box>
+    
+           {!canEdit && (
+            <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
+                {t('point_details.readonly_hint')}
+            </Alert>
+           )}
+    
+           <Paper elevation={0} sx={{ mb: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+             <Tabs 
+                value={tab} 
+                onChange={handleTabChange} 
+                variant="fullWidth"
+                sx={{ 
+                    bgcolor: 'background.paper',
+                    '& .MuiTab-root': { py: 3, fontWeight: 600 },
+                    '& .Mui-selected': { color: 'primary.main' }
+                }}
+             >
+               <Tab label={t('point_details.tab_overview')} />
+               <Tab label={t('point_details.tab_settings')} />
+               <Tab label={t('point_details.tab_staff')} />
+             </Tabs>
+           </Paper>
+    
+           {/* TAB 0: OVERVIEW */}
+           {tab === 0 && (
+             <Box>
+                <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold">{t('point_details.block_title')}</Typography>
+                    
+                    <List disablePadding>
+                        <ListItem disableGutters sx={{ py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <ListItemText primary={t('point_details.overview_type')} secondary={t(`dashboard.types.${details.point.type}`)} />
+                        </ListItem>
+                        <ListItem disableGutters sx={{ py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <ListItemText 
+                                primary={t('point_details.overview_status')} 
+                                secondary={
+                                    <Box display="flex" alignItems="center" gap={1} mt={0.5}>
+                                        <Chip label={overviewStatus} color={overviewStatusColor} size="small" />
+                                        {details.point.temporarilyPaused && <Chip label={t('point_details.status_paused')} color="warning" size="small" />}
+                                    </Box>
+                                } 
+                            />
+                        </ListItem>
+                        <ListItem disableGutters sx={{ py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <ListItemText primary={t('point_details.overview_program')} secondary={t(`dashboard.strategies.${details.settings.programType}`)} />
+                        </ListItem>
+                        <ListItem disableGutters sx={{ py: 1.5 }}>
+                            <ListItemText primary={t('point_details.overview_currency')} secondary={overviewCurrency} />
+                        </ListItem>
+                    </List>
+                </Paper>
+             </Box>
+           )}
 
        {/* TAB 1: SETTINGS */}
        {tab === 1 && (
-         <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
-            <Typography variant="h6" mb={2}>{t('point_details.tab_settings')}</Typography>
+         <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, maxWidth: 800, mx: 'auto', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" mb={3} fontWeight="bold">{t('point_details.tab_settings')}</Typography>
             
-            <TextField 
-                label={t('dashboard.label_point_name')} 
-                fullWidth margin="normal" 
-                value={formData.name} 
-                onChange={e => setFormData({...formData, name: e.target.value})}
-            />
-            <TextField 
-                label={t('point_details.address_label')}
-                fullWidth margin="normal" 
-                value={formData.address} 
-                onChange={e => setFormData({...formData, address: e.target.value})}
-            />
-            <TextField
-                label={t('point_details.contact_phone_label')}
-                fullWidth
-                margin="normal"
-                value={formData.contactPhone ?? ''}
-                onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                disabled={!canEdit}
-                inputProps={{ maxLength: 30, inputMode: 'tel' }}
-            />
-            <TextField
-                label={t('point_details.contact_link_label')}
-                fullWidth
-                margin="normal"
-                value={formData.contactLink ?? ''}
-                onChange={(e) => setFormData({ ...formData, contactLink: e.target.value })}
-                disabled={!canEdit}
-                helperText={t('point_details.contact_link_hint')}
-                inputProps={{ maxLength: 80 }}
-            />
+            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
+                <TextField 
+                    label={t('dashboard.label_point_name')} 
+                    fullWidth margin="normal" 
+                    value={formData.name} 
+                    onChange={e => setFormData({...formData, name: e.target.value})}
+                    variant="outlined"
+                />
+                <TextField 
+                    label={t('point_details.address_label')}
+                    fullWidth margin="normal" 
+                    value={formData.address} 
+                    onChange={e => setFormData({...formData, address: e.target.value})}
+                />
+                <TextField
+                    label={t('point_details.contact_phone_label')}
+                    fullWidth
+                    margin="normal"
+                    value={formData.contactPhone ?? ''}
+                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
+                    disabled={!canEdit}
+                    inputProps={{ maxLength: 30, inputMode: 'tel' }}
+                />
+                <TextField
+                    label={t('point_details.contact_link_label')}
+                    fullWidth
+                    margin="normal"
+                    value={formData.contactLink ?? ''}
+                    onChange={(e) => setFormData({ ...formData, contactLink: e.target.value })}
+                    disabled={!canEdit}
+                    helperText={t('point_details.contact_link_hint')}
+                    inputProps={{ maxLength: 80 }}
+                />
+            </Box>
+            
             <TextField
                 label={t('point_details.additional_info_label')}
                 fullWidth
                 margin="normal"
+                multiline
+                rows={2}
                 value={formData.additionalInfo ?? ''}
                 onChange={(e) => setFormData({ ...formData, additionalInfo: e.target.value })}
                 disabled={!canEdit}
@@ -672,92 +704,104 @@ export const PointDetailsPage = () => {
                 </Select>
             </FormControl>
 
-            <Typography variant="subtitle2" mt={1} mb={0.5}>{t('point_details.map_location')}</Typography>
-            <LocationPicker 
-                key={`${formData.latitude ?? 'no-lat'}-${formData.longitude ?? 'no-lng'}`}
-                initialLat={formData.latitude}
-                initialLng={formData.longitude}
-                onLocationChange={handleLocationChange}
-                markerLabel={formData.name || t('point_details.map_point_label', 'Trading point')}
-            />
+            <Box mt={4}>
+                <Typography variant="subtitle2" gutterBottom fontWeight="600">{t('point_details.map_location')}</Typography>
+                <Paper variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2 }}>
+                    <LocationPicker 
+                        key={`${formData.latitude ?? 'no-lat'}-${formData.longitude ?? 'no-lng'}`}
+                        initialLat={formData.latitude}
+                        initialLng={formData.longitude}
+                        onLocationChange={handleLocationChange}
+                        markerLabel={formData.name || t('point_details.map_point_label', 'Trading point')}
+                        height={300}
+                    />
+                </Paper>
+            </Box>
 
-            <Divider sx={{ my: 3 }} />
+            <Divider sx={{ my: 4 }} />
 
-            <Box display="flex" flexDirection="column" gap={2} mb={2}>
-                <Box>
-                    <Typography variant="h6">{t('point_details.schedule_title')}</Typography>
-                    <Typography variant="body2" color="text.secondary">
+            <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={4} mb={4}>
+                <Box flex={1}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold">{t('point_details.schedule_title')}</Typography>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
                         {t('point_details.schedule_hint')}
                     </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                    <Typography variant="caption" color="text.secondary" display="block" mb={2} sx={{ bgcolor: 'grey.100', py: 0.5, px: 1, borderRadius: 1, display: 'inline-block' }}>
                         {t('point_details.schedule_timezone', { tz: scheduleTimezone })}
                     </Typography>
-                    <Button variant="outlined" onClick={() => setScheduleDialogOpen(true)}>
+                    <Button variant="outlined" onClick={() => setScheduleDialogOpen(true)} sx={{ borderRadius: 2 }}>
                         {hasPublishedSchedule
                             ? t('point_details.schedule_edit_button_existing')
                             : t('point_details.schedule_edit_button')}
                     </Button>
                 </Box>
-                <FormControlLabel
-                    sx={{ alignItems: 'flex-start' }}
-                    control={
-                        <Switch
-                            checked={temporarilyPaused}
-                            onChange={(e) => setTemporarilyPaused(e.target.checked)}
-                            color="warning"
-                            disabled={!canEdit}
-                        />
-                    }
-                    label={
-                        <Box>
-                            <Typography fontWeight={600}>{t('point_details.pause_label')}</Typography>
-                            <Typography variant="caption" color="text.secondary">
-                                {t('point_details.pause_helper')}
-                            </Typography>
-                        </Box>
-                    }
-                />
+                
+                <Box flex={1} p={2} bgcolor="warning.50" borderRadius={3} border="1px dashed" borderColor="warning.main">
+                    <FormControlLabel
+                        sx={{ alignItems: 'flex-start', ml: 0 }}
+                        control={
+                            <Switch
+                                checked={temporarilyPaused}
+                                onChange={(e) => setTemporarilyPaused(e.target.checked)}
+                                color="warning"
+                                disabled={!canEdit}
+                                sx={{ mt: 0.5, mr: 1 }}
+                            />
+                        }
+                        label={
+                            <Box>
+                                <Typography fontWeight={700} color="warning.dark">{t('point_details.pause_label')}</Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2, display: 'block', mt: 0.5 }}>
+                                    {t('point_details.pause_helper')}
+                                </Typography>
+                            </Box>
+                        }
+                    />
+                </Box>
             </Box>
 
             {temporarilyPaused && (
-                <Alert severity="warning" sx={{ mb: 2 }}>
+                <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
                     {t('point_details.pause_warning')}
                 </Alert>
             )}
 
-            <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <Typography variant="subtitle2">{t('point_details.schedule_preview_title')}</Typography>
-                <Typography variant="body2" color="text.secondary" mb={1}>
-                    {t('point_details.schedule_preview_hint')}
-                </Typography>
-                <List dense disablePadding>
+            <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 3, bgcolor: 'grey.50' }}>
+                <Typography variant="subtitle2" gutterBottom>{t('point_details.schedule_preview_title')}</Typography>
+                <List dense disablePadding sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: x => 1 }}>
                     {WEEK_DAYS.map(({ id, shortKey }) => {
                         const entry = scheduleState[id];
                         return (
                             <ListItem key={id} disableGutters>
                                 <ListItemText
                                     primary={t(shortKey)}
-                                    primaryTypographyProps={{ color: 'text.secondary' }}
+                                    primaryTypographyProps={{ color: 'text.secondary', width: 40, display: 'inline-block' }}
+                                    secondary={
+                                        <Typography component="span" fontWeight={entry.enabled ? 600 : 400} color="text.primary">
+                                            {formatScheduleDisplay(entry, t)}
+                                        </Typography>
+                                    }
                                 />
-                                <Typography fontWeight={entry.enabled ? 600 : 400}>
-                                    {formatScheduleDisplay(entry, t)}
-                                </Typography>
                             </ListItem>
                         );
                     })}
                 </List>
             </Paper>
 
-            <Box mt={3}>
-                <Typography variant="subtitle2">{t('point_details.map_preview_title')}</Typography>
-                <Typography variant="body2" color="text.secondary" mb={1}>
+            <Box mt={4} mb={4}>
+                <Typography variant="subtitle2" gutterBottom fontWeight="600">{t('point_details.map_preview_title')}</Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
                     {t('point_details.map_preview_hint')}
                 </Typography>
-                <Button variant="outlined" onClick={() => setMapPreviewOpen(true)}>
+                <Button variant="outlined" onClick={() => setMapPreviewOpen(true)} sx={{ borderRadius: 2 }}>
                     {t('point_details.map_preview_cta', 'Открыть карту клиентов')}
                 </Button>
             </Box>
             
+            <Divider sx={{ my: 4 }} />
+            
+            <Typography variant="h6" gutterBottom fontWeight="bold">{t('dashboard.label_strategy')}</Typography>
+
             {(programType === 'VISIT_COUNTER' || programType === 'HYBRID') && (
                 <TextField 
                     label={t('dashboard.label_target')} 
@@ -771,90 +815,94 @@ export const PointDetailsPage = () => {
             )}
 
             {(programType === 'TIERED_LTV' || programType === 'HYBRID') && (
-                <Box mt={3}>
-                    <TextField
-                        label={t('point_details.max_burn_label')}
-                        type="number"
-                        fullWidth
-                        margin="normal"
-                        value={maxBurnPercentage}
-                        onChange={(e) => {
-                            let val = parseInt(e.target.value);
-                            if (val < 0) val = 0;
-                            if (val > 100) val = 100;
-                            setMaxBurnPercentage(val);
-                        }}
-                        helperText={t('point_details.max_burn_hint')}
-                    />
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                color="primary"
-                                checked={awardOnMixedPayment}
-                                onChange={(e) => setAwardOnMixedPayment(e.target.checked)}
+                <Box mt={2}>
+                    <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                        <TextField
+                            label={t('point_details.max_burn_label')}
+                            type="number"
+                            fullWidth
+                            margin="normal"
+                            value={maxBurnPercentage}
+                            onChange={(e) => {
+                                let val = parseInt(e.target.value);
+                                if (val < 0) val = 0;
+                                if (val > 100) val = 100;
+                                setMaxBurnPercentage(val);
+                            }}
+                            helperText={t('point_details.max_burn_hint')}
+                        />
+                        <Box display="flex" alignItems="center">
+                             <FormControlLabel
+                                control={
+                                    <Switch
+                                        color="primary"
+                                        checked={awardOnMixedPayment}
+                                        onChange={(e) => setAwardOnMixedPayment(e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <Box>
+                                        <Typography variant="body2" fontWeight="500">{t('point_details.award_mixed_label', 'Award cashback on mixed payment')}</Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                            {t('point_details.award_mixed_hint', 'Accrue bonuses on the money part even if the client spends points.')}
+                                        </Typography>
+                                    </Box>
+                                }
                             />
-                        }
-                        label={
-                            <Box>
-                                <Typography variant="body2">{t('point_details.award_mixed_label', 'Award cashback on mixed payment')}</Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    {t('point_details.award_mixed_hint', 'Accrue bonuses on the money part even if the client spends points.')}
-                                </Typography>
-                            </Box>
-                        }
-                        sx={{ mt: 1 }}
-                    />
+                        </Box>
+                    </Box>
 
-                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 2 }}>{t('point_details.levels_config')}</Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {t('point_details.cashback_rule_hint')}
-                    </Typography>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>{t('point_details.lvl_name')}</TableCell>
-                                <TableCell>{t('point_details.lvl_threshold')}</TableCell>
-                                <TableCell>{t('point_details.lvl_percent')}</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {tiers.map((tier, idx) => (
-                                <TableRow key={idx}>
-                                    <TableCell>{renderTierLabel(tier)}</TableCell>
-                                    <TableCell>
-                                        <TextField 
-                                            type="number"
-                                            size="small" 
-                                            value={tier.threshold}
-                                            disabled={tier.levelIndex === 1}
-                                            inputProps={{ min: 0, inputMode: 'decimal' }}
-                                            onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
-                                            onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
-                                        />
-                                    </TableCell>
-                                    <TableCell>
-                                        <TextField 
-                                            type="number"
-                                            size="small"
-                                            value={tier.cashbackPercent}
-                                            inputProps={{ min: 0, inputMode: 'decimal' }}
-                                            onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
-                                            onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
-                                            InputProps={{ endAdornment: <span style={{marginLeft: 4}}>%</span> }}
-                                        />
-                                    </TableCell>
+                    <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>{t('point_details.levels_config')}</Typography>
+                    <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
+                        <Table size="small">
+                            <TableHead sx={{ bgcolor: 'grey.100' }}>
+                                <TableRow>
+                                    <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_name')}</TableCell>
+                                    <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_threshold')}</TableCell>
+                                    <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_percent')}</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
+                            </TableHead>
+                            <TableBody>
+                                {tiers.map((tier, idx) => (
+                                    <TableRow key={idx}>
+                                        <TableCell>{renderTierLabel(tier)}</TableCell>
+                                        <TableCell>
+                                            <TextField 
+                                                type="number"
+                                                size="small" 
+                                                value={tier.threshold}
+                                                disabled={tier.levelIndex === 1}
+                                                inputProps={{ min: 0, inputMode: 'decimal' }}
+                                                onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
+                                                onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
+                                                sx={{ maxWidth: 120 }}
+                                            />
+                                        </TableCell>
+                                        <TableCell>
+                                            <TextField 
+                                                type="number"
+                                                size="small" 
+                                                value={tier.cashbackPercent}
+                                                inputProps={{ min: 0, inputMode: 'decimal' }}
+                                                onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
+                                                onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
+                                                InputProps={{ endAdornment: <span style={{marginLeft: 4, fontSize: '0.8rem', color: 'gray'}}>%</span> }}
+                                                sx={{ maxWidth: 100 }}
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </Paper>
                 </Box>
             )}
             
-            <Box mt={4} display="flex" justifyContent="space-between">
+            <Box mt={6} display="flex" justifyContent="space-between" alignItems="center" pt={4} borderTop="1px solid" borderColor="divider">
                 <Button color="error" onClick={handleDeletePoint} startIcon={<DeleteIcon />}>
                     {t('point_details.delete_point')}
                 </Button>
-                <Button variant="contained" onClick={handleSaveSettings} startIcon={<SaveIcon />} disabled={!canEdit}>
+                <Button variant="contained" onClick={handleSaveSettings} startIcon={<SaveIcon />} disabled={!canEdit} size="large" sx={{ px: 4, borderRadius: 2 }}>
                     {t('common.save')}
                 </Button>
             </Box>
@@ -863,33 +911,35 @@ export const PointDetailsPage = () => {
 
        {/* TAB 2: STAFF */}
        {tab === 2 && (
-         <Paper>
-             <Table>
-                 <TableHead>
+         <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+             <Box sx={{ overflowX: 'auto' }}>
+                 <Table sx={{ minWidth: 600 }}>
+                     <TableHead sx={{ bgcolor: 'action.hover' }}>
                      <TableRow>
-                         <TableCell>Name</TableCell>
-                         <TableCell>Phone</TableCell>
-                         <TableCell align="right">Actions</TableCell>
+                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
+                         <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
+                         <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
                      </TableRow>
                  </TableHead>
                  <TableBody>
                      {cashiers.length === 0 ? (
-                         <TableRow><TableCell colSpan={3} align="center">{t('point_details.staff_empty')}</TableCell></TableRow>
+                         <TableRow><TableCell colSpan={3} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('point_details.staff_empty')}</TableCell></TableRow>
                      ) : (
                          cashiers.map(c => (
-                             <TableRow key={c.id}>
+                             <TableRow key={c.id} hover>
                                  <TableCell>{c.name}</TableCell>
                                  <TableCell>{c.phone}</TableCell>
                                  <TableCell align="right">
-                                     <Button color="error" size="small" onClick={() => handleFireCashier(c.id)}>
+                                     <Button color="error" size="small" variant="outlined" onClick={() => handleFireCashier(c.id)}>
                                         {t('point_details.fire_cashier')}
                                      </Button>
                                  </TableCell>
                              </TableRow>
                          ))
                      )}
-                 </TableBody>
-             </Table>
+                     </TableBody>
+                 </Table>
+             </Box>
          </Paper>
        )}
     </Container>

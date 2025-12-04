@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Box, Paper, Typography, TextField, Button } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Avatar } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import { api } from '../api/axiosConfig';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import LockResetIcon from '@mui/icons-material/LockReset';
 
 export const PinResetPage = () => {
   const { t } = useTranslation();
@@ -51,10 +52,25 @@ export const PinResetPage = () => {
   };
 
   return (
-    <Box maxWidth={480} mx="auto" mt={8}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>{t('pin_reset.title')}</Typography>
-        <Typography color="textSecondary" paragraph>
+    <Box 
+        sx={{ 
+            minHeight: '100vh', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center', 
+            bgcolor: '#f0f2f5',
+            p: 2
+        }}
+    >
+      <Paper elevation={0} sx={{ p: 5, width: '100%', maxWidth: 440, borderRadius: 4, textAlign: 'center', border: '1px solid', borderColor: 'divider' }}>
+        <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main', width: 64, height: 64, mx: 'auto', mb: 3 }}>
+            <LockResetIcon fontSize="large" />
+        </Avatar>
+
+        <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {t('pin_reset.title')}
+        </Typography>
+        <Typography color="text.secondary" paragraph sx={{ mb: 4 }}>
           {t('pin_reset.subtitle')}
         </Typography>
 
@@ -64,6 +80,7 @@ export const PinResetPage = () => {
           onChange={(e) => setToken(e.target.value)}
           fullWidth
           margin="normal"
+          variant="outlined"
         />
 
         <TextField
@@ -89,11 +106,16 @@ export const PinResetPage = () => {
         <Button
           variant="contained"
           fullWidth
-          sx={{ mt: 3 }}
+          size="large"
+          sx={{ mt: 4, borderRadius: 3, py: 1.5, fontSize: '1.1rem' }}
           onClick={handleSubmit}
           disabled={loading}
         >
           {loading ? t('common.loading') : t('pin_reset.submit')}
+        </Button>
+        
+        <Button variant="text" sx={{ mt: 2 }} onClick={() => navigate('/login')}>
+            {t('common.cancel')}
         </Button>
       </Paper>
     </Box>

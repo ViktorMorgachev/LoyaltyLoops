@@ -523,6 +523,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         map_key_missing: "Отсутствует API-ключ Yandex Maps",
         filter_type: "Тип бизнеса",
         filter_radius: "Радиус: {{value}}",
+        filter_radius_short: "Радиус",
         radius_disabled_label: "Радиус недоступен",
         filter_open_now: "Только открытые сейчас",
         refresh_points: "Обновить точки",
