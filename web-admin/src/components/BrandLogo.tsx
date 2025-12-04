@@ -1,9 +1,8 @@
-import { Box, useTheme } from '@mui/material';
+import { Box } from '@mui/material';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
 export const BrandLogo = ({ size = 64 }: { size?: number }) => {
-    const theme = useTheme();
     const tagSize = size;
     const heartSize = size * 0.45;
 

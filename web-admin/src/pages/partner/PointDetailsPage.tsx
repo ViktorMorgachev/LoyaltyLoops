@@ -768,7 +768,7 @@ export const PointDetailsPage = () => {
 
             <Paper variant="outlined" sx={{ p: 3, mb: 4, borderRadius: 3, bgcolor: 'grey.50' }}>
                 <Typography variant="subtitle2" gutterBottom>{t('point_details.schedule_preview_title')}</Typography>
-                <List dense disablePadding sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: x => 1 }}>
+                <List dense disablePadding sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 1 }}>
                     {WEEK_DAYS.map(({ id, shortKey }) => {
                         const entry = scheduleState[id];
                         return (

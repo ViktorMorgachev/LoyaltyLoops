@@ -4,7 +4,6 @@ import { Button, TextField, Typography, Paper, Box, CircularProgress, InputAdorn
 import { useNavigate } from 'react-router-dom';
 import PhoneIcon from '@mui/icons-material/Phone';
 import LockIcon from '@mui/icons-material/Lock';
-import LoyaltyIcon from '@mui/icons-material/Loyalty';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import { useTranslation } from 'react-i18next'; 
@@ -12,7 +11,7 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { useUser } from '../context/UserContext';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
-import { MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { MenuItem, Select, FormControl } from '@mui/material';
 import { BrandLogo } from '../components/BrandLogo';
 
 const COUNTRY_CODES = [

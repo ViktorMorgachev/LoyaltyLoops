@@ -1,9 +1,8 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
   CircularProgress,
-  Divider,
   List,
   ListItemButton,
   ListItemText,
@@ -116,7 +115,6 @@ const PartnerSupportChat: React.FC = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useNotification();
   const notify = useBrowserNotifier();
-  const [thread, setThread] = useState<SupportThread | null>(null);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -126,7 +124,6 @@ const PartnerSupportChat: React.FC = () => {
   const fetchThread = useCallback(async () => {
     try {
       const { data } = await api.get<SupportThreadResponse>('/partners/support/thread');
-      setThread(data.thread);
       setMessages(sortMessages(data.messages));
     } catch (e: any) {
       showError(getErrorMessage(e));
@@ -146,9 +143,6 @@ const PartnerSupportChat: React.FC = () => {
     const socket = new WebSocket(`${WS_BASE_URL}/ws/support/partner?token=${token}`);
     socket.onmessage = (event) => {
       const payload: SupportChatEvent = JSON.parse(event.data);
-      if (payload.thread) {
-        setThread(payload.thread);
-      }
       if (payload.message) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === payload.message!.id)) {
