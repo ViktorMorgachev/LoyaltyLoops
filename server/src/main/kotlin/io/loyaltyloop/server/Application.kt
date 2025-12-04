@@ -82,37 +82,38 @@ fun Application.module() {
         allowCredentials = true
         allowNonSimpleContentTypes = true
 
-        // --- ЛОГИКА ПРОВЕРКИ ДОМЕНОВ ---
-
-        // Читаем список разрешенных доменов из ENV
-        // Превращаем в список и чистим от пробелов
-
-        // 2. Разрешаем домены из ENV (Production/Stage)
-        val envHostsString = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
-        val allowedHosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
-
-        println("🛡️ CORS Configured. Allowed hosts from ENV: $allowedHosts")
-
-        // Используем allowHost c ЛЯМБДОЙ (Предикатом).
-        // В переменную 'host' Ktor передает только домен (без https://), например "loyaltyloop.up.railway.app"
-
-
-
-        // Разбиваем строку по запятой и убираем пробелы
-        val hosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-
-        if (hosts.isNotEmpty()) {
-            println("🛡️ CORS: Adding allowed hosts from ENV: $hosts")
-
-            hosts.forEach { host ->
-                // САМЫЙ ВАЖНЫЙ МОМЕНТ:
-                // Мы разрешаем этот домен И для http, И для https.
-                // Это решает проблему, когда Railway внутри своей сети обращается к контейнеру по http.
-                allowHost(host, schemes = listOf("http", "https"))
-            }
-        } else {
-            println("⚠️ CORS: Variable CORS_ALLOWED_HOSTS is empty! External requests might be blocked.")
-        }
+        anyHost()
+//        // --- ЛОГИКА ПРОВЕРКИ ДОМЕНОВ ---
+//
+//        // Читаем список разрешенных доменов из ENV
+//        // Превращаем в список и чистим от пробелов
+//
+//        // 2. Разрешаем домены из ENV (Production/Stage)
+//        val envHostsString = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
+//        val allowedHosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+//
+//        println("🛡️ CORS Configured. Allowed hosts from ENV: $allowedHosts")
+//
+//        // Используем allowHost c ЛЯМБДОЙ (Предикатом).
+//        // В переменную 'host' Ktor передает только домен (без https://), например "loyaltyloop.up.railway.app"
+//
+//
+//
+//        // Разбиваем строку по запятой и убираем пробелы
+//        val hosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+//
+//        if (hosts.isNotEmpty()) {
+//            println("🛡️ CORS: Adding allowed hosts from ENV: $hosts")
+//
+//            hosts.forEach { host ->
+//                // САМЫЙ ВАЖНЫЙ МОМЕНТ:
+//                // Мы разрешаем этот домен И для http, И для https.
+//                // Это решает проблему, когда Railway внутри своей сети обращается к контейнеру по http.
+//                allowHost(host, schemes = listOf("http", "https"))
+//            }
+//        } else {
+//            println("⚠️ CORS: Variable CORS_ALLOWED_HOSTS is empty! External requests might be blocked.")
+//        }
     }
 
 
@@ -140,10 +141,16 @@ fun Application.module() {
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val cardRealtimeService = CardRealtimeService()
-    val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository, cardRealtimeService)
+    val transactionService = TransactionService(
+        userRepository,
+        transactionRepository,
+        partnerRepository,
+        cardRealtimeService
+    )
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
-    val webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
+    val webBaseUrl =
+        environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
     val supportChatWebSocketHandler = SupportChatWebSocketHandler(
         tokenService = tokenService,
         partnerRepository = partnerRepository,
@@ -205,7 +212,8 @@ fun Application.module() {
 
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
-    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()?.takeIf { it.isNotBlank() }
+    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()
+        ?.takeIf { it.isNotBlank() }
     if (forcePartnerPin != null) {
         launch {
             val affected = partnerRepository.resetAllPartnerPins(forcePartnerPin)
@@ -303,7 +311,9 @@ fun Application.module() {
             partnerRepo = partnerRepository,
             supportChatService = supportChatService
         )
-        val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
+        val enableTestSupport =
+            environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()
+                ?.toBoolean() ?: false
         if (enableTestSupport) {
             testSupportRoutes(
                 userRepository = userRepository,
