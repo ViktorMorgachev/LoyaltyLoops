@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Container, Typography, Paper, List, ListItem, ListItemButton, ListItemText, ListItemAvatar, Avatar } from '@mui/material';
+import { Container, Typography, Paper, List, ListItem, ListItemButton, ListItemText, ListItemAvatar, Avatar, Box } from '@mui/material';
 import { Store as StoreIcon, AdminPanelSettings as AdminIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext'; 
@@ -32,32 +32,60 @@ export const SelectRolePage = () => {
 
   return (
     <>
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Typography variant="h4" gutterBottom align="center">
-        {t('select_role.title')}
-      </Typography>
-      <Typography variant="body2" color="text.secondary" align="center" sx={{ mb: 3 }}>
-        {t('select_role.subtitle')}
-      </Typography>
-      <Paper elevation={3}>
-        <List>
+    <Container maxWidth="md" sx={{ mt: 8 }}>
+      <Box textAlign="center" mb={6}>
+          <Typography variant="h3" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {t('select_role.title')}
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            {t('select_role.subtitle')}
+          </Typography>
+      </Box>
+
+      <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
           {workspaces.map((ws) => (
-            <ListItem key={`${ws.id}-${ws.role}`} disablePadding>
-              <ListItemButton onClick={() => handleSelect(ws)}>
-                <ListItemAvatar>
-                  <Avatar sx={{ bgcolor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main' }}>
-                    {ws.role === 'PLATFORM_SUPER_ADMIN' ? <AdminIcon /> : <StoreIcon />}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText 
-                    primary={ws.title} 
-                    secondary={ws.role.replace('_', ' ')} 
-                />
-              </ListItemButton>
-            </ListItem>
+            <Paper
+                key={`${ws.id}-${ws.role}`}
+                elevation={0}
+                onClick={() => handleSelect(ws)}
+                sx={{
+                    p: 3,
+                    borderRadius: 4,
+                    border: '1px solid',
+                    borderColor: 'divider',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.15)',
+                        borderColor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main'
+                    },
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 2
+                }}
+            >
+                <Avatar 
+                    sx={{ 
+                        width: 56, 
+                        height: 56, 
+                        bgcolor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.light' : 'primary.light',
+                        color: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main'
+                    }}
+                >
+                    {ws.role === 'PLATFORM_SUPER_ADMIN' ? <AdminIcon fontSize="large" /> : <StoreIcon fontSize="large" />}
+                </Avatar>
+                <Box>
+                    <Typography variant="h6" fontWeight="bold">
+                        {ws.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                        {ws.role.replace(/_/g, ' ').toLowerCase()}
+                    </Typography>
+                </Box>
+            </Paper>
           ))}
-        </List>
-      </Paper>
+      </Box>
     </Container>
     {PinDialog}
     </>

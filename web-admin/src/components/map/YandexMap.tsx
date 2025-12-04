@@ -8,6 +8,7 @@ export type MapPoint = {
     coordinates: [number, number];
     // Опции для стандартных пинов
     color?: string;
+    iconColor?: string;
     label?: string;
     preset?: string;
     active?: boolean;
@@ -64,7 +65,6 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     onMapClickRef.current = onMapClick;
     onMarkerClickRef.current = onMarkerClick;
 
-    const { config } = useAppConfig();
     const fallbackKey = useMemo(() => {
         return apiKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
     }, [apiKey]);

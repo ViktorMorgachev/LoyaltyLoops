@@ -286,54 +286,59 @@ export const PointsPage = () => {
         )}
       </Box>
 
-      <Paper elevation={2}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>{t('dashboard.table_name')}</TableCell>
-              <TableCell>{t('dashboard.table_type')}</TableCell>
-              <TableCell>{t('dashboard.table_invite')}</TableCell>
-              <TableCell>{t('common.status')}</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {points.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={4} align="center">{t('dashboard.empty')}</TableCell>
-              </TableRow>
-            )}
-            {points.map((p) => (
-              <TableRow 
-                key={p.id} 
-                hover 
-                onClick={() => navigate(`/partner/points/${p.id}`)} 
-                sx={{ cursor: 'pointer' }}
-              >
-                <TableCell>{p.name}</TableCell>
-                <TableCell>{getLocalizedType(p.type)}</TableCell>
-                <TableCell>
-                  {p.inviteCode ? (
-                    <Chip
-                      label={p.inviteCode}
-                      onClick={(e) => copyInvite(e, p.inviteCode)}
-                      icon={<ContentCopyIcon />}
-                      color="primary"
-                      clickable
-                      variant="outlined"
-                    />
-                  ) : "—"}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={p.active ? t('common.status_active') : t('common.status_not_paid')}
-                    color={p.active ? "success" : "error"}
-                    size="small"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+      <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+        <Box sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead sx={{ bgcolor: 'action.hover' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_name')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_type')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_invite')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('common.status')}</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {points.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                        {t('dashboard.empty')}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {points.map((p) => (
+                  <TableRow 
+                    key={p.id} 
+                    hover 
+                    onClick={() => navigate(`/partner/points/${p.id}`)} 
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    <TableCell>{p.name}</TableCell>
+                    <TableCell>{getLocalizedType(p.type)}</TableCell>
+                    <TableCell>
+                      {p.inviteCode ? (
+                        <Chip
+                          label={p.inviteCode}
+                          onClick={(e) => copyInvite(e, p.inviteCode)}
+                          icon={<ContentCopyIcon />}
+                          color="primary"
+                          clickable
+                          variant="outlined"
+                          size="small"
+                        />
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={p.active ? t('common.status_active') : t('common.status_not_paid')}
+                        color={p.active ? "success" : "error"}
+                        size="small"
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+        </Box>
       </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>

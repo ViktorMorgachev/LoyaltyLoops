@@ -2,6 +2,7 @@ package io.loyaltyloop.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
+import io.ktor.client.HttpClient
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -12,6 +13,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.CORS
@@ -50,12 +52,16 @@ import io.loyaltyloop.shared.models.AppErrorCode
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
+import io.loyaltyloop.server.service.sms.ConsoleSmsService
+import io.loyaltyloop.server.service.sms.InternalVerificationService
+import io.loyaltyloop.server.service.sms.SmsService
+import io.loyaltyloop.server.service.sms.verification.PreludeVerificationService
 import java.time.Duration
 
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
-    io.ktor.server.netty.EngineMain.main(args)
+   val server =  io.ktor.server.netty.EngineMain.main(args)
 }
 
 val startTime = System.currentTimeMillis()
@@ -108,6 +114,7 @@ fun Application.module() {
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val cardRealtimeService = CardRealtimeService()
+    val smsService = ConsoleSmsService()
     val transactionService = TransactionService(userRepository, transactionRepository, partnerRepository, cardRealtimeService)
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
@@ -173,8 +180,23 @@ fun Application.module() {
 
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
-    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()
-        ?.takeIf { it.isNotBlank() }
+    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()?.takeIf { it.isNotBlank() }
+    val provider = environment.config.propertyOrNull("auth.provider")?.getString() ?: "internal"
+
+    val verificationService = if (provider == "prelude") {
+        // Если в конфиге prelude - используем сервис Prelude
+        InternalVerificationService(
+            smsService = smsService,
+            otpService = otpService
+        )
+    } else {
+        // Иначе - используем внутреннюю логику (Console SMS + DB)
+        InternalVerificationService(
+            smsService = smsService,
+            otpService = otpService
+        )
+    }
+
     if (forcePartnerPin != null) {
         launch {
             val affected = partnerRepository.resetAllPartnerPins(forcePartnerPin)
@@ -254,7 +276,7 @@ fun Application.module() {
             partnerRepository = partnerRepository,
             userRepository = userRepository
         )
-        authRoutes(userRepository, partnerRepository, tokenService, otpService)
+        authRoutes(userRepository, partnerRepository, tokenService, verificationService)
         clientRoutes(userRepository, deviceTokenRepository)
         terminalRoutes(userRepository = userRepository, transactionService = transactionService)
         partnerRoutes(

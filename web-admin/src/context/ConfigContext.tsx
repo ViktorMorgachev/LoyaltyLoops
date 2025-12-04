@@ -23,6 +23,7 @@ export interface MapSettingsConfig {
     searchDebounceMs: number;
     showRatings: boolean;
     showWorkingHours: boolean;
+    showFilters: boolean;
 }
 
 export interface PublicConfig {

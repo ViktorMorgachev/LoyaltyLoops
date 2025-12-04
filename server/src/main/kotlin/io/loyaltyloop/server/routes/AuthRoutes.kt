@@ -7,8 +7,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.service.sms.verification.VerificationService
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
@@ -24,7 +24,7 @@ fun Route.authRoutes(
     repository: UserRepository,
     partnerRepository: io.loyaltyloop.server.repository.PartnerRepository,
     tokenService: TokenService,
-    otpService: OtpService
+    verificationService: VerificationService,
 ) {
 
     route("/auth") {
@@ -37,8 +37,7 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            val code = otpService.generateCode(request.phone)
-            println("SMS для ${request.phone}: $code")
+            val code = verificationService.startVerification(phone = request.phone)
 
             call.respond(
                 mapOf(
@@ -57,7 +56,7 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            if (otpService.validateCode(request.phone, request.code)) {
+            if (verificationService.checkCode(request.phone, request.code)) {
                 var user = repository.getUserByPhone(request.phone)
                 val isNew = user == null
                 if (user == null) {

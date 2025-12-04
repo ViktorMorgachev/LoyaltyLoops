@@ -12,7 +12,9 @@ enum class PartnerStatus {
 data class CreatePartnerRequest(
     val businessName: String,
     val countryCode: CountryCode = CountryCode.KG,
-    val ownerPin: String
+    val ownerPin: String,
+    val color: String? = null,
+    val logoUrl: String? = null
 )
 
 @Serializable

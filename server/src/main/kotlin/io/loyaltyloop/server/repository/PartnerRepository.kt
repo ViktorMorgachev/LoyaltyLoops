@@ -77,6 +77,10 @@ class PartnerRepository {
             it[status] = PartnerStatus.PENDING
             it[adminPinHash] = pinHash
             it[defaultVisitsTarget] = 10 // Вынести в конфиги
+            if (request.color != null) {
+                it[color] = request.color!!
+            }
+            it[logoUrl] = request.logoUrl
         }
 
         newPartnerId

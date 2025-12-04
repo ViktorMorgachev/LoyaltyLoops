@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     Alert, Box, Button, Chip, CircularProgress, Dialog, Divider, Fab, IconButton, InputBase,
     List, ListItem, ListItemButton, Menu, MenuItem, Paper, Popover, Slider, Stack,
-    Typography, useTheme
+    Typography
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import MyLocationIcon from '@mui/icons-material/MyLocation';
@@ -16,8 +16,8 @@ import type { TFunction } from 'i18next';
 import { YandexMap } from './YandexMap';
 import type { MapPoint } from './YandexMap';
 import { useAppConfig } from '../../context/ConfigContext';
-import { API_BASE_URL, api } from '../../api/axiosConfig';
-import { formatIntervals, normalizeSchedule, WEEK_DAY_ORDER } from '../../utils/scheduleUtils';
+import { api } from '../../api/axiosConfig';
+import { formatIntervals, normalizeSchedule } from '../../utils/scheduleUtils';
 import type { TradingPointDto, TradingPointSearchResponse, TradingPointType } from '../../types/points';
 
 interface PublicPointsPreviewDialogProps {
@@ -179,7 +179,6 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
 }) => {
     const { t } = useTranslation();
     const { config } = useAppConfig();
-    const theme = useTheme();
 
     const defaultRadius = Math.min(config?.map?.defaultRadiusMeters ?? 2000, 3000);
     const minRadius = config?.map?.minRadiusMeters ?? 50;
@@ -289,8 +288,6 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
 
     useEffect(() => { if (open) loadPoints(); }, [open, loadPoints]);
 
-    const ownPointIdSet = useMemo(() => new Set(ownPointIds), [ownPointIds]);
-
     const visiblePoints = useMemo(() => {
         if (showOnlyMine && ownFilterAvailable) {
             if (ownPointIds.length > 0 || !loadingOwnPoints) {
@@ -369,7 +366,7 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                 setMapZoom(15);
                 loadPoints({ lat: coords[0], lon: coords[1] });
             },
-            (err) => { setGeoLoading(false); setAutoLocateTried(true); },
+            () => { setGeoLoading(false); setAutoLocateTried(true); },
             { enableHighAccuracy: true, timeout: 8000 }
         );
     }, [loadPoints]);
@@ -438,11 +435,11 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                             disabled={!ownFilterAvailable && !loadingOwnPoints}
                             sx={{ borderRadius: 2 }}
                         />
-                        <Chip label={typeFilter === 'ALL' ? t('point_details.filter_type') : t(`dashboard.types.${typeFilter}`)} onClick={(e) => setTypeAnchor(e.currentTarget)} onDelete={typeFilter !== 'ALL' ? () => setTypeFilter('ALL') : undefined} deleteIcon={<CloseIcon />} icon={<FilterListIcon />} variant={typeFilter === 'ALL' ? 'outlined' : 'filled'} color={typeFilter === 'ALL' ? 'default' : 'primary'} sx={{ borderRadius: 2 }} />
+                        <Chip label={typeFilter === 'ALL' ? t('point_details.filter_type') : t(`dashboard.types.${typeFilter}`)} onClick={(e) => setTypeAnchor(e.currentTarget as unknown as HTMLButtonElement)} onDelete={typeFilter !== 'ALL' ? () => setTypeFilter('ALL') : undefined} deleteIcon={<CloseIcon />} icon={<FilterListIcon />} variant={typeFilter === 'ALL' ? 'outlined' : 'filled'} color={typeFilter === 'ALL' ? 'default' : 'primary'} sx={{ borderRadius: 2 }} />
                         <Menu anchorEl={typeAnchor} open={Boolean(typeAnchor)} onClose={() => setTypeAnchor(null)}>
                             {TYPE_OPTIONS.map((opt) => (<MenuItem key={opt.value} selected={typeFilter === opt.value} onClick={() => { setTypeFilter(opt.value); setTypeAnchor(null); }}>{t(opt.labelKey)}</MenuItem>))}
                         </Menu>
-                        <Chip label={`${t('point_details.filter_radius_short', { defaultValue: 'Radius' })}: ${formatMeters(radius, t)}`} onClick={(e) => setRadiusAnchor(e.currentTarget)} variant="outlined" deleteIcon={<KeyboardArrowDownIcon />} onDelete={(e) => setRadiusAnchor(e.currentTarget)} sx={{ borderRadius: 2 }} />
+                        <Chip label={`${t('point_details.filter_radius_short', { defaultValue: 'Radius' })}: ${formatMeters(radius, t)}`} onClick={(e) => setRadiusAnchor(e.currentTarget as unknown as HTMLButtonElement)} variant="outlined" deleteIcon={<KeyboardArrowDownIcon />} onDelete={(e) => setRadiusAnchor(e.currentTarget as unknown as HTMLButtonElement)} sx={{ borderRadius: 2 }} />
                         <Popover open={Boolean(radiusAnchor)} anchorEl={radiusAnchor} onClose={() => setRadiusAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} PaperProps={{ sx: { p: 2, width: 300 } }}>
                             <Typography gutterBottom>{t('point_details.filter_radius', { value: formatMeters(radius, t) })}</Typography>
                             <Slider value={radius} min={minRadius} max={maxRadius} step={100} onChange={(_, v) => setRadius(v as number)} />

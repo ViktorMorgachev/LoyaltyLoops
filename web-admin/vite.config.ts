@@ -27,8 +27,8 @@ export default defineConfig(({ mode }) => ({
     host: true, // Разрешает доступ по сети (0.0.0.0), нужно для Docker/Railway
   },
 
-  esbuild: {
-    // Удаляем console.log и debugger только в продакшене
-    drop: mode === 'production' ? ['console', 'debugger'] : [],
-  }
+    esbuild: {
+      // Удаляем console.log и debugger только в продакшене
+      drop: mode === 'production' ? (['console', 'debugger'] as ("console" | "debugger")[]) : [],
+    }
 }))

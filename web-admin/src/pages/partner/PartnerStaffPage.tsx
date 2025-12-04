@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { 
     Container, Typography, Paper, Box, Button, Table, TableHead, TableBody, 
     TableRow, TableCell, Tabs, Tab, Dialog, DialogTitle, DialogContent, 
-    DialogActions, Tooltip 
+    DialogActions, Tooltip, Chip
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
@@ -102,44 +102,53 @@ export const PartnerStaffPage = () => {
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
                 <Typography variant="h4" fontWeight="bold">{t('staff.title')}</Typography>
                 {tab === 0 && canManage && (
-                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleGenerateInvite}>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={handleGenerateInvite} sx={{ borderRadius: 2 }}>
                         {t('staff.invite_manager')}
                     </Button>
                 )}
             </Box>
 
-            <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 3 }}>
-                <Tab label={t('staff.managers')} />
-                <Tab label={t('staff.cashiers')} />
-            </Tabs>
+            <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
+                    <Tabs value={tab} onChange={(_, v) => setTab(v)}>
+                        <Tab label={t('staff.managers')} sx={{ fontWeight: 600 }} />
+                        <Tab label={t('staff.cashiers')} sx={{ fontWeight: 600 }} />
+                    </Tabs>
+                </Box>
 
-            {tab === 0 && (
-                <Paper>
-                    <Table>
-                        <TableHead>
+                {tab === 0 && (
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table sx={{ minWidth: 650 }}>
+                            <TableHead sx={{ bgcolor: 'action.hover' }}>
                             <TableRow>
-                                <TableCell>{t('staff.name')}</TableCell>
-                                <TableCell>{t('staff.phone')}</TableCell>
-                                <TableCell>{t('staff.role')}</TableCell>
-                                <TableCell>{t('staff.active')}</TableCell>
-                                <TableCell align="right">{t('common.actions')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.name')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.phone')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.role')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.active')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('common.actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {managers.length === 0 ? (
-                                <TableRow><TableCell colSpan={5} align="center">{t('staff.empty_managers')}</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_managers')}</TableCell></TableRow>
                             ) : (
                                 managers.map((m) => (
-                                    <TableRow key={m.id}>
+                                    <TableRow key={m.id} hover>
                                         <TableCell>{m.name}</TableCell>
                                         <TableCell>{m.phone}</TableCell>
-                                        <TableCell>{t('staff.role_manager') || 'Manager'}</TableCell>
-                                        <TableCell>{m.active ? t('common.yes') : t('common.no')}</TableCell>
+                                        <TableCell><Chip label={t('staff.role_manager') || 'Manager'} size="small" color="primary" variant="outlined" /></TableCell>
+                                        <TableCell>
+                                            <Chip 
+                                                label={m.active ? t('common.yes') : t('common.no')} 
+                                                color={m.active ? 'success' : 'error'} 
+                                                size="small" 
+                                            />
+                                        </TableCell>
                                         <TableCell align="right">
-                                            <Button color="error" disabled={!canManage} onClick={() => handleFireManager(m.id)}>
+                                            <Button color="error" size="small" disabled={!canManage} onClick={() => handleFireManager(m.id)}>
                                                 {t('staff.fire')}
                                             </Button>
                                         </TableCell>
@@ -148,45 +157,49 @@ export const PartnerStaffPage = () => {
                             )}
                         </TableBody>
                     </Table>
-                </Paper>
-            )}
+                  </Box>
+                )}
 
-            {tab === 1 && (
-                <Paper>
-                    <Table>
-                        <TableHead>
+                {tab === 1 && (
+                    <Box sx={{ overflowX: 'auto' }}>
+                        <Table sx={{ minWidth: 650 }}>
+                            <TableHead sx={{ bgcolor: 'action.hover' }}>
                             <TableRow>
-                                <TableCell>{t('staff.name')}</TableCell>
-                                <TableCell>{t('staff.phone')}</TableCell>
-                                <TableCell>{t('staff.role')}</TableCell>
-                                <TableCell>{t('history.table_point')}</TableCell>
-                                <TableCell>{t('staff.active')}</TableCell>
-                                <TableCell align="right">{t('common.actions')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.name')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.phone')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.role')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('history.table_point')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.active')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('common.actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {uniqueCashiers.length === 0 ? (
-                                <TableRow><TableCell colSpan={8} align="center">{t('staff.empty_cashiers')}</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_cashiers')}</TableCell></TableRow>
                             ) : (
                                 uniqueCashiers.map((u: any) => (
-                                    <TableRow key={u.userId}>
+                                    <TableRow key={u.userId} hover>
                                         <TableCell>{u.name}</TableCell>
                                         <TableCell>{u.phone}</TableCell>
-                                        <TableCell>{t('staff.role_cashier') || 'Cashier'}</TableCell>
+                                        <TableCell><Chip label={t('staff.role_cashier') || 'Cashier'} size="small" color="secondary" variant="outlined" /></TableCell>
                                         <TableCell>
                                             {u.points.length > 1 ? (
                                                  <Tooltip title={u.points.map((p: any) => p.name).join(', ')}>
-                                                     <span style={{ borderBottom: '1px dashed gray', cursor: 'help' }}>
-                                                         {t('staff.multi_points', { count: u.points.length })}
-                                                     </span>
+                                                     <Chip label={t('staff.multi_points', { count: u.points.length })} size="small" clickable />
                                                  </Tooltip>
                                             ) : (
                                                  u.points[0]?.name || '-'
                                             )}
                                         </TableCell>
-                                        <TableCell>{u.active ? t('common.yes') : t('common.no')}</TableCell>
+                                        <TableCell>
+                                             <Chip 
+                                                label={u.active ? t('common.yes') : t('common.no')} 
+                                                color={u.active ? 'success' : 'error'} 
+                                                size="small" 
+                                            />
+                                        </TableCell>
                                         <TableCell align="right">
-                                            <Button color="error" disabled={!canManage} onClick={() => handleFireEmployee(u)}>
+                                            <Button color="error" size="small" disabled={!canManage} onClick={() => handleFireEmployee(u)}>
                                                 {t('staff.fire')}
                                             </Button>
                                         </TableCell>
@@ -195,22 +208,31 @@ export const PartnerStaffPage = () => {
                             )}
                         </TableBody>
                     </Table>
-                </Paper>
-            )}
+                  </Box>
+                )}
+            </Paper>
 
             {/* Invite Dialog */}
-            <Dialog open={openInvite} onClose={() => setOpenInvite(false)} maxWidth="xs" fullWidth>
-                <DialogTitle>{t('staff.invite_manager')}</DialogTitle>
+            <Dialog 
+                open={openInvite} 
+                onClose={() => setOpenInvite(false)} 
+                maxWidth="xs" 
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3 } }}
+            >
+                <DialogTitle sx={{ textAlign: 'center', fontWeight: 'bold' }}>{t('staff.invite_manager')}</DialogTitle>
                 <DialogContent>
-                    <Typography gutterBottom>{t('staff.invite_hint')}</Typography>
-                    <Box sx={{ p: 2, bgcolor: '#f5f5f5', borderRadius: 2, textAlign: 'center', mt: 2 }}>
-                        <Typography variant="h4" letterSpacing={4} fontWeight="bold">
+                    <Typography gutterBottom align="center" color="text.secondary">{t('staff.invite_hint')}</Typography>
+                    <Box sx={{ p: 3, bgcolor: 'primary.50', borderRadius: 3, textAlign: 'center', mt: 2, border: '1px dashed', borderColor: 'primary.main' }}>
+                        <Typography variant="h4" letterSpacing={6} fontWeight="bold" color="primary">
                             {inviteCode}
                         </Typography>
                     </Box>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setOpenInvite(false)}>OK</Button>
+                <DialogActions sx={{ justifyContent: 'center', pb: 3 }}>
+                    <Button onClick={() => setOpenInvite(false)} variant="contained" sx={{ borderRadius: 2, px: 4 }}>
+                        {t('common.close') || 'OK'}
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Container>

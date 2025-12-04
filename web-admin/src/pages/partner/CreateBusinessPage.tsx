@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Container, Paper, Typography, TextField, Button, Box } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, Avatar } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
+import StorefrontTwoToneIcon from '@mui/icons-material/StorefrontTwoTone';
 
 export const CreateBusinessPage = () => {
   const { t } = useTranslation();
@@ -31,20 +32,13 @@ export const CreateBusinessPage = () => {
 
     setLoading(true);
     try {
-      // Отправляем расширенный запрос (Нужно обновить CreatePartnerRequest на сервере!)
-      // Если на сервере пока нет полей color/logo в CreateRequest, они проигнорируются,
-      // но мы подготовим фронт.
       await api.post('/partners/create', {
         businessName: name,
         countryCode: "KG",
-        ownerPin: pin
-        // color: color, // <-- Добавить в DTO на сервере
-        // logoUrl: logo // <-- Добавить в DTO на сервере
+        ownerPin: pin,
+        color: color,
+        logoUrl: logo || null
       });
-
-      // Если сервер пока не принимает цвет при создании, мы можем сразу сделать update
-      // Но лучше обновить DTO. Для MVP пока просто создаем.
-      // Если хочешь сразу обновить цвет - придется делать второй запрос, но давай лучше обновим сервер позже.
 
       showSuccess(t('common.create') + " OK");
       await refreshUser();
@@ -57,75 +51,104 @@ export const CreateBusinessPage = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Paper sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>{t('dashboard.create_business_title')}</Typography>
-        <Typography color="textSecondary" paragraph>
+    <Container maxWidth="sm" sx={{ mt: 8, mb: 8 }}>
+      <Paper elevation={0} sx={{ p: 5, borderRadius: 5, border: '1px solid', borderColor: 'divider', textAlign: 'center' }}>
+        <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main', width: 64, height: 64, mx: 'auto', mb: 3 }}>
+            <StorefrontTwoToneIcon fontSize="large" />
+        </Avatar>
+
+        <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {t('dashboard.create_business_title')}
+        </Typography>
+        <Typography color="text.secondary" paragraph sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
           {t('dashboard.create_business_subtitle')}
         </Typography>
 
-        <TextField
-          label={t('dashboard.modal_biz_name')}
-          fullWidth margin="normal"
-          value={name} onChange={(e) => setName(e.target.value)}
-        />
+        <Box component="form" noValidate autoComplete="off">
+            <TextField
+              label={t('dashboard.modal_biz_name')}
+              fullWidth 
+              variant="outlined"
+              value={name} onChange={(e) => setName(e.target.value)}
+              sx={{ mb: 3 }}
+            />
 
-        <Box mt={2} mb={1}>
-             <Typography variant="body2">{t('settings.color_label')}</Typography>
-             <input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  style={{ width: '100%', height: '40px', cursor: 'pointer', marginTop: '8px' }}
-             />
+            <Box mb={3} textAlign="left">
+                 <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>{t('settings.color_label')}</Typography>
+                 <Box 
+                    sx={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: 2, 
+                        p: 1, 
+                        border: '1px solid', 
+                        borderColor: 'rgba(0, 0, 0, 0.23)', 
+                        borderRadius: 1,
+                        mt: 0.5
+                    }}
+                 >
+                     <input
+                          type="color"
+                          value={color}
+                          onChange={(e) => setColor(e.target.value)}
+                          style={{ width: '40px', height: '40px', cursor: 'pointer', border: 'none', padding: 0, backgroundColor: 'transparent' }}
+                     />
+                     <Typography variant="body2" color="text.primary">{color}</Typography>
+                 </Box>
+            </Box>
+
+            <TextField
+              label={t('dashboard.modal_biz_logo')}
+              fullWidth 
+              value={logo} onChange={(e) => setLogo(e.target.value)}
+              placeholder="https://..."
+              sx={{ mb: 3 }}
+            />
+
+            <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                <TextField
+                  label={t('dashboard.pin_label')}
+                  type="password"
+                  fullWidth
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
+                  required
+                  autoComplete="new-password"
+                  inputProps={{
+                    maxLength: 12,
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+                <TextField
+                  label={t('dashboard.pin_confirm_label')}
+                  type="password"
+                  fullWidth
+                  value={pinConfirm}
+                  onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
+                  required
+                  autoComplete="new-password"
+                  inputProps={{
+                    maxLength: 12,
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
+                  }}
+                />
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'left' }}>
+                {t('dashboard.pin_hint')}
+            </Typography>
+
+            <Button
+              variant="contained" 
+              fullWidth 
+              size="large" 
+              sx={{ mt: 4, borderRadius: 3, py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}
+              onClick={handleCreate} disabled={loading}
+            >
+              {loading ? t('common.loading') : t('dashboard.create_business_btn')}
+            </Button>
         </Box>
-
-        <TextField
-          label={t('dashboard.modal_biz_logo')}
-          fullWidth margin="normal"
-          value={logo} onChange={(e) => setLogo(e.target.value)}
-          placeholder="https://..."
-        />
-
-        <TextField
-          label={t('dashboard.pin_label')}
-          type="password"
-          fullWidth
-          margin="normal"
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
-          required
-          autoComplete="new-password"
-          inputProps={{
-            maxLength: 12,
-            inputMode: 'numeric',
-            pattern: '[0-9]*'
-          }}
-          helperText={t('dashboard.pin_hint')}
-        />
-
-        <TextField
-          label={t('dashboard.pin_confirm_label')}
-          type="password"
-          fullWidth
-          margin="normal"
-          value={pinConfirm}
-          onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
-          required
-          autoComplete="new-password"
-          inputProps={{
-            maxLength: 12,
-            inputMode: 'numeric',
-            pattern: '[0-9]*'
-          }}
-        />
-
-        <Button
-          variant="contained" fullWidth size="large" sx={{ mt: 3 }}
-          onClick={handleCreate} disabled={loading}
-        >
-          {loading ? t('common.loading') : t('dashboard.create_business_btn')}
-        </Button>
       </Paper>
     </Container>
   );
