@@ -72,10 +72,10 @@ kotlin {
                 export(compose.components.resources)
             }
 
-//            pod("YandexMapsMobile") {
-//                version = "4.5.1-full"
-//                extraOpts += listOf("-compiler-option", "-fmodules")
-//            }
+            pod("YandexMapsMobile") {
+                version = "4.5.1-full"
+                extraOpts += listOf("-compiler-option", "-fmodules")
+            }
         }
     }
 

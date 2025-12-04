@@ -8,11 +8,16 @@ import io.loyaltyloop.app.config.AppConfig
 import kotlinx.cinterop.ExperimentalForeignApi
 import platform.UIKit.UIViewController
 
+private var isMapInitialized = false
+
 fun MainViewController(): UIViewController {
     // 1. Инициализируем Яндекс Карты ПЕРЕД запуском UI
     // Используем remember или side-effect не обязательно,
     // так как это точка входа, она выполняется один раз.
-    initializeYandexMaps()
+    if (!isMapInitialized) {
+        initializeYandexMaps()
+        isMapInitialized = true
+    }
 
     // 2. Запускаем Compose App
     return ComposeUIViewController {

@@ -9,7 +9,7 @@ Pod::Spec.new do |spec|
     spec.vendored_frameworks      = 'build/cocoapods/framework/LoyaltyLoop.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '14.0'
-                
+    spec.dependency 'YandexMapsMobile', '4.5.1-full'
                 
     if !Dir.exist?('build/cocoapods/framework/LoyaltyLoop.framework') || Dir.empty?('build/cocoapods/framework/LoyaltyLoop.framework')
         raise "
