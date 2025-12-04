@@ -35,36 +35,36 @@ export const JoinPartnerManagerPage = () => {
         </Avatar>
 
         <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #3b82f6 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          {t('join_partner.title')}
-        </Typography>
+        {t('join_partner.title')}
+      </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 4, maxWidth: 400, mx: 'auto' }}>
-          {t('join_partner.subtitle')}
-        </Typography>
+        {t('join_partner.subtitle')}
+      </Typography>
 
         <Box component="form" onSubmit={handleSubmit} noValidate>
-            <TextField
-              fullWidth
-              label={t('join_partner.code_label')}
-              value={inviteCode}
-              onChange={(e) => setInviteCode(e.target.value)}
-              margin="normal"
+        <TextField
+          fullWidth
+          label={t('join_partner.code_label')}
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+          margin="normal"
               variant="outlined"
               placeholder="INV-..."
-            />
-            <Button
-              variant="contained"
-              type="submit"
+        />
+        <Button
+          variant="contained"
+          type="submit"
               fullWidth
               size="large"
-              disabled={loading || !inviteCode.trim()}
+          disabled={loading || !inviteCode.trim()}
               sx={{ mt: 3, py: 1.5, borderRadius: 2, fontSize: '1.1rem', fontWeight: 'bold' }}
-            >
+        >
               {loading ? t('common.loading') : t('join_partner.submit')}
-            </Button>
+        </Button>
 
             <Alert severity="info" sx={{ mt: 4, borderRadius: 2, textAlign: 'left' }}>
-              {t('join_partner.info')}
-            </Alert>
+          {t('join_partner.info')}
+        </Alert>
         </Box>
       </Paper>
     </Box>

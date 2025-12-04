@@ -25,6 +25,7 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     markerLabel,
 }) => {
     const fallbackKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
+    const [zoom, setZoom] = useState(13);
     const [overrideCoords, setOverrideCoords] = useState<[number, number] | null>(() => {
         if (typeof initialLat === 'number' && typeof initialLng === 'number') {
             return [initialLat, initialLng];
@@ -84,8 +85,10 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         <YandexMap
             apiKey={fallbackKey}
             center={center}
+            zoom={zoom}
             markers={markers}
             onMapClick={handleMapClick}
+            onStateChange={(state) => setZoom(state.zoom)}
             interactive={interactive}
             height={height}
             radiusMeters={radiusMeters}

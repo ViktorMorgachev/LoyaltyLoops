@@ -19,12 +19,21 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.getKoin
 
+import android.content.Context
+import android.app.ActivityManager
+
 class LoyaltyApp : Application() {
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
         super.onCreate()
+        
+        // Skip initialization in secondary processes (like :phoenix for restart)
+        if (!isMainProcess()) {
+            return
+        }
+
         // 1. Настраиваем Kermit писать в Logcat
         Logger.setLogWriters(LogcatWriter())
 
@@ -44,6 +53,13 @@ class LoyaltyApp : Application() {
         appScope.launch {
             runCatching { getKoin().get<PushService>().register() }
         }
+    }
+
+    private fun isMainProcess(): Boolean {
+        val pid = android.os.Process.myPid()
+        val activityManager = getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+        val processName = activityManager.runningAppProcesses?.find { it.pid == pid }?.processName
+        return processName == packageName
     }
 
     override fun onTerminate() {

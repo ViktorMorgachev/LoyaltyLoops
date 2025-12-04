@@ -21,7 +21,6 @@ export interface MapSettingsConfig {
     maxRadiusMeters: number;
     clusterRadiusMeters: number;
     searchDebounceMs: number;
-    showFilters: boolean;
     showRatings: boolean;
     showWorkingHours: boolean;
     showFilters: boolean;

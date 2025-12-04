@@ -119,7 +119,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       setWorkspaces([]);
       setCurrentWorkspace(null);
 
-      window.location.href = '/login';
+      // Use replace to prevent "Back" navigation to protected pages
+      window.location.replace('/login');
   };
 
   // Вычисляемые права зависят от ТЕКУЩЕГО выбора

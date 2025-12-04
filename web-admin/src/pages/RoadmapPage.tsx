@@ -1,4 +1,3 @@
-import React from 'react';
 import { Container, Typography, Box, Paper, Stepper, Step, StepLabel, StepContent, Button, Chip } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';

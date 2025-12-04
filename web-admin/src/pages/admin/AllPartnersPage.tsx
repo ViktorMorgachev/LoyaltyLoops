@@ -47,52 +47,52 @@ export const AllPartnersPage = () => {
         <Box sx={{ overflowX: 'auto' }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: 'action.hover' }}>
-                <TableRow>
+            <TableRow>
                   <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_name')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('admin.table_country')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('admin.table_owner')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('common.status')}</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600 }}>{t('common.actions')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {partners.map((p) => (
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {partners.map((p) => (
                   <TableRow key={p.id} hover>
                     <TableCell sx={{ fontWeight: 500 }}>{p.businessName || p.name || t('dashboard.table_name')}</TableCell>
-                    <TableCell>{p.countryCode}</TableCell>
-                    <TableCell>{p.ownerPhone || "N/A"}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={p.status === 'ACTIVE' ? t('common.active') : p.status === 'BLOCKED' ? t('common.blocked') : t('common.pending')}
-                        color={p.status === 'ACTIVE' ? 'success' : p.status === 'BLOCKED' ? 'error' : 'warning'}
+                <TableCell>{p.countryCode}</TableCell>
+                <TableCell>{p.ownerPhone || "N/A"}</TableCell>
+                <TableCell>
+                  <Chip
+                    label={p.status === 'ACTIVE' ? t('common.active') : p.status === 'BLOCKED' ? t('common.blocked') : t('common.pending')}
+                    color={p.status === 'ACTIVE' ? 'success' : p.status === 'BLOCKED' ? 'error' : 'warning'}
                         size="small"
                         variant="outlined"
                         sx={{ fontWeight: 600 }}
-                      />
-                    </TableCell>
+                  />
+                </TableCell>
                     <TableCell align="right">
                       <Box display="flex" gap={1} justifyContent="flex-end">
                         <Button size="small" variant="outlined" onClick={() => navigate(`/admin/partners/${p.id}`)} sx={{ borderRadius: 2 }}>
-                            Details
-                        </Button>
-                        {p.status === 'PENDING' && (
+                        Details
+                    </Button>
+                    {p.status === 'PENDING' && (
                           <Button size="small" variant="contained" color="success" onClick={() => changeStatus(p.id, 'ACTIVE')} sx={{ borderRadius: 2 }}>
-                            {t('common.approve')}
-                          </Button>
-                        )}
-                        {p.status !== 'BLOCKED' ? (
+                        {t('common.approve')}
+                      </Button>
+                    )}
+                    {p.status !== 'BLOCKED' ? (
                           <Button size="small" variant="text" color="error" onClick={() => changeStatus(p.id, 'BLOCKED')}>
-                            {t('common.block')}
-                          </Button>
-                        ) : (
+                        {t('common.block')}
+                      </Button>
+                    ) : (
                            <Button size="small" variant="outlined" onClick={() => changeStatus(p.id, 'ACTIVE')} sx={{ borderRadius: 2 }}>
-                            {t('common.unblock')}
-                          </Button>
-                        )}
-                      </Box>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                        {t('common.unblock')}
+                      </Button>
+                    )}
+                  </Box>
+                </TableCell>
+              </TableRow>
+            ))}
                 {partners.length === 0 && (
                     <TableRow>
                         <TableCell colSpan={5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
@@ -100,8 +100,8 @@ export const AllPartnersPage = () => {
                         </TableCell>
                     </TableRow>
                 )}
-              </TableBody>
-            </Table>
+          </TableBody>
+        </Table>
         </Box>
       </Paper>
     </Container>

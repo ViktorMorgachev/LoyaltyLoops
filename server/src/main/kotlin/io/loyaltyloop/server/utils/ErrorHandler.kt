@@ -54,6 +54,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.CARD_IS_BLOCKED,
                 AppErrorCode.INVALID_CODE-> HttpStatusCode.BadRequest
 
+                AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
+                AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> HttpStatusCode.TooManyRequests // or Forbidden/429
 
                 AppErrorCode.SECURITY_QR_SECRET_MISSING,
                 AppErrorCode.USER_CREATION_FAILED,

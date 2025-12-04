@@ -60,6 +60,9 @@ import io.loyaltyloop.server.service.sms.verification.PreludeVerificationService
 import java.time.Duration
 
 
+import io.loyaltyloop.server.repository.SystemEventRepository
+import io.loyaltyloop.server.service.EventLogger
+
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
     io.ktor.server.netty.EngineMain.main(args)
@@ -144,6 +147,9 @@ fun Application.module() {
     val pinResetTokenRepository = PinResetTokenRepository()
     val supportChatRepository = SupportChatRepository()
     val deviceTokenRepository = DeviceTokenRepository()
+    val systemEventRepository = SystemEventRepository()
+    val eventLogger = EventLogger(systemEventRepository)
+
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val cardRealtimeService = CardRealtimeService()
@@ -151,7 +157,8 @@ fun Application.module() {
         userRepository,
         transactionRepository,
         partnerRepository,
-        cardRealtimeService
+        cardRealtimeService,
+        eventLogger
     )
     val smsService = ConsoleSmsService()
     val supportChatService = SupportChatService(supportChatRepository)
@@ -225,13 +232,17 @@ fun Application.module() {
         // Если в конфиге prelude - используем сервис Prelude
         InternalVerificationService(
             smsService = smsService,
-            otpService = otpService
+            otpService = otpService,
+            eventLogger = eventLogger,
+            systemEventRepository = systemEventRepository
         )
     } else {
         // Иначе - используем внутреннюю логику (Console SMS + DB)
         InternalVerificationService(
             smsService = smsService,
-            otpService = otpService
+            otpService = otpService,
+            eventLogger = eventLogger,
+            systemEventRepository = systemEventRepository
         )
     }
 
@@ -314,7 +325,7 @@ fun Application.module() {
             partnerRepository = partnerRepository,
             userRepository = userRepository
         )
-        authRoutes(userRepository, partnerRepository, tokenService, verificationService)
+        authRoutes(userRepository, partnerRepository, tokenService, verificationService, eventLogger)
         clientRoutes(userRepository, deviceTokenRepository)
         terminalRoutes(userRepository = userRepository, transactionService = transactionService)
         partnerRoutes(
@@ -324,13 +335,15 @@ fun Application.module() {
             pinResetTokenRepository = pinResetTokenRepository,
             emailService = emailService,
             webBaseUrl = webBaseUrl,
-            supportChatService = supportChatService
+            supportChatService = supportChatService,
+            eventLogger = eventLogger
         )
         adminRoutes(
             applicationConfig = environment!!.config,
             userRepo = userRepository,
             partnerRepo = partnerRepository,
-            supportChatService = supportChatService
+            supportChatService = supportChatService,
+            systemEventRepository = systemEventRepository
         )
         val enableTestSupport =
             environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()

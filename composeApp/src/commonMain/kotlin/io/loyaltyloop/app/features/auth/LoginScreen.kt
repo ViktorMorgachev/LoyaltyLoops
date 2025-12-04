@@ -169,25 +169,26 @@ fun PhoneInputCard(
                     Row(
                         modifier = Modifier
                             .height(IntrinsicSize.Min)
-                            .padding(start = 12.dp, end = 8.dp)
+                            .padding(start = 8.dp, end = 8.dp)
                             .clickable { onAction(LoginScreenModel.Action.OnCountryClicked) },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             text = state.selectedCountry.flagEmoji,
-                            style = MaterialTheme.typography.headlineSmall
+                            style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
                             text = state.selectedCountry.phonePrefix,
-                            style = MaterialTheme.typography.titleLarge,
+                            style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
-                        Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
                         Box(
                             modifier = Modifier
                                 .width(1.dp)
-                                .height(24.dp)
+                                .fillMaxHeight()
+                                .padding(vertical = 8.dp)
                                 .background(MaterialTheme.colorScheme.outlineVariant)
                         )
                     }
@@ -195,7 +196,7 @@ fun PhoneInputCard(
                 placeholder = {
                     Text(
                         text = state.selectedCountry.mask.replace("#", "0"),
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                     )
                 },
@@ -204,7 +205,7 @@ fun PhoneInputCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 enabled = !state.isLoading,
-                textStyle = MaterialTheme.typography.titleLarge,
+                textStyle = MaterialTheme.typography.titleMedium,
                 isError = state.phoneError != null,
                 supportingText = {
                     state.phoneError?.let { error ->

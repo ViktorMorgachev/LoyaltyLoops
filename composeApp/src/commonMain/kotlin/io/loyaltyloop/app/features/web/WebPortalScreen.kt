@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import io.loyaltyloop.app.config.AppConfig.WEB_URL
 import io.loyaltyloop.app.platform.web.LoyaltyWebView
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import loyaltyloop.composeapp.generated.resources.Res
@@ -41,7 +42,7 @@ import loyaltyloop.composeapp.generated.resources.web_loading_message
 import org.jetbrains.compose.resources.stringResource
 
 class WebPortalScreen(
-    private val url: String,
+    private val url: String? = null,
     private val headers: Map<String, String>
 ) : Screen {
 
@@ -52,6 +53,21 @@ class WebPortalScreen(
         var isLoading by remember { mutableStateOf(true) }
         var lastError by remember { mutableStateOf<String?>(null) }
         var reloadSignal by remember { mutableStateOf(0) }
+
+        val finalUrl = remember {
+            val baseUrl = url ?: WEB_URL
+            val accessToken = headers["Authorization"]?.replace("Bearer ", "") ?: ""
+            val refreshToken = headers["X-Refresh-Token"] ?: ""
+
+            if (accessToken.isNotBlank() && refreshToken.isNotBlank() && baseUrl == WEB_URL) {
+                // Проверяем, есть ли уже query params в URL
+                val separator = if (baseUrl.contains("?")) "&" else "?"
+                "$baseUrl${separator}accessToken=$accessToken&refreshToken=$refreshToken"
+            } else {
+                baseUrl
+            }
+        }
+
 
         LoyaltyScaffold(
             snackbarHostState = SnackbarHostState(),
@@ -76,7 +92,7 @@ class WebPortalScreen(
             ) {
                 if (lastError == null) {
                     LoyaltyWebView(
-                        url = url,
+                        url = finalUrl,
                         headers = headers,
                         reloadSignal = reloadSignal,
                         onPageLoading = { isLoading = it },

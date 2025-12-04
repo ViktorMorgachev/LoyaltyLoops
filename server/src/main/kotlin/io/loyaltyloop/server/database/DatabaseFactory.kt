@@ -25,6 +25,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
+import io.loyaltyloop.server.database.SystemEventsTable
 
 object DatabaseFactory {
 
@@ -69,7 +70,8 @@ object DatabaseFactory {
                 PinResetTokensTable,
                 SupportThreadsTable,
                 SupportMessagesTable,
-                DeviceTokensTable
+                DeviceTokensTable,
+                SystemEventsTable
             )
         }
     }
@@ -111,7 +113,8 @@ object DatabaseFactory {
                 PinResetTokensTable,
                 SupportThreadsTable,
                 SupportMessagesTable,
-                DeviceTokensTable
+                DeviceTokensTable,
+                SystemEventsTable
             )
         }
     }

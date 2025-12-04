@@ -16,9 +16,9 @@ import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
-import io.loyaltyloop.server.utils.requirePartnerWriteAccess // ADDED
-import io.loyaltyloop.server.utils.requirePointReadAccess // ADDED
-import io.loyaltyloop.server.utils.requirePointWriteAccess // ADDED
+import io.loyaltyloop.server.utils.requirePartnerWriteAccess
+import io.loyaltyloop.server.utils.requirePointReadAccess
+import io.loyaltyloop.server.utils.requirePointWriteAccess
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
@@ -41,6 +41,8 @@ import io.loyaltyloop.server.service.EmailService
 import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.SendSupportMessageRequest
 import io.loyaltyloop.shared.models.UserRole
+import io.loyaltyloop.server.service.EventLogger
+import io.loyaltyloop.server.models.SystemEventType
 
 private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
 private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
@@ -52,7 +54,8 @@ fun Route.partnerRoutes(
     pinResetTokenRepository: PinResetTokenRepository,
     emailService: EmailService,
     webBaseUrl: String,
-    supportChatService: SupportChatService
+    supportChatService: SupportChatService,
+    eventLogger: EventLogger
 ) {
     route("/partners") {
         authenticate("auth-jwt") {
@@ -106,12 +109,26 @@ fun Route.partnerRoutes(
                     val current = request.currentPin ?: throw LoyaltyException(AppErrorCode.INVALID_PIN, "Current PIN is required")
                     val valid = partnerRepository.verifyPartnerPin(partner.id, current)
                     if (!valid) {
+                        eventLogger.log(
+                            type = SystemEventType.PIN_VERIFICATION_FAILED,
+                            userId = userId,
+                            partnerId = partner.id,
+                            payload = "Failed PIN change attempt: Invalid current PIN"
+                        )
                         throw LoyaltyException(AppErrorCode.INVALID_PIN, "Current PIN is incorrect")
                     }
                 }
 
                 partnerRepository.updatePartnerPin(partner.id, request.newPin)
                 userRepository.setFrozenUntil(userId, null)
+                
+                eventLogger.log(
+                    type = SystemEventType.PIN_CHANGE_SUCCESS,
+                    userId = userId,
+                    partnerId = partner.id,
+                    payload = "Owner PIN updated"
+                )
+                
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN updated"))
             }
 
@@ -128,6 +145,14 @@ fun Route.partnerRoutes(
                 partnerRepository.clearPartnerPin(partner.id)
                 val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
                 userRepository.setFrozenUntil(userId, freezeUntil)
+                
+                eventLogger.log(
+                    type = SystemEventType.PIN_RESET_SUCCESS,
+                    userId = userId,
+                    partnerId = partner.id,
+                    payload = "Owner PIN reset (cleared)"
+                )
+
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN reset. Account frozen for 24h"))
             }
 
@@ -145,6 +170,13 @@ fun Route.partnerRoutes(
 
                 val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
                 emailService.sendPinResetEmail(email, resetLink)
+
+                eventLogger.log(
+                    type = SystemEventType.PIN_RESET_REQUEST,
+                    userId = userId,
+                    partnerId = partner.id,
+                    payload = "PIN reset link sent to email"
+                )
 
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Reset link sent"))
             }
@@ -235,6 +267,14 @@ fun Route.partnerRoutes(
                 requirePointWriteAccess(partnerRepository, userId, pointId)
                 
                 val req = call.receive<UpdateTradingPointRequest>()
+                
+                req.contactPhone?.takeIf { it.isNotBlank() }?.let { phone ->
+                    val error = io.loyaltyloop.server.utils.validatePhoneNumber(phone)
+                    if (error != null) {
+                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, error)
+                    }
+                }
+
                 validateTierSettings(req.settings)
                 partnerRepository.updateTradingPoint(pointId, req)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
@@ -406,6 +446,13 @@ fun Route.partnerRoutes(
             val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
             userRepository.setFrozenUntil(record.userId, freezeUntil)
 
+            eventLogger.log(
+                type = SystemEventType.PIN_RESET_SUCCESS,
+                userId = record.userId,
+                partnerId = partner.id,
+                payload = "PIN reset confirmed via email token"
+            )
+
             call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN updated"))
         }
     }
@@ -439,4 +486,3 @@ private fun validateBaseCashback(value: Double) {
         throw LoyaltyException(AppErrorCode.INVALID_TIER_VALUE, "Base cashback cannot be negative")
     }
 }
-
