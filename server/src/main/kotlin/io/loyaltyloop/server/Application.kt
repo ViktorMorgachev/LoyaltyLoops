@@ -77,6 +77,14 @@ fun Application.module() {
 
         allowCredentials = true
 
+        val corsHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
+        corsHosts.split(",").forEach { host ->
+            if (host.isNotBlank()) {
+                // Ktor ждет чистый домен без https:// (например: site.com)
+                allowHost(host.trim(), schemes = listOf("https"))
+            }
+        }
+
         // Разрешаем только наш фиксированный порт
         allowHost("localhost:3000", schemes = listOf("http", "https"))
         allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
