@@ -75,25 +75,26 @@ fun Application.module() {
         allowHeader(HttpHeaders.AcceptLanguage)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
 
-
-
         allowCredentials = true
 
-        anyHost()
+        // 1. Локалхост (оставляем для разработки)
+        allowHost("localhost:3000", schemes = listOf("http", "https"))
+        allowHost("localhost:5173", schemes = listOf("http", "https"))
 
-//        val corsHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
-//        corsHosts.split(",").forEach { host ->
-//            if (host.isNotBlank()) {
-//                // Ktor ждет чистый домен без https:// (например: site.com)
-//                allowHost(host.trim(), schemes = listOf("https"))
-//            }
-//        }
-//
-//        // Разрешаем только наш фиксированный порт
-//        allowHost("localhost:3000", schemes = listOf("http", "https"))
-//        allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
-//        allowHost("localhost:5173", schemes = listOf("http", "https"))
-//        allowHost("127.0.0.1:5173", schemes = listOf("http", "https"))
+        // 2. Читаем из ENV и логируем
+        val envHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
+        val hosts = envHosts.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+
+        if (hosts.isNotEmpty()) {
+            println("✅ CORS: Enabling access for hosts: $hosts") // Лог для отладки
+
+            hosts.forEach { host ->
+                // Разрешаем и http, и https для надежности за прокси
+                allowHost(host, schemes = listOf("http", "https"))
+            }
+        } else {
+            println("⚠️ CORS: No hosts found in CORS_ALLOWED_HOSTS variable!")
+        }
     }
 
     install(WebSockets) {
@@ -185,8 +186,7 @@ fun Application.module() {
 
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
-    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()
-        ?.takeIf { it.isNotBlank() }
+    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()?.takeIf { it.isNotBlank() }
     if (forcePartnerPin != null) {
         launch {
             val affected = partnerRepository.resetAllPartnerPins(forcePartnerPin)
