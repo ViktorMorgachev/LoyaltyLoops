@@ -75,21 +75,25 @@ fun Application.module() {
         allowHeader(HttpHeaders.AcceptLanguage)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
 
+
+
         allowCredentials = true
 
-        val corsHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
-        corsHosts.split(",").forEach { host ->
-            if (host.isNotBlank()) {
-                // Ktor ждет чистый домен без https:// (например: site.com)
-                allowHost(host.trim(), schemes = listOf("https"))
-            }
-        }
+        anyHost()
 
-        // Разрешаем только наш фиксированный порт
-        allowHost("localhost:3000", schemes = listOf("http", "https"))
-        allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
-        allowHost("localhost:5173", schemes = listOf("http", "https"))
-        allowHost("127.0.0.1:5173", schemes = listOf("http", "https"))
+//        val corsHosts = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
+//        corsHosts.split(",").forEach { host ->
+//            if (host.isNotBlank()) {
+//                // Ktor ждет чистый домен без https:// (например: site.com)
+//                allowHost(host.trim(), schemes = listOf("https"))
+//            }
+//        }
+//
+//        // Разрешаем только наш фиксированный порт
+//        allowHost("localhost:3000", schemes = listOf("http", "https"))
+//        allowHost("127.0.0.1:3000", schemes = listOf("http", "https"))
+//        allowHost("localhost:5173", schemes = listOf("http", "https"))
+//        allowHost("127.0.0.1:5173", schemes = listOf("http", "https"))
     }
 
     install(WebSockets) {
