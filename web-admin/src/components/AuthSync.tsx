@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { api } from '../api/axiosConfig';
 
 export const AuthSync = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const { refreshUser } = useUser();
-    const navigate = useNavigate();
 
     useEffect(() => {
         // 1. Проверяем, есть ли токены в URL
