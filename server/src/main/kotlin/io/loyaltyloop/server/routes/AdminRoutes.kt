@@ -21,14 +21,38 @@ import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.SendSupportMessageRequest
 import io.loyaltyloop.shared.models.SupportThreadResponse
 
+import io.loyaltyloop.server.models.SystemEventFilter
+import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.repository.SystemEventRepository
+
 fun Route.adminRoutes(
     applicationConfig: ApplicationConfig,
     userRepo: UserRepository,
     partnerRepo: PartnerRepository,
-    supportChatService: SupportChatService
+    supportChatService: SupportChatService,
+    systemEventRepository: SystemEventRepository
 ) {
     authenticate("auth-jwt") {
         route("/admin") {
+
+            get("/events") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                requireAdminRole(userRepo, userId, requireWrite = false)
+
+                val filter = SystemEventFilter(
+                    type = call.request.queryParameters["type"]?.let { SystemEventType.valueOf(it) },
+                    userId = call.request.queryParameters["userId"],
+                    userPhone = call.request.queryParameters["userPhone"],
+                    partnerId = call.request.queryParameters["partnerId"],
+                    from = call.request.queryParameters["from"]?.toLongOrNull(),
+                    to = call.request.queryParameters["to"]?.toLongOrNull(),
+                    limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 100,
+                    offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0
+                )
+
+                val events = systemEventRepository.getEvents(filter)
+                call.respond(events)
+            }
 
             // СМЕНА СТАТУСА ПАРТНЕРА
             // POST /admin/partners/{id}/status

@@ -65,13 +65,13 @@ export const CreateBusinessPage = () => {
         </Typography>
 
         <Box component="form" noValidate autoComplete="off">
-            <TextField
-              label={t('dashboard.modal_biz_name')}
+        <TextField
+          label={t('dashboard.modal_biz_name')}
               fullWidth 
               variant="outlined"
-              value={name} onChange={(e) => setName(e.target.value)}
+          value={name} onChange={(e) => setName(e.target.value)}
               sx={{ mb: 3 }}
-            />
+        />
 
             <Box mb={3} textAlign="left">
                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>{t('settings.color_label')}</Typography>
@@ -87,67 +87,67 @@ export const CreateBusinessPage = () => {
                         mt: 0.5
                     }}
                  >
-                     <input
-                          type="color"
-                          value={color}
-                          onChange={(e) => setColor(e.target.value)}
+             <input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
                           style={{ width: '40px', height: '40px', cursor: 'pointer', border: 'none', padding: 0, backgroundColor: 'transparent' }}
-                     />
+             />
                      <Typography variant="body2" color="text.primary">{color}</Typography>
                  </Box>
-            </Box>
+        </Box>
 
-            <TextField
-              label={t('dashboard.modal_biz_logo')}
+        <TextField
+          label={t('dashboard.modal_biz_logo')}
               fullWidth 
-              value={logo} onChange={(e) => setLogo(e.target.value)}
-              placeholder="https://..."
+          value={logo} onChange={(e) => setLogo(e.target.value)}
+          placeholder="https://..."
               sx={{ mb: 3 }}
-            />
+        />
 
             <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
-                <TextField
-                  label={t('dashboard.pin_label')}
-                  type="password"
-                  fullWidth
-                  value={pin}
-                  onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
-                  required
-                  autoComplete="new-password"
-                  inputProps={{
-                    maxLength: 12,
-                    inputMode: 'numeric',
-                    pattern: '[0-9]*'
-                  }}
-                />
-                <TextField
-                  label={t('dashboard.pin_confirm_label')}
-                  type="password"
-                  fullWidth
-                  value={pinConfirm}
-                  onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
-                  required
-                  autoComplete="new-password"
-                  inputProps={{
-                    maxLength: 12,
-                    inputMode: 'numeric',
-                    pattern: '[0-9]*'
-                  }}
-                />
+        <TextField
+          label={t('dashboard.pin_label')}
+          type="password"
+          fullWidth
+          value={pin}
+          onChange={(e) => setPin(e.target.value.replaceAll(" ", ""))}
+          required
+          autoComplete="new-password"
+          inputProps={{
+            maxLength: 12,
+            inputMode: 'numeric',
+            pattern: '[0-9]*'
+          }}
+        />
+        <TextField
+          label={t('dashboard.pin_confirm_label')}
+          type="password"
+          fullWidth
+          value={pinConfirm}
+          onChange={(e) => setPinConfirm(e.target.value.replaceAll(" ", ""))}
+          required
+          autoComplete="new-password"
+          inputProps={{
+            maxLength: 12,
+            inputMode: 'numeric',
+            pattern: '[0-9]*'
+          }}
+        />
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'left' }}>
                 {t('dashboard.pin_hint')}
             </Typography>
 
-            <Button
+        <Button
               variant="contained" 
               fullWidth 
               size="large" 
               sx={{ mt: 4, borderRadius: 3, py: 1.5, fontSize: '1.1rem', fontWeight: 'bold' }}
-              onClick={handleCreate} disabled={loading}
-            >
-              {loading ? t('common.loading') : t('dashboard.create_business_btn')}
-            </Button>
+          onClick={handleCreate} disabled={loading}
+        >
+          {loading ? t('common.loading') : t('dashboard.create_business_btn')}
+        </Button>
         </Box>
       </Paper>
     </Container>

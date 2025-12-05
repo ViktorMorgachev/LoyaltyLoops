@@ -65,6 +65,7 @@ class ProfileScreenModel(
 
         data object ShowLanguageDialog : Event
         data object NavigateToJoinCompany : Event
+        data object NavigateToSupport : Event
 
         data object ShowAboutDialog: Event
         data class NavigateToWeb(val url: String, val headers: Map<String, String>) : Event
@@ -104,7 +105,7 @@ class ProfileScreenModel(
 
             is Action.OnLanguageClicked -> _events.trySend(Event.ShowLanguageDialog)
             is Action.OnLanguageSelected -> updateLanguage(action.code)
-            is Action.OnSupportClicked -> log.write("Click: Support")
+            is Action.OnSupportClicked -> _events.trySend(Event.NavigateToSupport)
         }
     }
     private fun loadProfile() {

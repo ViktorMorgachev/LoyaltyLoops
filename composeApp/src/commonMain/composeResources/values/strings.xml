@@ -46,6 +46,8 @@
     <string name="error_token_invalid">Ошибка сессии (Токен невалиден)</string>
     <string name="error_invalid_pin">Неверный PIN-код</string>
     <string name="error_user_creation_failed">Ошибка создания пользователя</string>
+    <string name="error_to_many_requests">Слишком много запросов. Попробуйте позже.</string>
+    <string name="error_otp_attempts_exceeded">Превышен лимит попыток. Попробуйте через час.</string>
     
     <string name="error_business_already_exists">Бизнес уже существует</string>
     <string name="error_business_not_found">Бизнес не найден</string>
@@ -330,5 +332,30 @@
     <string name="common_closed">Закрыто</string>
     <string name="common_apply">Применить</string>
     <string name="empty"> </string>
+
+    <!-- Point Details -->
+    <string name="point_details_btn">Подробнее</string>
+    <string name="point_details_title">Информация о точке</string>
+    <string name="point_details_address">Адрес</string>
+    <string name="point_details_schedule">График работы</string>
+    <string name="point_details_contacts">Контакты</string>
+    <string name="point_details_info">Дополнительно</string>
+    <string name="point_details_social_telegram">Telegram</string>
+    <string name="point_details_social_whatsapp">WhatsApp</string>
+    <string name="point_details_social_instagram">Instagram</string>
+    <string name="point_details_day_mon">Пн</string>
+    <string name="point_details_day_tue">Вт</string>
+    <string name="point_details_day_wed">Ср</string>
+    <string name="point_details_day_thu">Чт</string>
+    <string name="point_details_day_fri">Пт</string>
+    <string name="point_details_day_sat">Сб</string>
+    <string name="point_details_day_sun">Вс</string>
+    <string name="point_details_closed">Выходной</string>
+
+    <!-- Support Screen -->
+    <string name="support_screen_title">Поддержка</string>
+    <string name="support_write_email">Написать на Email</string>
+    <string name="support_write_telegram">Написать в Telegram</string>
+    <string name="support_description">Если у вас возникли вопросы или предложения, вы можете связаться с нами любым удобным способом.</string>
 
 </resources>

@@ -15,7 +15,8 @@ import {
   Group as GroupIcon,
   Info as InfoIcon,
   ChatBubbleOutline as ChatIcon,
-  Science as ScienceIcon
+  Science as ScienceIcon,
+  ListAlt as ListAltIcon // Added
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -117,6 +118,11 @@ export const MainLayout = () => {
           text: t('menu.test_lab'),
           icon: <ScienceIcon />,
           path: '/test-lab'
+        });
+        menuItems.push({
+            text: t('menu.system_events', { defaultValue: 'Audit Logs' }),
+            icon: <ListAltIcon />,
+            path: '/admin/events'
         });
       }
   }

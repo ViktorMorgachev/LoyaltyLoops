@@ -118,7 +118,7 @@ export const PartnerDashboardPage = () => {
                     <Typography variant="h6" mb={3} fontWeight="bold">{t('common.revenue_chart')}</Typography>
                     {analytics?.chartData && analytics.chartData.length > 0 ? (
                         <Box height={300}>
-                            <RevenueChart data={analytics.chartData} />
+                        <RevenueChart data={analytics.chartData} />
                         </Box>
                     ) : (
                         <Box height={300} display="flex" alignItems="center" justifyContent="center">

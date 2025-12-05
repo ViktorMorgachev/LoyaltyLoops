@@ -32,6 +32,7 @@ import io.loyaltyloop.app.features.profile.components.SectionTitle
 import io.loyaltyloop.app.features.profile.components.SettingsItem
 import io.loyaltyloop.app.features.profile.components.WorkspaceItem
 import io.loyaltyloop.app.features.splash.SplashScreen
+import io.loyaltyloop.app.features.support.SupportScreen
 import io.loyaltyloop.app.features.web.WebPortalScreen
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.show
@@ -67,6 +68,7 @@ class ProfileScreen : Screen {
                     is ProfileScreenModel.Event.NavigateToJoinCompany -> navigator.push(JoinCompanyScreen())
                     is ProfileScreenModel.Event.ShowMessage -> launch { snackbarHostState.show(event.message, event.type) }
                     is ProfileScreenModel.Event.NavigateToWeb -> navigator.push(WebPortalScreen(event.url, event.headers))
+                    is ProfileScreenModel.Event.NavigateToSupport -> navigator.push(SupportScreen())
                     ProfileScreenModel.Event.ShowLanguageDialog -> showLanguageDialog = true
                     ProfileScreenModel.Event.ShowAboutDialog -> showAboutDialog = true
                 }

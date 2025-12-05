@@ -35,11 +35,11 @@ export const SelectRolePage = () => {
     <Container maxWidth="md" sx={{ mt: 8 }}>
       <Box textAlign="center" mb={6}>
           <Typography variant="h3" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            {t('select_role.title')}
-          </Typography>
+        {t('select_role.title')}
+      </Typography>
           <Typography variant="h6" color="text.secondary">
-            {t('select_role.subtitle')}
-          </Typography>
+        {t('select_role.subtitle')}
+      </Typography>
       </Box>
 
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
@@ -74,7 +74,7 @@ export const SelectRolePage = () => {
                     }}
                 >
                     {ws.role === 'PLATFORM_SUPER_ADMIN' ? <AdminIcon fontSize="large" /> : <StoreIcon fontSize="large" />}
-                </Avatar>
+                  </Avatar>
                 <Box>
                     <Typography variant="h6" fontWeight="bold">
                         {ws.title}
@@ -83,7 +83,7 @@ export const SelectRolePage = () => {
                         {ws.role.replace(/_/g, ' ').toLowerCase()}
                     </Typography>
                 </Box>
-            </Paper>
+      </Paper>
           ))}
       </Box>
     </Container>

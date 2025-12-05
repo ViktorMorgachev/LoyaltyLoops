@@ -40,6 +40,8 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.TOKEN_EXPIRED -> Res.string.error_token_expired
         AppErrorCode.CARD_IS_BLOCKED -> Res.string.error_token_expired
         AppErrorCode.POINT_PAUSED -> Res.string.error_point_paused
+        AppErrorCode.TOO_MANY_REQUESTS -> Res.string.error_to_many_requests
+        AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> Res.string.error_otp_attempts_exceeded
     }
 }
 

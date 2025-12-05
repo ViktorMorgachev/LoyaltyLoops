@@ -14,6 +14,8 @@ enum class AppErrorCode {
     ACCOUNT_FROZEN,
     EMAIL_NOT_SET,
     INVALID_RESET_TOKEN,
+    TOO_MANY_REQUESTS,
+    OTP_ATTEMPTS_EXCEEDED,
 
     // Auth
     INVALID_PHONE,

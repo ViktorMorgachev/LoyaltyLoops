@@ -209,10 +209,10 @@ const PartnerSupportChat: React.FC = () => {
       <Box p={3} borderBottom="1px solid" borderColor="divider" bgcolor="grey.50">
           <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             {t('support.partner_title')}
-          </Typography>
+        </Typography>
           <Typography variant="body2" color="text.secondary">
-            {t('support.partner_hint')}
-          </Typography>
+        {t('support.partner_hint')}
+      </Typography>
       </Box>
 
       <Box
@@ -228,7 +228,7 @@ const PartnerSupportChat: React.FC = () => {
       >
         {messages.length === 0 && (
           <Box display="flex" height="100%" alignItems="center" justifyContent="center">
-              <Typography color="text.secondary">{t('support.empty_state')}</Typography>
+          <Typography color="text.secondary">{t('support.empty_state')}</Typography>
           </Box>
         )}
         {messages.map((msg) => (
@@ -239,12 +239,12 @@ const PartnerSupportChat: React.FC = () => {
 
       <Box p={2} borderTop="1px solid" borderColor="divider" bgcolor="grey.50">
           <Stack direction="row" spacing={2}>
-            <TextField
-              fullWidth
+        <TextField
+          fullWidth
               size="small"
-              placeholder={t('support.placeholder')}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
+          placeholder={t('support.placeholder')}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
               sx={{ bgcolor: 'white', borderRadius: 1 }}
               onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -252,11 +252,11 @@ const PartnerSupportChat: React.FC = () => {
                       handleSend();
                   }
               }}
-            />
+        />
             <Button variant="contained" onClick={handleSend} disabled={sending} sx={{ borderRadius: 2, px: 3 }}>
               {sending ? <CircularProgress size={24} color="inherit" /> : t('support.send')}
-            </Button>
-          </Stack>
+        </Button>
+      </Stack>
       </Box>
     </Paper>
   );
@@ -375,8 +375,8 @@ const AdminSupportChat: React.FC = () => {
       <Paper elevation={0} sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
           <Box p={3} borderBottom="1px solid" borderColor="divider" bgcolor="grey.50">
             <Typography variant="h6" fontWeight="bold">
-                {t('support.admin_title')}
-            </Typography>
+            {t('support.admin_title')}
+          </Typography>
           </Box>
           
           {loading && (
@@ -430,8 +430,8 @@ const AdminSupportChat: React.FC = () => {
             {sortedThreads.length === 0 && (
               <Box p={3} textAlign="center">
                   <Typography variant="body2" color="text.secondary">
-                    {t('support.no_threads')}
-                  </Typography>
+                {t('support.no_threads')}
+              </Typography>
               </Box>
             )}
           </List>
@@ -445,14 +445,14 @@ const AdminSupportChat: React.FC = () => {
                       <Typography variant="h6" fontWeight="bold">{selected.partnerName}</Typography>
                       <Typography variant="caption" color="text.secondary">
                         ID: {selected.id}
-                      </Typography>
+              </Typography>
                   </Box>
               </Box>
               
               <Box sx={{ flexGrow: 1, overflowY: 'auto', bgcolor: '#ffffff', p: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {messages.length === 0 && (
                   <Box display="flex" height="100%" alignItems="center" justifyContent="center">
-                      <Typography color="text.secondary">{t('support.empty_state')}</Typography>
+                  <Typography color="text.secondary">{t('support.empty_state')}</Typography>
                   </Box>
                 )}
                 {messages.map((msg) => (
@@ -463,12 +463,12 @@ const AdminSupportChat: React.FC = () => {
               
               <Box p={2} borderTop="1px solid" borderColor="divider" bgcolor="grey.50">
                   <Stack direction="row" spacing={2}>
-                    <TextField
-                      fullWidth
+                <TextField
+                  fullWidth
                       size="small"
-                      placeholder={t('support.placeholder')}
-                      value={input}
-                      onChange={(e) => setInput(e.target.value)}
+                  placeholder={t('support.placeholder')}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
                       sx={{ bgcolor: 'white', borderRadius: 1 }}
                       onKeyDown={(e) => {
                           if (e.key === 'Enter' && !e.shiftKey) {
@@ -476,11 +476,11 @@ const AdminSupportChat: React.FC = () => {
                               handleSend();
                           }
                       }}
-                    />
+                />
                     <Button variant="contained" onClick={handleSend} disabled={sending} sx={{ borderRadius: 2, px: 3 }}>
                       {sending ? <CircularProgress size={24} color="inherit" /> : t('support.send')}
-                    </Button>
-                  </Stack>
+                </Button>
+              </Stack>
               </Box>
             </>
           ) : (

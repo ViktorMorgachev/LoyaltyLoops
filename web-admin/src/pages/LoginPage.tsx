@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { api } from '../api/axiosConfig';
 import { Button, TextField, Typography, Paper, Box, CircularProgress, InputAdornment } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import PhoneIcon from '@mui/icons-material/Phone';
 import LockIcon from '@mui/icons-material/Lock';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
@@ -10,17 +9,9 @@ import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from '../components/LanguageSwitcher'; 
 import { useUser } from '../context/UserContext';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-
-import { MenuItem, Select, FormControl } from '@mui/material';
 import { BrandLogo } from '../components/BrandLogo';
-
-const COUNTRY_CODES = [
-    { code: 'KG', dial: '+996', mask: '999 99 99 99' },
-    { code: 'KZ', dial: '+7', mask: '777 777 77 77' }, // Kazakhstan uses 77...
-    { code: 'UZ', dial: '+998', mask: '99 999 99 99' },
-    { code: 'RU', dial: '+7', mask: '999 999 99 99' },
-    { code: 'BY', dial: '+375', mask: '99 999 99 99' },
-];
+import { PhoneInput } from '../components/inputs/PhoneInput';
+import { parsePhoneNumber, isValidPhone } from '../utils/phone';
 
 export const LoginPage = () => {
   const { t } = useTranslation(); 
@@ -28,38 +19,23 @@ export const LoginPage = () => {
   const { showError, showSuccess } = useNotification();
   const { refreshUser } = useUser();
 
-  const [countryIndex, setCountryIndex] = useState(0); // Default KG
-  const [rawPhone, setRawPhone] = useState(''); // Only body
+  // Stores full phone in E.164 format (e.g. +996555123456)
+  const [fullPhone, setFullPhone] = useState('');
   const [code, setCode] = useState('');
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
 
-  const currentCountry = COUNTRY_CODES[countryIndex];
-
-  const handleCountryChange = (e: any) => {
-      setCountryIndex(Number(e.target.value));
-      setRawPhone('');
-  };
-
-  const handlePhoneInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-      // Allow only digits
-      const val = e.target.value.replace(/\D/g, '');
-      setRawPhone(val);
-  };
-
-  const getFullPhone = () => {
-      return currentCountry.dial + rawPhone;
-  };
-
-  const validatePhone = () => {
-      // Simple length validation based on mask (count of '9's)
-      // For KZ +7 it can be tricky because RU also +7, but we separate by country select
-      const requiredLength = currentCountry.mask.replace(/[^97]/g, '').length;
-      if (rawPhone.length !== requiredLength) {
-          return false;
-      }
-      return true;
-  };
+  // TIMER LOGIC
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timer]);
 
   // AUTO-REDIRECT if already logged in
   useEffect(() => {
@@ -75,15 +51,17 @@ export const LoginPage = () => {
   }, []);
 
   const handleSendCode = async () => {
-    if (!validatePhone()) {
+    const { rawDigits, country } = parsePhoneNumber(fullPhone);
+    if (!isValidPhone(rawDigits, country)) {
         showError(t('auth.phone_invalid', 'Invalid phone number format'));
         return;
     }
     setLoading(true);
     try {
-      await api.post('/auth/send-code', { phone: getFullPhone() });
+      await api.post('/auth/send-code', { phone: fullPhone });
       showSuccess(t('auth.code_sent'));
       setStep(2);
+      setTimer(60); // Start 60s cooldown
     } catch (e: any) {
       showError(getErrorMessage(e));
     } finally {
@@ -94,7 +72,7 @@ export const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true);
     try {
-      const res = await api.post('/auth/login', { phone: getFullPhone(), code });
+      const res = await api.post('/auth/login', { phone: fullPhone, code });
       const { accessToken, refreshToken, workspaces } = res.data;
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
@@ -158,35 +136,12 @@ export const LoginPage = () => {
 
         {step === 1 ? (
           <Box width="100%">
-            <Box display="flex" gap={1} mb={2}>
-                <FormControl variant="outlined" sx={{ minWidth: 100 }}>
-                    <Select
-                        value={countryIndex}
-                        onChange={handleCountryChange}
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Country Code' }}
-                    >
-                        {COUNTRY_CODES.map((c, idx) => (
-                            <MenuItem key={c.code} value={idx}>
-                                <Box display="flex" alignItems="center" gap={1}>
-                                    <Typography fontWeight="bold">{c.code}</Typography>
-                                    <Typography color="text.secondary">{c.dial}</Typography>
-                                </Box>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <TextField
-                    fullWidth 
-                    label={t('auth.phone_label')} 
-                    variant="outlined"
-                    value={rawPhone} 
-                    onChange={handlePhoneInput}
-                    placeholder={currentCountry.mask.replace(/9|7/g, '_')}
-                    InputProps={{ 
-                        startAdornment: (<InputAdornment position="start"><PhoneIcon color="action" /></InputAdornment>),
-                        inputMode: 'numeric'
-                    }}
+            <Box mb={2}>
+                <PhoneInput 
+                    value={fullPhone}
+                    onChange={setFullPhone}
+                    label={t('auth.phone_label')}
+                    size="medium" // Larger for login page
                 />
             </Box>
             
@@ -210,6 +165,17 @@ export const LoginPage = () => {
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : t('auth.login_btn')}
             </Button>
+
+            <Button
+                fullWidth sx={{ mt: 1 }}
+                onClick={handleSendCode}
+                disabled={loading || timer > 0}
+            >
+                {timer > 0 
+                    ? `${t('auth.resend_code', { defaultValue: 'Отправить повторно' })} (${timer})` 
+                    : t('auth.resend_code', { defaultValue: 'Отправить повторно' })}
+            </Button>
+
             <Button fullWidth sx={{ mt: 1 }} onClick={() => setStep(1)} disabled={loading}>
               {t('auth.change_number')}
             </Button>

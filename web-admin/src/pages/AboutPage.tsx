@@ -14,17 +14,17 @@ export const AboutPage = () => {
     const theme = useTheme();
 
     const features = [
-        {
+    {
             icon: <TrendingUpIcon fontSize="large" color="primary" />,
             title: 'Гибкая Лояльность',
             description: 'Конструктор стратегий: Кэшбэк, Штамп-карты ("6-й кофе в подарок") или Гибридная система. Адаптируется под Ритейл, HoReCa и Услуги.'
-        },
-        {
+    },
+    {
             icon: <PeopleIcon fontSize="large" color="primary" />,
             title: 'CRM и Сегментация',
             description: 'Оцифровка базы клиентов без пластиковых карт. Автоматическое определение "Постоянных" и "Потерянных" клиентов для возврата.'
-        },
-        {
+    },
+    {
             icon: <MapIcon fontSize="large" color="primary" />,
             title: 'Гео-маркетинг',
             description: 'Ваши филиалы на интерактивной карте города. Клиенты видят вас, когда ищут услуги рядом. Бесплатный трафик из приложения.'
@@ -38,15 +38,15 @@ export const AboutPage = () => {
             icon: <StorefrontIcon fontSize="large" color="primary" />,
             title: 'Филиальная Сеть',
             description: 'Единая экосистема для всех ваших точек. Клиент копит баллы в одной кофейне, а тратит в другой (по вашему желанию).'
-        },
-        {
+    },
+    {
             icon: <HandshakeIcon fontSize="large" color="primary" />,
             title: 'Партнерство 50/50',
             description: 'Станьте Менеджером Платформы: подключайте другие бизнесы и получайте 50% от их абонентской платы пожизненно.'
-        }
-    ];
+    }
+  ];
 
-    return (
+  return (
         <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 6 }}>
             <Container maxWidth="lg">
                 <Button 
@@ -65,7 +65,7 @@ export const AboutPage = () => {
                     <Typography variant="h5" color="text.secondary" sx={{ mb: 4, maxWidth: 800, mx: 'auto', lineHeight: 1.6 }}>
                         Современная система лояльности для малого и среднего бизнеса. 
                         Превращаем случайных посетителей в постоянных клиентов.
-                    </Typography>
+      </Typography>
                     <Stack direction="row" spacing={2} justifyContent="center">
                         <Button variant="contained" size="large" onClick={() => navigate('/login', { replace: true })} sx={{ px: 4, py: 1.5, borderRadius: 4, fontSize: '1.1rem' }}>
                             Начать бесплатно
@@ -115,8 +115,8 @@ export const AboutPage = () => {
                                 }}
                             >
                                 {feature.description}
-                            </Typography>
-                        </Paper>
+        </Typography>
+      </Paper>
                     ))}
                 </Stack>
 
@@ -124,10 +124,10 @@ export const AboutPage = () => {
                 <Paper sx={{ mt: 8, p: 6, borderRadius: 6, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: 'white', textAlign: 'center' }}>
                     <Typography variant="h4" fontWeight="bold" gutterBottom>
                         Готовы масштабировать бизнес?
-                    </Typography>
+              </Typography>
                     <Typography variant="h6" sx={{ mb: 4, opacity: 0.8, fontWeight: 'normal' }}>
                         Присоединяйтесь к экосистеме LoyaltyLoop уже сегодня.
-                    </Typography>
+        </Typography>
                     <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
                          <Box display="flex" alignItems="center" gap={1}>
                             <CheckCircleIcon color="success" />
@@ -142,8 +142,8 @@ export const AboutPage = () => {
                             <Typography>14 дней пробный период</Typography>
                          </Box>
                     </Stack>
-                </Paper>
+      </Paper>
             </Container>
-        </Box>
-    );
+    </Box>
+  );
 };

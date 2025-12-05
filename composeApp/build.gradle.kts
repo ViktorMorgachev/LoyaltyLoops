@@ -24,8 +24,8 @@ buildConfig {
 
     // Логика выбора URL
     val serverUrl = when(activeEnv) {
-        "prod" -> "https://api.loyaltyloop.kg"
-        "stage" -> "https://api-test.loyaltyloop.kg"
+        "prod" -> "server-loyalityloop-prod.up.railway.app"
+        "stage" -> "server-loyalityloop-stage.up.railway.app"
         // Локалхост для Android эмулятора.
         // Для iOS эмулятора это должен быть localhost или 127.0.0.1, но 10.0.2.2 тоже иногда мапится, но надежнее localhost.
         // Однако, 10.0.2.2 - стандарт Android.
@@ -34,14 +34,14 @@ buildConfig {
     }
 
     val webUrl = when(activeEnv) {
-        "prod" -> "https://admin.loyaltyloop.kg"
-        "stage" -> "https://admin-stage.loyaltyloop.kg"
+        "prod" -> "https:/loyalityloop.up.railway.app"
+        "stage" -> "https://loyalityloop-beta.up.railway.app"
         else -> "http://10.0.2.2:3000"
     }
 
     buildConfigField("String", "WEB_URL", "\"$webUrl\"")
     buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
-    buildConfigField("String", "MAP_API_KEY", "\"ffb31301-c998-483f-95a7-729f5f29ac1d\"")
+    buildConfigField("String", "MAP_API_KEY", "\"913bd734-3e88-42fd-ae0d-b5f16c05110c\"")
     
     // Добавляем инфо о текущем окружении
     buildConfigField("String", "ENV_NAME", "\"$activeEnv\"")

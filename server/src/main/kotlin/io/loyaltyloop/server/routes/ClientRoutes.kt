@@ -20,6 +20,8 @@ import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
 
+import io.loyaltyloop.shared.models.Country
+
 @Suppress("ThrowsCount")
 fun Route.clientRoutes(
     userRepository: UserRepository,
@@ -124,7 +126,7 @@ fun Route.clientRoutes(
                 // 2. Если юзер есть, собираем его актуальные роли
                 val workspaces = userRepository.getUserWorkspaces(userId)
 
-                val countryCodeByPhone = if (user.phoneNumber.startsWith("+996")) CountryCode.KG else CountryCode.KG
+                val countryCodeByPhone = Country.entries.find { user.phoneNumber.startsWith(it.phonePrefix) }?.code ?: CountryCode.KG
 
                 // 3. Отдаем профиль
                 call.respond(

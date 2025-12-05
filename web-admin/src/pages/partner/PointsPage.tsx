@@ -15,6 +15,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import SearchIcon from '@mui/icons-material/Search';
 import { useUser } from '../../context/UserContext';
 import { geocodeAddress, reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
+import { PhoneInput } from '../../components/inputs/PhoneInput';
 
 export const PointsPage = () => {
   const { t } = useTranslation();
@@ -288,54 +289,54 @@ export const PointsPage = () => {
         <Box sx={{ overflowX: 'auto' }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: 'action.hover' }}>
-                <TableRow>
+            <TableRow>
                   <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_name')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_type')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_invite')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('common.status')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {points.length === 0 && (
-                  <TableRow>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {points.length === 0 && (
+              <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                         {t('dashboard.empty')}
                     </TableCell>
-                  </TableRow>
-                )}
-                {points.map((p) => (
-                  <TableRow 
-                    key={p.id} 
-                    hover 
-                    onClick={() => navigate(`/partner/points/${p.id}`)} 
-                    sx={{ cursor: 'pointer' }}
-                  >
-                    <TableCell>{p.name}</TableCell>
-                    <TableCell>{getLocalizedType(p.type)}</TableCell>
-                    <TableCell>
-                      {p.inviteCode ? (
-                        <Chip
-                          label={p.inviteCode}
-                          onClick={(e) => copyInvite(e, p.inviteCode)}
-                          icon={<ContentCopyIcon />}
-                          color="primary"
-                          clickable
-                          variant="outlined"
+              </TableRow>
+            )}
+            {points.map((p) => (
+              <TableRow 
+                key={p.id} 
+                hover 
+                onClick={() => navigate(`/partner/points/${p.id}`)} 
+                sx={{ cursor: 'pointer' }}
+              >
+                <TableCell>{p.name}</TableCell>
+                <TableCell>{getLocalizedType(p.type)}</TableCell>
+                <TableCell>
+                  {p.inviteCode ? (
+                    <Chip
+                      label={p.inviteCode}
+                      onClick={(e) => copyInvite(e, p.inviteCode)}
+                      icon={<ContentCopyIcon />}
+                      color="primary"
+                      clickable
+                      variant="outlined"
                           size="small"
-                        />
-                      ) : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        label={p.active ? t('common.status_active') : t('common.status_not_paid')}
-                        color={p.active ? "success" : "error"}
-                        size="small"
-                      />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    />
+                  ) : "—"}
+                </TableCell>
+                <TableCell>
+                  <Chip
+                    label={p.active ? t('common.status_active') : t('common.status_not_paid')}
+                    color={p.active ? "success" : "error"}
+                    size="small"
+                  />
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         </Box>
       </Paper>
 
@@ -351,14 +352,16 @@ export const PointsPage = () => {
               label={t('point_details.address_label')}
               fullWidth value={address} onChange={e => setAddress(e.target.value)} sx={{ mt: 1 }}
           />
-        <TextField
+        
+        <Box sx={{ mt: 1 }}>
+            <PhoneInput 
             label={t('point_details.contact_phone_label')}
+                value={contactPhone}
+                onChange={setContactPhone}
             fullWidth
-            value={contactPhone}
-            onChange={(e) => setContactPhone(e.target.value)}
-            sx={{ mt: 1 }}
-            inputProps={{ maxLength: 30, inputMode: 'tel' }}
         />
+        </Box>
+
         <TextField
             label={t('point_details.contact_link_label')}
             fullWidth

@@ -26,16 +26,19 @@ import { PartnerStaffPage } from './pages/partner/PartnerStaffPage'; // NEW
 // Админ
 import { AllPartnersPage } from './pages/admin/AllPartnersPage';
 import { PartnerDetailsAdminPage } from './pages/admin/PartnerDetailsAdminPage';
+import { SystemEventsPage } from './pages/admin/SystemEventsPage'; // NEW
 
 // Лейаут
 import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
+import { AuthSync } from './components/AuthSync';
 
 function App() {
   return (
     <>
       <CssBaseline />
       <BrowserRouter>
+       <AuthSync />
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />
@@ -68,6 +71,7 @@ function App() {
             <Route path="/admin/partners" element={<AllPartnersPage />} />
             <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
             <Route path="/admin/support" element={<SupportChatPage mode="admin" />} />
+            <Route path="/admin/events" element={<SystemEventsPage />} />
           </Route>
 
           {/* Фоллбэк */}

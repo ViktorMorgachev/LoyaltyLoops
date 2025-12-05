@@ -26,7 +26,7 @@ export const BrandLogo = ({ size = 64 }: { size?: number }) => {
                     position: 'absolute',
                     top: '50%',
                     left: '50%',
-                    transform: 'translate(-50%, -50%) rotate(-45deg) translateY(-10%)', // Adjust center visually
+                    transform: 'translate(-50%, -50%) rotate(-45deg)', // Centered relative to container
                     zIndex: 1
                 }} 
             />

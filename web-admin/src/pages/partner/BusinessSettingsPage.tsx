@@ -70,64 +70,64 @@ export const BusinessSettingsPage = () => {
             <Typography variant="h4" fontWeight="bold" gutterBottom>{t('settings.title')}</Typography>
 
             <Paper elevation={0} sx={{ p: 4, maxWidth: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
-                
+
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1.5fr 1fr' }} gap={6}>
                     {/* ЛЕВАЯ КОЛОНКА: Настройки */}
                     <Box>
                         <Typography variant="h6" gutterBottom fontWeight="600">Основная информация</Typography>
-                        <TextField
-                            label={t('settings.name_label')}
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            fullWidth margin="normal"
+                <TextField
+                    label={t('settings.name_label')}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    fullWidth margin="normal"
                             variant="outlined"
                         />
-                        <TextField
-                            label={t('settings.logo_label')}
-                            value={logo}
-                            onChange={(e) => setLogo(e.target.value)}
-                            fullWidth margin="normal"
-                            placeholder="https://example.com/logo.png"
+                <TextField
+                    label={t('settings.logo_label')}
+                    value={logo}
+                    onChange={(e) => setLogo(e.target.value)}
+                    fullWidth margin="normal"
+                    placeholder="https://example.com/logo.png"
                             helperText="URL ссылки на изображение"
-                        />
+                />
 
                         <Divider sx={{ my: 4 }} />
 
                         <Typography variant="h6" gutterBottom fontWeight="600">Настройки Лояльности</Typography>
                         
                         <Box maxWidth={400}>
-                            <TextField
-                                label={t('settings.visits_target_label')}
-                                value={defaultVisitsTarget}
-                                onChange={(e) => setDefaultVisitsTarget(e.target.value)}
-                                type="number"
-                                inputProps={{ min: 1 }}
-                                fullWidth
-                                margin="normal"
-                                helperText={t('settings.visits_target_hint')}
-                            />
+                <TextField
+                    label={t('settings.visits_target_label')}
+                    value={defaultVisitsTarget}
+                    onChange={(e) => setDefaultVisitsTarget(e.target.value)}
+                    type="number"
+                    inputProps={{ min: 1 }}
+                    fullWidth
+                    margin="normal"
+                    helperText={t('settings.visits_target_hint')}
+                />
                         </Box>
 
                         <Typography variant="subtitle1" sx={{ mt: 4, mb: 1, fontWeight: 600 }}>{t('settings.expiration_policy')}</Typography>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
                             <Typography variant="body2" color="text.secondary" mb={2}>{t('settings.expiration_hint')}</Typography>
                             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                                <TextField 
-                                    label={t('point_details.burn_bonuses')} 
-                                    type="number"
-                                    fullWidth 
-                                    value={burnBonusesDays} 
-                                    onChange={e => setBurnBonusesDays(e.target.value)}
-                                    helperText={t('settings.burn_hint')}
+                    <TextField 
+                        label={t('point_details.burn_bonuses')} 
+                        type="number"
+                        fullWidth 
+                        value={burnBonusesDays} 
+                        onChange={e => setBurnBonusesDays(e.target.value)}
+                        helperText={t('settings.burn_hint')}
                                     InputProps={{ endAdornment: <span style={{ fontSize: '0.8rem', color: 'gray' }}>дней</span> }}
-                                />
-                                <TextField 
-                                    label={t('point_details.downgrade_tier')} 
-                                    type="number"
-                                    fullWidth 
-                                    value={downgradeTierDays} 
-                                    onChange={e => setDowngradeTierDays(e.target.value)}
-                                    helperText={t('settings.downgrade_hint')}
+                    />
+                    <TextField 
+                        label={t('point_details.downgrade_tier')} 
+                        type="number"
+                        fullWidth 
+                        value={downgradeTierDays} 
+                        onChange={e => setDowngradeTierDays(e.target.value)}
+                        helperText={t('settings.downgrade_hint')}
                                     InputProps={{ endAdornment: <span style={{ fontSize: '0.8rem', color: 'gray' }}>дней</span> }}
                                 />
                             </Box>
@@ -168,8 +168,8 @@ export const BusinessSettingsPage = () => {
 
                 <Box mt={6} display="flex" justifyContent="flex-end" pt={4} borderTop="1px solid" borderColor="divider">
                     <Button variant="contained" onClick={handleSave} disabled={loading} size="large" sx={{ px: 6, borderRadius: 2 }}>
-                        {t('common.save')}
-                    </Button>
+                    {t('common.save')}
+                </Button>
                 </Box>
             </Paper>
         </Box>

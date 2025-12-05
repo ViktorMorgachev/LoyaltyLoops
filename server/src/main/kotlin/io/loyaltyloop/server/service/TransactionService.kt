@@ -18,13 +18,15 @@ import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.CardRealtimeEventType
 import io.loyaltyloop.shared.models.CardRealtimePayload
 import io.loyaltyloop.shared.utils.CryptoUtils
+import io.loyaltyloop.server.models.SystemEventType
 import kotlin.math.abs
 
 class TransactionService(
     private val userRepository: UserRepository,
     private val transactionRepository: TransactionRepository,
     private val partnerRepository: PartnerRepository,
-    private val realtimeService: CardRealtimeService
+    private val realtimeService: CardRealtimeService,
+    private val eventLogger: EventLogger
 ) {
 
     suspend fun scanQr(cashierUserId: String, request: ScanQrRequest): ScanQrResponse {
@@ -197,6 +199,7 @@ class TransactionService(
 
         // 3. Получаем настройки ТОЧКИ (чтобы понять, какую стратегию применять)
         val settings = partnerRepository.getSettingsByPointId(tradingPointId)
+        val partnerId = partnerRepository.getPartnerIdByPoint(tradingPointId)
 
         // 3. Получаем проверяем условие настройки лояльности точки и то что пришло к нам
         with(settings) {
@@ -238,6 +241,12 @@ class TransactionService(
                 amount = 0.0,
                 visitsDelta = 1
             )
+            eventLogger.log(
+                type = SystemEventType.VISIT,
+                userId = card.userId,
+                partnerId = partnerId,
+                payload = "Visit recorded at point $tradingPointId by cashier $cashierUserId. Visits delta: 1"
+            )
         } else {
             // MONEY (CHARGE or SPEND)
             if (calc.pointsSpent > 0) {
@@ -250,6 +259,12 @@ class TransactionService(
                     amount = 0.0,
                     pointsDelta = -calc.pointsSpent,
                     visitsDelta = 0
+                )
+                eventLogger.log(
+                    type = SystemEventType.REDEMPTION,
+                    userId = card.userId,
+                    partnerId = partnerId,
+                    payload = "Redeemed ${calc.pointsSpent} points at point $tradingPointId"
                 )
             }
 
@@ -264,6 +279,12 @@ class TransactionService(
                     pointsDelta = calc.pointsToAward,
                     visitsDelta = 0
                 )
+                eventLogger.log(
+                    type = SystemEventType.ACCRUAL,
+                    userId = card.userId,
+                    partnerId = partnerId,
+                    payload = "Accrued ${calc.pointsToAward} points for ${calc.moneyPaid} amount at point $tradingPointId"
+                )
             }
 
             val newTotalSpent = card.totalSpent + calc.moneyPaid
@@ -273,6 +294,12 @@ class TransactionService(
 
             if (nextTier != null && nextTier.levelIndex > card.tierLevel) {
                 transactionRepository.updateTier(card.id, nextTier.levelIndex)
+                eventLogger.log(
+                    type = SystemEventType.TIER_CHANGE,
+                    userId = card.userId,
+                    partnerId = partnerId,
+                    payload = "Tier upgraded to ${nextTier.levelIndex}"
+                )
             }
         }
 

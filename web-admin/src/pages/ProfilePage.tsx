@@ -9,6 +9,7 @@ import { useUser } from '../context/UserContext';
 import type { Workspace } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { usePinVerification } from '../hooks/usePinVerification';
+import { PhoneInput } from '../components/inputs/PhoneInput';
 
 export const ProfilePage = () => {
     const { t } = useTranslation();
@@ -191,28 +192,34 @@ export const ProfilePage = () => {
                             )
                         }}
                     />
-                    <TextField label={t('profile.phone_label')} value={profile.phone || ''} fullWidth disabled />
-                    
-                    <TextField
-                        label={t('profile.name_label')}
-                        value={profile.firstName || ''}
-                        onChange={(e) => setProfile({...profile, firstName: e.target.value})}
+                    <PhoneInput 
+                        label={t('profile.phone_label')}
+                        value={profile.phone || ''}
+                        onChange={() => {}} // Readonly
+                        disabled
                         fullWidth
                     />
 
-                    <TextField
-                        label={t('profile.email_label')}
-                        value={profile.email || ''}
-                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                <TextField
+                    label={t('profile.name_label')}
+                    value={profile.firstName || ''}
+                    onChange={(e) => setProfile({...profile, firstName: e.target.value})}
                         fullWidth
-                        type="email"
-                    />
+                />
+
+                <TextField
+                    label={t('profile.email_label')}
+                    value={profile.email || ''}
+                    onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    fullWidth
+                    type="email"
+                />
                 </Box>
 
                 <Box mt={4} display="flex" justifyContent="flex-end">
                     <Button variant="contained" onClick={handleSave} size="large" sx={{ borderRadius: 2, px: 4 }}>
-                        {t('profile.save_btn')}
-                    </Button>
+                    {t('profile.save_btn')}
+                </Button>
                 </Box>
             </Paper>
 
@@ -235,7 +242,7 @@ export const ProfilePage = () => {
                                     label={t('profile.pin_current_label')}
                                     type="password"
                                     value={pinForm.current}
-                                    autoComplete="off"
+                            autoComplete="off"
                                     onChange={(e) => {
                                         const digitsOnly = e.target.value.replace(/\D+/g, '');
                                         setPinForm({ ...pinForm, current: digitsOnly });
@@ -247,39 +254,39 @@ export const ProfilePage = () => {
                             )}
                             
                             <Box display="flex" gap={2}>
-                                <TextField
-                                    label={t('profile.pin_new_label')}
-                                    type="password"
-                                    value={pinForm.next}
-                                    autoComplete="new-password"
-                                    onChange={(e) => {
-                                        const digitsOnly = e.target.value.replace(/\D+/g, '');
-                                        setPinForm({ ...pinForm, next: digitsOnly });
-                                    }}
-                                    inputProps={{ maxLength: 12, inputMode: 'numeric' }}
-                                    disabled={pinInputsDisabled}
+                            <TextField
+                                label={t('profile.pin_new_label')}
+                                type="password"
+                                value={pinForm.next}
+                            autoComplete="new-password"
+                                onChange={(e) => {
+                                    const digitsOnly = e.target.value.replace(/\D+/g, '');
+                                    setPinForm({ ...pinForm, next: digitsOnly });
+                                }}
+                                inputProps={{ maxLength: 12, inputMode: 'numeric' }}
+                                disabled={pinInputsDisabled}
                                     fullWidth
-                                />
-                                <TextField
-                                    label={t('profile.pin_confirm_label')}
-                                    type="password"
-                                    value={pinForm.confirm}
-                                    autoComplete="new-password"
-                                    onChange={(e) => {
-                                        const digitsOnly = e.target.value.replace(/\D+/g, '');
-                                        setPinForm({ ...pinForm, confirm: digitsOnly });
-                                    }}
-                                    inputProps={{ maxLength: 12, inputMode: 'numeric' }}
-                                    disabled={pinInputsDisabled}
+                            />
+                            <TextField
+                                label={t('profile.pin_confirm_label')}
+                                type="password"
+                                value={pinForm.confirm}
+                            autoComplete="new-password"
+                                onChange={(e) => {
+                                    const digitsOnly = e.target.value.replace(/\D+/g, '');
+                                    setPinForm({ ...pinForm, confirm: digitsOnly });
+                                }}
+                                inputProps={{ maxLength: 12, inputMode: 'numeric' }}
+                                disabled={pinInputsDisabled}
                                     fullWidth
-                                />
+                            />
                             </Box>
 
                             <Box display="flex" gap={2} flexWrap="wrap">
                                 <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled} sx={{ borderRadius: 2 }}>
-                                    {pinLoading ? t('common.loading') : hasOwnerPin === false ? t('profile.pin_set_btn') : t('profile.pin_change_btn')}
-                                </Button>
-                                {requiresCurrentPin && (
+                                {pinLoading ? t('common.loading') : hasOwnerPin === false ? t('profile.pin_set_btn') : t('profile.pin_change_btn')}
+                            </Button>
+                            {requiresCurrentPin && (
                                     <Button
                                         color="error"
                                         variant="text"
@@ -292,8 +299,8 @@ export const ProfilePage = () => {
                             </Box>
                              {requiresCurrentPin && !hasEmail && (
                                 <Typography variant="caption" color="text.secondary">
-                                    {t('profile.pin_email_hint')}
-                                </Typography>
+                                            {t('profile.pin_email_hint')}
+                                        </Typography>
                             )}
                         </Box>
                     )}

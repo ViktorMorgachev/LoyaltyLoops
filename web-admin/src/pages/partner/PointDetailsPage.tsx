@@ -17,6 +17,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import { useUser } from '../../context/UserContext';
 import { reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 import { PublicPointsPreviewDialog } from '../../components/map/PublicPointsPreviewDialog';
+import { PhoneInput } from '../../components/inputs/PhoneInput';
 
 type WeekDayId =
     | 'MONDAY'
@@ -534,12 +535,12 @@ export const PointDetailsPage = () => {
   if (loading) return <Container sx={{ mt: 4 }}><Typography>{t('common.loading')}</Typography></Container>;
   if (!details) return <Container sx={{ mt: 4 }}><Typography>Not found</Typography></Container>;
 
-    return (
-        <>
+  return (
+    <>
         <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
-           {/* HEADER */}
+       {/* HEADER */}
            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={4} flexWrap="wrap" gap={2}>
-              <Box>
+          <Box>
                 <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                     {details.point.name}
                 </Typography>
@@ -549,7 +550,7 @@ export const PointDetailsPage = () => {
                      </Typography>
                      {overviewStatusColor === 'success' && <Chip label={t('common.status_active')} color="success" size="small" sx={{ height: 20, fontSize: '0.65rem' }} />}
                      {overviewStatusColor === 'warning' && <Chip label={t('point_details.status_paused')} color="warning" size="small" sx={{ height: 20, fontSize: '0.65rem' }} />}
-                </Box>
+          </Box>
               </Box>
               
               <Paper 
@@ -571,15 +572,15 @@ export const PointDetailsPage = () => {
                  <Typography variant="h5" fontWeight="900" sx={{ letterSpacing: 2 }}>
                     {details.point.inviteCode}
                  </Typography>
-              </Paper>
-           </Box>
-    
-           {!canEdit && (
+             </Paper>
+       </Box>
+
+       {!canEdit && (
             <Alert severity="info" sx={{ mb: 3, borderRadius: 2 }}>
-                {t('point_details.readonly_hint')}
-            </Alert>
-           )}
-    
+            {t('point_details.readonly_hint')}
+        </Alert>
+       )}
+
            <Paper elevation={0} sx={{ mb: 4, borderRadius: 3, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
              <Tabs 
                 value={tab} 
@@ -591,15 +592,15 @@ export const PointDetailsPage = () => {
                     '& .Mui-selected': { color: 'primary.main' }
                 }}
              >
-               <Tab label={t('point_details.tab_overview')} />
-               <Tab label={t('point_details.tab_settings')} />
-               <Tab label={t('point_details.tab_staff')} />
-             </Tabs>
-           </Paper>
-    
-           {/* TAB 0: OVERVIEW */}
-           {tab === 0 && (
-             <Box>
+           <Tab label={t('point_details.tab_overview')} />
+           <Tab label={t('point_details.tab_settings')} />
+           <Tab label={t('point_details.tab_staff')} />
+         </Tabs>
+       </Paper>
+
+       {/* TAB 0: OVERVIEW */}
+       {tab === 0 && (
+         <Box>
                 <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" gutterBottom fontWeight="bold">{t('point_details.block_title')}</Typography>
                     
@@ -625,9 +626,9 @@ export const PointDetailsPage = () => {
                             <ListItemText primary={t('point_details.overview_currency')} secondary={overviewCurrency} />
                         </ListItem>
                     </List>
-                </Paper>
-             </Box>
-           )}
+            </Paper>
+         </Box>
+       )}
 
        {/* TAB 1: SETTINGS */}
        {tab === 1 && (
@@ -635,38 +636,38 @@ export const PointDetailsPage = () => {
             <Typography variant="h6" mb={3} fontWeight="bold">{t('point_details.tab_settings')}</Typography>
             
             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
-                <TextField 
-                    label={t('dashboard.label_point_name')} 
-                    fullWidth margin="normal" 
-                    value={formData.name} 
-                    onChange={e => setFormData({...formData, name: e.target.value})}
+            <TextField 
+                label={t('dashboard.label_point_name')} 
+                fullWidth margin="normal" 
+                value={formData.name} 
+                onChange={e => setFormData({...formData, name: e.target.value})}
                     variant="outlined"
-                />
-                <TextField 
-                    label={t('point_details.address_label')}
-                    fullWidth margin="normal" 
-                    value={formData.address} 
-                    onChange={e => setFormData({...formData, address: e.target.value})}
-                />
-                <TextField
-                    label={t('point_details.contact_phone_label')}
-                    fullWidth
-                    margin="normal"
-                    value={formData.contactPhone ?? ''}
-                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
-                    disabled={!canEdit}
-                    inputProps={{ maxLength: 30, inputMode: 'tel' }}
-                />
-                <TextField
-                    label={t('point_details.contact_link_label')}
-                    fullWidth
-                    margin="normal"
-                    value={formData.contactLink ?? ''}
-                    onChange={(e) => setFormData({ ...formData, contactLink: e.target.value })}
-                    disabled={!canEdit}
-                    helperText={t('point_details.contact_link_hint')}
-                    inputProps={{ maxLength: 80 }}
-                />
+            />
+            <TextField 
+                label={t('point_details.address_label')}
+                fullWidth margin="normal" 
+                value={formData.address} 
+                onChange={e => setFormData({...formData, address: e.target.value})}
+            />
+                <Box mt={2}>
+                    <PhoneInput
+                label={t('point_details.contact_phone_label')}
+                value={formData.contactPhone ?? ''}
+                        onChange={(val) => setFormData({ ...formData, contactPhone: val })}
+                disabled={!canEdit}
+                        fullWidth
+            />
+                </Box>
+            <TextField
+                label={t('point_details.contact_link_label')}
+                fullWidth
+                margin="normal"
+                value={formData.contactLink ?? ''}
+                onChange={(e) => setFormData({ ...formData, contactLink: e.target.value })}
+                disabled={!canEdit}
+                helperText={t('point_details.contact_link_hint')}
+                inputProps={{ maxLength: 80 }}
+            />
             </Box>
             
             <TextField
@@ -707,14 +708,13 @@ export const PointDetailsPage = () => {
             <Box mt={4}>
                 <Typography variant="subtitle2" gutterBottom fontWeight="600">{t('point_details.map_location')}</Typography>
                 <Paper variant="outlined" sx={{ overflow: 'hidden', borderRadius: 2 }}>
-                    <LocationPicker 
-                        key={`${formData.latitude ?? 'no-lat'}-${formData.longitude ?? 'no-lng'}`}
-                        initialLat={formData.latitude}
-                        initialLng={formData.longitude}
-                        onLocationChange={handleLocationChange}
-                        markerLabel={formData.name || t('point_details.map_point_label', 'Trading point')}
+            <LocationPicker 
+                initialLat={formData.latitude}
+                initialLng={formData.longitude}
+                onLocationChange={handleLocationChange}
+                markerLabel={formData.name || t('point_details.map_point_label', 'Trading point')}
                         height={300}
-                    />
+            />
                 </Paper>
             </Box>
 
@@ -737,26 +737,26 @@ export const PointDetailsPage = () => {
                 </Box>
                 
                 <Box flex={1} p={2} bgcolor="warning.50" borderRadius={3} border="1px dashed" borderColor="warning.main">
-                    <FormControlLabel
+                <FormControlLabel
                         sx={{ alignItems: 'flex-start', ml: 0 }}
-                        control={
-                            <Switch
-                                checked={temporarilyPaused}
-                                onChange={(e) => setTemporarilyPaused(e.target.checked)}
-                                color="warning"
-                                disabled={!canEdit}
+                    control={
+                        <Switch
+                            checked={temporarilyPaused}
+                            onChange={(e) => setTemporarilyPaused(e.target.checked)}
+                            color="warning"
+                            disabled={!canEdit}
                                 sx={{ mt: 0.5, mr: 1 }}
-                            />
-                        }
-                        label={
-                            <Box>
+                        />
+                    }
+                    label={
+                        <Box>
                                 <Typography fontWeight={700} color="warning.dark">{t('point_details.pause_label')}</Typography>
                                 <Typography variant="caption" color="text.secondary" sx={{ lineHeight: 1.2, display: 'block', mt: 0.5 }}>
-                                    {t('point_details.pause_helper')}
-                                </Typography>
-                            </Box>
-                        }
-                    />
+                                {t('point_details.pause_helper')}
+                            </Typography>
+                        </Box>
+                    }
+                />
                 </Box>
             </Box>
 
@@ -778,8 +778,8 @@ export const PointDetailsPage = () => {
                                     primaryTypographyProps={{ color: 'text.secondary', width: 40, display: 'inline-block' }}
                                     secondary={
                                         <Typography component="span" fontWeight={entry.enabled ? 600 : 400} color="text.primary">
-                                            {formatScheduleDisplay(entry, t)}
-                                        </Typography>
+                                    {formatScheduleDisplay(entry, t)}
+                                </Typography>
                                     }
                                 />
                             </ListItem>
@@ -801,7 +801,7 @@ export const PointDetailsPage = () => {
             <Divider sx={{ my: 4 }} />
             
             <Typography variant="h6" gutterBottom fontWeight="bold">{t('dashboard.label_strategy')}</Typography>
-
+            
             {(programType === 'VISIT_COUNTER' || programType === 'HYBRID') && (
                 <TextField 
                     label={t('dashboard.label_target')} 
@@ -817,83 +817,83 @@ export const PointDetailsPage = () => {
             {(programType === 'TIERED_LTV' || programType === 'HYBRID') && (
                 <Box mt={2}>
                     <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
-                        <TextField
-                            label={t('point_details.max_burn_label')}
-                            type="number"
-                            fullWidth
-                            margin="normal"
-                            value={maxBurnPercentage}
-                            onChange={(e) => {
-                                let val = parseInt(e.target.value);
-                                if (val < 0) val = 0;
-                                if (val > 100) val = 100;
-                                setMaxBurnPercentage(val);
-                            }}
-                            helperText={t('point_details.max_burn_hint')}
-                        />
+                    <TextField
+                        label={t('point_details.max_burn_label')}
+                        type="number"
+                        fullWidth
+                        margin="normal"
+                        value={maxBurnPercentage}
+                        onChange={(e) => {
+                            let val = parseInt(e.target.value);
+                            if (val < 0) val = 0;
+                            if (val > 100) val = 100;
+                            setMaxBurnPercentage(val);
+                        }}
+                        helperText={t('point_details.max_burn_hint')}
+                    />
                         <Box display="flex" alignItems="center">
-                             <FormControlLabel
-                                control={
-                                    <Switch
-                                        color="primary"
-                                        checked={awardOnMixedPayment}
-                                        onChange={(e) => setAwardOnMixedPayment(e.target.checked)}
-                                    />
-                                }
-                                label={
-                                    <Box>
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                color="primary"
+                                checked={awardOnMixedPayment}
+                                onChange={(e) => setAwardOnMixedPayment(e.target.checked)}
+                            />
+                        }
+                        label={
+                            <Box>
                                         <Typography variant="body2" fontWeight="500">{t('point_details.award_mixed_label', 'Award cashback on mixed payment')}</Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                            {t('point_details.award_mixed_hint', 'Accrue bonuses on the money part even if the client spends points.')}
-                                        </Typography>
-                                    </Box>
-                                }
+                                <Typography variant="caption" color="text.secondary">
+                                    {t('point_details.award_mixed_hint', 'Accrue bonuses on the money part even if the client spends points.')}
+                                </Typography>
+                            </Box>
+                        }
                             />
                         </Box>
                     </Box>
 
                     <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>{t('point_details.levels_config')}</Typography>
                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
-                        <Table size="small">
+                    <Table size="small">
                             <TableHead sx={{ bgcolor: 'grey.100' }}>
-                                <TableRow>
+                            <TableRow>
                                     <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_name')}</TableCell>
                                     <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_threshold')}</TableCell>
                                     <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_percent')}</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {tiers.map((tier, idx) => (
-                                    <TableRow key={idx}>
-                                        <TableCell>{renderTierLabel(tier)}</TableCell>
-                                        <TableCell>
-                                            <TextField 
-                                                type="number"
-                                                size="small" 
-                                                value={tier.threshold}
-                                                disabled={tier.levelIndex === 1}
-                                                inputProps={{ min: 0, inputMode: 'decimal' }}
-                                                onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
-                                                onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {tiers.map((tier, idx) => (
+                                <TableRow key={idx}>
+                                    <TableCell>{renderTierLabel(tier)}</TableCell>
+                                    <TableCell>
+                                        <TextField 
+                                            type="number"
+                                            size="small" 
+                                            value={tier.threshold}
+                                            disabled={tier.levelIndex === 1}
+                                            inputProps={{ min: 0, inputMode: 'decimal' }}
+                                            onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
+                                            onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
                                                 sx={{ maxWidth: 120 }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            <TextField 
-                                                type="number"
-                                                size="small" 
-                                                value={tier.cashbackPercent}
-                                                inputProps={{ min: 0, inputMode: 'decimal' }}
-                                                onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
-                                                onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <TextField 
+                                            type="number"
+                                            size="small"
+                                            value={tier.cashbackPercent}
+                                            inputProps={{ min: 0, inputMode: 'decimal' }}
+                                            onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
+                                            onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
                                                 InputProps={{ endAdornment: <span style={{marginLeft: 4, fontSize: '0.8rem', color: 'gray'}}>%</span> }}
                                                 sx={{ maxWidth: 100 }}
-                                            />
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                     </Paper>
                 </Box>
             )}
@@ -937,8 +937,8 @@ export const PointDetailsPage = () => {
                              </TableRow>
                          ))
                      )}
-                     </TableBody>
-                 </Table>
+                 </TableBody>
+             </Table>
              </Box>
          </Paper>
        )}

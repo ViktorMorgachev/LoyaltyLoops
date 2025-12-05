@@ -44,43 +44,43 @@ export const TransactionsPage = () => {
         <Box sx={{ overflowX: 'auto' }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: 'action.hover' }}>
-                <TableRow>
+            <TableRow>
                   <TableCell sx={{ fontWeight: 600 }}>{t('history.table_date')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('history.table_point')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('history.table_type')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('history.table_amount')}</TableCell>
                   <TableCell sx={{ fontWeight: 600 }}>{t('history.table_bonus')}</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {history.length === 0 && (
-                  <TableRow>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {history.length === 0 && (
+              <TableRow>
                     <TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>
                         {t('history.empty')}
                     </TableCell>
-                  </TableRow>
-                )}
-                {history.map((h) => (
+              </TableRow>
+            )}
+            {history.map((h) => (
                   <TableRow key={h.id} hover>
                     <TableCell sx={{ color: 'text.secondary' }}>{formatDate(h.timestamp)}</TableCell>
                     <TableCell sx={{ fontWeight: 500 }}>{h.pointName}</TableCell>
-                    <TableCell>
-                        <Chip 
-                            label={getTypeLabel(h.type)} 
-                            color={h.type === 'VISIT' ? 'info' : (h.type === 'EARN' ? 'success' : 'warning')} 
-                            size="small" 
+                <TableCell>
+                    <Chip 
+                        label={getTypeLabel(h.type)} 
+                        color={h.type === 'VISIT' ? 'info' : (h.type === 'EARN' ? 'success' : 'warning')} 
+                        size="small" 
                             variant="outlined"
                             sx={{ fontWeight: 500, borderRadius: 2 }}
-                        />
-                    </TableCell>
-                    <TableCell>{h.amount > 0 ? h.amount.toFixed(2) : '—'}</TableCell>
+                    />
+                </TableCell>
+                <TableCell>{h.amount > 0 ? h.amount.toFixed(2) : '—'}</TableCell>
                     <TableCell sx={{ color: h.pointsDelta > 0 || h.visitsDelta > 0 ? 'success.main' : 'text.primary', fontWeight: h.pointsDelta > 0 || h.visitsDelta > 0 ? 600 : 400 }}>
-                        {h.pointsDelta !== 0 ? (h.pointsDelta > 0 ? `+${h.pointsDelta.toFixed(2)}` : h.pointsDelta.toFixed(2)) : (h.visitsDelta > 0 ? `+${h.visitsDelta} visit` : '—')}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    {h.pointsDelta !== 0 ? (h.pointsDelta > 0 ? `+${h.pointsDelta.toFixed(2)}` : h.pointsDelta.toFixed(2)) : (h.visitsDelta > 0 ? `+${h.visitsDelta} visit` : '—')}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
         </Box>
       </Paper>
     </Container>
