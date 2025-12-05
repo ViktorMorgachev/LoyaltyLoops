@@ -1,126 +1,149 @@
-import React from 'react';
-import { Box, Typography, Paper, List, ListItem, ListItemText, Divider, Accordion, AccordionSummary, AccordionDetails } from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useTranslation } from 'react-i18next';
+import { Container, Typography, Box, Paper, Button, Stack, useTheme } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PeopleIcon from '@mui/icons-material/People';
+import SecurityIcon from '@mui/icons-material/Security';
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import HandshakeIcon from '@mui/icons-material/Handshake';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import MapIcon from '@mui/icons-material/Map';
 
 export const AboutPage = () => {
-  const { t } = useTranslation();
+    const navigate = useNavigate();
+    const theme = useTheme();
 
-  const milestones = [
-    t('about.items.architecture'),
-    t('about.items.security'),
-    t('about.items.localization'),
-    t('about.items.soon'),
-  ];
-
-  const loyaltyPrograms = [
+    const features = [
     {
-      key: 'tiered',
-      title: t('about.loyalty_types.tiered_title'),
-      description: t('about.loyalty_types.tiered_desc')
+            icon: <TrendingUpIcon fontSize="large" color="primary" />,
+            title: 'Гибкая Лояльность',
+            description: 'Конструктор стратегий: Кэшбэк, Штамп-карты ("6-й кофе в подарок") или Гибридная система. Адаптируется под Ритейл, HoReCa и Услуги.'
     },
     {
-      key: 'visits',
-      title: t('about.loyalty_types.visits_title'),
-      description: t('about.loyalty_types.visits_desc')
+            icon: <PeopleIcon fontSize="large" color="primary" />,
+            title: 'CRM и Сегментация',
+            description: 'Оцифровка базы клиентов без пластиковых карт. Автоматическое определение "Постоянных" и "Потерянных" клиентов для возврата.'
     },
     {
-      key: 'hybrid',
-      title: t('about.loyalty_types.hybrid_title'),
-      description: t('about.loyalty_types.hybrid_desc')
-    }
-  ];
-
-  const faqItems = [
-    {
-      key: 'cashback',
-      question: t('about.faq.cashback_q'),
-      answer: t('about.faq.cashback_a')
+            icon: <MapIcon fontSize="large" color="primary" />,
+            title: 'Гео-маркетинг',
+            description: 'Ваши филиалы на интерактивной карте города. Клиенты видят вас, когда ищут услуги рядом. Бесплатный трафик из приложения.'
+        },
+        {
+            icon: <SecurityIcon fontSize="large" color="primary" />,
+            title: 'Контроль и Безопасность',
+            description: 'Прозрачная история операций. Защита от фрода со стороны персонала. Разграничение прав доступа (Владелец, Менеджер, Кассир).'
+        },
+        {
+            icon: <StorefrontIcon fontSize="large" color="primary" />,
+            title: 'Филиальная Сеть',
+            description: 'Единая экосистема для всех ваших точек. Клиент копит баллы в одной кофейне, а тратит в другой (по вашему желанию).'
     },
     {
-      key: 'visits',
-      question: t('about.faq.visits_q'),
-      answer: t('about.faq.visits_a')
-    },
-    {
-      key: 'downgrade',
-      question: t('about.faq.downgrade_q'),
-      answer: t('about.faq.downgrade_a')
-    },
-    {
-      key: 'staff',
-      question: t('about.faq.staff_q'),
-      answer: t('about.faq.staff_a')
+            icon: <HandshakeIcon fontSize="large" color="primary" />,
+            title: 'Партнерство 50/50',
+            description: 'Станьте Менеджером Платформы: подключайте другие бизнесы и получайте 50% от их абонентской платы пожизненно.'
     }
   ];
 
   return (
-    <Box maxWidth="md">
-      <Typography variant="h4" fontWeight="bold" gutterBottom>
-        {t('about.title')}
+        <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 6 }}>
+            <Container maxWidth="lg">
+                <Button 
+                    startIcon={<ArrowBackIcon />} 
+                    onClick={() => navigate('/', { replace: true })} 
+                    sx={{ mb: 4 }}
+                >
+                    Назад
+                </Button>
+
+                {/* HERO SECTION */}
+                <Box textAlign="center" mb={8}>
+                    <Typography variant="h2" component="h1" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                        LoyaltyLoop
+                    </Typography>
+                    <Typography variant="h5" color="text.secondary" sx={{ mb: 4, maxWidth: 800, mx: 'auto', lineHeight: 1.6 }}>
+                        Современная система лояльности для малого и среднего бизнеса. 
+                        Превращаем случайных посетителей в постоянных клиентов.
       </Typography>
+                    <Stack direction="row" spacing={2} justifyContent="center">
+                        <Button variant="contained" size="large" onClick={() => navigate('/login', { replace: true })} sx={{ px: 4, py: 1.5, borderRadius: 4, fontSize: '1.1rem' }}>
+                            Начать бесплатно
+                        </Button>
+                        <Button variant="outlined" size="large" onClick={() => navigate('/roadmap')} sx={{ px: 4, py: 1.5, borderRadius: 4, fontSize: '1.1rem' }}>
+                            Планы развития
+                        </Button>
+                    </Stack>
+                </Box>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">{t('about.section_mission')}</Typography>
-        <Typography variant="body1" color="text.secondary">
-          {t('about.mission_text')}
+                {/* FEATURES STACK */}
+                <Stack spacing={4}>
+                    {features.map((feature, index) => (
+                        <Paper 
+                            key={index}
+                            elevation={0} 
+                            sx={{ 
+                                p: 4, 
+                                width: '100%', // Гарантируем полную ширину
+                                borderRadius: 4, 
+                                border: '1px solid', 
+                                borderColor: 'divider',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                    boxShadow: theme.shadows[4],
+                                    borderColor: 'primary.main'
+                                    // Removed translateY to fix visual shift/width issue
+                                }
+                            }}
+                        >
+                            <Box sx={{ mb: 2, p: 1.5, bgcolor: 'primary.50', borderRadius: '12px', display: 'inline-flex' }}>
+                                {feature.icon}
+                            </Box>
+                            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                                {feature.title}
+                            </Typography>
+                            <Typography 
+                                variant="body1" 
+                                color="text.secondary" 
+                                sx={{ 
+                                    lineHeight: 1.6,
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 3,
+                                    WebkitBoxOrient: 'vertical',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis'
+                                }}
+                            >
+                                {feature.description}
         </Typography>
       </Paper>
+                    ))}
+                </Stack>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6">{t('about.section_focus')}</Typography>
-        <List>
-          {milestones.map((item, idx) => (
-            <React.Fragment key={idx}>
-              <ListItem>
-                <ListItemText primary={item} />
-              </ListItem>
-              {idx !== milestones.length - 1 && <Divider component="li" />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
-
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>{t('about.loyalty_types.title')}</Typography>
-        <List>
-          {loyaltyPrograms.map((program, idx) => (
-            <React.Fragment key={program.key}>
-              <ListItem alignItems="flex-start">
-                <ListItemText
-                  primary={program.title}
-                  secondary={<Typography variant="body2" color="text.secondary">{program.description}</Typography>}
-                />
-              </ListItem>
-              {idx !== loyaltyPrograms.length - 1 && <Divider component="li" />}
-            </React.Fragment>
-          ))}
-        </List>
-      </Paper>
-
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Typography variant="h6" gutterBottom>{t('about.faq.title')}</Typography>
-        {faqItems.map((item) => (
-          <Accordion key={item.key} disableGutters>
-            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-              <Typography fontWeight="bold">{item.question}</Typography>
-            </AccordionSummary>
-            <AccordionDetails>
-              <Typography variant="body2" color="text.secondary">
-                {item.answer}
+                {/* CTA SECTION */}
+                <Paper sx={{ mt: 8, p: 6, borderRadius: 6, background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', color: 'white', textAlign: 'center' }}>
+                    <Typography variant="h4" fontWeight="bold" gutterBottom>
+                        Готовы масштабировать бизнес?
               </Typography>
-            </AccordionDetails>
-          </Accordion>
-        ))}
-      </Paper>
-
-      <Paper sx={{ p: 3 }}>
-        <Typography variant="h6">{t('about.section_contact')}</Typography>
-        <Typography variant="body2" color="text.secondary">
-          {t('about.contact_text')}
+                    <Typography variant="h6" sx={{ mb: 4, opacity: 0.8, fontWeight: 'normal' }}>
+                        Присоединяйтесь к экосистеме LoyaltyLoop уже сегодня.
         </Typography>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center">
+                         <Box display="flex" alignItems="center" gap={1}>
+                            <CheckCircleIcon color="success" />
+                            <Typography>Быстрый старт за 15 минут</Typography>
+                         </Box>
+                         <Box display="flex" alignItems="center" gap={1}>
+                            <CheckCircleIcon color="success" />
+                            <Typography>Никакого сложного оборудования</Typography>
+                         </Box>
+                         <Box display="flex" alignItems="center" gap={1}>
+                            <CheckCircleIcon color="success" />
+                            <Typography>14 дней пробный период</Typography>
+                         </Box>
+                    </Stack>
       </Paper>
+            </Container>
     </Box>
   );
 };
-

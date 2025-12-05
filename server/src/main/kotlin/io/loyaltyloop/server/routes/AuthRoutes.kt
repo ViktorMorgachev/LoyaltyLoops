@@ -7,8 +7,8 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.service.sms.verification.VerificationService
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
@@ -20,11 +20,15 @@ import io.loyaltyloop.shared.models.VerifyCodeRequest
 import java.util.UUID
 import io.loyaltyloop.shared.models.SendCodeRequest
 
+import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.service.EventLogger
+
 fun Route.authRoutes(
     repository: UserRepository,
     partnerRepository: io.loyaltyloop.server.repository.PartnerRepository,
     tokenService: TokenService,
-    otpService: OtpService
+    verificationService: VerificationService,
+    eventLogger: EventLogger
 ) {
 
     route("/auth") {
@@ -37,8 +41,7 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            val code = otpService.generateCode(request.phone)
-            println("SMS для ${request.phone}: $code")
+            val code = verificationService.startVerification(phone = request.phone)
 
             call.respond(
                 mapOf(
@@ -57,7 +60,7 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            if (otpService.validateCode(request.phone, request.code)) {
+            if (verificationService.checkCode(request.phone, request.code)) {
                 var user = repository.getUserByPhone(request.phone)
                 val isNew = user == null
                 if (user == null) {
@@ -74,6 +77,12 @@ fun Route.authRoutes(
                     if (savedUser == null) {
                         throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
                     }
+                    eventLogger.log(
+                        type = SystemEventType.REGISTER,
+                        userId = user.id,
+                        userPhone = request.phone,
+                        payload = "User registered via phone"
+                    )
                 } else {
                     if (user.language != lang) {
                         repository.updateUserLanguage(user.id, lang)
@@ -87,6 +96,14 @@ fun Route.authRoutes(
                 val (access, refresh) = tokenService.generateTokens(user)
                 val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
                 repository.saveRefreshToken(refresh, user.id, expiresAt)
+                
+                eventLogger.log(
+                    type = SystemEventType.LOGIN,
+                    userId = user.id,
+                    userPhone = request.phone,
+                    payload = "User logged in"
+                )
+
                 call.respond(AuthResponse(access, refresh, user.id, isNew, workspaces, qrSecret = user.qrSecret))
 
 
@@ -159,7 +176,15 @@ fun Route.authRoutes(
 
                 val isValid = partnerRepository.verifyPartnerPin(partner.id, request.pin)
                 if (isValid) call.respond(HttpStatusCode.OK)
-                else throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
+                else {
+                    eventLogger.log(
+                        type = SystemEventType.PIN_VERIFICATION_FAILED,
+                        userId = userId,
+                        partnerId = partner.id,
+                        payload = "Invalid PIN verification attempt"
+                    )
+                    throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
+                }
                 return@post
 
                 // If workspace not found or not partner? Assume OK or specific error

@@ -9,12 +9,24 @@ import type { AnalyticsResponse } from '../../types/analytics';
 
 // Компонент KPI карточки
 const KpiCard = ({ title, value, icon, color }: any) => (
-    <Paper sx={{ p: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '100%' }}>
+    <Paper 
+        elevation={0}
+        sx={{ 
+            p: 3, 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            height: '100%',
+            borderRadius: 4,
+            border: '1px solid',
+            borderColor: 'divider'
+        }}
+    >
         <Box>
-            <Typography variant="h4" fontWeight="bold" sx={{ color }}>{value}</Typography>
-            <Typography color="textSecondary" variant="subtitle2">{title}</Typography>
+            <Typography variant="h4" fontWeight="800" sx={{ color }}>{value}</Typography>
+            <Typography color="text.secondary" variant="subtitle2" fontWeight="500">{title}</Typography>
         </Box>
-        <Box sx={{ bgcolor: `${color}15`, p: 1.5, borderRadius: '12px', display: 'flex' }}>
+        <Box sx={{ bgcolor: `${color}15`, p: 1.5, borderRadius: '16px', display: 'flex' }}>
             {icon}
         </Box>
     </Paper>
@@ -102,13 +114,15 @@ export const PartnerDashboardPage = () => {
 
             {/* График */}
             <Box mt={4}>
-                <Paper sx={{ p: 3 }}>
-                    <Typography variant="h6" mb={3}>{t('common.revenue_chart')}</Typography>
+                <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="h6" mb={3} fontWeight="bold">{t('common.revenue_chart')}</Typography>
                     {analytics?.chartData && analytics.chartData.length > 0 ? (
+                        <Box height={300}>
                         <RevenueChart data={analytics.chartData} />
+                        </Box>
                     ) : (
                         <Box height={300} display="flex" alignItems="center" justifyContent="center">
-                            <Typography color="textSecondary">
+                            <Typography color="text.secondary">
                                 {t('history.empty')}
                             </Typography>
                         </Box>

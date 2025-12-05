@@ -15,7 +15,8 @@ import {
   Group as GroupIcon,
   Info as InfoIcon,
   ChatBubbleOutline as ChatIcon,
-  Science as ScienceIcon
+  Science as ScienceIcon,
+  ListAlt as ListAltIcon // Added
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -118,6 +119,11 @@ export const MainLayout = () => {
           icon: <ScienceIcon />,
           path: '/test-lab'
         });
+        menuItems.push({
+            text: t('menu.system_events', { defaultValue: 'Audit Logs' }),
+            icon: <ListAltIcon />,
+            path: '/admin/events'
+        });
       }
   }
 
@@ -130,43 +136,64 @@ export const MainLayout = () => {
   }
 
   const drawer = (
-    <div>
-      <Toolbar sx={{ bgcolor: 'primary.main', color: 'white' }}>
-        <Typography variant="h6" noWrap component="div">
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Toolbar sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1 }}>
+        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 800, background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
           LoyaltyLoop
         </Typography>
       </Toolbar>
-      <Divider />
-      <List>
+      <Divider sx={{ mx: 2 }} />
+      <List sx={{ px: 2, py: 2, flexGrow: 1 }}>
         {menuItems.map((item) => (
-          <ListItem key={item.path} disablePadding>
+          <ListItem key={item.path} disablePadding sx={{ mb: 0.5 }}>
             <ListItemButton
               selected={location.pathname === item.path}
               onClick={() => {
                   navigate(item.path);
                   setMobileOpen(false);
               }}
+              sx={{
+                borderRadius: 2,
+                '&.Mui-selected': {
+                  bgcolor: 'primary.main',
+                  color: 'primary.contrastText',
+                  '&:hover': {
+                    bgcolor: 'primary.dark',
+                  },
+                  '& .MuiListItemIcon-root': {
+                    color: 'inherit',
+                  },
+                },
+              }}
             >
-              <ListItemIcon>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.text} />
+              <ListItemIcon sx={{ minWidth: 40, color: location.pathname === item.path ? 'inherit' : 'text.secondary' }}>
+                  {item.icon}
+              </ListItemIcon>
+              <ListItemText 
+                primary={item.text} 
+                primaryTypographyProps={{ fontWeight: location.pathname === item.path ? 600 : 400 }} 
+              />
             </ListItemButton>
           </ListItem>
         ))}
       </List>
-    </div>
+    </Box>
   );
 
   return (
-    <Box sx={{ display: 'flex' }}>
+    <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
       <CssBaseline />
       <AppBar
         position="fixed"
+        elevation={0}
         sx={{
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           ml: { sm: `${drawerWidth}px` },
-          bgcolor: 'white',
+          bgcolor: 'rgba(255, 255, 255, 0.8)',
+          backdropFilter: 'blur(8px)',
           color: 'text.primary',
-          boxShadow: 1
+          borderBottom: '1px solid',
+          borderColor: 'divider'
         }}
       >
         <Toolbar>
@@ -180,18 +207,18 @@ export const MainLayout = () => {
             <MenuIcon />
           </IconButton>
 
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
              {t('menu.title')}
           </Typography>
 
           <LanguageSwitcher />
 
           <IconButton onClick={handleMenuOpen} sx={{ p: 0, ml: 2 }}>
-            <Avatar sx={{ bgcolor: 'primary.main' }}>U</Avatar>
+            <Avatar sx={{ bgcolor: 'primary.main', width: 36, height: 36, fontSize: '0.9rem' }}>U</Avatar>
           </IconButton>
 
           <Menu
-            sx={{ mt: '45px' }}
+            sx={{ mt: '45px', '& .MuiPaper-root': { borderRadius: 3, boxShadow: '0px 4px 20px rgba(0,0,0,0.08)' } }}
             id="menu-appbar"
             anchorEl={anchorEl}
             anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -203,7 +230,7 @@ export const MainLayout = () => {
             <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>
                 {t('menu.profile')}
             </MenuItem>
-            <MenuItem onClick={handleLogout}>
+            <MenuItem onClick={handleLogout} sx={{ color: 'error.main' }}>
                 {t('menu.logout')}
             </MenuItem>
           </Menu>
@@ -221,7 +248,7 @@ export const MainLayout = () => {
           ModalProps={{ keepMounted: true }}
           sx={{
             display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: 'none', bgcolor: '#f8fafc' },
           }}
         >
           {drawer}
@@ -230,7 +257,7 @@ export const MainLayout = () => {
           variant="permanent"
           sx={{
             display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth, borderRight: '1px solid', borderColor: 'divider', bgcolor: '#fff' },
           }}
           open
         >
@@ -240,7 +267,7 @@ export const MainLayout = () => {
 
       <Box
         component="main"
-        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` }, minHeight: '100vh', bgcolor: '#f5f5f5' }}
+        sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` }, minHeight: '100vh' }}
       >
         <Toolbar />
         <Outlet />

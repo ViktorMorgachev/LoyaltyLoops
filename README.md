@@ -90,7 +90,7 @@ lsof -nP -iTCP:3000 | grep LISTEN
 
 ### Если занят порт бэка
 ```bash
-lsof -nP -iTCP:8000 | grep LISTEN
+lsof -nP -iTCP:8080 | grep LISTEN
 ```
 
 ### 4. Запуск Мобильного приложения

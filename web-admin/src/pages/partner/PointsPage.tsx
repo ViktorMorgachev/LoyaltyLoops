@@ -15,6 +15,7 @@ import { LocationPicker } from '../../components/LocationPicker';
 import SearchIcon from '@mui/icons-material/Search';
 import { useUser } from '../../context/UserContext';
 import { geocodeAddress, reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
+import { PhoneInput } from '../../components/inputs/PhoneInput';
 
 export const PointsPage = () => {
   const { t } = useTranslation();
@@ -284,20 +285,23 @@ export const PointsPage = () => {
         )}
       </Box>
 
-      <Paper elevation={2}>
-        <Table>
-          <TableHead>
+      <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+        <Box sx={{ overflowX: 'auto' }}>
+            <Table sx={{ minWidth: 650 }}>
+              <TableHead sx={{ bgcolor: 'action.hover' }}>
             <TableRow>
-              <TableCell>{t('dashboard.table_name')}</TableCell>
-              <TableCell>{t('dashboard.table_type')}</TableCell>
-              <TableCell>{t('dashboard.table_invite')}</TableCell>
-              <TableCell>{t('common.status')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_name')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_type')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('dashboard.table_invite')}</TableCell>
+                  <TableCell sx={{ fontWeight: 600 }}>{t('common.status')}</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {points.length === 0 && (
               <TableRow>
-                <TableCell colSpan={4} align="center">{t('dashboard.empty')}</TableCell>
+                    <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                        {t('dashboard.empty')}
+                    </TableCell>
               </TableRow>
             )}
             {points.map((p) => (
@@ -318,6 +322,7 @@ export const PointsPage = () => {
                       color="primary"
                       clickable
                       variant="outlined"
+                          size="small"
                     />
                   ) : "—"}
                 </TableCell>
@@ -332,6 +337,7 @@ export const PointsPage = () => {
             ))}
           </TableBody>
         </Table>
+        </Box>
       </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
@@ -346,14 +352,16 @@ export const PointsPage = () => {
               label={t('point_details.address_label')}
               fullWidth value={address} onChange={e => setAddress(e.target.value)} sx={{ mt: 1 }}
           />
-        <TextField
+        
+        <Box sx={{ mt: 1 }}>
+            <PhoneInput 
             label={t('point_details.contact_phone_label')}
+                value={contactPhone}
+                onChange={setContactPhone}
             fullWidth
-            value={contactPhone}
-            onChange={(e) => setContactPhone(e.target.value)}
-            sx={{ mt: 1 }}
-            inputProps={{ maxLength: 30, inputMode: 'tel' }}
         />
+        </Box>
+
         <TextField
             label={t('point_details.contact_link_label')}
             fullWidth

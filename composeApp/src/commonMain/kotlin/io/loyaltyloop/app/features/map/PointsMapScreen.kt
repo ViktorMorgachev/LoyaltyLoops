@@ -53,6 +53,8 @@ import io.loyaltyloop.app.ui.components.map.formatDistance
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.*
 
+import io.loyaltyloop.app.ui.components.map.PointDetailsDialog
+
 class PointsMapScreen : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class, InternalVoyagerApi::class)
@@ -62,6 +64,15 @@ class PointsMapScreen : Screen {
         val state by viewModel.state.collectAsState()
         val scope = rememberCoroutineScope()
         val density = LocalDensity.current
+
+        var detailsPoint by remember { mutableStateOf<TradingPointDto?>(null) }
+
+        if (detailsPoint != null) {
+            PointDetailsDialog(
+                point = detailsPoint!!,
+                onDismiss = { detailsPoint = null }
+            )
+        }
 
         // --- PERMISSIONS ---
         val factory = rememberPermissionsControllerFactory()
@@ -182,9 +193,9 @@ class PointsMapScreen : Screen {
                     val navBarPadding =
                         WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
                     LazyColumn(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp + navBarPadding),
                         state = listState,
-                        contentPadding = PaddingValues(bottom = 24.dp + navBarPadding)
+                        contentPadding = PaddingValues(horizontal = 8.dp)
                     ) {
                         items(displayedPoints, key = { it.id }) { point ->
                             PointListItem(
@@ -193,7 +204,8 @@ class PointsMapScreen : Screen {
                                 onClick = {
                                     viewModel.onMarkerClicked(point.id)
                                     scope.launch { scaffoldState.bottomSheetState.expand() }
-                                }
+                                },
+                                onDetailsClick = { detailsPoint = point }
                             )
                             if (displayedPoints.size > 1) {
                                 HorizontalDivider()
@@ -300,7 +312,7 @@ class PointsMapScreen : Screen {
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
 
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
@@ -353,12 +365,6 @@ class PointsMapScreen : Screen {
                         }
                     }
 
-                    // 4. КНОПКА ГЕОЛОКАЦИИ С "УМНЫМ" ОТСТУПОМ
-                    // Вычисляем отступ: высота панели + фиксированный отступ.
-                    val fabPaddingBottom by animateDpAsState(
-                        targetValue = animatedPeekHeight + 16.dp,
-                        label = "fabPadding"
-                    )
 
                     AnimatedVisibility(
                         visible = !isImeVisible, // Скрываем, если клавиатура открыта
@@ -370,7 +376,7 @@ class PointsMapScreen : Screen {
                             .graphicsLayer { translationY = fabTranslationY }
                     ) {
                         FloatingActionButton(
-                            onClick = { scope.launch { controller.providePermission(Permission.LOCATION); viewModel.onLocateMe() } },
+                            onClick = { scope.launch { requestLocationPermission() } },
                             containerColor = MaterialTheme.colorScheme.surface,
                             contentColor = MaterialTheme.colorScheme.primary,
                             shape = CircleShape
@@ -525,7 +531,8 @@ class PointsMapScreen : Screen {
     fun PointListItem(
         point: TradingPointDto,
         isSelected: Boolean,
-        onClick: () -> Unit
+        onClick: () -> Unit,
+        onDetailsClick: () -> Unit
     ) {
         // Подсветка, если выбрано
         val borderColor = if (isSelected) MaterialTheme.colorScheme.primary else Color.Transparent
@@ -545,7 +552,7 @@ class PointsMapScreen : Screen {
                 .background(bgColor)
                 .border(1.dp, borderColor, RoundedCornerShape(16.dp))
                 .clickable { onClick() }
-                .padding(12.dp),
+                .padding(horizontal = 12.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Аватарка
@@ -609,7 +616,10 @@ class PointsMapScreen : Screen {
                 Spacer(modifier = Modifier.height(6.dp))
 
                 // Статус и тип
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     val isOpen = point.isOpenNow == true
 
                     // Индикатор статуса
@@ -632,10 +642,25 @@ class PointsMapScreen : Screen {
 
                     // Название типа (Кофейня, Магазин...)
                     Text(
-                        text = stringResource(getLabelResource(point.type)), // Лучше маппить на локализованный ресурс
+                        text = stringResource(getLabelResource(point.type)),
                         style = MaterialTheme.typography.labelSmall,
                         color = Color.Gray
                     )
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+                    TextButton(
+                        onClick = onDetailsClick,
+                        contentPadding = PaddingValues(0.dp),
+                        modifier = Modifier.height(32.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.point_details_btn),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

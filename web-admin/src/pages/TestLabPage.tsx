@@ -215,20 +215,24 @@ export const TestLabPage: React.FC = () => {
   };
 
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>{t('test_lab.title')}</Typography>
-      <Typography variant="body1" color="text.secondary" mb={3}>
-        {t('test_lab.subtitle')}
-      </Typography>
+    <Box maxWidth="xl" mx="auto" sx={{ mt: 4, mb: 8 }}>
+      <Box mb={4}>
+          <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #10b981 30%, #3b82f6 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {t('test_lab.title')}
+          </Typography>
+          <Typography variant="body1" color="text.secondary">
+            {t('test_lab.subtitle')}
+          </Typography>
+      </Box>
 
       <Box
         display="grid"
         gridTemplateColumns={{ xs: '1fr', md: 'repeat(2, minmax(0, 1fr))' }}
         gap={3}
       >
-        <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6">{t('test_lab.delete_user_title')}</Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.delete_user_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               {t('test_lab.delete_user_desc')}
             </Typography>
             <Stack spacing={2}>
@@ -237,21 +241,23 @@ export const TestLabPage: React.FC = () => {
                 value={deleteUserId}
                 onChange={(e) => setDeleteUserId(e.target.value)}
                 fullWidth
+                size="small"
               />
               <Button
                 variant="contained"
                 color="error"
                 onClick={handleDeleteUser}
                 disabled={loading.deleteUser}
+                sx={{ borderRadius: 2 }}
               >
                 {t('test_lab.delete_user_btn')}
               </Button>
             </Stack>
         </Paper>
 
-        <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6">{t('test_lab.delete_card_title')}</Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.delete_card_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               {t('test_lab.delete_card_desc')}
             </Typography>
             <Stack spacing={2}>
@@ -260,31 +266,33 @@ export const TestLabPage: React.FC = () => {
                 value={deleteCardId}
                 onChange={(e) => setDeleteCardId(e.target.value)}
                 fullWidth
+                size="small"
               />
               <Button
                 variant="contained"
                 color="error"
                 onClick={handleDeleteCard}
                 disabled={loading.deleteCard}
+                sx={{ borderRadius: 2 }}
               >
                 {t('test_lab.delete_card_btn')}
               </Button>
             </Stack>
         </Paper>
 
-        <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6">{t('test_lab.push_title')}</Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider', bgcolor: 'grey.50' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.push_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               {t('test_lab.push_desc')}
             </Typography>
-            <Button variant="outlined" onClick={upcomingFeature}>
+            <Button variant="outlined" onClick={upcomingFeature} fullWidth sx={{ borderRadius: 2 }}>
               {t('test_lab.push_btn')}
             </Button>
           </Paper>
 
-        <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6">{t('test_lab.card_mutation_title')}</Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.card_mutation_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               {t('test_lab.card_mutation_desc')}
             </Typography>
             <Stack spacing={2}>
@@ -293,34 +301,45 @@ export const TestLabPage: React.FC = () => {
                 value={mutationForm.cardId}
                 onChange={(e) => setMutationForm((prev) => ({ ...prev, cardId: e.target.value }))}
                 fullWidth
+                size="small"
               />
-              <TextField
-                label={t('test_lab.balance')}
-                type="number"
-                value={mutationForm.balance}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, balance: e.target.value }))}
-              />
-              <TextField
-                label={t('test_lab.visits')}
-                type="number"
-                value={mutationForm.visits}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, visits: e.target.value }))}
-              />
-              <TextField
-                label={t('test_lab.tier')}
-                type="number"
-                value={mutationForm.tierLevel}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, tierLevel: e.target.value }))}
-              />
-              <TextField
-                label={t('test_lab.total_spent')}
-                type="number"
-                value={mutationForm.totalSpent}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, totalSpent: e.target.value }))}
-              />
+              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                  <TextField
+                    label={t('test_lab.balance')}
+                    type="number"
+                    size="small"
+                    value={mutationForm.balance}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, balance: e.target.value }))}
+                  />
+                  <TextField
+                    label={t('test_lab.visits')}
+                    type="number"
+                    size="small"
+                    value={mutationForm.visits}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, visits: e.target.value }))}
+                  />
+                  <TextField
+                    label={t('test_lab.tier')}
+                    type="number"
+                    size="small"
+                    value={mutationForm.tierLevel}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, tierLevel: e.target.value }))}
+                  />
+                  <TextField
+                    label={t('test_lab.total_spent')}
+                    type="number"
+                    size="small"
+                    value={mutationForm.totalSpent}
+                    onChange={(e) => setMutationForm((prev) => ({ ...prev, totalSpent: e.target.value }))}
+                  />
+              </Box>
+              
+              <Divider />
+              
               <TextField
                 label={t('test_lab.card_blocked_until_label')}
                 select
+                size="small"
                 value={mutationForm.blockPreset}
                 onChange={(e) =>
                   setMutationForm((prev) => ({ ...prev, blockPreset: e.target.value as BlockPreset }))
@@ -338,64 +357,37 @@ export const TestLabPage: React.FC = () => {
                 value={mutationForm.blockReason}
                 onChange={(e) => setMutationForm((prev) => ({ ...prev, blockReason: e.target.value }))}
                 inputProps={{ maxLength: 15 }}
+                size="small"
                 disabled={mutationForm.blockPreset === 'keep' || mutationForm.blockPreset === 'none'}
               />
-              <Box display="flex" justifyContent="flex-end">
-                <Button
-                  variant="text"
-                  size="small"
-                  onClick={() =>
-                    setMutationForm((prev) => ({
-                      ...prev,
-                      blockPreset: 'none',
-                      blockReason: ''
-                    }))
-                  }
-                >
-                  {t('test_lab.card_blocked_clear_btn')}
-                </Button>
-              </Box>
-              <TextField
-                label={t('test_lab.card_closed_label')}
-                select
-                value={mutationForm.pauseState}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, pauseState: e.target.value as PauseState }))}
-              >
-                <MenuItem value="keep">{t('test_lab.card_status_no_change')}</MenuItem>
-                <MenuItem value="active">{t('test_lab.card_closed_open')}</MenuItem>
-                <MenuItem value="paused">{t('test_lab.card_closed_closed')}</MenuItem>
-              </TextField>
-              <TextField
-                label={t('test_lab.card_closed_reason_label')}
-                value={mutationForm.pauseReason}
-                onChange={(e) => setMutationForm((prev) => ({ ...prev, pauseReason: e.target.value }))}
-                inputProps={{ maxLength: 15 }}
-                disabled={mutationForm.pauseState !== 'paused'}
-              />
+              
               <Button
                 variant="contained"
                 onClick={handleMutateCard}
                 disabled={loading.mutateCard}
+                sx={{ borderRadius: 2 }}
               >
                 {t('test_lab.card_mutation_btn')}
               </Button>
             </Stack>
           </Paper>
 
-        <Paper sx={{ p: 3, height: '100%' }}>
-            <Typography variant="h6">{t('test_lab.event_title')}</Typography>
-            <Typography variant="body2" color="text.secondary" mb={2}>
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.event_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
               {t('test_lab.event_desc')}
             </Typography>
             <Stack spacing={2}>
               <TextField
                 label={t('test_lab.card_id')}
                 value={eventForm.cardId}
+                size="small"
                 onChange={(e) => setEventForm((prev) => ({ ...prev, cardId: e.target.value }))}
               />
               <TextField
                 label={t('test_lab.event_type')}
                 select
+                size="small"
                 value={eventForm.successType}
                 onChange={(e) => setEventForm((prev) => ({ ...prev, successType: e.target.value as TransactionEventType }))}
               >
@@ -409,25 +401,31 @@ export const TestLabPage: React.FC = () => {
                 label={t('test_lab.args')}
                 helperText={t('test_lab.args_hint')}
                 value={eventForm.args}
+                size="small"
                 onChange={(e) => setEventForm((prev) => ({ ...prev, args: e.target.value }))}
               />
-              <TextField
-                label={t('test_lab.new_balance')}
-                type="number"
-                value={eventForm.newBalance}
-                onChange={(e) => setEventForm((prev) => ({ ...prev, newBalance: e.target.value }))}
-              />
-              <TextField
-                label={t('test_lab.new_visits')}
-                type="number"
-                value={eventForm.newVisits}
-                onChange={(e) => setEventForm((prev) => ({ ...prev, newVisits: e.target.value }))}
-              />
+              <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                  <TextField
+                    label={t('test_lab.new_balance')}
+                    type="number"
+                    size="small"
+                    value={eventForm.newBalance}
+                    onChange={(e) => setEventForm((prev) => ({ ...prev, newBalance: e.target.value }))}
+                  />
+                  <TextField
+                    label={t('test_lab.new_visits')}
+                    type="number"
+                    size="small"
+                    value={eventForm.newVisits}
+                    onChange={(e) => setEventForm((prev) => ({ ...prev, newVisits: e.target.value }))}
+                  />
+              </Box>
               <Button
                 variant="contained"
                 color="secondary"
                 onClick={handleSendEvent}
                 disabled={loading.sendEvent}
+                sx={{ borderRadius: 2 }}
               >
                 {t('test_lab.event_btn')}
               </Button>
@@ -435,15 +433,25 @@ export const TestLabPage: React.FC = () => {
         </Paper>
 
         <Paper
+          elevation={0}
           sx={{
-            p: 3,
-            gridColumn: { md: 'span 2' }
+            p: 0,
+            gridColumn: { md: 'span 2' },
+            borderRadius: 4, 
+            border: '1px solid', 
+            borderColor: 'divider',
+            overflow: 'hidden',
+            bgcolor: '#1e293b',
+            color: '#fff'
           }}
         >
-          <Typography variant="h6" gutterBottom>{t('test_lab.log_title')}</Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Box component="pre" sx={{ maxHeight: 240, overflowY: 'auto', m: 0 }}>
-            {logs.length === 0 ? t('test_lab.log_empty') : logs.join('\n')}
+          <Box p={2} borderBottom="1px solid" borderColor="rgba(255,255,255,0.1)">
+            <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ m: 0, fontSize: '1rem', fontFamily: 'monospace' }}>
+                TERMINAL_OUTPUT: {t('test_lab.log_title')}
+            </Typography>
+          </Box>
+          <Box component="pre" sx={{ maxHeight: 300, overflowY: 'auto', m: 0, p: 2, fontFamily: 'monospace', fontSize: '0.85rem', color: '#4ade80' }}>
+            {logs.length === 0 ? <span style={{ opacity: 0.5 }}>Waiting for events...</span> : logs.join('\n')}
           </Box>
         </Paper>
       </Box>

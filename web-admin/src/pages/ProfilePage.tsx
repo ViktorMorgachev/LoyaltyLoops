@@ -9,6 +9,7 @@ import { useUser } from '../context/UserContext';
 import type { Workspace } from '../context/UserContext';
 import { useNavigate } from 'react-router-dom';
 import { usePinVerification } from '../hooks/usePinVerification';
+import { PhoneInput } from '../components/inputs/PhoneInput';
 
 export const ProfilePage = () => {
     const { t } = useTranslation();
@@ -160,39 +161,50 @@ export const ProfilePage = () => {
 
     return (
         <>
-        <Box maxWidth={800}>
-            <Typography variant="h4" gutterBottom>{t('profile.title')}</Typography>
+        <Box maxWidth="md" mx="auto" mt={4}>
+            <Box textAlign="center" mb={4}>
+                 <Typography variant="h4" fontWeight="800" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                    {t('profile.title')}
+                 </Typography>
+            </Box>
 
-            <Paper sx={{ p: 3, mb: 4 }}>
+            <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                 {isFrozen && frozenLabel && (
-                    <Alert severity="warning" sx={{ mb: 2 }}>
+                    <Alert severity="warning" sx={{ mb: 3, borderRadius: 2 }}>
                         {t('profile.freeze_alert', { date: frozenLabel })}
                     </Alert>
                 )}
-                <Box display="flex" alignItems="center" gap={1}>
+                
+                <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
                     <TextField
                         label={t('profile.id_label')}
                         value={profile.userId || ''}
-                        fullWidth margin="normal" disabled
+                        fullWidth 
+                        disabled
+                        variant="outlined"
                         InputProps={{
                             endAdornment: (
                                 <Tooltip title={t('common.copied')}>
                                     <IconButton onClick={copyId} edge="end">
-                                        <ContentCopyIcon />
+                                        <ContentCopyIcon fontSize="small" />
                                     </IconButton>
                                 </Tooltip>
                             )
                         }}
                     />
-                </Box>
-
-                <TextField label={t('profile.phone_label')} value={profile.phone || ''} fullWidth margin="normal" disabled />
+                    <PhoneInput 
+                        label={t('profile.phone_label')}
+                        value={profile.phone || ''}
+                        onChange={() => {}} // Readonly
+                        disabled
+                        fullWidth
+                    />
 
                 <TextField
                     label={t('profile.name_label')}
                     value={profile.firstName || ''}
                     onChange={(e) => setProfile({...profile, firstName: e.target.value})}
-                    fullWidth margin="normal"
+                        fullWidth
                 />
 
                 <TextField
@@ -200,24 +212,26 @@ export const ProfilePage = () => {
                     value={profile.email || ''}
                     onChange={(e) => setProfile({ ...profile, email: e.target.value })}
                     fullWidth
-                    margin="normal"
                     type="email"
                 />
+                </Box>
 
-                <Button variant="contained" sx={{ mt: 2 }} onClick={handleSave}>
+                <Box mt={4} display="flex" justifyContent="flex-end">
+                    <Button variant="contained" onClick={handleSave} size="large" sx={{ borderRadius: 2, px: 4 }}>
                     {t('profile.save_btn')}
                 </Button>
+                </Box>
             </Paper>
 
             {isPartnerOwner && (
-                <Paper sx={{ p: 3, mb: 4 }}>
-                    <Typography variant="h6" gutterBottom>
+                <Paper elevation={0} sx={{ p: 4, mb: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+                    <Typography variant="h6" gutterBottom fontWeight="bold">
                         {hasOwnerPin === false ? t('profile.pin_set_title') : t('profile.pin_section_title')}
                     </Typography>
                     {pinMetaLoading ? (
-                        <LinearProgress />
+                        <LinearProgress sx={{ borderRadius: 1 }} />
                     ) : (
-                        <Box display="flex" flexDirection="column" gap={2}>
+                        <Box display="flex" flexDirection="column" gap={3} maxWidth={400}>
                             {hasOwnerPin === false && (
                                 <Typography variant="body2" color="text.secondary">
                                     {t('profile.pin_set_hint')}
@@ -235,8 +249,11 @@ export const ProfilePage = () => {
                                     }}
                                     inputProps={{ maxLength: 12, inputMode: 'numeric' }}
                                     disabled={pinInputsDisabled}
+                                    fullWidth
                                 />
                             )}
+                            
+                            <Box display="flex" gap={2}>
                             <TextField
                                 label={t('profile.pin_new_label')}
                                 type="password"
@@ -248,6 +265,7 @@ export const ProfilePage = () => {
                                 }}
                                 inputProps={{ maxLength: 12, inputMode: 'numeric' }}
                                 disabled={pinInputsDisabled}
+                                    fullWidth
                             />
                             <TextField
                                 label={t('profile.pin_confirm_label')}
@@ -260,85 +278,89 @@ export const ProfilePage = () => {
                                 }}
                                 inputProps={{ maxLength: 12, inputMode: 'numeric' }}
                                 disabled={pinInputsDisabled}
+                                    fullWidth
                             />
-                            <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled}>
+                            </Box>
+
+                            <Box display="flex" gap={2} flexWrap="wrap">
+                                <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled} sx={{ borderRadius: 2 }}>
                                 {pinLoading ? t('common.loading') : hasOwnerPin === false ? t('profile.pin_set_btn') : t('profile.pin_change_btn')}
                             </Button>
                             {requiresCurrentPin && (
-                                <>
                                     <Button
                                         color="error"
-                                        variant="outlined"
+                                        variant="text"
                                         onClick={handlePinResetRequest}
                                         disabled={resetLoading || !hasEmail || isFrozen || pinMetaLoading}
                                     >
                                         {resetLoading ? t('common.loading') : t('profile.pin_reset_btn')}
                                     </Button>
-                                    {!hasEmail && (
-                                        <Typography variant="body2" color="text.secondary">
+                                )}
+                            </Box>
+                             {requiresCurrentPin && !hasEmail && (
+                                <Typography variant="caption" color="text.secondary">
                                             {t('profile.pin_email_hint')}
                                         </Typography>
-                                    )}
-                                </>
                             )}
                         </Box>
                     )}
                 </Paper>
             )}
 
-            <Typography variant="h5" gutterBottom>{t('profile.my_workspaces')}</Typography>
-            <Paper>
-                <List>
-                    {uniqueWorkspaces.map((ws) => {
+            <Typography variant="h5" gutterBottom fontWeight="bold" sx={{ mt: 4, mb: 2 }}>{t('profile.my_workspaces')}</Typography>
+            <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
+                <List disablePadding>
+                    {uniqueWorkspaces.map((ws, index) => {
                         const isCurrent = currentWorkspace?.id === ws.id && currentWorkspace?.role === ws.role;
                         return (
                             <React.Fragment key={`${ws.id}-${ws.role}`}>
+                                {index > 0 && <Divider />}
                                 <ListItem
+                                    sx={{ py: 2, px: 3 }}
                                     secondaryAction={
                                         isCurrent
-                                            ? <Chip label={t('profile.current_role')} color="success" size="small" icon={<CheckIcon />} />
-                                            : <Button size="small" variant="outlined" onClick={() => handleSwitch(ws)}>{t('profile.switch_role')}</Button>
+                                            ? <Chip label={t('profile.current_role')} color="success" size="small" icon={<CheckIcon />} sx={{ fontWeight: 500 }} />
+                                            : <Button size="small" variant="outlined" onClick={() => handleSwitch(ws)} sx={{ borderRadius: 2 }}>{t('profile.switch_role')}</Button>
                                     }
                                 >
                                     <ListItemAvatar>
-                                        <Avatar sx={{ bgcolor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main' }}>
+                                        <Avatar sx={{ bgcolor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.light' : 'primary.light', color: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main' }}>
                                             {ws.role === 'PLATFORM_SUPER_ADMIN' ? <AdminIcon /> : <StoreIcon />}
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText
-                                        primary={ws.title}
+                                        primary={<Typography fontWeight="600">{ws.title}</Typography>}
                                         secondary={
-                                            <>
-                                                <Typography component="span" variant="body2" color="text.primary">
-                                                    {ws.role.replace('_', ' ')}
+                                            <Box component="span" display="flex" alignItems="center" gap={1}>
+                                                <Typography component="span" variant="body2" color="text.secondary" sx={{ textTransform: 'capitalize' }}>
+                                                    {ws.role.replace(/_/g, ' ').toLowerCase()}
                                                 </Typography>
-                                                {ws.requirePin && ` • ${t('profile.pin_protected')}`}
-                                            </>
+                                                {ws.requirePin && <Chip label="PIN" size="small" variant="outlined" sx={{ height: 20, fontSize: '0.65rem' }} />}
+                                            </Box>
                                         }
                                     />
                                 </ListItem>
-                                <Divider variant="inset" component="li" />
                             </React.Fragment>
                         );
                     })}
                     {workspaces.length === 0 && (
                         <ListItem>
-                            <ListItemText primary={t('profile.no_workspaces')} />
+                            <ListItemText primary={t('profile.no_workspaces')} sx={{ textAlign: 'center', color: 'text.secondary', py: 4 }} />
                         </ListItem>
                     )}
                 </List>
             </Paper>
 
-            <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>{t('profile.join_section')}</Typography>
-            <Paper sx={{ p: 3 }}>
-                <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2} flexWrap="wrap">
+            <Paper elevation={0} sx={{ p: 3, mt: 4, mb: 8, bgcolor: 'transparent', border: '1px dashed', borderColor: 'divider', borderRadius: 4 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom align="center">{t('profile.join_section')}</Typography>
+                <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
                     {!hasPlatformRole && (
-                        <Button variant="outlined" onClick={() => navigate('/join/platform-manager')}>
+                        <Button variant="text" onClick={() => navigate('/join/platform-manager')}>
                             {t('menu.join_platform_manager')}
                         </Button>
                     )}
                     {!hasPartnerRole && (
-                        <Button variant="outlined" onClick={() => navigate('/join/partner')}>
+                        <Button variant="text" onClick={() => navigate('/join/partner')}>
                             {t('menu.join_partner_manager')}
                         </Button>
                     )}

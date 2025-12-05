@@ -6,6 +6,7 @@ import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AboutPage } from './pages/AboutPage';
+import { RoadmapPage } from './pages/RoadmapPage'; // NEW
 import { JoinPlatformManagerPage } from './pages/JoinPlatformManagerPage';
 import { JoinPartnerManagerPage } from './pages/JoinPartnerManagerPage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -25,20 +26,26 @@ import { PartnerStaffPage } from './pages/partner/PartnerStaffPage'; // NEW
 // Админ
 import { AllPartnersPage } from './pages/admin/AllPartnersPage';
 import { PartnerDetailsAdminPage } from './pages/admin/PartnerDetailsAdminPage';
+import { SystemEventsPage } from './pages/admin/SystemEventsPage'; // NEW
 
 // Лейаут
 import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
+import { AuthSync } from './components/AuthSync';
 
 function App() {
   return (
     <>
       <CssBaseline />
       <BrowserRouter>
+       <AuthSync />
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/reset-pin" element={<PinResetPage />} />
+          {/* Публичные страницы "О проекте" и "Роадмап" (вынесены из лэйаута для красоты) */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/" element={<Navigate to="/profile" />} />
 
           {/* Внутри Лейаута */}
@@ -46,7 +53,6 @@ function App() {
             <Route path="/select-role" element={<SelectRolePage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/about" element={<AboutPage />} />
             <Route path="/join/platform-manager" element={<JoinPlatformManagerPage />} />
             <Route path="/join/partner" element={<JoinPartnerManagerPage />} />
             <Route path="/test-lab" element={<TestLabPage />} />
@@ -65,6 +71,7 @@ function App() {
             <Route path="/admin/partners" element={<AllPartnersPage />} />
             <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
             <Route path="/admin/support" element={<SupportChatPage mode="admin" />} />
+            <Route path="/admin/events" element={<SystemEventsPage />} />
           </Route>
 
           {/* Фоллбэк */}

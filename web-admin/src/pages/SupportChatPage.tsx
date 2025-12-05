@@ -1,9 +1,8 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
   Button,
   CircularProgress,
-  Divider,
   List,
   ListItemButton,
   ListItemText,
@@ -116,7 +115,6 @@ const PartnerSupportChat: React.FC = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useNotification();
   const notify = useBrowserNotifier();
-  const [thread, setThread] = useState<SupportThread | null>(null);
   const [messages, setMessages] = useState<SupportMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
@@ -126,7 +124,6 @@ const PartnerSupportChat: React.FC = () => {
   const fetchThread = useCallback(async () => {
     try {
       const { data } = await api.get<SupportThreadResponse>('/partners/support/thread');
-      setThread(data.thread);
       setMessages(sortMessages(data.messages));
     } catch (e: any) {
       showError(getErrorMessage(e));
@@ -146,9 +143,6 @@ const PartnerSupportChat: React.FC = () => {
     const socket = new WebSocket(`${WS_BASE_URL}/ws/support/partner?token=${token}`);
     socket.onmessage = (event) => {
       const payload: SupportChatEvent = JSON.parse(event.data);
-      if (payload.thread) {
-        setThread(payload.thread);
-      }
       if (payload.message) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === payload.message!.id)) {
@@ -197,38 +191,45 @@ const PartnerSupportChat: React.FC = () => {
 
   return (
     <Paper
+      elevation={0}
       sx={{
-        p: 3,
+        p: 0,
         width: '100%',
-        maxWidth: 1200,
+        maxWidth: 1000,
         mx: 'auto',
-        boxShadow: 3,
-        borderRadius: 3
+        borderRadius: 4,
+        border: '1px solid',
+        borderColor: 'divider',
+        overflow: 'hidden',
+        height: 'calc(100vh - 120px)',
+        display: 'flex',
+        flexDirection: 'column'
       }}
     >
-      <Typography variant="h5" gutterBottom>{t('support.partner_title')}</Typography>
-      {thread && (
-        <Typography variant="body2" color="text.secondary" mb={1}>
-          {t('support.thread_id', { id: thread.id })}
+      <Box p={3} borderBottom="1px solid" borderColor="divider" bgcolor="grey.50">
+          <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            {t('support.partner_title')}
         </Typography>
-      )}
-      <Typography variant="body2" color="text.secondary" mb={3}>
+          <Typography variant="body2" color="text.secondary">
         {t('support.partner_hint')}
       </Typography>
+      </Box>
 
       <Box
         sx={{
-          minHeight: 520,
-          maxHeight: '70vh',
+          flex: 1,
           overflowY: 'auto',
-          bgcolor: '#f8f9fb',
-          borderRadius: 2,
-          p: 2,
-          mb: 2
+          bgcolor: '#ffffff',
+          p: 3,
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: 1
         }}
       >
         {messages.length === 0 && (
+          <Box display="flex" height="100%" alignItems="center" justifyContent="center">
           <Typography color="text.secondary">{t('support.empty_state')}</Typography>
+          </Box>
         )}
         {messages.map((msg) => (
           <MessageBubble key={msg.id} message={msg} isMine={!msg.isFromPartner} />
@@ -236,19 +237,27 @@ const PartnerSupportChat: React.FC = () => {
         <div ref={bottomRef} />
       </Box>
 
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ width: '100%' }}>
+      <Box p={2} borderTop="1px solid" borderColor="divider" bgcolor="grey.50">
+          <Stack direction="row" spacing={2}>
         <TextField
           fullWidth
-          multiline
-          maxRows={4}
+              size="small"
           placeholder={t('support.placeholder')}
           value={input}
           onChange={(e) => setInput(e.target.value)}
+              sx={{ bgcolor: 'white', borderRadius: 1 }}
+              onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSend();
+                  }
+              }}
         />
-        <Button variant="contained" onClick={handleSend} disabled={sending}>
-          {sending ? t('common.loading') : t('support.send')}
+            <Button variant="contained" onClick={handleSend} disabled={sending} sx={{ borderRadius: 2, px: 3 }}>
+              {sending ? <CircularProgress size={24} color="inherit" /> : t('support.send')}
         </Button>
       </Stack>
+      </Box>
     </Paper>
   );
 };
@@ -362,22 +371,31 @@ const AdminSupportChat: React.FC = () => {
   );
 
   return (
-    <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3}>
-      <Paper sx={{ p: 2, width: { xs: '100%', md: 320 }, flexShrink: 0, overflow: 'hidden' }}>
-          <Typography variant="h6" gutterBottom>
+    <Box display="flex" flexDirection={{ xs: 'column', md: 'row' }} gap={3} sx={{ height: 'calc(100vh - 100px)' }}>
+      <Paper elevation={0} sx={{ width: { xs: '100%', md: 360 }, flexShrink: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+          <Box p={3} borderBottom="1px solid" borderColor="divider" bgcolor="grey.50">
+            <Typography variant="h6" fontWeight="bold">
             {t('support.admin_title')}
           </Typography>
+          </Box>
+          
           {loading && (
             <Box display="flex" justifyContent="center" mt={2}>
               <CircularProgress size={24} />
             </Box>
           )}
-          <List sx={{ maxHeight: 520, overflowY: 'auto' }}>
+          
+          <List sx={{ overflowY: 'auto', flex: 1, p: 1 }}>
             {sortedThreads.map((thread) => (
-                <Fragment key={thread.id}>
                 <ListItemButton
+                  key={thread.id}
                   selected={selected?.id === thread.id}
                   onClick={() => loadThreadDetails(thread.id)}
+                  sx={{ 
+                      borderRadius: 2, 
+                      mb: 0.5,
+                      '&.Mui-selected': { bgcolor: 'primary.50', color: 'primary.main' }
+                  }}
                 >
                 <ListItemText
                   primary={
@@ -388,73 +406,90 @@ const AdminSupportChat: React.FC = () => {
                       spacing={1}
                       sx={{ width: '100%' }}
                     >
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 600, color: 'inherit' }}>
                         {thread.partnerName}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        {formatTimestamp(thread.lastMessageAt)}
+                        {formatTimestamp(thread.lastMessageAt).split(',')[0]}
                       </Typography>
                     </Stack>
                   }
                   secondary={
-                    thread.unreadForAdmin > 0 ? (
-                      <Badge color="error" badgeContent={thread.unreadForAdmin}>
-                        <Typography variant="body2" color="text.secondary">
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                        <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 180 }}>
                           {thread.lastMessageSnippet || t('support.no_messages')}
                         </Typography>
-                      </Badge>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        {thread.lastMessageSnippet || t('support.no_messages')}
-                      </Typography>
-                    )
+                        {thread.unreadForAdmin > 0 && (
+                            <Badge badgeContent={thread.unreadForAdmin} color="error" sx={{ '& .MuiBadge-badge': { fontSize: '0.7rem', height: 18, minWidth: 18 } }} />
+                        )}
+                    </Box>
                   }
                 />
                 </ListItemButton>
-                <Divider component="li" />
-                </Fragment>
             ))}
             {sortedThreads.length === 0 && (
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+              <Box p={3} textAlign="center">
+                  <Typography variant="body2" color="text.secondary">
                 {t('support.no_threads')}
               </Typography>
+              </Box>
             )}
           </List>
       </Paper>
 
-      <Paper sx={{ flex: 1, p: 3, minHeight: 600, display: 'flex', flexDirection: 'column' }}>
+      <Paper elevation={0} sx={{ flex: 1, display: 'flex', flexDirection: 'column', borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
           {selected ? (
             <>
-              <Typography variant="h6">{selected.partnerName}</Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                {t('support.thread_id', { id: selected.id })}
+              <Box p={2} px={3} borderBottom="1px solid" borderColor="divider" bgcolor="grey.50" display="flex" justifyContent="space-between" alignItems="center">
+                  <Box>
+                      <Typography variant="h6" fontWeight="bold">{selected.partnerName}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        ID: {selected.id}
               </Typography>
-              <Box sx={{ flexGrow: 1, overflowY: 'auto', bgcolor: '#f8f9fb', borderRadius: 2, p: 2 }}>
+                  </Box>
+              </Box>
+              
+              <Box sx={{ flexGrow: 1, overflowY: 'auto', bgcolor: '#ffffff', p: 3, display: 'flex', flexDirection: 'column', gap: 1 }}>
                 {messages.length === 0 && (
+                  <Box display="flex" height="100%" alignItems="center" justifyContent="center">
                   <Typography color="text.secondary">{t('support.empty_state')}</Typography>
+                  </Box>
                 )}
                 {messages.map((msg) => (
                   <MessageBubble key={msg.id} message={msg} isMine={!msg.isFromPartner} />
                 ))}
                 <div ref={bottomRef} />
               </Box>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} mt={2}>
+              
+              <Box p={2} borderTop="1px solid" borderColor="divider" bgcolor="grey.50">
+                  <Stack direction="row" spacing={2}>
                 <TextField
                   fullWidth
-                  multiline
-                  maxRows={4}
+                      size="small"
                   placeholder={t('support.placeholder')}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                      sx={{ bgcolor: 'white', borderRadius: 1 }}
+                      onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                              e.preventDefault();
+                              handleSend();
+                          }
+                      }}
                 />
-                <Button variant="contained" onClick={handleSend} disabled={sending}>
-                  {sending ? t('common.loading') : t('support.send')}
+                    <Button variant="contained" onClick={handleSend} disabled={sending} sx={{ borderRadius: 2, px: 3 }}>
+                      {sending ? <CircularProgress size={24} color="inherit" /> : t('support.send')}
                 </Button>
               </Stack>
+              </Box>
             </>
           ) : (
-            <Box flex={1} display="flex" alignItems="center" justifyContent="center">
-              <Typography color="text.secondary">{t('support.select_thread')}</Typography>
+            <Box flex={1} display="flex" alignItems="center" justifyContent="center" flexDirection="column" gap={2}>
+              <Box sx={{ p: 3, bgcolor: 'grey.100', borderRadius: '50%' }}>
+                  {/* Icon placeholder */}
+                  <Typography variant="h4">💬</Typography>
+              </Box>
+              <Typography color="text.secondary" fontWeight="500">{t('support.select_thread')}</Typography>
             </Box>
           )}
       </Paper>
@@ -464,26 +499,28 @@ const AdminSupportChat: React.FC = () => {
 
 const MessageBubble = ({ message, isMine }: { message: SupportMessage; isMine: boolean }) => {
   const align = isMine ? 'flex-end' : 'flex-start';
-  const color = isMine ? 'primary.main' : '#e0e0e0';
+  const bgcolor = isMine ? 'primary.main' : 'grey.100';
   const textColor = isMine ? 'white' : 'text.primary';
+  const borderRadius = isMine ? '20px 20px 0 20px' : '20px 20px 20px 0';
 
   return (
-    <Box display="flex" justifyContent={align} mb={1.5}>
+    <Box display="flex" justifyContent={align} mb={1}>
       <Box
         sx={{
-          bgcolor: color,
+          bgcolor,
           color: textColor,
-          px: 2,
-          py: 1,
-          borderRadius: 2,
-          maxWidth: '70%',
+          px: 2.5,
+          py: 1.5,
+          borderRadius,
+          maxWidth: '75%',
+          boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
         }}
       >
-        <Typography variant="body2" sx={{ whiteSpace: 'pre-line' }}>
+        <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
           {message.content}
         </Typography>
-        <Typography variant="caption" display="block" textAlign="right">
-          {new Date(message.createdAt).toLocaleString()}
+        <Typography variant="caption" display="block" textAlign="right" sx={{ mt: 0.5, opacity: 0.8, fontSize: '0.7rem' }}>
+          {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </Typography>
       </Box>
     </Box>

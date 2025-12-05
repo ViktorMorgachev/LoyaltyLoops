@@ -69,6 +69,8 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         CARD_NOT_FOUND: "Карта лояльности не найдена",
         EMAIL_NOT_SET: "Добавьте e-mail в профиле, чтобы сбросить PIN",
         INVALID_RESET_TOKEN: "Ссылка для сброса PIN недействительна или истекла",
+        TOO_MANY_REQUESTS: "Слишком много запросов. Попробуйте позже.",
+        OTP_ATTEMPTS_EXCEEDED: "Превышен лимит попыток. Попробуйте через час.",
       },
       auth: {
         title: "Вход в панель управления",
@@ -78,6 +80,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         login_btn: "Войти",
         change_number: "Изменить номер",
         code_sent: "Код отправлен (Смотри логи сервера)",
+        resend_code: "Отправить повторно",
         success: "Успешный вход!"
       },
       menu: {
@@ -523,6 +526,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         map_key_missing: "Отсутствует API-ключ Yandex Maps",
         filter_type: "Тип бизнеса",
         filter_radius: "Радиус: {{value}}",
+        filter_radius_short: "Радиус",
         radius_disabled_label: "Радиус недоступен",
         filter_open_now: "Только открытые сейчас",
         refresh_points: "Обновить точки",
@@ -552,7 +556,19 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         unit_m: "м",
         unit_km: "км",
         edit_forbidden: "Только владелец бизнеса может изменять или удалять точку.",
-        readonly_hint: "Вы работаете как менеджер: действия по изменению настроек и увольнению сотрудников недоступны."
+        readonly_hint: "Вы работаете как менеджер: действия по изменению настроек и увольнению сотрудников недоступны.",
+        contacts_title: "Контакты",
+        info_title: "Информация",
+        coming_soon: "Скоро",
+        coming_photos: "Фото",
+        coming_menu: "Меню и цены",
+        coming_promos: "Акции",
+        coming_reviews: "Отзывы"
+      },
+      social: {
+        telegram: "Telegram",
+        whatsapp: "WhatsApp",
+        instagram: "Instagram"
       },
       admin: {
         title: "Управление Партнерами",
@@ -566,6 +582,41 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         trading_points: "Торговые Точки",
         no_points: "Точек нет",
         id: "ID"
+      },
+      system_events: {
+        title: "Системные События",
+        filters: {
+          type: "Тип события",
+          phone: "Телефон",
+          user_id: "ID пользователя",
+          from: "От",
+          to: "До",
+          reset: "Сбросить",
+          refresh: "Обновить"
+        },
+        table: {
+            date: "Дата",
+            type: "Тип",
+            user: "Пользователь",
+            details: "Детали",
+            empty: "События не найдены"
+        },
+        types: {
+            LOGIN: "Вход в систему",
+            REGISTER: "Регистрация",
+            SMS_REQUEST: "Запрос СМС",
+            ACCRUAL: "Начисление баллов",
+            REDEMPTION: "Списание баллов",
+            TIER_CHANGE: "Смена уровня",
+            VISIT: "Визит",
+            ERROR: "Ошибка",
+            INFO: "Инфо",
+            OTP_VERIFICATION_FAILED: "Ошибка OTP",
+            PIN_CHANGE_SUCCESS: "Смена PIN",
+            PIN_RESET_REQUEST: "Запрос сброса PIN",
+            PIN_RESET_SUCCESS: "Сброс PIN выполнен",
+            PIN_VERIFICATION_FAILED: "Ошибка PIN"
+        }
       }
     }
   },
@@ -632,6 +683,8 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         INVALID_TIER_VALUE: "Negative tier values are not allowed",
         EMAIL_NOT_SET: "Add email to your profile to reset PIN",
         INVALID_RESET_TOKEN: "PIN reset link is invalid or expired",
+        TOO_MANY_REQUESTS: "Too many requests. Please try again later.",
+        OTP_ATTEMPTS_EXCEEDED: "Too many failed attempts. Please try again in an hour.",
         SUCCESS: "Success",
         INVALID_INVITE_CODE: "Invalid invite code",
         ALREADY_JOINED: "Already joined",
@@ -647,6 +700,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         login_btn: "Log In",
         change_number: "Change Number",
         code_sent: "Code sent",
+        resend_code: "Resend Code",
         success: "Login Success!"
       },
       menu: {
@@ -1111,7 +1165,19 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         unit_m: "m",
         unit_km: "km",
         edit_forbidden: "Only the business owner can modify or delete a point.",
-        readonly_hint: "You are in manager mode — editing settings and firing staff is disabled."
+        readonly_hint: "You are in manager mode — editing settings and firing staff is disabled.",
+        contacts_title: "Contacts",
+        info_title: "Info",
+        coming_soon: "Coming soon",
+        coming_photos: "Photos",
+        coming_menu: "Menu & Prices",
+        coming_promos: "Promos",
+        coming_reviews: "Reviews"
+      },
+      social: {
+        telegram: "Telegram",
+        whatsapp: "WhatsApp",
+        instagram: "Instagram"
       },
       admin: {
         title: "Partner Management",
@@ -1125,6 +1191,41 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         trading_points: "Trading Points",
         no_points: "No points found",
         id: "ID"
+      },
+      system_events: {
+        title: "System Events",
+        filters: {
+          type: "Event Type",
+          phone: "Phone",
+          user_id: "User ID",
+          from: "From",
+          to: "To",
+          reset: "Reset",
+          refresh: "Refresh"
+        },
+        table: {
+            date: "Date",
+            type: "Type",
+            user: "User",
+            details: "Details",
+            empty: "No events found"
+        },
+        types: {
+            LOGIN: "Login",
+            REGISTER: "Registration",
+            SMS_REQUEST: "SMS Request",
+            ACCRUAL: "Points Accrual",
+            REDEMPTION: "Points Redemption",
+            TIER_CHANGE: "Tier Change",
+            VISIT: "Visit",
+            ERROR: "Error",
+            INFO: "Info",
+            OTP_VERIFICATION_FAILED: "OTP Failed",
+            PIN_CHANGE_SUCCESS: "PIN Changed",
+            PIN_RESET_REQUEST: "PIN Reset Request",
+            PIN_RESET_SUCCESS: "PIN Reset Success",
+            PIN_VERIFICATION_FAILED: "PIN Verification Failed"
+        }
       }
     }
   },

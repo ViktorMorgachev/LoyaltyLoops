@@ -31,6 +31,7 @@ interface YandexMapProps {
     markers?: MapPoint[];
     onMarkerClick?: (marker: MapPoint) => void;
     onMapClick?: (lat: number, lng: number) => void;
+    onStateChange?: (info: { zoom: number; center: [number, number] }) => void;
     interactive?: boolean;
     height?: number | string;
     radiusMeters?: number;
@@ -47,6 +48,7 @@ export const YandexMap: React.FC<YandexMapProps> = ({
     markers = [],
     onMarkerClick,
     onMapClick,
+    onStateChange,
     interactive = true,
     height = 320,
     radiusMeters,
@@ -60,9 +62,11 @@ export const YandexMap: React.FC<YandexMapProps> = ({
 
     const onMapClickRef = useRef(onMapClick);
     const onMarkerClickRef = useRef(onMarkerClick);
+    const onStateChangeRef = useRef(onStateChange);
 
     onMapClickRef.current = onMapClick;
     onMarkerClickRef.current = onMarkerClick;
+    onStateChangeRef.current = onStateChange;
 
     const fallbackKey = useMemo(() => {
         return apiKey ?? (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
@@ -100,6 +104,15 @@ export const YandexMap: React.FC<YandexMapProps> = ({
         } catch (_err) {
             console.warn('Yandex Maps API: Failed to disable POI interactivity');
         }
+
+        // ОБРАБОТЧИК ИЗМЕНЕНИЯ СОСТОЯНИЯ (ЗУМ, ЦЕНТР)
+        mapInstance.events.add('boundschange', (event: any) => {
+            const newZoom = event.get('newZoom');
+            const newCenter = event.get('newCenter');
+            if (onStateChangeRef.current) {
+                onStateChangeRef.current({ zoom: newZoom, center: newCenter });
+            }
+        });
 
         // ОБРАБОТЧИК КЛИКА ПО КАРТЕ
         mapInstance.events.add('click', (event: any) => {

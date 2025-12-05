@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    Alert, Box, Button, Chip, CircularProgress, Dialog, Divider, Fab, IconButton, InputBase,
+    Alert, Box, Button, Chip, CircularProgress, Dialog, DialogContent, Divider, Fab, IconButton, InputBase,
     List, ListItem, ListItemButton, Menu, MenuItem, Paper, Popover, Slider, Stack,
     Typography
 } from '@mui/material';
@@ -11,6 +11,17 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import CheckIcon from '@mui/icons-material/Check';
 import StoreIcon from '@mui/icons-material/Store';
+import PhoneIcon from '@mui/icons-material/Phone';
+import LanguageIcon from '@mui/icons-material/Language';
+import InfoIcon from '@mui/icons-material/Info';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
+import StarIcon from '@mui/icons-material/Star';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
+import TelegramIcon from '@mui/icons-material/Telegram';
+import WhatsAppIcon from '@mui/icons-material/WhatsApp';
+import InstagramIcon from '@mui/icons-material/Instagram';
 import { useTranslation } from 'react-i18next';
 import type { TFunction } from 'i18next';
 import { YandexMap } from './YandexMap';
@@ -157,7 +168,11 @@ const buildBalloonContent = (point: TradingPointDto, t: TFunction<'translation'>
         contacts += `<div style="margin-top:6px;"><a href="tel:${escapeHtml(point.contactPhone)}" style="text-decoration:none;color:#2563EB;font-weight:500;">📞 ${escapeHtml(point.contactPhone)}</a></div>`;
     }
     if (point.contactLink) {
-        const linkLabel = point.contactLink.includes('t.me') ? 'Telegram' : point.contactLink.includes('wa.me') ? 'WhatsApp' : t('point_details.contact_link_label');
+        const linkLabel = point.contactLink.includes('t.me') 
+            ? t('social.telegram', { defaultValue: 'Telegram' }) 
+            : point.contactLink.includes('wa.me') 
+                ? t('social.whatsapp', { defaultValue: 'WhatsApp' }) 
+                : t('point_details.contact_link_label');
         contacts += `<div style="margin-top:2px;"><a href="${escapeHtml(point.contactLink)}" target="_blank" style="text-decoration:none;color:#2563EB;font-weight:500;">🔗 ${escapeHtml(linkLabel)}</a></div>`;
     }
     if (point.additionalInfo) {
@@ -167,8 +182,15 @@ const buildBalloonContent = (point: TradingPointDto, t: TFunction<'translation'>
     return `<div style="font-size:13px;line-height:1.35;font-family:'Inter',system-ui;"><strong style="font-size:14px;display:block;margin-bottom:2px;">${escapeHtml(point.name)}</strong>${addressLine}<div style="margin-top:6px;font-weight:600;">${escapeHtml(statusText)}</div><div style="color:#6b7280;">${t('point_details.schedule_title')}: ${escapeHtml(scheduleText)}</div>${contacts}</div>`;
 };
 const formatMeters = (meters: number, t: TFunction<'translation'>) => {
-    if (meters >= 1000) return `${(meters / 1000).toFixed(1)} ${t('point_details.unit_km')}`;
-    return `${Math.round(meters)} ${t('point_details.unit_m')}`;
+    if (meters >= 1000) return `${(meters / 1000).toFixed(1)} ${t('point_details.unit_km', { defaultValue: 'km' })}`;
+    return `${Math.round(meters)} ${t('point_details.unit_m', { defaultValue: 'm' })}`;
+};
+
+const getSocialLinkData = (url: string, t: TFunction<'translation'>) => {
+    if (url.includes('t.me')) return { label: t('social.telegram', { defaultValue: 'Telegram' }), icon: <TelegramIcon />, color: '#229ED9' };
+    if (url.includes('wa.me')) return { label: t('social.whatsapp', { defaultValue: 'WhatsApp' }), icon: <WhatsAppIcon />, color: '#25D366' };
+    if (url.includes('instagram.com')) return { label: t('social.instagram', { defaultValue: 'Instagram' }), icon: <InstagramIcon />, color: '#E1306C' };
+    return { label: t('point_details.contact_link_label'), icon: <LanguageIcon />, color: 'inherit' };
 };
 
 export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps> = ({
@@ -212,6 +234,10 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
     const [autoLocateTried, setAutoLocateTried] = useState(false);
     const [anchorType, setAnchorType] = useState<'default' | 'point' | 'user'>(initialPoint ? 'point' : 'default');
     const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+
+    // State for details dialog
+    const [detailsPoint, setDetailsPoint] = useState<TradingPointDto | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
 
     const zoomAnimationRef = useRef<number | null>(null);
     const markersApiKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
@@ -435,11 +461,11 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                             disabled={!ownFilterAvailable && !loadingOwnPoints}
                             sx={{ borderRadius: 2 }}
                         />
-                        <Chip label={typeFilter === 'ALL' ? t('point_details.filter_type') : t(`dashboard.types.${typeFilter}`)} onClick={(e) => setTypeAnchor(e.currentTarget)} onDelete={typeFilter !== 'ALL' ? () => setTypeFilter('ALL') : undefined} deleteIcon={<CloseIcon />} icon={<FilterListIcon />} variant={typeFilter === 'ALL' ? 'outlined' : 'filled'} color={typeFilter === 'ALL' ? 'default' : 'primary'} sx={{ borderRadius: 2 }} />
+                        <Chip label={typeFilter === 'ALL' ? t('point_details.filter_type') : t(`dashboard.types.${typeFilter}`)} onClick={(e) => setTypeAnchor(e.currentTarget as unknown as HTMLButtonElement)} onDelete={typeFilter !== 'ALL' ? () => setTypeFilter('ALL') : undefined} deleteIcon={<CloseIcon />} icon={<FilterListIcon />} variant={typeFilter === 'ALL' ? 'outlined' : 'filled'} color={typeFilter === 'ALL' ? 'default' : 'primary'} sx={{ borderRadius: 2 }} />
                         <Menu anchorEl={typeAnchor} open={Boolean(typeAnchor)} onClose={() => setTypeAnchor(null)}>
                             {TYPE_OPTIONS.map((opt) => (<MenuItem key={opt.value} selected={typeFilter === opt.value} onClick={() => { setTypeFilter(opt.value); setTypeAnchor(null); }}>{t(opt.labelKey)}</MenuItem>))}
                         </Menu>
-                        <Chip label={`${t('point_details.filter_radius_short', { defaultValue: 'Radius' })}: ${formatMeters(radius, t)}`} onClick={(e) => setRadiusAnchor(e.currentTarget)} variant="outlined" deleteIcon={<KeyboardArrowDownIcon />} onDelete={(e) => setRadiusAnchor(e.currentTarget)} sx={{ borderRadius: 2 }} />
+                        <Chip label={`${t('point_details.filter_radius_short', { defaultValue: 'Radius' })}: ${formatMeters(radius, t)}`} onClick={(e) => setRadiusAnchor(e.currentTarget as unknown as HTMLButtonElement)} variant="outlined" deleteIcon={<KeyboardArrowDownIcon />} onDelete={(e) => setRadiusAnchor(e.currentTarget as unknown as HTMLButtonElement)} sx={{ borderRadius: 2 }} />
                         <Popover open={Boolean(radiusAnchor)} anchorEl={radiusAnchor} onClose={() => setRadiusAnchor(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} PaperProps={{ sx: { p: 2, width: 300 } }}>
                             <Typography gutterBottom>{t('point_details.filter_radius', { value: formatMeters(radius, t) })}</Typography>
                             <Slider value={radius} min={minRadius} max={maxRadius} step={100} onChange={(_, v) => setRadius(v as number)} />
@@ -481,7 +507,17 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                                                 <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, fontSize: '0.8rem', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{point.address || t('point_details.address_none')}</Typography>
                                                 <Box display="flex" justifyContent="space-between" alignItems="center" width="100%" mt="auto">
                                                     <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap" useFlexGap>{renderTypeChip(point)}{renderStatusChip(point)}</Stack>
-                                                    <Button size="small" onClick={(e) => { e.stopPropagation(); handlePointSelect(point); }} sx={{ minWidth: 'auto', fontSize: '0.75rem', fontWeight: 600, textTransform: 'none', py: 0.5, px: 1.5, ml: 1 }}>{t('common.details')}</Button>
+                                                    <Button 
+                                                        size="small" 
+                                                        onClick={(e) => { 
+                                                            e.stopPropagation(); 
+                                                            setDetailsPoint(point); 
+                                                            setDetailsOpen(true); 
+                                                        }} 
+                                                        sx={{ minWidth: 'auto', fontSize: '0.75rem', fontWeight: 600, textTransform: 'none', py: 0.5, px: 1.5, ml: 1 }}
+                                                    >
+                                                        {t('common.details')}
+                                                    </Button>
                                                 </Box>
                                             </ListItemButton>
                                         </ListItem>
@@ -498,6 +534,141 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                 </Stack>
                 {error && <Alert severity="error" sx={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}>{error}</Alert>}
             </Box>
+
+            <Dialog
+                open={detailsOpen}
+                onClose={() => setDetailsOpen(false)}
+                maxWidth="sm"
+                fullWidth
+                PaperProps={{ sx: { borderRadius: 3, maxHeight: '90vh' } }}
+            >
+                {detailsPoint && (
+                    <>
+                        <Box sx={{ p: 3, pb: 1 }}>
+                            <Box display="flex" justifyContent="space-between" alignItems="flex-start">
+                                <Box>
+                                    <Typography variant="h5" fontWeight={700} gutterBottom>
+                                        {detailsPoint.name}
+                                    </Typography>
+                                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap mb={1}>
+                                        {renderTypeChip(detailsPoint)}
+                                        {renderStatusChip(detailsPoint)}
+                                    </Stack>
+                                </Box>
+                                <IconButton onClick={() => setDetailsOpen(false)} size="small" sx={{ bgcolor: 'grey.100' }}>
+                                    <CloseIcon />
+                                </IconButton>
+                            </Box>
+                            <Typography variant="body1" color="text.secondary" sx={{ mt: 1 }}>
+                                {detailsPoint.address || t('point_details.address_none')}
+                            </Typography>
+                        </Box>
+
+                        <DialogContent dividers sx={{ p: 0 }}>
+                            {/* CONTACTS */}
+                            {(detailsPoint.contactPhone || detailsPoint.contactLink) && (
+                                <Box p={3} pb={1}>
+                                    <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <PhoneIcon fontSize="small" color="action" />
+                                        {t('point_details.contacts_title', { defaultValue: 'Contacts' })}
+                                    </Typography>
+                                    <Stack spacing={1.5} mt={1}>
+                                        {detailsPoint.contactPhone && (
+                                            <Button
+                                                variant="outlined"
+                                                color="inherit"
+                                                href={`tel:${detailsPoint.contactPhone}`}
+                                                fullWidth
+                                                sx={{ justifyContent: 'flex-start', borderRadius: 2, borderColor: 'divider', textTransform: 'none' }}
+                                            >
+                                                {detailsPoint.contactPhone}
+                                            </Button>
+                                        )}
+                                        {detailsPoint.contactLink && (
+                                            <Button
+                                                variant="outlined"
+                                                color="inherit"
+                                                href={detailsPoint.contactLink}
+                                                target="_blank"
+                                                startIcon={getSocialLinkData(detailsPoint.contactLink, t).icon}
+                                                fullWidth
+                                                sx={{ 
+                                                    justifyContent: 'flex-start', 
+                                                    borderRadius: 2, 
+                                                    textTransform: 'none',
+                                                    color: getSocialLinkData(detailsPoint.contactLink, t).color !== 'inherit' ? getSocialLinkData(detailsPoint.contactLink, t).color : 'inherit',
+                                                    borderColor: getSocialLinkData(detailsPoint.contactLink, t).color !== 'inherit' ? getSocialLinkData(detailsPoint.contactLink, t).color : 'divider'
+                                                }}
+                                            >
+                                                {getSocialLinkData(detailsPoint.contactLink, t).label}
+                                            </Button>
+                                        )}
+                                    </Stack>
+                                </Box>
+                            )}
+
+                            {/* SCHEDULE */}
+                            <Box p={3} py={2}>
+                                <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <AccessTimeIcon fontSize="small" color="action" />
+                                    {t('point_details.schedule_title')}
+                                </Typography>
+                                <Paper variant="outlined" sx={{ mt: 1, borderRadius: 2, overflow: 'hidden' }}>
+                                    {normalizeSchedule(detailsPoint.schedule).map((row, idx) => (
+                                        <Box
+                                            key={idx}
+                                            display="flex"
+                                            justifyContent="space-between"
+                                            py={1} px={2}
+                                            bgcolor={idx % 2 === 0 ? 'grey.50' : 'white'}
+                                        >
+                                            <Typography variant="body2" fontWeight={500} width={100}>
+                                                {t(`point_details.schedule_days_short.${['mon','tue','wed','thu','fri','sat','sun'][idx]}`)}
+                                            </Typography>
+                                            <Typography variant="body2" color={row.isDayOff ? 'error.main' : 'text.primary'}>
+                                                {row.isDayOff ? t('point_details.schedule_day_off') : formatIntervals(row.intervals)}
+                                            </Typography>
+                                        </Box>
+                                    ))}
+                                </Paper>
+                            </Box>
+
+                            {/* INFO */}
+                            {detailsPoint.additionalInfo && (
+                                <Box p={3} py={2}>
+                                    <Typography variant="subtitle2" fontWeight={700} gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                        <InfoIcon fontSize="small" color="action" />
+                                        {t('point_details.info_title', { defaultValue: 'Info' })}
+                                    </Typography>
+                                    <Typography variant="body2" color="text.secondary" sx={{ whiteSpace: 'pre-wrap', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
+                                        {detailsPoint.additionalInfo}
+                                    </Typography>
+                                </Box>
+                            )}
+
+                            {/* COMING SOON */}
+                            <Box p={3} pt={1} pb={4}>
+                                <Divider sx={{ mb: 2 }} >
+                                    <Typography variant="caption" color="text.secondary">{t('point_details.coming_soon', { defaultValue: 'Soon available' })}</Typography>
+                                </Divider>
+                                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                                    {[
+                                        { icon: <PhotoCameraIcon />, label: t('point_details.coming_photos', { defaultValue: 'Photos' }) },
+                                        { icon: <RestaurantMenuIcon />, label: t('point_details.coming_menu', { defaultValue: 'Menu & Prices' }) },
+                                        { icon: <LocalOfferIcon />, label: t('point_details.coming_promos', { defaultValue: 'Promos' }) },
+                                        { icon: <StarIcon />, label: t('point_details.coming_reviews', { defaultValue: 'Reviews' }) },
+                                    ].map((item, i) => (
+                                        <Paper key={i} variant="outlined" sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, borderRadius: 2, opacity: 0.6, bgcolor: 'grey.50', cursor: 'not-allowed' }}>
+                                            <Box sx={{ color: 'text.secondary' }}>{item.icon}</Box>
+                                            <Typography variant="caption" fontWeight={600} color="text.secondary">{item.label}</Typography>
+                                        </Paper>
+                                    ))}
+                                </Box>
+                            </Box>
+                        </DialogContent>
+                    </>
+                )}
+            </Dialog>
         </Dialog>
     );
 };

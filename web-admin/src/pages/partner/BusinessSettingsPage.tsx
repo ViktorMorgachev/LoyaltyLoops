@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, Divider } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
 import { useNavigate } from 'react-router-dom';
+
+import { LoyaltyCardPreview } from '../../components/LoyaltyCardPreview';
 
 export const BusinessSettingsPage = () => {
     const { t } = useTranslation();
@@ -64,44 +66,36 @@ export const BusinessSettingsPage = () => {
     };
 
     return (
-        <Box>
-            <Typography variant="h4" gutterBottom>{t('settings.title')}</Typography>
+        <Box maxWidth="lg" mx="auto" mt={4}>
+            <Typography variant="h4" fontWeight="bold" gutterBottom>{t('settings.title')}</Typography>
 
-            <Paper sx={{ p: 4, maxWidth: 600 }}>
+            <Paper elevation={0} sx={{ p: 4, maxWidth: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
 
-                {/* Название */}
+                <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1.5fr 1fr' }} gap={6}>
+                    {/* ЛЕВАЯ КОЛОНКА: Настройки */}
+                    <Box>
+                        <Typography variant="h6" gutterBottom fontWeight="600">Основная информация</Typography>
                 <TextField
                     label={t('settings.name_label')}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     fullWidth margin="normal"
-                />
-
-                {/* Выбор цвета (Native Color Picker) */}
-                <Box mt={2} mb={2}>
-                    <Typography variant="body2" gutterBottom>{t('settings.color_label')}</Typography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                        <input
-                            type="color"
-                            value={color}
-                            onChange={(e) => setColor(e.target.value)}
-                            style={{ width: '60px', height: '40px', cursor: 'pointer', border: 'none' }}
+                            variant="outlined"
                         />
-                        <Typography variant="caption" color="textSecondary">
-                            {t('settings.color_helper')}
-                        </Typography>
-                    </div>
-                </Box>
-
-                {/* Логотип */}
                 <TextField
                     label={t('settings.logo_label')}
                     value={logo}
                     onChange={(e) => setLogo(e.target.value)}
                     fullWidth margin="normal"
                     placeholder="https://example.com/logo.png"
+                            helperText="URL ссылки на изображение"
                 />
 
+                        <Divider sx={{ my: 4 }} />
+
+                        <Typography variant="h6" gutterBottom fontWeight="600">Настройки Лояльности</Typography>
+                        
+                        <Box maxWidth={400}>
                 <TextField
                     label={t('settings.visits_target_label')}
                     value={defaultVisitsTarget}
@@ -112,11 +106,12 @@ export const BusinessSettingsPage = () => {
                     margin="normal"
                     helperText={t('settings.visits_target_hint')}
                 />
+                        </Box>
 
-                {/* Expiration Policy */}
-                <Typography variant="h6" sx={{ mt: 4, mb: 1 }}>{t('settings.expiration_policy')}</Typography>
-                <Typography variant="caption" color="textSecondary" display="block" mb={2}>{t('settings.expiration_hint')}</Typography>
-                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                        <Typography variant="subtitle1" sx={{ mt: 4, mb: 1, fontWeight: 600 }}>{t('settings.expiration_policy')}</Typography>
+                        <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>
+                            <Typography variant="body2" color="text.secondary" mb={2}>{t('settings.expiration_hint')}</Typography>
+                            <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
                     <TextField 
                         label={t('point_details.burn_bonuses')} 
                         type="number"
@@ -124,6 +119,7 @@ export const BusinessSettingsPage = () => {
                         value={burnBonusesDays} 
                         onChange={e => setBurnBonusesDays(e.target.value)}
                         helperText={t('settings.burn_hint')}
+                                    InputProps={{ endAdornment: <span style={{ fontSize: '0.8rem', color: 'gray' }}>дней</span> }}
                     />
                     <TextField 
                         label={t('point_details.downgrade_tier')} 
@@ -132,12 +128,49 @@ export const BusinessSettingsPage = () => {
                         value={downgradeTierDays} 
                         onChange={e => setDowngradeTierDays(e.target.value)}
                         helperText={t('settings.downgrade_hint')}
-                    />
+                                    InputProps={{ endAdornment: <span style={{ fontSize: '0.8rem', color: 'gray' }}>дней</span> }}
+                                />
+                            </Box>
+                        </Paper>
+                    </Box>
+                    
+                    {/* ПРАВАЯ КОЛОНКА: Визуал + Цвет */}
+                    <Box>
+                        <Typography variant="h6" gutterBottom fontWeight="600">{t('settings.color_label')}</Typography>
+                        <Box mb={4} display="flex" alignItems="center" gap={2}>
+                             <input
+                                type="color"
+                                value={color}
+                                onChange={(e) => setColor(e.target.value)}
+                                style={{ width: '60px', height: '60px', cursor: 'pointer', border: 'none', padding: 0, backgroundColor: 'transparent', borderRadius: '8px' }}
+                            />
+                            <Box>
+                                <Typography variant="body2" fontWeight="bold">Выберите цвет бренда</Typography>
+                                <Typography variant="caption" color="text.secondary" fontFamily="monospace">
+                                    {color}
+                                </Typography>
+                            </Box>
+                        </Box>
+
+                        <Typography variant="h6" gutterBottom fontWeight="600" sx={{ mb: 2 }}>Превью карты</Typography>
+                        <LoyaltyCardPreview 
+                            businessName={name}
+                            color={color}
+                            logoUrl={logo}
+                            levelName="Gold"
+                            balance={1250}
+                        />
+                        <Typography variant="caption" color="text.secondary" display="block" mt={2} textAlign="center" maxWidth={340}>
+                            Так ваша карта будет выглядеть в кошельке клиента
+                        </Typography>
+                    </Box>
                 </Box>
 
-                <Button variant="contained" sx={{ mt: 4 }} onClick={handleSave} disabled={loading}>
+                <Box mt={6} display="flex" justifyContent="flex-end" pt={4} borderTop="1px solid" borderColor="divider">
+                    <Button variant="contained" onClick={handleSave} disabled={loading} size="large" sx={{ px: 6, borderRadius: 2 }}>
                     {t('common.save')}
                 </Button>
+                </Box>
             </Paper>
         </Box>
     );
