@@ -4,10 +4,9 @@ import {
     Typography,
     Select,
     MenuItem,
-    FormControl,
-    Paper,
-    InputBase,
-    Divider
+    Divider,
+    TextField,
+    InputAdornment
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
 import { 
@@ -72,8 +71,6 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         if (rawDigits) {
             onChange(newCountry.dial + rawDigits);
         } else if (value) {
-             // If we had a value but cleared digits? No, if displayValue is empty rawDigits is empty.
-             // If there was a value, we try to keep it with new code.
              onChange(newCountry.dial + rawDigits);
         }
     };
@@ -85,9 +82,12 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
         
         // Limit length to mask length (count of digits in mask)
         const maxDigits = country.mask.replace(/[^97]/g, '').length;
-        const truncatedDigits = rawDigits.slice(0, maxDigits);
+        
+        // Strict mode: truncate to exactly maxDigits
+        const truncatedDigits = rawDigits.slice(0, maxDigits); 
 
         // Format for display
+        // Note: formatting usually assumes clean digits.
         const formatted = formatPhoneWithMask(truncatedDigits, country.mask);
         setDisplayValue(formatted);
 
@@ -100,114 +100,80 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
     };
 
     return (
-        <Box width={fullWidth ? "100%" : "auto"}>
-            {label && (
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: 'block', ml: 0.5 }}>
-                    {label}
-                </Typography>
-            )}
-            <Paper
-                elevation={0}
-                sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    border: '1px solid',
-                    borderColor: error ? 'error.main' : 'divider',
-                    borderRadius: 3,
-                    px: 1.5,
-                    py: size === 'small' ? 0.5 : 1,
-                    bgcolor: '#f8fafc',
-                    transition: 'all 0.2s',
-                    '&:focus-within': {
-                        borderColor: 'primary.main',
-                        bgcolor: '#fff',
-                        boxShadow: '0 0 0 4px rgba(37, 99, 235, 0.1)'
-                    }
-                }}
-            >
-                <FormControl variant="standard" size="small" sx={{ minWidth: 'auto' }}>
-                    <Select
-                        value={country.code}
-                        onChange={handleCountryChange}
-                        disableUnderline
-                        displayEmpty
-                        inputProps={{ 'aria-label': 'Country Code' }}
-                        renderValue={(selected) => {
-                             const c = COUNTRY_CODES.find(cc => cc.code === selected) || DEFAULT_COUNTRY;
-                             return (
-                                 <Box display="flex" alignItems="center" gap={1}>
-                                     <Typography fontSize="1.5rem" lineHeight={1}>{c.emoji}</Typography>
-                                     <Typography variant="body1" fontWeight="500" color="text.primary">
-                                         {c.dial}
-                                     </Typography>
-                                 </Box>
-                             );
-                        }}
-                        MenuProps={{
-                            PaperProps: {
-                                sx: {
-                                    maxHeight: 300,
-                                    borderRadius: 2,
-                                    mt: 1,
-                                    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-                                    '& .MuiMenuItem-root': {
-                                        px: 1.5,
-                                        py: 1
+        <TextField
+            label={label}
+            value={displayValue}
+            onChange={handlePhoneChange}
+            error={error}
+            helperText={helperText}
+            fullWidth={fullWidth}
+            disabled={disabled}
+            required={required}
+            size={size}
+            placeholder={country.mask.replace(/[97]/g, '0')}
+            InputProps={{
+                startAdornment: (
+                    <InputAdornment position="start" sx={{ mr: 0 }}>
+                        <Select
+                            value={country.code}
+                            onChange={handleCountryChange}
+                            disableUnderline
+                            displayEmpty
+                            variant="standard"
+                            inputProps={{ 'aria-label': 'Country Code' }}
+                            renderValue={(selected) => {
+                                 const c = COUNTRY_CODES.find(cc => cc.code === selected) || DEFAULT_COUNTRY;
+                                 return (
+                                     <Box display="flex" alignItems="center" gap={1}>
+                                         <Typography fontSize="1.5rem" lineHeight={1}>{c.emoji}</Typography>
+                                         <Typography variant="body1" fontWeight="500" color="text.primary">
+                                             {c.dial}
+                                         </Typography>
+                                     </Box>
+                                 );
+                            }}
+                            MenuProps={{
+                                PaperProps: {
+                                    sx: {
+                                        maxHeight: 300,
+                                        borderRadius: 2,
+                                        mt: 1,
+                                        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                                        '& .MuiMenuItem-root': {
+                                            px: 1.5,
+                                            py: 1
+                                        }
                                     }
                                 }
-                            }
-                        }}
-                        sx={{
-                            '& .MuiSelect-select': {
-                                display: 'flex',
-                                alignItems: 'center',
-                                py: 0.5,
-                                pr: '24px !important', // space for arrow
-                                pl: 0,
-                                '&:focus': { backgroundColor: 'transparent' }
-                            },
-                            '& .MuiSelect-icon': {
-                                right: 0
-                            }
-                        }}
-                    >
-                        {COUNTRY_CODES.map((c) => (
-                            <MenuItem key={c.code} value={c.code}>
-                                <Box display="flex" alignItems="center" gap={1.5}>
-                                    <Typography fontSize="1.4rem">{c.emoji}</Typography>
-                                    <Typography fontWeight="500">{c.name}</Typography>
-                                    <Typography color="text.secondary" variant="caption">({c.dial})</Typography>
-                                </Box>
-                            </MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-
-                <Divider orientation="vertical" flexItem sx={{ mx: 1.5, my: 0.5, bgcolor: 'divider' }} />
-
-                <InputBase
-                    value={displayValue}
-                    onChange={handlePhoneChange}
-                    placeholder={country.mask.replace(/[97]/g, '0')}
-                    fullWidth
-                    disabled={disabled}
-                    required={required}
-                    sx={{ 
-                        fontSize: '1.1rem', 
-                        fontWeight: 500,
-                        color: 'text.primary',
-                        '& input::placeholder': {
-                            color: 'text.disabled',
-                            opacity: 0.5
-                        }
-                    }}
-                />
-            </Paper>
-            {helperText && (
-                <Typography variant="caption" color={error ? "error" : "text.secondary"} sx={{ mt: 0.5, ml: 1 }}>
-                    {helperText}
-                </Typography>
-            )}
-        </Box>
+                            }}
+                            sx={{
+                                '& .MuiSelect-select': {
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    py: 0.5,
+                                    pr: '24px !important', // space for arrow
+                                    pl: 0,
+                                    '&:focus': { backgroundColor: 'transparent' }
+                                },
+                                '& .MuiSelect-icon': {
+                                    right: 0
+                                }
+                            }}
+                        >
+                            {COUNTRY_CODES.map((c) => (
+                                <MenuItem key={c.code} value={c.code}>
+                                    <Box display="flex" alignItems="center" gap={1.5}>
+                                        <Typography fontSize="1.4rem">{c.emoji}</Typography>
+                                        <Typography fontWeight="500">{c.name}</Typography>
+                                        <Typography color="text.secondary" variant="caption">({c.dial})</Typography>
+                                    </Box>
+                                </MenuItem>
+                            ))}
+                        </Select>
+                        <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 0.5, height: 'auto' }} />
+                    </InputAdornment>
+                ),
+            }}
+        />
     );
 };

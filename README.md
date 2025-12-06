@@ -85,12 +85,12 @@ npm run dev
 
 ### Если занят порт веба
 ```bash
-lsof -nP -iTCP:3000 | grep LISTEN
+lsof -i :3000 -t | xargs kill -9
 ```
 
 ### Если занят порт бэка
 ```bash
-lsof -nP -iTCP:8080 | grep LISTEN
+lsof -i :8080 -t | xargs kill -9
 ```
 
 ### 4. Запуск Мобильного приложения

@@ -39,6 +39,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
       },
       errors: {
         INVALID_PHONE: "Неверный формат номера",
+        INVALID_PHONE_NUMBER: "Неверный формат номера телефона",
         INVALID_CODE: "Неверный код",
         CODE_EXPIRED: "Код истек",
         USER_NOT_FOUND: "Пользователь не найден",
@@ -277,6 +278,8 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
             SCOOTER_RENTAL: "Аренда скутеров",
             AUTO_PARTS: "Автозапчасти",
             BANK: "Банк",
+            GROCERY_STORE: "Магазин продуктов",
+            BEAUTY_SALON: "Салон красоты",
             OTHER: "Другое"
         },
         strategies: {
@@ -430,6 +433,8 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         delete_point: "Удалить точку",
         fire_cashier: "Уволить",
         confirm_delete: "Вы уверены? Это действие необратимо.",
+        delete_success: "Точка удалена",
+        fire_success: "Сотрудник уволен",
         invite_code: "Код для кассира",
         save_settings: "Сохранить настройки",
         staff_empty: "Кассиров пока нет",
@@ -515,7 +520,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
         pause_helper: "Кассиры не смогут проводить операции, пока точка на паузе.",
         pause_warning: "Точка находится в режиме паузы. Клиенты увидят статус «Временно закрыто».",
         overview_pause: "Доступность",
-        status_paused: "Пауза",
+        status_paused: "Временно закрыто",
         status_no_hours: "Расписание не задано",
         map_preview_title: "Превью на карте",
         map_preview_hint: "Карта совпадает с клиентским экраном и показывает радиус поиска.",
@@ -711,6 +716,7 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
       },
       errors: {
         INVALID_PHONE: "Invalid phone number",
+        INVALID_PHONE_NUMBER: "Invalid phone number format",
         INVALID_CODE: "Invalid code",
         CODE_EXPIRED: "Code expired",
         USER_NOT_FOUND: "User not found",
@@ -944,6 +950,8 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
             SCOOTER_RENTAL: "Scooter rental",
             AUTO_PARTS: "Auto parts",
             BANK: "Bank",
+            GROCERY_STORE: "Grocery Store",
+            BEAUTY_SALON: "Beauty Salon",
             OTHER: "Other"
         },
         strategies: {

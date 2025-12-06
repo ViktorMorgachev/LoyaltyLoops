@@ -170,7 +170,14 @@ fun Application.module() {
     val smsService = ConsoleSmsService()
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
-    val webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
+
+    var webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
+    
+    // Fix common configuration error where protocol is missing
+    if (!webBaseUrl.startsWith("http://") && !webBaseUrl.startsWith("https://")) {
+        webBaseUrl = "https://$webBaseUrl"
+    }
+
     val supportChatWebSocketHandler = SupportChatWebSocketHandler(
         tokenService = tokenService,
         partnerRepository = partnerRepository,

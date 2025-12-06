@@ -20,6 +20,7 @@ enum class AppErrorCode {
 
     // Auth
     INVALID_PHONE,
+    INVALID_PHONE_NUMBER,
     INVALID_CODE,
     CODE_EXPIRED,
     TOKEN_EXPIRED,

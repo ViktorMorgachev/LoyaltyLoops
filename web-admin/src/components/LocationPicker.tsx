@@ -26,6 +26,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
 }) => {
     const fallbackKey = (import.meta.env.VITE_YMAPS_API_KEY as string | undefined);
     const [zoom, setZoom] = useState(13);
+    
+    // Инициализируем viewCenter
+    const [viewCenter, setViewCenter] = useState<[number, number]>(() => {
+        if (typeof initialLat === 'number' && typeof initialLng === 'number' && !Number.isNaN(initialLat) && !Number.isNaN(initialLng)) {
+            return [initialLat, initialLng];
+        }
+        return DEFAULT_CENTER;
+    });
+
     const [overrideCoords, setOverrideCoords] = useState<[number, number] | null>(() => {
         if (typeof initialLat === 'number' && typeof initialLng === 'number') {
             return [initialLat, initialLng];
@@ -33,24 +42,23 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
         return null;
     });
 
-    const initialCoords = useMemo<[number, number] | null>(() => {
+    // Если initialLat/Lng меняются снаружи (например, поиск), обновляем центр и маркер
+    React.useEffect(() => {
         if (
             typeof initialLat === 'number' &&
             !Number.isNaN(initialLat) &&
             typeof initialLng === 'number' &&
             !Number.isNaN(initialLng)
         ) {
-            return [initialLat, initialLng];
+            const newCoords: [number, number] = [initialLat, initialLng];
+            // Проверяем, изменились ли они реально, чтобы не сбрасывать зум/центр лишний раз
+            // Но если это пришло сверху, мы должны перейти туда
+            setOverrideCoords(newCoords);
+            setViewCenter(newCoords);
         }
-        return null;
     }, [initialLat, initialLng]);
 
-    const displayCoords = overrideCoords ?? initialCoords;
-
-    const center = useMemo<[number, number]>(() => {
-        if (displayCoords) return displayCoords;
-        return DEFAULT_CENTER;
-    }, [displayCoords]);
+    const displayCoords = overrideCoords;
 
     const markers: MapPoint[] = useMemo(() => {
         if (!displayCoords) return [];
@@ -69,9 +77,15 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
             if (!interactive) return;
             setOverrideCoords([lat, lng]);
             onLocationChange?.(lat, lng);
+            // Не меняем viewCenter при клике, чтобы карта не прыгала
         },
         [interactive, onLocationChange]
     );
+
+    const handleStateChange = useCallback((state: { zoom: number; center: [number, number] }) => {
+        setZoom(state.zoom);
+        setViewCenter(state.center);
+    }, []);
 
     if (!fallbackKey) {
         return (
@@ -84,11 +98,11 @@ export const LocationPicker: React.FC<LocationPickerProps> = ({
     return (
         <YandexMap
             apiKey={fallbackKey}
-            center={center}
+            center={viewCenter}
             zoom={zoom}
             markers={markers}
             onMapClick={handleMapClick}
-            onStateChange={(state) => setZoom(state.zoom)}
+            onStateChange={handleStateChange}
             interactive={interactive}
             height={height}
             radiusMeters={radiusMeters}

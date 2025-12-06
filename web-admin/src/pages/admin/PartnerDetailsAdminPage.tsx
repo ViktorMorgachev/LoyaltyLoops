@@ -108,10 +108,10 @@ export const PartnerDetailsAdminPage = () => {
                             <TableRow key={p.id} hover>
                                 <TableCell sx={{ fontWeight: 500 }}>{p.name}</TableCell>
                                 <TableCell color="text.secondary">{p.address}</TableCell>
-                                <TableCell>{p.type}</TableCell>
+                                <TableCell>{t(`dashboard.types.${p.type}`)}</TableCell>
                                 <TableCell>
                                     <Chip 
-                                        label={p.active ? t('common.active') : "Disabled"} 
+                                        label={p.active ? t('common.active') : t('point_details.status_inactive')} 
                                         color={p.active ? "success" : "error"} 
                                         size="small"
                                         variant="outlined"
