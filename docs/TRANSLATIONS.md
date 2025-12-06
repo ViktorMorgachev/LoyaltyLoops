@@ -1,51 +1,63 @@
-# Translation export workflow
+# Процесс работы с переводами
 
-## Generate fresh catalog
+## Веб-админка (Web Admin)
+
+### Генерация каталога для переводчиков
+
+Этот шаг создает файлы для ручного перевода (например, для передачи лингвистам).
 
 ```bash
 cd /Users/viktormorgachev/LoyaltyLoop
 npx ts-node --esm scripts/exportTranslations.ts
 ```
 
-The script reads `web-admin/src/i18n/resources.ts`, flattens every translation key and produces two synchronized files under `web-admin/translations/`:
+Скрипт читает `web-admin/src/i18n/resources.ts`, "выпрямляет" ключи и создает два файла в `web-admin/translations/`:
+- `translations.json` – структурированный файл с метаданными.
+- `translations.csv` – таблица (CSV) для импорта в Google Sheets.
 
-- `translations.json` – structured payload with `generatedAt`, `totalKeys` and an `entries` array (`{ key, ru, en }`).
-- `translations.csv` – comma-separated table with the same data, compatible with Google Sheets and other CAT tools.
+### Авто-перевод (без участия лингвиста)
 
-## Translating
-
-1. Share either file with linguists. They can filter on the `ru` column and provide `ky/kk/uz/be` equivalents.
-2. When translations are ready, copy the values back into `web-admin/src/i18n/resources.ts` (or automate the import if desired).
-3. Re-run the export to verify there are no missing keys before shipping.
-
-> The export currently captures the Russian (`ru`) source strings and the English (`en`) reference. If another source language is needed, adjust `scripts/exportTranslations.ts` to include the desired locale map before running the command.
-
-## Auto-translate (no linguist needed)
-
-For a quick first pass you can machine-translate every missing key straight from Russian:
+Для быстрого старта можно использовать авто-перевод через Google Translate (бесплатный API).
 
 ```bash
 TARGET_LANGS=ky,kk,uz,be npx ts-node --esm scripts/autoTranslate.ts
 ```
 
-- By default the script hits the public Google Translate endpoint (no API key required) and writes `web-admin/src/i18n/autoLanguages.ts`.
-- Placeholders like `{{count}}` are preserved automatically.
-- Existing manual edits are kept; only empty/duplicate strings get overwritten.
+- Скрипт читает русские строки из `resources.ts` и переводит их.
+- Результат сохраняется в `web-admin/src/i18n/autoLanguages.ts`.
+- Переменные типа `{{count}}` сохраняются.
+- Ручные правки в `autoLanguages.ts` не перезаписываются (переводятся только новые или пустые ключи).
 
-### Dry run / cloning only
+**Параметры:**
+- `TARGET_LANGS`: Языки через запятую (по умолчанию `ky,kk,uz,be`).
+- `DRY_RUN=1`: Прогон без запросов к API (просто копирует русские строки).
 
-If you just need to refresh the file without calling the API (e.g. CI or offline dev), run:
+## Мобильное приложение (Android / Compose)
+
+Для локализации ресурсов Compose Multiplatform используется отдельный скрипт.
+
+### Запуск авто-перевода
 
 ```bash
-DRY_RUN=1 npx ts-node --esm scripts/autoTranslate.ts
+npx ts-node --esm scripts/translateComposeStrings.ts
 ```
 
-This copies the Russian strings into every target language so the UI still builds.
+Скрипт берет строки из основного файла:
+`composeApp/src/commonMain/composeResources/values/strings.xml`
 
-> Скрипт вычисляет пути относительно файла `scripts/autoTranslate.ts`, поэтому можно запускать команду из любого каталога. Главное — чтобы репозиторий оставался по пути `../web-admin`. Для простоты всё равно рекомендую `cd /Users/viktormorgachev/LoyaltyLoop && npx ...`.
+И генерирует/обновляет переводы в папках:
+- `values-en` (Английский)
+- `values-ky` (Кыргызский)
+- `values-kk` (Казахский)
+- `values-uz` (Узбекский)
+- `values-be` (Белорусский)
 
-### Tweaking targets
+**Параметры:**
+- `TARGET_LANGS`: Языки для перевода (по умолчанию `en,ky,kk,uz,be`).
+- `DRY_RUN=1`: Тестовый прогон (копирование исходных строк).
 
-- Use `TARGET_LANGS=ky` to translate a single locale.
-- Re-run the command whenever you change Russian source strings; the script will only translate keys that still match Russian, so your manual fixes remain intact.
+### Пример: перевести только на английский
 
+```bash
+TARGET_LANGS=en npx ts-node --esm scripts/translateComposeStrings.ts
+```

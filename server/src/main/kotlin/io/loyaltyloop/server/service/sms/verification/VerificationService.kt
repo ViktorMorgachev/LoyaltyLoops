@@ -5,7 +5,7 @@ interface VerificationService {
      * Отправляет код.
      * @return Возвращает ID проверки (для Prelude это verification_id, для Internal - просто номер телефона)
      */
-    suspend fun startVerification(phone: String): String
+    suspend fun startVerification(phone: String, userId: String? = null): String
 
     /**
      * Проверяет код.

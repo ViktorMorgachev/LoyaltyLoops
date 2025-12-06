@@ -23,7 +23,8 @@ data class UserDto(
     val email: String? = null,
     val qrSecret: String,
     val language: String = "ru",
-    val isFrozenUntil: Long? = null
+    val isFrozenUntil: Long? = null,
+    val isDeleted: Boolean = false
 )
 
 @Serializable

@@ -1,47 +1,50 @@
-import { Container, Typography, Box, Paper, Stepper, Step, StepLabel, StepContent, Button, Chip } from '@mui/material';
+import { Container, Typography, Box, Paper, Stepper, Step, StepLabel, StepContent, Button, Chip, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 export const RoadmapPage = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     const steps = [
         {
-            label: 'Запуск Платформы (MVP)',
-            description: 'Базовый функционал: регистрация партнеров, создание точек, QR-транзакции, начисление/списание баллов, мобильное приложение для клиентов и кассиров.',
+            label: t('landing.roadmap.steps.mvp_label'),
+            description: t('landing.roadmap.steps.mvp_desc'),
             status: 'DONE',
             date: 'Q1 2025'
         },
         {
-            label: 'Аналитика и Отчеты',
-            description: 'Детальная статистика по выручке, среднему чеку и активности клиентов. Дашборд партнера.',
+            label: t('landing.roadmap.steps.analytics_label'),
+            description: t('landing.roadmap.steps.analytics_desc'),
             status: 'IN_PROGRESS',
             date: 'Q2 2025'
         },
         {
-            label: 'Push-уведомления',
-            description: 'Возможность отправлять маркетинговые рассылки (акции, поздравления) своим клиентам через приложение.',
+            label: t('landing.roadmap.steps.push_label'),
+            description: t('landing.roadmap.steps.push_desc'),
             status: 'PLANNED',
             date: 'Q3 2025'
         },
         {
-            label: 'Бан-система и Модерация',
-            description: 'Инструменты защиты бизнеса: блокировка недобросовестных клиентов, система заявок от кассиров и арбитраж.',
+            label: t('landing.roadmap.steps.ban_label'),
+            description: t('landing.roadmap.steps.ban_desc'),
             status: 'PLANNED',
             date: 'Q3 2025'
         },
         {
-            label: 'Реферальная программа (B2C)',
-            description: 'Механика "Пригласи друга": клиенты получают бонусы за то, что приводят друзей в ваше заведение.',
+            label: t('landing.roadmap.steps.referral_label'),
+            description: t('landing.roadmap.steps.referral_desc'),
             status: 'PLANNED',
             date: 'Q4 2025'
         },
         {
-            label: 'Расширение B2B Партнерства',
-            description: 'Личный кабинет Менеджера Платформы. Прозрачная статистика по привлеченным бизнесам и начисление 50% комиссии.',
+            label: t('landing.roadmap.steps.b2b_label'),
+            description: t('landing.roadmap.steps.b2b_desc'),
             status: 'PLANNED',
             date: '2026'
         },
@@ -57,29 +60,32 @@ export const RoadmapPage = () => {
 
     const getStatusChip = (status: string) => {
         switch (status) {
-            case 'DONE': return <Chip label="Готово" color="success" size="small" />;
-            case 'IN_PROGRESS': return <Chip label="В работе" color="warning" size="small" />;
-            default: return <Chip label="В планах" variant="outlined" size="small" />;
+            case 'DONE': return <Chip label={t('landing.roadmap.status.done')} color="success" size="small" />;
+            case 'IN_PROGRESS': return <Chip label={t('landing.roadmap.status.in_progress')} color="warning" size="small" />;
+            default: return <Chip label={t('landing.roadmap.status.planned')} variant="outlined" size="small" />;
         }
     };
 
     return (
-        <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 6 }}>
+        <Box sx={{ bgcolor: '#f8fafc', minHeight: '100vh', py: 6, position: 'relative' }}>
+            <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+                <LanguageSwitcher />
+            </Box>
             <Container maxWidth="md">
                 <Button 
                     startIcon={<ArrowBackIcon />} 
                     onClick={() => navigate('/about')} 
                     sx={{ mb: 4 }}
                 >
-                    Назад к описанию
+                    {t('landing.roadmap.back')}
                 </Button>
 
                 <Box textAlign="center" mb={6}>
                     <Typography variant="h3" fontWeight="bold" gutterBottom>
-                        Roadmap проекта 🚀
+                        {t('landing.roadmap.title')}
                     </Typography>
                     <Typography variant="subtitle1" color="text.secondary">
-                        Мы не стоим на месте. Вот что ждет LoyaltyLoop в ближайшем будущем.
+                        {t('landing.roadmap.subtitle')}
                     </Typography>
                 </Box>
 
@@ -111,9 +117,17 @@ export const RoadmapPage = () => {
                 </Paper>
 
                 <Box mt={6} textAlign="center">
-                    <Typography variant="body2" color="text.secondary">
-                        Есть идеи или предложения? Напишите нам в поддержку!
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                        {t('landing.roadmap.contact_support')}
                     </Typography>
+                    <Link 
+                        href="mailto:morgachev.v.s@gmail.com" 
+                        underline="hover" 
+                        color="primary"
+                        sx={{ fontWeight: 600, fontSize: '1rem' }}
+                    >
+                        morgachev.v.s@gmail.com
+                    </Link>
                 </Box>
             </Container>
         </Box>

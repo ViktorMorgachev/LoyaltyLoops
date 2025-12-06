@@ -30,6 +30,8 @@ import loyaltyloop.composeapp.generated.resources.error_network
 import loyaltyloop.composeapp.generated.resources.profile_error_load
 import loyaltyloop.composeapp.generated.resources.profile_language_updated
 import loyaltyloop.composeapp.generated.resources.profile_loading
+import loyaltyloop.composeapp.generated.resources.delete_account_code_sent
+import loyaltyloop.composeapp.generated.resources.account_deleted_success
 import loyaltyloop.composeapp.generated.resources.profile_web_error_token
 
 class ProfileScreenModel(
@@ -46,7 +48,12 @@ class ProfileScreenModel(
         val workspaces: List<UserWorkspace> = emptyList(),
         val isLoading: Boolean = false,
         val languageCode: String = "ru",
-        val appVersion: String = AppConfig.appVersion
+        val appVersion: String = AppConfig.appVersion,
+        val showDeleteAccountDialog: Boolean = false,
+        val deleteAccountStep: Int = 0,
+        val deleteAccountReason: String = "",
+        val deleteAccountCode: String = "",
+        val isDeletingAccount: Boolean = false
     )
 
     sealed interface Action {
@@ -58,6 +65,13 @@ class ProfileScreenModel(
         data object OnLanguageClicked : Action
         data class OnLanguageSelected(val code: String) : Action
         data object OnSupportClicked : Action
+
+        data object OnDeleteAccountClicked : Action
+        data class OnDeleteAccountReasonChanged(val reason: String) : Action
+        data object OnDeleteAccountNextClicked : Action
+        data class OnDeleteAccountCodeChanged(val code: String) : Action
+        data object OnDeleteAccountConfirmClicked : Action
+        data object OnDeleteAccountCancelClicked : Action
     }
 
     sealed interface Event {
@@ -106,6 +120,26 @@ class ProfileScreenModel(
             is Action.OnLanguageClicked -> _events.trySend(Event.ShowLanguageDialog)
             is Action.OnLanguageSelected -> updateLanguage(action.code)
             is Action.OnSupportClicked -> _events.trySend(Event.NavigateToSupport)
+
+            is Action.OnDeleteAccountClicked -> {
+                _state.value = _state.value.copy(
+                    showDeleteAccountDialog = true,
+                    deleteAccountStep = 0,
+                    deleteAccountReason = "",
+                    deleteAccountCode = ""
+                )
+            }
+            is Action.OnDeleteAccountReasonChanged -> {
+                _state.value = _state.value.copy(deleteAccountReason = action.reason)
+            }
+            is Action.OnDeleteAccountCancelClicked -> {
+                _state.value = _state.value.copy(showDeleteAccountDialog = false)
+            }
+            is Action.OnDeleteAccountNextClicked -> requestAccountDeletion()
+            is Action.OnDeleteAccountCodeChanged -> {
+                _state.value = _state.value.copy(deleteAccountCode = action.code)
+            }
+            is Action.OnDeleteAccountConfirmClicked -> confirmAccountDeletion()
         }
     }
     private fun loadProfile() {
@@ -212,6 +246,54 @@ class ProfileScreenModel(
 
             delay(300)
             platformManager.reloadUI()
+        }
+    }
+
+    private fun requestAccountDeletion() {
+        if (_state.value.deleteAccountReason.isBlank()) return
+
+        screenModelScope.launch {
+            _state.value = _state.value.copy(isDeletingAccount = true)
+            repository.requestAccountDeletion()
+                .onSuccess {
+                    _state.value = _state.value.copy(
+                        isDeletingAccount = false,
+                        deleteAccountStep = 1
+                    )
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.delete_account_code_sent), SnackbarType.Info))
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(isDeletingAccount = false)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                }
+                .onError { code, _ ->
+                    _state.value = _state.value.copy(isDeletingAccount = false)
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                }
+        }
+    }
+
+    private fun confirmAccountDeletion() {
+        val code = _state.value.deleteAccountCode
+        val reason = _state.value.deleteAccountReason
+        if (code.length < 4) return
+
+        screenModelScope.launch {
+            _state.value = _state.value.copy(isDeletingAccount = true)
+            repository.confirmAccountDeletion(code, reason)
+                .onSuccess {
+                    _state.value = _state.value.copy(isDeletingAccount = false, showDeleteAccountDialog = false)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.account_deleted_success), SnackbarType.Success))
+                    logout()
+                }
+                .onFailure {
+                    _state.value = _state.value.copy(isDeletingAccount = false)
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                }
+                .onError { code, _ ->
+                    _state.value = _state.value.copy(isDeletingAccount = false)
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                }
         }
     }
 }

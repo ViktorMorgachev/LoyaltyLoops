@@ -176,22 +176,26 @@ export const ProfilePage = () => {
                 )}
                 
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
-                    <TextField
-                        label={t('profile.id_label')}
-                        value={profile.userId || ''}
-                        fullWidth 
-                        disabled
-                        variant="outlined"
-                        InputProps={{
-                            endAdornment: (
-                                <Tooltip title={t('common.copied')}>
-                                    <IconButton onClick={copyId} edge="end">
-                                        <ContentCopyIcon fontSize="small" />
-                                    </IconButton>
-                                </Tooltip>
-                            )
-                        }}
-                    />
+                    <Box>
+                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block' }}>
+                            {t('profile.id_label')}
+                        </Typography>
+                        <TextField
+                            value={profile.userId || ''}
+                            fullWidth 
+                            disabled
+                            variant="outlined"
+                            InputProps={{
+                                endAdornment: (
+                                    <Tooltip title={t('common.copied')}>
+                                        <IconButton onClick={copyId} edge="end">
+                                            <ContentCopyIcon fontSize="small" />
+                                        </IconButton>
+                                    </Tooltip>
+                                )
+                            }}
+                        />
+                    </Box>
                     <PhoneInput 
                         label={t('profile.phone_label')}
                         value={profile.phone || ''}

@@ -8,8 +8,8 @@ import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.*
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.Country
-import io.loyaltyloop.shared.models.NetworkResult
 import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
 import io.loyaltyloop.shared.models.onSuccess
@@ -24,8 +24,6 @@ import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.auth_success
 import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
-import loyaltyloop.composeapp.generated.resources.error_server
-import loyaltyloop.composeapp.generated.resources.error_unknown
 
 class LoginScreenModel(
     private val repository: AuthRepository,
@@ -126,7 +124,15 @@ class LoginScreenModel(
             return
         }
         screenModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true, step = Step.EnterCode)
+            _state.value = _state.value.copy(isLoading = true)
+
+            if (isResend) {
+                _state.value = _state.value.copy(
+                    timerSeconds = 60,
+                    isResendEnabled = false
+                )
+                startTimer()
+            }
 
             val fullNumber = country.phonePrefix + state.value.phoneInput
 
@@ -135,11 +141,14 @@ class LoginScreenModel(
                     log.write("Code sent")
                     _state.value = _state.value.copy(
                         isLoading = false,
+                        step = Step.EnterCode,
                         otpInput = "",
-                        timerSeconds = 60,
+                        timerSeconds = if (!isResend) 60 else _state.value.timerSeconds,
                         isResendEnabled = false
                     )
-                    startTimer()
+                    if (!isResend) {
+                        startTimer()
+                    }
                 }
                 .onFailure { exception ->
                     log.write("Failed", LogType.Error, exception)
@@ -148,7 +157,12 @@ class LoginScreenModel(
                 }
                 .onError { apiCode, _ ->
                     _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
-                    _state.value = _state.value.copy(isLoading = false, otpInput = "")
+                    val newTimer = if (apiCode == AppErrorCode.TOO_MANY_REQUESTS) 20 else _state.value.timerSeconds
+                    _state.value = _state.value.copy(
+                        isLoading = false, 
+                        otpInput = "",
+                        timerSeconds = newTimer
+                    )
                 }
         }
     }

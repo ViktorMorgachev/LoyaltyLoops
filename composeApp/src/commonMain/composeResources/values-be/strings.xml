@@ -105,7 +105,7 @@
     <string name="onboarding_why_info">Ваша імя будзе адлюстроўвацца ў касіра для прывітання і ўзнагароджання бонусамі.</string>
     <string name="profile_about_description">LoyaltyLoop дапамагае вам кіраваць праграмамі лаяльнасці і партнёрамі з аднаго прыкладання.</string>
     <string name="profile_about_title">Аб дадатку</string>
-    <string name="profile_about_version">Версія: %1$s</string>
+    <string name="profile_about_version">Версія:</string>
     <string name="profile_btn_create_business">Запусціце LoyaltyLoop</string>
     <string name="profile_btn_join_team">Увядзіце код запрашэння</string>
     <string name="profile_btn_logout">Выйдзіце са свайго акаўнта</string>

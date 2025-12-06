@@ -19,7 +19,7 @@ class InternalVerificationService(
     private val MAX_OTP_ATTEMPTS = 3
     private val OTP_BLOCK_DURATION_MS = 3600000L // 1 hour
 
-    override suspend fun startVerification(phone: String): String {
+    override suspend fun startVerification(phone: String, userId: String?): String {
         // 0. Check Block
         checkOtpBlock(phone)
 
@@ -35,7 +35,7 @@ class InternalVerificationService(
         if (recentCount >= 1) {
              throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "Wait before resending SMS")
         }
-
+        
         // 2. Limit: Max 5 requests per hour
         val hourlyCount = systemEventRepository.countEvents(
             type = SystemEventType.SMS_REQUEST,
@@ -52,6 +52,7 @@ class InternalVerificationService(
 
         eventLogger.log(
             type = SystemEventType.SMS_REQUEST,
+            userId = userId,
             userPhone = phone,
             payload = "SMS sent with code: $code"
         )
