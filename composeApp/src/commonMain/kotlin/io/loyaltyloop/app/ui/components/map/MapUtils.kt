@@ -24,6 +24,8 @@ fun getEmojiForType(type: TradingPointType): String {
         TradingPointType.TIRE_SERVICE -> "⚙️"
         TradingPointType.AUTO_PARTS -> "🚙"
         TradingPointType.BANK -> "🏦"
+        TradingPointType.GROCERY_STORE -> "🛒"
+        TradingPointType.BEAUTY_SALON -> "💇‍♀️"
         else -> "📍"
     }
 }
@@ -46,6 +48,8 @@ fun getLabelResource(type: TradingPointType): StringResource {
         TradingPointType.TIRE_SERVICE -> Res.string.map_type_tire_service
         TradingPointType.AUTO_PARTS -> Res.string.map_type_auto_parts
         TradingPointType.BANK -> Res.string.map_type_bank
+        TradingPointType.GROCERY_STORE -> Res.string.map_type_grocery_store
+        TradingPointType.BEAUTY_SALON -> Res.string.map_type_beauty_salon
         else -> Res.string.map_type_other
     }
 }

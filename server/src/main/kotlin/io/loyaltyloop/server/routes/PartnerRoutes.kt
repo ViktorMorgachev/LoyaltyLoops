@@ -271,7 +271,7 @@ fun Route.partnerRoutes(
                 req.contactPhone?.takeIf { it.isNotBlank() }?.let { phone ->
                     val error = io.loyaltyloop.server.utils.validatePhoneNumber(phone)
                     if (error != null) {
-                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, error)
+                        throw LoyaltyException(AppErrorCode.INVALID_PHONE_NUMBER, "$error (received: '$phone')")
                     }
                 }
 

@@ -248,7 +248,7 @@ export const PointDetailsPage = () => {
   const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
-  const additionalInfoLimit = 20;
+  const additionalInfoLimit = 30;
   const additionalInfoLength = formData.additionalInfo?.length ?? 0;
   const overviewCurrency = React.useMemo(() => {
     const normalized = details?.point?.currency?.trim();
@@ -426,8 +426,12 @@ export const PointDetailsPage = () => {
   const resolveAddress = React.useCallback(
       async (lat: number, lng: number): Promise<string | null> => {
           if (mapApiKey) {
-              const addr = await reverseGeocodeYandex(mapApiKey, lat, lng);
-              if (addr) return addr;
+              try {
+                  const addr = await reverseGeocodeYandex(mapApiKey, lat, lng);
+                  if (addr) return addr;
+              } catch (e) {
+                  console.error('Yandex geocode failed:', e);
+              }
           }
           return reverseGeocodeFallback(lat, lng);
       },
@@ -436,13 +440,20 @@ export const PointDetailsPage = () => {
 
   const handleLocationChange = React.useCallback(
       async (lat: number, lng: number) => {
+          console.log('Location changed:', lat, lng, 'canEdit:', canEdit);
           if (!canEdit) {
               return;
           }
           setFormData((prev: any) => ({ ...prev, latitude: lat, longitude: lng }));
-          const addr = await resolveAddress(lat, lng);
-          if (addr) {
-              setFormData((prev: any) => ({ ...prev, address: addr, latitude: lat, longitude: lng }));
+          
+          try {
+              const addr = await resolveAddress(lat, lng);
+              console.log('Resolved address:', addr);
+              if (addr) {
+                  setFormData((prev: any) => ({ ...prev, address: addr, latitude: lat, longitude: lng }));
+              }
+          } catch (error) {
+              console.error('Failed to resolve address:', error);
           }
       },
       [canEdit, resolveAddress]
@@ -508,7 +519,7 @@ export const PointDetailsPage = () => {
       if (confirm(t('point_details.confirm_delete'))) {
           try {
             await api.delete(`/partners/points/${id}`);
-            showSuccess("Deleted");
+            showSuccess(t('point_details.delete_success'));
             navigate('/partner/points'); // Back to list
           } catch (e: any) {
             showError(getErrorMessage(e));
@@ -524,7 +535,7 @@ export const PointDetailsPage = () => {
        if (confirm(t('point_details.confirm_delete'))) {
           try {
             await api.delete(`/partners/cashiers/${cashierId}`);
-            showSuccess("Fired");
+            showSuccess(t('point_details.fire_success'));
             loadCashiers();
           } catch (e: any) {
             showError(getErrorMessage(e));
@@ -643,6 +654,35 @@ export const PointDetailsPage = () => {
                 onChange={e => setFormData({...formData, name: e.target.value})}
                     variant="outlined"
             />
+            <FormControl fullWidth margin="normal">
+                <InputLabel>{t('dashboard.label_point_type')}</InputLabel>
+                <Select 
+                    value={formData.type} 
+                    label={t('dashboard.label_point_type')} 
+                    onChange={e => setFormData({...formData, type: e.target.value})}
+                    disabled={!canEdit}
+                >
+                    <MenuItem value="COFFEE_SHOP">{t('dashboard.types.COFFEE_SHOP')}</MenuItem>
+                    <MenuItem value="RESTAURANT">{t('dashboard.types.RESTAURANT')}</MenuItem>
+                    <MenuItem value="RETAIL">{t('dashboard.types.RETAIL')}</MenuItem>
+                    <MenuItem value="SERVICE">{t('dashboard.types.SERVICE')}</MenuItem>
+                    <MenuItem value="TIRE_SERVICE">{t('dashboard.types.TIRE_SERVICE')}</MenuItem>
+                    <MenuItem value="AUTO_SERVICE">{t('dashboard.types.AUTO_SERVICE')}</MenuItem>
+                    <MenuItem value="FLOWERS">{t('dashboard.types.FLOWERS')}</MenuItem>
+                    <MenuItem value="GIFTS">{t('dashboard.types.GIFTS')}</MenuItem>
+                    <MenuItem value="CAKES">{t('dashboard.types.CAKES')}</MenuItem>
+                    <MenuItem value="BARBERSHOP">{t('dashboard.types.BARBERSHOP')}</MenuItem>
+                    <MenuItem value="CLOTHING">{t('dashboard.types.CLOTHING')}</MenuItem>
+                    <MenuItem value="TOYS">{t('dashboard.types.TOYS')}</MenuItem>
+                    <MenuItem value="CAR_RENTAL">{t('dashboard.types.CAR_RENTAL')}</MenuItem>
+                    <MenuItem value="SCOOTER_RENTAL">{t('dashboard.types.SCOOTER_RENTAL')}</MenuItem>
+                    <MenuItem value="AUTO_PARTS">{t('dashboard.types.AUTO_PARTS')}</MenuItem>
+                    <MenuItem value="BANK">{t('dashboard.types.BANK')}</MenuItem>
+                    <MenuItem value="GROCERY_STORE">{t('dashboard.types.GROCERY_STORE')}</MenuItem>
+                    <MenuItem value="BEAUTY_SALON">{t('dashboard.types.BEAUTY_SALON')}</MenuItem>
+                    <MenuItem value="OTHER">{t('dashboard.types.OTHER')}</MenuItem>
+                </Select>
+            </FormControl>
             <TextField 
                 label={t('point_details.address_label')}
                 fullWidth margin="normal" 
