@@ -115,13 +115,6 @@ export const LoginPage = () => {
 
       {/* ПЕРЕКЛЮЧАТЕЛЬ ЯЗЫКА (В правом верхнем углу) */}
       <Box sx={{ position: 'absolute', top: 16, right: 16, display: 'flex', gap: 2, alignItems: 'center' }}>
-        <Button 
-            startIcon={<InfoOutlinedIcon />} 
-            onClick={() => navigate('/about')} 
-            sx={{ color: 'text.secondary', textTransform: 'none' }}
-        >
-            О проекте
-        </Button>
         <LanguageSwitcher />
       </Box>
 
@@ -150,6 +143,15 @@ export const LoginPage = () => {
               onClick={handleSendCode} disabled={loading}
             >
               {loading ? <CircularProgress size={24} color="inherit" /> : t('auth.get_code')}
+            </Button>
+
+            <Button 
+                fullWidth
+                startIcon={<InfoOutlinedIcon />} 
+                onClick={() => navigate('/about')} 
+                sx={{ mt: 2, color: 'text.secondary', textTransform: 'none' }}
+            >
+                {t('menu.about_project', 'О проекте')}
             </Button>
           </Box>
         ) : (
