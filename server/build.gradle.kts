@@ -42,6 +42,7 @@ dependencies {
 
     // 1. Логирование
     implementation(libs.ktor.server.call.logging)
+    implementation(libs.ktor.server.rate.limit)
 
     // 2. Тесты (обрати внимание на testImplementation)
     testImplementation(kotlin("test"))

@@ -10,6 +10,10 @@ export const autoLanguages = {
         "confirm": "Ыраста",
         "create": "Түзүү",
         "add": "Кошуу",
+        "close": "Жабуу",
+        "all": "Баары",
+        "reset": "Баштапкы абалга келтирүү",
+        "details": "Кененирээк маалымат",
         "status": "Абалы",
         "actions": "Иш-аракеттер",
         "active": "Жигердүү",
@@ -62,7 +66,9 @@ export const autoLanguages = {
         "LOYALTY_SETTING_NOT_FOUND": "Берилгендик жөндөөлөр табылган жок",
         "CARD_NOT_FOUND": "Берилгендик карта табылган жок",
         "EMAIL_NOT_SET": "PIN-кодуңузду баштапкы абалга келтирүү үчүн профилиңизге электрондук почта билдирүүсүн кошуңуз",
-        "INVALID_RESET_TOKEN": "ПИНДЕГИҢИЗДИ БАШТАЛГАН СИЗДИ СЫЙЛЫКТАРЫ жараксыз же мөөнөтү бүткөн"
+        "INVALID_RESET_TOKEN": "ПИНДЕГИҢИЗДИ БАШТАЛГАН СИЗДИ СЫЙЛЫКТАРЫ жараксыз же мөөнөтү бүткөн",
+        "TOO_MANY_REQUESTS": "Өтө көп өтүнүчтөр. Сураныч, кийинчерээк аракет кылып көрүңүз.",
+        "OTP_ATTEMPTS_EXCEEDED": "Аракет чеги ашып кетти. Бир сааттан кийин дагы аракет кылып көрүңүз."
       },
       "auth": {
         "title": "Башкаруу панелине кирүү",
@@ -72,6 +78,7 @@ export const autoLanguages = {
         "login_btn": "Кирүү",
         "change_number": "Номерди өзгөртүү",
         "code_sent": "Код жөнөтүлдү (сервердин журналдарын караңыз)",
+        "resend_code": "Калыбына келтирүү",
         "success": "Ийгиликтүү кирүү!"
       },
       "menu": {
@@ -239,6 +246,18 @@ export const autoLanguages = {
           "RESTAURANT": "Ресторан",
           "RETAIL": "Дүкөн",
           "SERVICE": "Кызматтар",
+          "TIRE_SERVICE": "Айыктыруу",
+          "AUTO_SERVICE": "БИР ЖҮЗ",
+          "FLOWERS": "Гүлдөр",
+          "GIFTS": "Азыркы",
+          "CAKES": "Торт",
+          "BARBERSHOP": "Салон",
+          "CLOTHING": "Кездеме",
+          "TOYS": "Оюнчуктар",
+          "CAR_RENTAL": "Унаа прокат",
+          "SCOOTER_RENTAL": "Скутер ижарасы",
+          "AUTO_PARTS": "Авто бөлүктөрү",
+          "BANK": "Банк",
           "OTHER": "Башка"
         },
         "strategies": {
@@ -407,6 +426,11 @@ export const autoLanguages = {
         "status_active": "Жигердүү",
         "status_inactive": "Жигердүү эмес",
         "address_label": "Дареги (Кол менен киргизиңиз)",
+        "contact_phone_label": "Байланыш телефону",
+        "contact_link_label": "Байланыш шилтемеси",
+        "contact_link_hint": "Мисалы: https://t.me/brand же https: //wa.me/996 ...",
+        "additional_info_label": "Кошумча маалымат",
+        "additional_info_hint": "20 белгиге чейин - картадагы кардарлар тарабынан каралат",
         "max_burn_label": "Макс. Пункттар менен төлөө%",
         "max_burn_hint": "Чектин канча пайызын бонустар менен жабышы мүмкүн (0-100)",
         "map_location": "Картада жайгашкан жер",
@@ -432,6 +456,9 @@ export const autoLanguages = {
         "schedule_title": "Иш убактысын ачуу",
         "schedule_hint": "Жумуш күндөрүн тандаңыз жана жумуш убактысын белгилеңиз. Калган күндөр дем алыш күн.",
         "schedule_timezone": "Убакыт алкагы: {{tz}}",
+        "schedule_edit_button": "График орнотуңуз",
+        "schedule_edit_button_existing": "График",
+        "schedule_dialog_title": "Графикти орнотуу",
         "schedule_days": {
           "mon": "Дүйшөмбү",
           "tue": "Шейшемби",
@@ -470,6 +497,7 @@ export const autoLanguages = {
         "pause_warning": "Мунун мааниси тыным режиминде. Кардарлар \"убактылуу жабык\" статусун көрүшөт.",
         "overview_pause": "Жеткиликтүүлүк",
         "status_paused": "Тыным",
+        "status_no_hours": "График орнотулган жок",
         "map_preview_title": "Картадан алдын ала көрүү",
         "map_preview_hint": "Карта кардардын экранына дал келет жана издөө радиусун көрсөтөт.",
         "map_preview_cta": "Кардар картасы",
@@ -479,15 +507,49 @@ export const autoLanguages = {
         "map_key_missing": "Яндекс картасы API ачкычы жок",
         "filter_type": "Бизнес түрү",
         "filter_radius": "RADIUS: {{value}} M",
+        "filter_radius_short": "Радиус",
+        "radius_disabled_label": "Радиус жеткиликтүү эмес",
         "filter_open_now": "Азыр гана ачылат",
         "refresh_points": "Упайлар",
         "nearby_points": "Жакынкы чекиттер",
+        "map_locate_me": "Менин жайгашкан жери",
+        "map_locate_loading": "Келгиле, ...",
+        "map_locate_error": "Жайгашкан жерди аныктоо мүмкүн болбой жатат",
+        "map_locate_unsupported": "Браузер геодициялоону колдобойт",
+        "map_anchor_default": "Издөө борбору",
+        "map_anchor_point": "Тандалган чек",
+        "map_anchor_user": "Менин жайгашкан жери",
+        "filters_title": "Чыпкалар",
+        "filters_apply": "Колдонуу",
+        "filter_my_points": "Менин бутактарымды гана көрсөт",
+        "filter_my_points_hint": "Бизнесиңиздин соода түйүндөрүн көрсөтөт",
+        "filter_my_points_disabled": "Бутактарыңыздын тизмесине кире албайсыз",
+        "filter_my_points_loading": "Бутактарыңызды жүктөө ...",
+        "radius_disabled_hint": "Радиуста жайгашкан жериңизди издеп гана өзгөртүүгө болот",
         "status_open_now": "Ачык",
         "status_closed_now": "Жабык",
         "address_none": "Дареги көрсөтүлгөн эмес",
         "distance_label": "{{value}} м",
+        "no_points_found": "Эч кандай ойлор табылган жок",
+        "no_own_points": "Бул радиуста бутактар ​​жок",
+        "search_points_placeholder": "Оозеки атын издөө",
+        "rating_label": "Рейтинг: __ll_var_0__ ({{count}} Сын-пикирлер)",
+        "unit_m": "м",
+        "unit_km": "км",
         "edit_forbidden": "Бизнес ээси гана чекиттерди өзгөртө алат же жок кылат.",
-        "readonly_hint": "Сиз менеджер болуп иштейсиз: Жөндөөлөрдү өзгөртүү жана өрткө ээ болгон кызматкерлер жок."
+        "readonly_hint": "Сиз менеджер болуп иштейсиз: Жөндөөлөрдү өзгөртүү жана өрткө ээ болгон кызматкерлер жок.",
+        "contacts_title": "Байланыш",
+        "info_title": "Маалымат",
+        "coming_soon": "Жакында",
+        "coming_photos": "Сүрөт",
+        "coming_menu": "Меню жана баалар",
+        "coming_promos": "Запасы",
+        "coming_reviews": "Сын-пикирлер"
+      },
+      "social": {
+        "telegram": "Телеграмма",
+        "whatsapp": "Whatsapp",
+        "instagram": "Instagram"
       },
       "admin": {
         "title": "Өнөктөштү башкаруу",
@@ -501,6 +563,93 @@ export const autoLanguages = {
         "trading_points": "Чекене соода түйүндөрү",
         "no_points": "Чекиттер жок",
         "id": "ID"
+      },
+      "system_events": {
+        "title": "Тутум окуялары",
+        "filters": {
+          "type": "Окуя түрү",
+          "phone": "Телефон",
+          "user_id": "Колдонуучу ID",
+          "from": "From",
+          "to": "Чейин",
+          "reset": "Баштапкы абалга келтирүү",
+          "refresh": "Жаңыртуу"
+        },
+        "table": {
+          "date": "Датасы",
+          "type": "Түрү",
+          "user": "Колдонуучу",
+          "details": "Чоо-жайы",
+          "empty": "Окуялар табылган жок"
+        },
+        "types": {
+          "LOGIN": "Кирүү",
+          "REGISTER": "Каттоо",
+          "SMS_REQUEST": "SMS сурам",
+          "ACCRUAL": "Упайларды эсептөө",
+          "REDEMPTION": "Упайларды жаз",
+          "TIER_CHANGE": "Деңгээл өзгөрүшү",
+          "VISIT": "Баруу",
+          "ERROR": "Ката",
+          "INFO": "Маалымат",
+          "OTP_VERIFICATION_FAILED": "OTP катасы",
+          "PIN_CHANGE_SUCCESS": "PIN өзгөртүү",
+          "PIN_RESET_REQUEST": "PIN баштапкы абалга келтирүү",
+          "PIN_RESET_SUCCESS": "PIN баштапкы абалга келтирүү аяктады",
+          "PIN_VERIFICATION_FAILED": "PIN катасы"
+        }
+      },
+      "landing": {
+        "hero_title": "LoyTytyloop",
+        "hero_subtitle": "Чакан жана орто бизнес үчүн заманбап берилгендик системасы. Биз конокторду кадимки кардарларга айландырабыз.",
+        "start_free": "АКЫСЫЗ баштаңыз",
+        "roadmap_btn": "Өнүгүү пландары",
+        "roadmap": {
+          "title": "Долбоордун жол картасы 🚀",
+          "subtitle": "Биз токтоп турбайбыз. Жакын арада берилгендигдүүлүк үчүн дүкөндө эмне бар экен.",
+          "back": "Сүрөттөөгө кайтуу",
+          "contact_support": "Кандайдыр бир идеялар же сунуштар барбы? Колдоого жазыңыз!",
+          "status": {
+            "done": "Даяр",
+            "in_progress": "Прогрессте",
+            "planned": "Пландарда"
+          },
+          "steps": {
+            "mvp_label": "Платформаны ишке киргизүү (MVP)",
+            "mvp_desc": "Негизги функциялар: Өнөктөштөрдү каттоо, упайдарды, чыр-чатактарды, чегерүү / жазуу пункттарын, кардарларга жана кассирлерге мобилдик тиркемени түзүүдө.",
+            "analytics_label": "Аналитика жана отчеттор",
+            "analytics_desc": "Кирешелердин, орточо эсеп жана кардарлардын ишинин толук статистикасы. Өнөктөш панелден.",
+            "push_label": "Эскертмелер",
+            "push_desc": "Өтүнмө аркылуу кардарларыңызга маркетингдик жөнөтүү (жарнамалык, куттуктоо) жиберүү жөндөмү.",
+            "ban_label": "Тут тутуму жана ченеми",
+            "ban_desc": "Бизнести коргоо куралдары: Бузуктуксуз кардарларды бөгөттөө, кассирлер жана арбитраждан сурамдар тутуму.",
+            "referral_label": "Жолдомо программасы (B2C)",
+            "referral_desc": "\"Досуңузду чакырыңыз\" Механик: Кардарлар досторуңузга сиздин мекемеге бонустарды алышат.",
+            "b2b_label": "B2B өнөктөштүгүнүн кеңейиши",
+            "b2b_desc": "Платформа менеджерин жеке каттоо эсеби. Ачык ишканалар жана 50% комиссиянын эсептөө боюнча ачык статистикасы."
+          }
+        },
+        "features": {
+          "flexible_title": "Ийкемдүү берилгендик",
+          "flexible_desc": "Constructor: Cashback, Stampard карталары (\"6-кофе белек катары 6-кофе\")) же гибриддик система. Чекене, Хорека жана Кызматтарга ылайыкташтырылган.",
+          "crm_title": "CRM жана сегментация",
+          "crm_desc": "Пластикалык карталарсыз кардарлар базасын санариптештирүү. \"Үзгүлтүксүз\" жана \"жоголгон\" кардарларын автоматтык аныктоо.",
+          "geo_title": "Geo Marketing",
+          "geo_desc": "Шаардын интерактивдүү картасы боюнча бутактарыңыз. Кардарларга жакын жердеги кызматтарды издегенде көрүшөт. Арыздан акысыз трафик.",
+          "security_title": "Башкаруу жана коопсуздук",
+          "security_desc": "Транспорттук транзакция тарыхы. Кызматкерлер тарабынан алдамчылыктан коргоо. Кирүү укуктарын айырмалоо (ээси, менеджери, кассир).",
+          "network_title": "Филиал тармагы",
+          "network_desc": "Бардык упайлар үчүн бир экосистема. Кардар бир кофе дүкөндө упайларды топтоп, экинчисине (сиздин өтүнүчүңүздө) сарптайт.",
+          "partner_title": "50/50 Шериктештик",
+          "partner_desc": "Платформа менеджери болуп калат: Башка ишканаларды туташтырыңыз жана алардын абоненттик төлөмүнүн 50% алыңыз."
+        },
+        "cta": {
+          "title": "Бизнесиңизди маскара кылууга даярсызбы?",
+          "subtitle": "Бүгүн ишенимдүүлүк менен байланышкан экосистемага кошулуңуз.",
+          "quick_start": "15 мүнөттөн кийин тез башталат",
+          "no_hardware": "Татаал жабдуулар жок",
+          "trial": "14 күн сыноо мөөнөтү"
+        }
       }
     }
   },
@@ -514,6 +663,10 @@ export const autoLanguages = {
         "confirm": "Растау",
         "create": "Жарату",
         "add": "Қосу",
+        "close": "Жабу",
+        "all": "Бірі",
+        "reset": "Ысыру",
+        "details": "Толығырақ",
         "status": "Мәртебе",
         "actions": "Әрекеттер",
         "active": "Белсенді",
@@ -566,7 +719,9 @@ export const autoLanguages = {
         "LOYALTY_SETTING_NOT_FOUND": "Адалдық параметрлері табылмады",
         "CARD_NOT_FOUND": "Адалдық картасы табылмады",
         "EMAIL_NOT_SET": "PIN-кодты қалпына келтіру үшін профильге электрондық хат қосыңыз",
-        "INVALID_RESET_TOKEN": "PIN-кодты қалпына келтіру сілтемесі жарамсыз немесе мерзімі өткен"
+        "INVALID_RESET_TOKEN": "PIN-кодты қалпына келтіру сілтемесі жарамсыз немесе мерзімі өткен",
+        "TOO_MANY_REQUESTS": "Тым көп сұраулар. Тағы жасауды сәл кейінірек көріңізді өтінеміз.",
+        "OTP_ATTEMPTS_EXCEEDED": "Жауап ету шегі асып кетті. Бір сағаттан кейін қайталап көріңіз."
       },
       "auth": {
         "title": "Басқару тақтасына кіріңіз",
@@ -576,6 +731,7 @@ export const autoLanguages = {
         "login_btn": "Кіру",
         "change_number": "Нөмірді өзгерту",
         "code_sent": "Жіберілген код (Сервер журналын қараңыз)",
+        "resend_code": "-Жуу",
         "success": "Сәтті кіру!"
       },
       "menu": {
@@ -743,6 +899,18 @@ export const autoLanguages = {
           "RESTAURANT": "Мейрамхана",
           "RETAIL": "Дүкен",
           "SERVICE": "Қызметтер",
+          "TIRE_SERVICE": "Емту",
+          "AUTO_SERVICE": "Жүз",
+          "FLOWERS": "Гүлдер",
+          "GIFTS": "Қатысу",
+          "CAKES": "Торттар",
+          "BARBERSHOP": "Салон",
+          "CLOTHING": "Мата",
+          "TOYS": "Ойыншықтар",
+          "CAR_RENTAL": "Автокөлік жалдау",
+          "SCOOTER_RENTAL": "Скутер жалдау",
+          "AUTO_PARTS": "Авто бөлшектер",
+          "BANK": "Банк",
           "OTHER": "Өзге"
         },
         "strategies": {
@@ -911,6 +1079,11 @@ export const autoLanguages = {
         "status_active": "Белсенді",
         "status_inactive": "Белсенді емес",
         "address_label": "Мекенжай (қолмен енгізіңіз)",
+        "contact_phone_label": "Байланыс телефоны",
+        "contact_link_label": "Байланыс сілтемесі",
+        "contact_link_hint": "Мысалы: https://t.me/brand немесе https: //wa.me/996 ...",
+        "additional_info_label": "Қосымша ақпарат",
+        "additional_info_hint": "20 таңбаға дейін - картадағы клиенттер көреді",
         "max_burn_label": "Макс. Нүктелермен төлемнің%",
         "max_burn_hint": "Тексерудің қанша пайызын бонустармен қамтуға болады (0-100)",
         "map_location": "Картадан орналасқан жері",
@@ -936,6 +1109,9 @@ export const autoLanguages = {
         "schedule_title": "Ашу сағаттары",
         "schedule_hint": "Жұмыс күндерін таңдап, жұмыс уақытын орнатыңыз. Қалған күндер демалыс күндері болды.",
         "schedule_timezone": "Уақыт белдеуі: __ll_var_0__",
+        "schedule_edit_button": "Кесте орнатыңыз",
+        "schedule_edit_button_existing": "Кесте өзгерту",
+        "schedule_dialog_title": "Кесте құру",
         "schedule_days": {
           "mon": "Дүйсенбі",
           "tue": "Сейсенбі",
@@ -974,6 +1150,7 @@ export const autoLanguages = {
         "pause_warning": "Нүкте кідірту режимінде. Клиенттер «уақытша жабық» күйін көреді.",
         "overview_pause": "Жолы ашықтық",
         "status_paused": "Ұзіліс",
+        "status_no_hours": "Кесте жиынтығы жоқ",
         "map_preview_title": "Картадан алдын-ала қарау",
         "map_preview_hint": "Карта клиенттің экранына сәйкес келеді және іздеу радиусын көрсетеді.",
         "map_preview_cta": "Ашық клиенттік карта",
@@ -983,15 +1160,49 @@ export const autoLanguages = {
         "map_key_missing": "Яндекс карталары API кілті жоқ",
         "filter_type": "Бизнес түрі",
         "filter_radius": "Радиус: __ll_var_0__ м",
+        "filter_radius_short": "Радиус",
+        "radius_disabled_label": "Радиус жоқ",
         "filter_open_now": "Тек қазір ашық",
         "refresh_points": "Жаңарту нүктелері",
         "nearby_points": "Жақын нүктелер",
+        "map_locate_me": "Менің орналасқан жерім",
+        "map_locate_loading": "Айталық ...",
+        "map_locate_error": "Орынды анықтау мүмкін емес",
+        "map_locate_unsupported": "Браузер геолокацияны қолдамайды",
+        "map_anchor_default": "Іздеу орталығы",
+        "map_anchor_point": "Таңдалған нүкте",
+        "map_anchor_user": "Менің орналасқан жерім",
+        "filters_title": "Сүзгілер",
+        "filters_apply": "Өтініш беру",
+        "filter_my_points": "Тек менің бұтақтарымды көрсетіңіз",
+        "filter_my_points_hint": "Сіздің бизнесіңіздің сауда орындарын көрсетеді",
+        "filter_my_points_disabled": "Филиалдар тізіміне кіру мүмкін емес",
+        "filter_my_points_loading": "Филиалдарыңызды жүктеу ...",
+        "radius_disabled_hint": "Радиусты тек сіздің орналасқан жеріңізді іздеуге өзгертуге болады",
         "status_open_now": "Ашу",
         "status_closed_now": "Жабық",
         "address_none": "Мекенжай көрсетілмеген",
         "distance_label": "__Ll_var_0__ м",
+        "no_points_found": "Ұпайлар табылмады",
+        "no_own_points": "Бұл радиуста бұтақтар жоқ",
+        "search_points_placeholder": "Шығу атымен іздеу",
+        "rating_label": "Рейтинг: __ll_var_0__ (__ll_var_1__ Пікірлер)",
+        "unit_m": "м",
+        "unit_km": "км км",
         "edit_forbidden": "Тек бизнес иесі нүктені өзгерте немесе жоя алады.",
-        "readonly_hint": "Сіз менеджер ретінде жұмыс істейсіз: Параметрлер мен өрт қызметкерлерін өзгерту әрекеттері қол жетімді емес."
+        "readonly_hint": "Сіз менеджер ретінде жұмыс істейсіз: Параметрлер мен өрт қызметкерлерін өзгерту әрекеттері қол жетімді емес.",
+        "contacts_title": "Байланыстар",
+        "info_title": "Ақпарат",
+        "coming_soon": "Тез",
+        "coming_photos": "Фотосурет",
+        "coming_menu": "Мәзір және бағалар",
+        "coming_promos": "Акциялар",
+        "coming_reviews": "Пікірлер"
+      },
+      "social": {
+        "telegram": "Жеделхат",
+        "whatsapp": "whatsapp",
+        "instagram": "Инстаграм"
       },
       "admin": {
         "title": "Серіктес басқару",
@@ -1005,6 +1216,93 @@ export const autoLanguages = {
         "trading_points": "Бөлшек сауда нүктелері",
         "no_points": "Нүктелер жоқ",
         "id": "Куәлік"
+      },
+      "system_events": {
+        "title": "Жүйелік оқиғалар",
+        "filters": {
+          "type": "Оқиға түрі",
+          "phone": "Телефон",
+          "user_id": "Пайдаланушы идентификаторы",
+          "from": "-Ден",
+          "to": "Қарай",
+          "reset": "Ысыру",
+          "refresh": "Жаңарту"
+        },
+        "table": {
+          "date": "Дата",
+          "type": "Басу",
+          "user": "Пайдаланушы",
+          "details": "Мәлімет",
+          "empty": "Ешқандай оқиғалар табылған жоқ"
+        },
+        "types": {
+          "LOGIN": "Кіру",
+          "REGISTER": "Тіркеу",
+          "SMS_REQUEST": "SMS сұраңыз",
+          "ACCRUAL": "Ұпайларды есептеу",
+          "REDEMPTION": "Жазу нүктелерін жазыңыз",
+          "TIER_CHANGE": "Деңгей өзгерісі",
+          "VISIT": "Бару",
+          "ERROR": "Қателік",
+          "INFO": "Ақпарат",
+          "OTP_VERIFICATION_FAILED": "OTP қатесі",
+          "PIN_CHANGE_SUCCESS": "PIN кодын өзгерту",
+          "PIN_RESET_REQUEST": "PIN-кодты қалпына келтіру сұранысы",
+          "PIN_RESET_SUCCESS": "PIN-кодты қалпына келтіру аяқталды",
+          "PIN_VERIFICATION_FAILED": "PIN қатесі"
+        }
+      },
+      "landing": {
+        "hero_title": "Адалдық",
+        "hero_subtitle": "Шағын және орта бизнес үшін заманауи адалдық жүйесі. Біз кездейсоқ келушілерді тұрақты клиенттерге айналдырамыз.",
+        "start_free": "Бастау тегін",
+        "roadmap_btn": "Даму жоспарлары",
+        "roadmap": {
+          "title": "Жобаның жол картасы",
+          "subtitle": "Біз әлі тұрмаймыз. Міне, жақын болашақта адалдықтың дүкенінде.",
+          "back": "Сипаттама",
+          "contact_support": "Кез-келген идеялар немесе ұсыныстар? Бізге қолдау көрсетуде жазыңыз!",
+          "status": {
+            "done": "Даяр",
+            "in_progress": "Орындалуда",
+            "planned": "Жоспарларда"
+          },
+          "steps": {
+            "mvp_label": "Платформаны іске қосу (MVP)",
+            "mvp_desc": "Негізгі функционалдылығы: серіктестерді тіркеу, ұпайлар, QR операциялары, есептейтін / есептен шығару, клиенттер мен кассирлерге арналған мобильді қосымша.",
+            "analytics_label": "Аналитика және есептер",
+            "analytics_desc": "Табыс, орташа есепшот және клиенттердің қызметі туралы толық статистика. Серіктес бақылау тақтасы.",
+            "push_label": "Хабарландырулар",
+            "push_desc": "Өтініш арқылы тұтынушыларыңызға маркетингтік хабарлама (жарнамалар, құттықтаулар) жіберу мүмкіндігі.",
+            "ban_label": "Банс жүйесі және модерация",
+            "ban_desc": "Бизнесті қорғау құралдары: Жоспарланған клиенттерді бұғаттау, кассирлер мен арбитраждың сұраныс жүйесі.",
+            "referral_label": "Анықтама бағдарламасы (B2C)",
+            "referral_desc": "«Досыңызды шақыру» механигі: клиенттер достарын құрылуыңызға әкелуге бонустар алады.",
+            "b2b_label": "B2B серіктестіктерін кеңейту",
+            "b2b_desc": "Платформалық менеджердің жеке шоты. Тартылған кәсіпорындар бойынша ашық статистика және 50% комиссияны есептеу."
+          }
+        },
+        "features": {
+          "flexible_title": "Икемді адалдық",
+          "flexible_desc": "Стратегия конструкторы: Кэшбэк, мөртаңба карталары («6-шы кофе») немесе гибридтік жүйе. Бөлшек, Horeca және қызметтерге бейімделген.",
+          "crm_title": "CRM және сегментация",
+          "crm_desc": "Клиенттің базасын пастмассалық карталарсыз цифрландыру. «Тұрақты» және «жоғалған» клиенттерді қайтару үшін автоматты түрде анықтау.",
+          "geo_title": "Гео маркетингі",
+          "geo_desc": "Сіздің филиалдарыңыз қаланың интерактивті картасындағы. Клиенттер, олар жақын жерде қызмет іздегенде көреді. Өтініштен тегін трафик.",
+          "security_title": "Бақылау және қауіпсіздік",
+          "security_desc": "Трансшалистік транзакция тарихы. Алаяқтықпен қызметкерлермен қорғау. Қол жеткізу құқығын саралау (иесі, менеджері, кассир).",
+          "network_title": "Филиалдар желісі",
+          "network_desc": "Барлық ұпайлар үшін бірыңғай экожүйе. Клиент бір кофеханада ұпай жинайды және оларды басқасына жұмсайды (сіздің сұранысыңыз бойынша).",
+          "partner_title": "50/50 серіктестік",
+          "partner_desc": "Платформаның менеджері болыңыз: басқа кәсіпорындарды қосыңыз және олардың абоненттік төлемінің 50% алады."
+        },
+        "cta": {
+          "title": "Сіздің бизнесіңізді масштабтауға дайынсыз ба?",
+          "subtitle": "Бүгінгі таңда адалдықтың экожүйесіне қосылыңыз.",
+          "quick_start": "15 минут ішінде жылдам бастаңыз",
+          "no_hardware": "Күрделі жабдық жоқ",
+          "trial": "14 күндік сынақ мерзімі"
+        }
       }
     }
   },
@@ -1018,6 +1316,10 @@ export const autoLanguages = {
         "confirm": "Tasdiqlamoq",
         "create": "Yaratmoq",
         "add": "Qo'shmoq",
+        "close": "Yaqin",
+        "all": "Hamma",
+        "reset": "Qayta o'rnatmoq",
+        "details": "Batafsil ma'lumot",
         "status": "Holat",
         "actions": "Harakatlar",
         "active": "Faol",
@@ -1070,7 +1372,9 @@ export const autoLanguages = {
         "LOYALTY_SETTING_NOT_FOUND": "Sadoqat sozlamalari topilmadi",
         "CARD_NOT_FOUND": "Sodiqlik kartasi topilmadi",
         "EMAIL_NOT_SET": "PIN-kodni tiklash uchun profilingizga elektron pochta xabarini qo'shing",
-        "INVALID_RESET_TOKEN": "PIN-kodni tiklash uchun havola noto'g'ri yoki tugagan"
+        "INVALID_RESET_TOKEN": "PIN-kodni tiklash uchun havola noto'g'ri yoki tugagan",
+        "TOO_MANY_REQUESTS": "Juda ko'p so'rovlar. Keyinroq qayta urinib ko'ring.",
+        "OTP_ATTEMPTS_EXCEEDED": "Urinish chegarasidan oshib ketdi. Bir soat ichida yana urinib ko'ring."
       },
       "auth": {
         "title": "Boshqarish paneliga kirish",
@@ -1080,6 +1384,7 @@ export const autoLanguages = {
         "login_btn": "Tizimga kirish",
         "change_number": "O'zgarish raqami",
         "code_sent": "Kod yuborilgan (Server jurnallari)",
+        "resend_code": "Qayta ko'rib chiqmoq",
         "success": "Muvaffaqiyatli kirish!"
       },
       "menu": {
@@ -1247,6 +1552,18 @@ export const autoLanguages = {
           "RESTAURANT": "Restoran",
           "RETAIL": "Do'kon",
           "SERVICE": "Xizmatlar",
+          "TIRE_SERVICE": "Davolash",
+          "AUTO_SERVICE": "Yuz",
+          "FLOWERS": "Gullar",
+          "GIFTS": "Hozirgi",
+          "CAKES": "Kek",
+          "BARBERSHOP": "Salon",
+          "CLOTHING": "Mato",
+          "TOYS": "O'yinchoqlar",
+          "CAR_RENTAL": "Avtomobil ijarasi",
+          "SCOOTER_RENTAL": "Skuter ijarasi",
+          "AUTO_PARTS": "Avtomobil ehtiyot qismlari",
+          "BANK": "Bank",
           "OTHER": "Boshqa"
         },
         "strategies": {
@@ -1415,6 +1732,11 @@ export const autoLanguages = {
         "status_active": "Faol",
         "status_inactive": "Faol emas",
         "address_label": "Manzil (qo'lda kiriting)",
+        "contact_phone_label": "Telefon raqami raqami",
+        "contact_link_label": "Aloqa aloqasi",
+        "contact_link_hint": "Masalan: https://t.me/brand yoki https: //wa.me/996 ...",
+        "additional_info_label": "Qo'shimcha ma'lumot",
+        "additional_info_hint": "20 tagacha belgi - kartadagi mijozlar tomonidan ko'riladi",
         "max_burn_label": "Maks. % ballar bilan to'lovning%",
         "max_burn_hint": "Chekning qancha foizi bonuslar bilan qoplanishi mumkin (0-100)",
         "map_location": "Xaritada joylashgan joy",
@@ -1440,6 +1762,9 @@ export const autoLanguages = {
         "schedule_title": "Ochish soatlari",
         "schedule_hint": "Ish kunlarini tanlang va ish vaqtini tanlang. Qolgan kunlar dam olish kuniga aylanadi.",
         "schedule_timezone": "Vaqt zonasi: __l_var_0__",
+        "schedule_edit_button": "Jadvalni o'rnating",
+        "schedule_edit_button_existing": "Jadvalni o'zgartirish",
+        "schedule_dialog_title": "Jadvalni o'rnatish",
         "schedule_days": {
           "mon": "Dushanba",
           "tue": "Seshanba",
@@ -1478,6 +1803,7 @@ export const autoLanguages = {
         "pause_warning": "Nuqta pauza rejimida. Mijozlar \"vaqtincha yopilgan\" holatini ko'rishadi.",
         "overview_pause": "Mavjudlik",
         "status_paused": "Pauza",
+        "status_no_hours": "Naqratli to'plam yo'q",
         "map_preview_title": "Xaritada oldindan ko'rish",
         "map_preview_hint": "Xarita mijoz ekraniga mos keladi va qidiruv radiusini ko'rsatadi.",
         "map_preview_cta": "Ochiq mijoz kartasi",
@@ -1487,15 +1813,49 @@ export const autoLanguages = {
         "map_key_missing": "Yandex xaritalari API tugmachasi yo'q",
         "filter_type": "Biznes turi",
         "filter_radius": "Radius: __l_var_0__ m",
+        "filter_radius_short": "Radius",
+        "radius_disabled_label": "Radiusi mavjud emas",
         "filter_open_now": "Faqat ochiq",
         "refresh_points": "Yangilanish ballari",
         "nearby_points": "Eng yaqin nuqta",
+        "map_locate_me": "Mening joylashuvim",
+        "map_locate_loading": "Keling, ...",
+        "map_locate_error": "Joylashuvni aniqlab bo'lmadi",
+        "map_locate_unsupported": "Brauzer geolyatsiyani qo'llab-quvvatlamaydi",
+        "map_anchor_default": "Qidiruv markazi",
+        "map_anchor_point": "Tanlangan nuqta",
+        "map_anchor_user": "Mening joylashuvim",
+        "filters_title": "Filtrlar",
+        "filters_apply": "Qo'llamoq",
+        "filter_my_points": "Faqat mening filiallarimni ko'rsatish",
+        "filter_my_points_hint": "Sizning biznesingizning savdo do'konlarini ko'rsatadi",
+        "filter_my_points_disabled": "Filiallaringiz ro'yxatiga kirish huquqi yo'q",
+        "filter_my_points_loading": "Filiallaringizni yuklash ...",
+        "radius_disabled_hint": "Radiusi faqat sizning joylashuvingizni qidirish uchun o'zgartirilishi mumkin",
         "status_open_now": "Ochiq",
         "status_closed_now": "Yopiq",
         "address_none": "Manzil ko'rsatilmagan",
         "distance_label": "__Ll_var_0__ m",
+        "no_points_found": "Hech qanday fikr topilmadi",
+        "no_own_points": "Ushbu radiusda filiallar yo'q",
+        "search_points_placeholder": "Chiqish nomi bilan qidirish",
+        "rating_label": "Reyting: __l_var_0__ (__l_VAR_1__ Sharhlar)",
+        "unit_m": "shodlik",
+        "unit_km": "km",
         "edit_forbidden": "Faqat biznes egasi fikrni o'zgartirishi yoki o'chirishi mumkin.",
-        "readonly_hint": "Siz menejer sifatida ishlaysiz: sozlamalarni o'zgartirish uchun harakatlar va yong'in xodimlari mavjud emas."
+        "readonly_hint": "Siz menejer sifatida ishlaysiz: sozlamalarni o'zgartirish uchun harakatlar va yong'in xodimlari mavjud emas.",
+        "contacts_title": "Kontaktlar",
+        "info_title": "Ma'lumot",
+        "coming_soon": "Tez orada",
+        "coming_photos": "Surat",
+        "coming_menu": "Menyu va narxlar",
+        "coming_promos": "Zaxira",
+        "coming_reviews": "Sharhlar"
+      },
+      "social": {
+        "telegram": "Telegramma",
+        "whatsapp": "g'altak",
+        "instagram": "Instagram"
       },
       "admin": {
         "title": "Hamkorlarni boshqarish",
@@ -1509,6 +1869,93 @@ export const autoLanguages = {
         "trading_points": "Chakana savdo do'konlari",
         "no_points": "Nuqtalar yo'q",
         "id": "Id"
+      },
+      "system_events": {
+        "title": "Tizim tadbirlari",
+        "filters": {
+          "type": "Voqea turi",
+          "phone": "Telefon",
+          "user_id": "Foydalanuvchi IDsi",
+          "from": "Dan",
+          "to": "Ga",
+          "reset": "Qayta o'rnatmoq",
+          "refresh": "Yangilamoq"
+        },
+        "table": {
+          "date": "Sana",
+          "type": "Tur",
+          "user": "Foydalanuvchi",
+          "details": "Tafsilotlar",
+          "empty": "Hech qanday voqea topilmadi"
+        },
+        "types": {
+          "LOGIN": "Tizimga kirish",
+          "REGISTER": "Ro'yxatga olish",
+          "SMS_REQUEST": "SMS so'rov",
+          "ACCRUAL": "Ballarni hisoblash",
+          "REDEMPTION": "O'chirish punktlarini yozing",
+          "TIER_CHANGE": "Darajasi o'zgarishi",
+          "VISIT": "Ziyorat qilmoq",
+          "ERROR": "Xato",
+          "INFO": "Ma'lumot",
+          "OTP_VERIFICATION_FAILED": "OTP xatosi",
+          "PIN_CHANGE_SUCCESS": "Chinni o'zgartirish",
+          "PIN_RESET_REQUEST": "PIN-kodni tiklash uchun so'rov",
+          "PIN_RESET_SUCCESS": "PIN-kodni tiklash tugallandi",
+          "PIN_VERIFICATION_FAILED": "PIN-kod"
+        }
+      },
+      "landing": {
+        "hero_title": "Sodiqlik",
+        "hero_subtitle": "Kichik va o'rta biznes uchun zamonaviy sodiqlik tizimi. Biz tasodifiy tashrif buyuruvchilarni doimiy mijozlarga aylantiramiz.",
+        "start_free": "Bepul boshlang",
+        "roadmap_btn": "Rivojlanish rejalari",
+        "roadmap": {
+          "title": "Loyihaning yo'l xaritasi",
+          "subtitle": "Biz hali ham turmaymiz. Yaqin kelajakda sodiqlik darajasida nimalar tayyorlanadi.",
+          "back": "Ta'rifga qaytish",
+          "contact_support": "Har qanday fikr yoki takliflar? Bizga qo'llab-quvvatlang!",
+          "status": {
+            "done": "Tayyor",
+            "in_progress": "Jarayonda",
+            "planned": "Rejalarda"
+          },
+          "steps": {
+            "mvp_label": "Platformani ishga tushirish (MVP)",
+            "mvp_desc": "Asosiy funktsionallik: Hamkorlar, sheriklar, QR-ni tuzish, ballar, QR bitimlarini yaratish, hisoblash / yozish punktlari, mijozlar va kassirlar uchun mobil ilova.",
+            "analytics_label": "Tahlil va hisobotlar",
+            "analytics_desc": "Daromad bo'yicha batafsil statistika, o'rtacha qonun va mijozlar faoliyati. Hamkor boshqaruv paneli.",
+            "push_label": "Push-bildirishnomalar",
+            "push_desc": "Arizalar orqali mijozlaringizga marketing jo'natmalarini (aktsiyalar, tabriklar, tabriklar) yuborish qobiliyati.",
+            "ban_label": "Bal tizimi va moderatsiya",
+            "ban_desc": "Biznesni himoya qilish vositalari: vijdonsiz mijozlarni, kassirlar va hakamlik arbitrajlaridan so'rovlar tizimini blokirovka qilish.",
+            "referral_label": "Yo'naltirish dasturi (B2C)",
+            "referral_desc": "\"Do'stingizni taklif qiling\" mexanikasi: mijozlar do'stingizni yaratish uchun bonuslarga ega bo'ladilar.",
+            "b2b_label": "B2B hamkorlikni kengaytirish",
+            "b2b_desc": "Platforma menejerining shaxsiy hisobi. Jalb qilingan korxonalar bo'yicha shaffof statistika va 50% komissiyaviy statistika."
+          }
+        },
+        "features": {
+          "flexible_title": "Egiluvchan sodiqlik",
+          "flexible_desc": "Strategiya konstruktor: Cashback, shtamp kartalari (\"Sovg'a sifatida 6-chi qahva\" yoki gibrid tizimi. Chakana savdo, Xoreca va xizmatlarga moslashtirilgan.",
+          "crm_title": "CRM va segmentatsiya",
+          "crm_desc": "Mijozlar bazasini plastik kartalarsiz raqamlashtirish. Qaytish uchun \"muntazam\" va \"Yo'qotilgan\" mijozlarni avtomatik ravishda aniqlash.",
+          "geo_title": "GEO marketingi",
+          "geo_desc": "Shaharning interfaol xaritasida sizning filiallaringiz. Mijozlar yaqin atrofdagi xizmatlarni qidirayotganda sizni ko'rishadi. Arizadan bepul trafik.",
+          "security_title": "Nazorat va xavfsizlik",
+          "security_desc": "Tranzaktsiyalar tarixi. Xodimlar tomonidan firibgarlikdan himoya qilish. Kirish huquqlarining farqlanishi (egasi, menejeri, kassiri).",
+          "network_title": "Filial tarmog'i",
+          "network_desc": "Barcha fikrlaringiz uchun bitta ekotizim. Mijoz bitta qahvaxonada ballarni to'playdi va ularni boshqasiga sarflaydi (sizning so'rovingiz bo'yicha).",
+          "partner_title": "50/50 hamkorlik",
+          "partner_desc": "Platforma menejeri bo'ling: boshqa korxonalarni ulang va ularning abonent to'lovining 50 foizini oling."
+        },
+        "cta": {
+          "title": "O'z biznesingizni kengaytirishga tayyormisiz?",
+          "subtitle": "Bugungi kunda sodiqlik ekotizimiga qo'shiling.",
+          "quick_start": "15 daqiqada tez boshlang",
+          "no_hardware": "Murakkab uskunalar yo'q",
+          "trial": "14 kun sinov muddati"
+        }
       }
     }
   },
@@ -1522,6 +1969,10 @@ export const autoLanguages = {
         "confirm": "Пацвердзіць",
         "create": "Ствараць",
         "add": "Дадаць",
+        "close": "Блізка",
+        "all": "Усе",
+        "reset": "Скінуць",
+        "details": "Падрабязней",
         "status": "Статус",
         "actions": "Дзеянні",
         "active": "Актыўны",
@@ -1574,7 +2025,9 @@ export const autoLanguages = {
         "LOYALTY_SETTING_NOT_FOUND": "Налады лаяльнасці не знойдзены",
         "CARD_NOT_FOUND": "Картка лаяльнасці не знойдзена",
         "EMAIL_NOT_SET": "Дадайце адрас электроннай пошты ў свой профіль, каб скінуць PIN-код",
-        "INVALID_RESET_TOKEN": "Спасылка для скіду PIN-кода несапраўдная або пратэрмінаваная"
+        "INVALID_RESET_TOKEN": "Спасылка для скіду PIN-кода несапраўдная або пратэрмінаваная",
+        "TOO_MANY_REQUESTS": "Занадта шмат запытаў. Паўтарыце спробу пазней.",
+        "OTP_ATTEMPTS_EXCEEDED": "Ліміт спроб перавышаны. Паўтарыце спробу праз гадзіну."
       },
       "auth": {
         "title": "Увайдзіце ў панэль кіравання",
@@ -1584,6 +2037,7 @@ export const autoLanguages = {
         "login_btn": "Увайсці",
         "change_number": "Змяніць нумар",
         "code_sent": "Код адпраўлены (Глядзіце журналы сервера)",
+        "resend_code": "Адправіць паўторна",
         "success": "Паспяховы ўваход!"
       },
       "menu": {
@@ -1751,6 +2205,18 @@ export const autoLanguages = {
           "RESTAURANT": "Рэстаран",
           "RETAIL": "Крама",
           "SERVICE": "Паслугі",
+          "TIRE_SERVICE": "Зацвярдзенне",
+          "AUTO_SERVICE": "СТО",
+          "FLOWERS": "Кветкі",
+          "GIFTS": "прысутнічае",
+          "CAKES": "Тарты",
+          "BARBERSHOP": "Салон",
+          "CLOTHING": "Тканіна",
+          "TOYS": "Цацкі",
+          "CAR_RENTAL": "Пракат аўтамабіляў",
+          "SCOOTER_RENTAL": "Пракат скутэраў",
+          "AUTO_PARTS": "Аўтазапчасткі",
+          "BANK": "Банк",
           "OTHER": "Іншае"
         },
         "strategies": {
@@ -1919,6 +2385,11 @@ export const autoLanguages = {
         "status_active": "Актыўны",
         "status_inactive": "Не актыўны",
         "address_label": "Адрас (увядзіце ўручную)",
+        "contact_phone_label": "Кантактны тэлефон",
+        "contact_link_label": "Спасылка на кантакт",
+        "contact_link_hint": "Напрыклад: https://t.me/brand або https://wa.me/996...",
+        "additional_info_label": "Дадатковая інфармацыя",
+        "additional_info_hint": "Да 20 знакаў - будуць бачныя кліентам у картцы",
         "max_burn_label": "Макс. % аплаты баламі",
         "max_burn_hint": "Колькі працэнтаў чэка можна пакрыць бонусамі (0-100)",
         "map_location": "Размяшчэнне на карце",
@@ -1944,6 +2415,9 @@ export const autoLanguages = {
         "schedule_title": "Гадзіны працы",
         "schedule_hint": "Выберыце працоўныя дні і ўсталюйце працоўны час. Астатнія дні становяцца выхаднымі.",
         "schedule_timezone": "Часавы пояс: {{tz}}",
+        "schedule_edit_button": "Усталюйце расклад",
+        "schedule_edit_button_existing": "Змяніць расклад",
+        "schedule_dialog_title": "Наладжванне раскладу",
         "schedule_days": {
           "mon": "панядзелак",
           "tue": "аўторак",
@@ -1982,6 +2456,7 @@ export const autoLanguages = {
         "pause_warning": "Справа ў рэжыме паўзы. Кліенты будуць бачыць статус «Часова закрыта».",
         "overview_pause": "Даступнасць",
         "status_paused": "Паўза",
+        "status_no_hours": "Расклад не ўстаноўлены",
         "map_preview_title": "Папярэдні прагляд на карце",
         "map_preview_hint": "Карта адпавядае экрану кліента і паказвае радыус пошуку.",
         "map_preview_cta": "Адкрыць картку кліента",
@@ -1991,15 +2466,49 @@ export const autoLanguages = {
         "map_key_missing": "Адсутнічае ключ API Яндэкс Карт",
         "filter_type": "Тып бізнесу",
         "filter_radius": "Радыус: {{value}} м",
+        "filter_radius_short": "Радыус",
+        "radius_disabled_label": "Радыус недаступны",
         "filter_open_now": "Толькі цяпер адкрыты",
         "refresh_points": "Абнаўленне балаў",
         "nearby_points": "Бліжэйшыя пункты",
+        "map_locate_me": "Маё месцазнаходжанне",
+        "map_locate_loading": "Давайце вызначым...",
+        "map_locate_error": "Немагчыма вызначыць месцазнаходжанне",
+        "map_locate_unsupported": "Браўзэр не падтрымлівае геолокацию",
+        "map_anchor_default": "Цэнтр пошуку",
+        "map_anchor_point": "Абраны пункт",
+        "map_anchor_user": "Маё месцазнаходжанне",
+        "filters_title": "Фільтры",
+        "filters_apply": "Ужыць",
+        "filter_my_points": "Паказаць толькі мае галіны",
+        "filter_my_points_hint": "Паказвае гандлёвыя кропкі вашага бізнесу",
+        "filter_my_points_disabled": "Няма доступу да спісу вашых філіялаў",
+        "filter_my_points_loading": "Ідзе загрузка вашых філіялаў...",
+        "radius_disabled_hint": "Радыус можна змяніць толькі для пошуку вакол вашага месцазнаходжання",
         "status_open_now": "Адкрыты",
         "status_closed_now": "Закрыты",
         "address_none": "Адрас не ўказаны",
         "distance_label": "{{value}} м",
+        "no_points_found": "Ачкі не знойдзены",
+        "no_own_points": "У гэтым радыусе няма разгалінаванняў",
+        "search_points_placeholder": "Пошук па назве гандлёвай кропкі",
+        "rating_label": "Рэйтынг: {{value}} ({{count}} водгукаў)",
+        "unit_m": "м",
+        "unit_km": "км",
         "edit_forbidden": "Толькі ўладальнік бізнесу можа змяніць або выдаліць пункт.",
-        "readonly_hint": "Вы працуеце кіраўніком: дзеянні па змене налад і звальненні супрацоўнікаў недаступныя."
+        "readonly_hint": "Вы працуеце кіраўніком: дзеянні па змене налад і звальненні супрацоўнікаў недаступныя.",
+        "contacts_title": "Кантакты",
+        "info_title": "інфармацыя",
+        "coming_soon": "Хутка",
+        "coming_photos": "Фота",
+        "coming_menu": "Меню і цэны",
+        "coming_promos": "запас",
+        "coming_reviews": "Водгукі"
+      },
+      "social": {
+        "telegram": "Тэлеграма",
+        "whatsapp": "WhatsApp",
+        "instagram": "Instagram"
       },
       "admin": {
         "title": "Кіраванне партнёрамі",
@@ -2013,6 +2522,93 @@ export const autoLanguages = {
         "trading_points": "Гандлёвыя кропкі",
         "no_points": "Без кропак",
         "id": "ID"
+      },
+      "system_events": {
+        "title": "Сістэмныя падзеі",
+        "filters": {
+          "type": "Тып падзеі",
+          "phone": "тэлефон",
+          "user_id": "ID карыстальніка",
+          "from": "Ад",
+          "to": "каб",
+          "reset": "Скінуць",
+          "refresh": "Абнаўленне"
+        },
+        "table": {
+          "date": "Дата",
+          "type": "Тып",
+          "user": "Карыстальнік",
+          "details": "Дэталі",
+          "empty": "Падзей не знойдзена"
+        },
+        "types": {
+          "LOGIN": "Увайсці",
+          "REGISTER": "Рэгістрацыя",
+          "SMS_REQUEST": "Запыт SMS",
+          "ACCRUAL": "Налічэнне балаў",
+          "REDEMPTION": "Спісаць балы",
+          "TIER_CHANGE": "Змена ўзроўню",
+          "VISIT": "Наведайце",
+          "ERROR": "Памылка",
+          "INFO": "Інфармацыя",
+          "OTP_VERIFICATION_FAILED": "Памылка OTP",
+          "PIN_CHANGE_SUCCESS": "Змяніць PIN-код",
+          "PIN_RESET_REQUEST": "Запыт на скід PIN-кода",
+          "PIN_RESET_SUCCESS": "Скід PIN-кода завершаны",
+          "PIN_VERIFICATION_FAILED": "Памылка PIN-кода"
+        }
+      },
+      "landing": {
+        "hero_title": "LoyaltyLoop",
+        "hero_subtitle": "Сучасная сістэма лаяльнасці для малога і сярэдняга бізнесу. Мы ператвараем выпадковых наведвальнікаў у пастаянных кліентаў.",
+        "start_free": "Пачаць бясплатна",
+        "roadmap_btn": "Планы развіцця",
+        "roadmap": {
+          "title": "Дарожная карта праекта 🚀",
+          "subtitle": "Мы не стаім на месцы. Вось што чакае LoyaltyLoop у бліжэйшай будучыні.",
+          "back": "Вярнуцца да апісання",
+          "contact_support": "Ёсць ідэі ці прапановы? Напішыце нам у падтрымку!",
+          "status": {
+            "done": "Гатовы",
+            "in_progress": "У рабоце",
+            "planned": "У планах"
+          },
+          "steps": {
+            "mvp_label": "Запуск платформы (MVP)",
+            "mvp_desc": "Базавы функцыянал: рэгістрацыя партнёраў, стварэнне балаў, QR-транзакцыі, налічэнне/спісанне балаў, мабільнае прыкладанне для кліентаў і касіраў.",
+            "analytics_label": "Аналітыка і справаздачы",
+            "analytics_desc": "Падрабязная статыстыка даходаў, сярэдняга рахунку і актыўнасці кліентаў. Прыборная панэль партнёра.",
+            "push_label": "Push-апавяшчэнні",
+            "push_desc": "Магчымасць адпраўляць маркетынгавыя рассылкі (рэкламныя акцыі, віншаванні) вашым кліентам праз прыкладанне.",
+            "ban_label": "Сістэма забароны і мадэрацыя",
+            "ban_desc": "Інструменты абароны бізнесу: блакаванне нядобрасумленных кліентаў, сістэма запытаў ад касіраў і арбітраж.",
+            "referral_label": "Рэферальная праграма (B2C)",
+            "referral_desc": "Механіка «Запрасі сябра»: кліенты атрымліваюць бонусы за прывядзенне сяброў у вашу ўстанову.",
+            "b2b_label": "Пашырэнне B2B партнёрства",
+            "b2b_desc": "Асабісты кабінет Менеджара платформы. Празрыстая статыстыка па прыцягнутым бізнэсам і налічэнне 50% камісіі."
+          }
+        },
+        "features": {
+          "flexible_title": "Гнуткая лаяльнасць",
+          "flexible_desc": "Канструктар стратэгій: Cashback, Stamp cards («6-я кава ў падарунак») або Hybrid system. Адаптаваны для рознічнага гандлю, HoReCa і паслуг.",
+          "crm_title": "CRM і сегментацыя",
+          "crm_desc": "Аблічбоўка кліенцкай базы без пластыкавых карт. Аўтаматычнае вызначэнне «Пастаянных» і «Страчаных» кліентаў для вяртання.",
+          "geo_title": "Геамаркетынг",
+          "geo_desc": "Вашы філіялы на інтэрактыўнай карце горада. Кліенты бачаць вас, калі шукаюць паслугі паблізу. Бясплатны трафік з прыкладання.",
+          "security_title": "Кантроль і бяспека",
+          "security_desc": "Празрыстая гісторыя транзакцый. Абарона ад махлярства з боку персаналу. Размежаванне правоў доступу (Уладальнік, Менеджэр, Касір).",
+          "network_title": "Філіяльная сетка",
+          "network_desc": "Адзіная экасістэма для ўсіх вашых балаў. Кліент назапашвае балы ў адной кавярні і траціць іх у іншай (па вашым жаданні).",
+          "partner_title": "Партнёрства 50/50",
+          "partner_desc": "Станьце мэнэджэрам платформы: падключайце іншыя прадпрыемствы і атрымлівайце 50% ад іх абаненцкай платы."
+        },
+        "cta": {
+          "title": "Гатовы павялічыць свой бізнес?",
+          "subtitle": "Далучайцеся да экасістэмы LoyaltyLoop сёння.",
+          "quick_start": "Хуткі старт за 15 хвілін",
+          "no_hardware": "Няма складанага абсталявання",
+          "trial": "14 дзён выпрабавальнага перыяду"
+        }
       }
     }
   }

@@ -179,7 +179,7 @@ class ProfileScreen : Screen {
                             SettingsItem(
                                 icon = Icons.Default.Info,
                                 title = stringResource(Res.string.profile_about_title),
-                                subtitle = stringResource(Res.string.profile_about_version, state.appVersion),
+                                subtitle = "${stringResource(Res.string.profile_about_version)} ${state.appVersion}",
                                 onClick = { showAboutDialog = true }
                             )
                             Spacer(modifier = Modifier.height(16.dp))
@@ -187,9 +187,23 @@ class ProfileScreen : Screen {
 
                         item {
                             LogoutButton(onClick = { viewModel.onAction(ProfileScreenModel.Action.OnLogoutClicked) })
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                                TextButton(
+                                    onClick = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountClicked) }
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.delete_account_btn),
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+                            }
+
                             Spacer(modifier = Modifier.height(16.dp))
                             Text(
-                                text = "v1.0.0",
+                                text = "v${state.appVersion}",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = MaterialTheme.colorScheme.outline,
                                 modifier = Modifier.fillMaxWidth().wrapContentWidth(Alignment.CenterHorizontally)
@@ -206,6 +220,20 @@ class ProfileScreen : Screen {
                     contentColor = MaterialTheme.colorScheme.primary
                 )
             }
+        }
+
+        if (state.showDeleteAccountDialog) {
+            DeleteAccountDialog(
+                step = state.deleteAccountStep,
+                reason = state.deleteAccountReason,
+                code = state.deleteAccountCode,
+                isLoading = state.isDeletingAccount,
+                onReasonChanged = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountReasonChanged(it)) },
+                onCodeChanged = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountCodeChanged(it)) },
+                onNext = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountNextClicked) },
+                onConfirm = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountConfirmClicked) },
+                onDismiss = { viewModel.onAction(ProfileScreenModel.Action.OnDeleteAccountCancelClicked) }
+            )
         }
 
         if (showLanguageDialog) {
@@ -292,13 +320,74 @@ private fun AboutDialog(
         title = { Text(stringResource(Res.string.profile_about_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(text = stringResource(Res.string.profile_about_version, appVersion))
+                Text(text = "${stringResource(Res.string.profile_about_version)} $appVersion")
                 Text(text = stringResource(Res.string.profile_about_description))
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(Res.string.profile_language_dialog_cancel))
+            }
+        }
+    )
+}
+
+@Composable
+private fun DeleteAccountDialog(
+    step: Int,
+    reason: String,
+    code: String,
+    isLoading: Boolean,
+    onReasonChanged: (String) -> Unit,
+    onCodeChanged: (String) -> Unit,
+    onNext: () -> Unit,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.delete_account_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                if (step == 0) {
+                    Text(stringResource(Res.string.delete_account_reason_description))
+                    OutlinedTextField(
+                        value = reason,
+                        onValueChange = onReasonChanged,
+                        label = { Text(stringResource(Res.string.delete_account_reason_hint)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 2,
+                        maxLines = 4
+                    )
+                } else {
+                    Text(stringResource(Res.string.delete_account_enter_code))
+                    OutlinedTextField(
+                        value = code,
+                        onValueChange = onCodeChanged,
+                        label = { Text(stringResource(Res.string.auth_enter_code)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            if (isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+            } else {
+                Button(
+                    onClick = if (step == 0) onNext else onConfirm,
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text(stringResource(if (step == 0) Res.string.auth_btn_next else Res.string.delete_account_confirm_btn))
+                }
+            }
+        },
+        dismissButton = {
+            if (!isLoading) {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(Res.string.common_cancel))
+                }
             }
         }
     )

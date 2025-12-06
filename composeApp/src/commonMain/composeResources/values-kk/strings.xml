@@ -105,7 +105,7 @@
     <string name="onboarding_why_info">Сіздің атыңыз кассирде сәлемдесу және бонустар беру үшін көрсетіледі.</string>
     <string name="profile_about_description">Allytroop сіздің адалдық бағдарламаларыңыз бен серіктестеріңізді бір бағдарламадан басқаруға көмектеседі.</string>
     <string name="profile_about_title">Өтініш туралы</string>
-    <string name="profile_about_version">Нұсқа: __ll_var_0__</string>
+    <string name="profile_about_version">Нұсқа:</string>
     <string name="profile_btn_create_business">Адалдыққа ұшыру</string>
     <string name="profile_btn_join_team">Шақыру кодын енгізіңіз</string>
     <string name="profile_btn_logout">Тіркелгіңізден шығыңыз</string>

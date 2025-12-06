@@ -105,7 +105,7 @@
     <string name="onboarding_why_info">Сиздин атыңыз кассирге саламдашуу жана бонустарды сыйлоо үчүн көрсөтүлөт.</string>
     <string name="profile_about_description">Берилгендик менен берилгендик программаларыңызды жана аффилирлериңизди бир колдонмону башкарууга жардам берет.</string>
     <string name="profile_about_title">Колдонмо жөнүндө</string>
-    <string name="profile_about_version">Версия: %1$s</string>
+    <string name="profile_about_version">Версия:</string>
     <string name="profile_btn_create_business">Иш-аракет</string>
     <string name="profile_btn_join_team">Чакыруу кодун киргизиңиз</string>
     <string name="profile_btn_logout">Каттоо эсебиңизден чыгуу</string>

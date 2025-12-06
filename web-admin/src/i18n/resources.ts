@@ -617,6 +617,58 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
             PIN_RESET_SUCCESS: "Сброс PIN выполнен",
             PIN_VERIFICATION_FAILED: "Ошибка PIN"
         }
+      },
+      landing: {
+        hero_title: "LoyaltyLoop",
+        hero_subtitle: "Современная система лояльности для малого и среднего бизнеса. Превращаем случайных посетителей в постоянных клиентов.",
+        start_free: "Начать бесплатно",
+        roadmap_btn: "Планы развития",
+        roadmap: {
+          title: "Roadmap проекта 🚀",
+          subtitle: "Мы не стоим на месте. Вот что ждет LoyaltyLoop в ближайшем будущем.",
+          back: "Назад к описанию",
+          contact_support: "Есть идеи или предложения? Напишите нам в поддержку!",
+          status: {
+            done: "Готово",
+            in_progress: "В работе",
+            planned: "В планах"
+          },
+          steps: {
+            mvp_label: "Запуск Платформы (MVP)",
+            mvp_desc: "Базовый функционал: регистрация партнеров, создание точек, QR-транзакции, начисление/списание баллов, мобильное приложение для клиентов и кассиров.",
+            analytics_label: "Аналитика и Отчеты",
+            analytics_desc: "Детальная статистика по выручке, среднему чеку и активности клиентов. Дашборд партнера.",
+            push_label: "Push-уведомления",
+            push_desc: "Возможность отправлять маркетинговые рассылки (акции, поздравления) своим клиентам через приложение.",
+            ban_label: "Бан-система и Модерация",
+            ban_desc: "Инструменты защиты бизнеса: блокировка недобросовестных клиентов, система заявок от кассиров и арбитраж.",
+            referral_label: "Реферальная программа (B2C)",
+            referral_desc: "Механика \"Пригласи друга\": клиенты получают бонусы за то, что приводят друзей в ваше заведение.",
+            b2b_label: "Расширение B2B Партнерства",
+            b2b_desc: "Личный кабинет Менеджера Платформы. Прозрачная статистика по привлеченным бизнесам и начисление 50% комиссии."
+          }
+        },
+        features: {
+          flexible_title: "Гибкая Лояльность",
+          flexible_desc: "Конструктор стратегий: Кэшбэк, Штамп-карты (\"6-й кофе в подарок\") или Гибридная система. Адаптируется под Ритейл, HoReCa и Услуги.",
+          crm_title: "CRM и Сегментация",
+          crm_desc: "Оцифровка базы клиентов без пластиковых карт. Автоматическое определение \"Постоянных\" и \"Потерянных\" клиентов для возврата.",
+          geo_title: "Гео-маркетинг",
+          geo_desc: "Ваши филиалы на интерактивной карте города. Клиенты видят вас, когда ищут услуги рядом. Бесплатный трафик из приложения.",
+          security_title: "Контроль и Безопасность",
+          security_desc: "Прозрачная история операций. Защита от фрода со стороны персонала. Разграничение прав доступа (Владелец, Менеджер, Кассир).",
+          network_title: "Филиальная Сеть",
+          network_desc: "Единая экосистема для всех ваших точек. Клиент копит баллы в одной кофейне, а тратит в другой (по вашему желанию).",
+          partner_title: "Партнерство 50/50",
+          partner_desc: "Станьте Менеджером Платформы: подключайте другие бизнесы и получайте 50% от их абонентской платы."
+        },
+        cta: {
+          title: "Готовы масштабировать бизнес?",
+          subtitle: "Присоединяйтесь к экосистеме LoyaltyLoop уже сегодня.",
+          quick_start: "Быстрый старт за 15 минут",
+          no_hardware: "Никакого сложного оборудования",
+          trial: "14 дней пробный период"
+        }
       }
     }
   },
@@ -1225,6 +1277,58 @@ export const resources: Record<string, { translation: Record<string, unknown> }>
             PIN_RESET_REQUEST: "PIN Reset Request",
             PIN_RESET_SUCCESS: "PIN Reset Success",
             PIN_VERIFICATION_FAILED: "PIN Verification Failed"
+        }
+      },
+      landing: {
+        hero_title: "LoyaltyLoop",
+        hero_subtitle: "Modern loyalty system for small and medium businesses. Turn casual visitors into loyal customers.",
+        start_free: "Start for free",
+        roadmap_btn: "Roadmap",
+        roadmap: {
+          title: "Project Roadmap 🚀",
+          subtitle: "We are constantly evolving. Here is what awaits LoyaltyLoop in the near future.",
+          back: "Back to description",
+          contact_support: "Have ideas or suggestions? Write to our support!",
+          status: {
+            done: "Done",
+            in_progress: "In Progress",
+            planned: "Planned"
+          },
+          steps: {
+            mvp_label: "Platform Launch (MVP)",
+            mvp_desc: "Basic functionality: partner registration, point creation, QR transactions, accruing/redeeming points, mobile app for clients and cashiers.",
+            analytics_label: "Analytics & Reports",
+            analytics_desc: "Detailed statistics on revenue, average check, and customer activity. Partner dashboard.",
+            push_label: "Push Notifications",
+            push_desc: "Ability to send marketing campaigns (promotions, greetings) to your customers via the app.",
+            ban_label: "Ban System & Moderation",
+            ban_desc: "Business protection tools: blocking unscrupulous customers, request system from cashiers, and arbitration.",
+            referral_label: "Referral Program (B2C)",
+            referral_desc: "\"Invite a friend\" mechanic: customers get bonuses for bringing friends to your establishment.",
+            b2b_label: "B2B Partnership Expansion",
+            b2b_desc: "Platform Manager Dashboard. Transparent statistics on attracted businesses and 50% commission accrual."
+          }
+        },
+        features: {
+          flexible_title: "Flexible Loyalty",
+          flexible_desc: "Strategy builder: Cashback, Stamp cards (\"6th coffee for free\") or Hybrid system. Adapts to Retail, HoReCa and Services.",
+          crm_title: "CRM & Segmentation",
+          crm_desc: "Digitize customer base without plastic cards. Automatic detection of \"Loyal\" and \"Lost\" customers for retention.",
+          geo_title: "Geo-marketing",
+          geo_desc: "Your branches on the interactive city map. Clients see you when searching for services nearby. Free traffic from the app.",
+          security_title: "Control & Security",
+          security_desc: "Transparent operation history. Protection against staff fraud. Access rights differentiation (Owner, Manager, Cashier).",
+          network_title: "Branch Network",
+          network_desc: "Unified ecosystem for all your points. Client earns points in one coffee shop and spends in another (if you wish).",
+          partner_title: "Partnership 50/50",
+          partner_desc: "Become a Platform Manager: connect other businesses and receive 50% of their subscription fee for life."
+        },
+        cta: {
+          title: "Ready to scale your business?",
+          subtitle: "Join the LoyaltyLoop ecosystem today.",
+          quick_start: "Quick start in 15 minutes",
+          no_hardware: "No complex hardware",
+          trial: "14 days trial period"
         }
       }
     }

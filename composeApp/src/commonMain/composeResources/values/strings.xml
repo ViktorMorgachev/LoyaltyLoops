@@ -48,6 +48,7 @@
     <string name="error_user_creation_failed">Ошибка создания пользователя</string>
     <string name="error_to_many_requests">Слишком много запросов. Попробуйте позже.</string>
     <string name="error_otp_attempts_exceeded">Превышен лимит попыток. Попробуйте через час.</string>
+    <string name="error_account_deleted">Этот номер телефона связан с удаленным аккаунтом. Пожалуйста, используйте другой номер.</string>
     
     <string name="error_business_already_exists">Бизнес уже существует</string>
     <string name="error_business_not_found">Бизнес не найден</string>
@@ -133,8 +134,8 @@
     <string name="language_uz">Oʻzbekcha</string>
     <string name="language_be">Bielaruskaja</string>
     <string name="profile_about_title">О приложении</string>
-    <string name="profile_about_version">Версия: %1$s</string>
-    <string name="profile_about_description">LoyaltyLoop помогает управлять программами лояльности и филиалами из одного приложения.</string>
+    <string name="profile_about_version">Версия:</string>
+    <string name="profile_about_description">LoyaltyLoop — это ваш единый кошелек для карт лояльности. Копите бонусы, получайте подарки и следите за своим статусом в любимых заведениях.</string>
 
     <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
     <string name="profile_desc_create_business">Для владельцев заведений</string>
@@ -357,5 +358,15 @@
     <string name="support_write_email">Написать на Email</string>
     <string name="support_write_telegram">Написать в Telegram</string>
     <string name="support_description">Если у вас возникли вопросы или предложения, вы можете связаться с нами любым удобным способом.</string>
+
+    <!-- Delete Account -->
+    <string name="delete_account_btn">Удалить аккаунт</string>
+    <string name="delete_account_title">Удаление аккаунта</string>
+    <string name="delete_account_reason_hint">Причина удаления</string>
+    <string name="delete_account_reason_description">Пожалуйста, укажите причину, чтобы мы могли стать лучше</string>
+    <string name="delete_account_confirm_btn">Удалить навсегда</string>
+    <string name="delete_account_code_sent">Код подтверждения отправлен</string>
+    <string name="delete_account_enter_code">На ваш номер отправлен код подтверждения.</string>
+    <string name="account_deleted_success">Аккаунт успешно удален</string>
 
 </resources>

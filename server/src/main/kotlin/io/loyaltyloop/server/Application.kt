@@ -55,13 +55,11 @@ import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
 import io.loyaltyloop.server.service.sms.ConsoleSmsService
 import io.loyaltyloop.server.service.sms.InternalVerificationService
-import io.loyaltyloop.server.service.sms.SmsService
-import io.loyaltyloop.server.service.sms.verification.PreludeVerificationService
 import java.time.Duration
-
-
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
+import io.ktor.server.plugins.ratelimit.*
+import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -131,6 +129,15 @@ fun Application.module() {
         timeout = Duration.ofSeconds(60)
         maxFrameSize = Long.MAX_VALUE
         masking = false
+    }
+
+    install(RateLimit) {
+        register {
+            rateLimiter(limit = 300, refillPeriod = 60.seconds)
+        }
+        register(RateLimitName("auth")) {
+            rateLimiter(limit = 200, refillPeriod = 60.seconds)
+        }
     }
 
     val jwtSecret = environment.config.property("jwt.secret").getString()
@@ -317,34 +324,39 @@ fun Application.module() {
         }
 
         // Подключаем наши новые маршруты
-        configRoutes(
-            applicationConfig = environment!!.config,
-        )
-        mapsRoutes(
-            applicationConfig = environment!!.config,
-            partnerRepository = partnerRepository,
-            userRepository = userRepository
-        )
-        authRoutes(userRepository, partnerRepository, tokenService, verificationService, eventLogger)
-        clientRoutes(userRepository, deviceTokenRepository)
-        terminalRoutes(userRepository = userRepository, transactionService = transactionService)
-        partnerRoutes(
-            userRepository = userRepository,
-            partnerRepository = partnerRepository,
-            transactionService = transactionService,
-            pinResetTokenRepository = pinResetTokenRepository,
-            emailService = emailService,
-            webBaseUrl = webBaseUrl,
-            supportChatService = supportChatService,
-            eventLogger = eventLogger
-        )
-        adminRoutes(
-            applicationConfig = environment!!.config,
-            userRepo = userRepository,
-            partnerRepo = partnerRepository,
-            supportChatService = supportChatService,
-            systemEventRepository = systemEventRepository
-        )
+        rateLimit(RateLimitName("auth")) {
+            authRoutes(userRepository, partnerRepository, tokenService, verificationService, eventLogger)
+        }
+
+        rateLimit {
+            configRoutes(
+                applicationConfig = environment!!.config,
+            )
+            mapsRoutes(
+                applicationConfig = environment!!.config,
+                partnerRepository = partnerRepository,
+                userRepository = userRepository
+            )
+            clientRoutes(userRepository, deviceTokenRepository)
+            terminalRoutes(userRepository = userRepository, transactionService = transactionService)
+            partnerRoutes(
+                userRepository = userRepository,
+                partnerRepository = partnerRepository,
+                transactionService = transactionService,
+                pinResetTokenRepository = pinResetTokenRepository,
+                emailService = emailService,
+                webBaseUrl = webBaseUrl,
+                supportChatService = supportChatService,
+                eventLogger = eventLogger
+            )
+            adminRoutes(
+                applicationConfig = environment!!.config,
+                userRepo = userRepository,
+                partnerRepo = partnerRepository,
+                supportChatService = supportChatService,
+                systemEventRepository = systemEventRepository
+            )
+        }
         val enableTestSupport =
             environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()
                 ?.toBoolean() ?: false

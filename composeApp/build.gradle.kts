@@ -62,7 +62,7 @@ kotlin {
         cocoapods {
             summary = "LoyaltyLoop Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
-            version = "1.0"
+            version = "1.0.0"
 
             ios.deploymentTarget = "14.0"
 
