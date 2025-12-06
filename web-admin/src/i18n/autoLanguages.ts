@@ -600,7 +600,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "LoyTytyloop",
+        "hero_title": "LoyaltyLoop",
         "hero_subtitle": "Чакан жана орто бизнес үчүн заманбап берилгендик системасы. Биз конокторду кадимки кардарларга айландырабыз.",
         "start_free": "АКЫСЫЗ баштаңыз",
         "roadmap_btn": "Өнүгүү пландары",
@@ -1253,7 +1253,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "Адалдық",
+        "hero_title": "LoyaltyLoop",
         "hero_subtitle": "Шағын және орта бизнес үшін заманауи адалдық жүйесі. Біз кездейсоқ келушілерді тұрақты клиенттерге айналдырамыз.",
         "start_free": "Бастау тегін",
         "roadmap_btn": "Даму жоспарлары",
@@ -1906,7 +1906,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "Sodiqlik",
+        "hero_title": "LoyaltyLoop",
         "hero_subtitle": "Kichik va o'rta biznes uchun zamonaviy sodiqlik tizimi. Biz tasodifiy tashrif buyuruvchilarni doimiy mijozlarga aylantiramiz.",
         "start_free": "Bepul boshlang",
         "roadmap_btn": "Rivojlanish rejalari",
