@@ -172,7 +172,7 @@ class PartnerRepository {
 
             val schedule = row.parseSchedule()
             val paused = row[TradingPointsTable.isTemporarilyPaused]
-            val isOpenNow = if (paused) false else schedule?.isOpen(now)
+            val isOpenNow = if (paused) false else schedule.isOpen(now)
             val dto = mapTradingPointEntity(
                 row = row,
                 schedule = schedule,

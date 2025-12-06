@@ -7,11 +7,11 @@ export interface CountryConfig {
 }
 
 export const COUNTRY_CODES: CountryConfig[] = [
-    { code: 'KG', dial: '+996', mask: '999 99 99 99', name: 'Kyrgyzstan', emoji: '🇰🇬' },
-    { code: 'KZ', dial: '+7', mask: '777 777 77 77', name: 'Kazakhstan', emoji: '🇰🇿' },
-    { code: 'UZ', dial: '+998', mask: '99 999 99 99', name: 'Uzbekistan', emoji: '🇺🇿' },
-    { code: 'RU', dial: '+7', mask: '999 999 99 99', name: 'Russia', emoji: '🇷🇺' },
-    { code: 'BY', dial: '+375', mask: '99 999 99 99', name: 'Belarus', emoji: '🇧🇾' },
+    { code: 'KG', dial: '+996', mask: '999 99-99-99', name: 'Kyrgyzstan', emoji: '🇰🇬' },
+    { code: 'KZ', dial: '+7', mask: '777 777-77-77', name: 'Kazakhstan', emoji: '🇰🇿' },
+    { code: 'UZ', dial: '+998', mask: '99 999-99-99', name: 'Uzbekistan', emoji: '🇺🇿' },
+    { code: 'RU', dial: '+7', mask: '999 999-99-99', name: 'Russia', emoji: '🇷🇺' },
+    { code: 'BY', dial: '+375', mask: '99 999-99-99', name: 'Belarus', emoji: '🇧🇾' },
 ];
 
 export const DEFAULT_COUNTRY = COUNTRY_CODES[0]; // KG
@@ -92,9 +92,14 @@ export const isValidPhone = (rawDigits: string, country: CountryConfig): boolean
 export const parsePhoneNumber = (fullPhone: string) => {
     if (!fullPhone) return { country: DEFAULT_COUNTRY, rawDigits: '' };
     
-    const country = detectCountry(fullPhone) || DEFAULT_COUNTRY;
-    const rawDigits = fullPhone.slice(country.dial.length);
+    const detected = detectCountry(fullPhone);
     
-    return { country, rawDigits };
+    if (detected) {
+        const rawDigits = fullPhone.slice(detected.dial.length);
+        return { country: detected, rawDigits };
+    }
+    
+    // Fallback: If no country detected (e.g. local format like 0550...),
+    // return default country and the FULL string as raw digits.
+    return { country: DEFAULT_COUNTRY, rawDigits: fullPhone };
 };
-

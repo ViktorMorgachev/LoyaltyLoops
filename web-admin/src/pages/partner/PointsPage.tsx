@@ -417,6 +417,20 @@ export const PointsPage = () => {
                     <MenuItem value="RESTAURANT">{t('dashboard.types.RESTAURANT')}</MenuItem>
                     <MenuItem value="RETAIL">{t('dashboard.types.RETAIL')}</MenuItem>
                     <MenuItem value="SERVICE">{t('dashboard.types.SERVICE')}</MenuItem>
+                    <MenuItem value="TIRE_SERVICE">{t('dashboard.types.TIRE_SERVICE')}</MenuItem>
+                    <MenuItem value="AUTO_SERVICE">{t('dashboard.types.AUTO_SERVICE')}</MenuItem>
+                    <MenuItem value="FLOWERS">{t('dashboard.types.FLOWERS')}</MenuItem>
+                    <MenuItem value="GIFTS">{t('dashboard.types.GIFTS')}</MenuItem>
+                    <MenuItem value="CAKES">{t('dashboard.types.CAKES')}</MenuItem>
+                    <MenuItem value="BARBERSHOP">{t('dashboard.types.BARBERSHOP')}</MenuItem>
+                    <MenuItem value="CLOTHING">{t('dashboard.types.CLOTHING')}</MenuItem>
+                    <MenuItem value="TOYS">{t('dashboard.types.TOYS')}</MenuItem>
+                    <MenuItem value="CAR_RENTAL">{t('dashboard.types.CAR_RENTAL')}</MenuItem>
+                    <MenuItem value="SCOOTER_RENTAL">{t('dashboard.types.SCOOTER_RENTAL')}</MenuItem>
+                    <MenuItem value="AUTO_PARTS">{t('dashboard.types.AUTO_PARTS')}</MenuItem>
+                    <MenuItem value="BANK">{t('dashboard.types.BANK')}</MenuItem>
+                    <MenuItem value="GROCERY_STORE">{t('dashboard.types.GROCERY_STORE')}</MenuItem>
+                    <MenuItem value="BEAUTY_SALON">{t('dashboard.types.BEAUTY_SALON')}</MenuItem>
                     <MenuItem value="OTHER">{t('dashboard.types.OTHER')}</MenuItem>
                 </Select>
             </FormControl>
@@ -499,7 +513,6 @@ export const PointsPage = () => {
                 {t('point_details.map_hint', 'Click on the map to set coordinates. You can edit the address manually afterwards.')}
             </Typography>
             <LocationPicker
-                key={`${tempCoords?.lat ?? latitude ?? 'no-lat'}-${tempCoords?.lng ?? longitude ?? 'no-lng'}`}
                 initialLat={tempCoords?.lat ?? (latitude ? parseFloat(latitude) : undefined)}
                 initialLng={tempCoords?.lng ?? (longitude ? parseFloat(longitude) : undefined)}
                 onLocationChange={handleMapLocationChange}

@@ -17,6 +17,7 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.EMAIL_NOT_SET -> Res.string.error_email_required
         AppErrorCode.INVALID_RESET_TOKEN -> Res.string.error_invalid_reset_token
         AppErrorCode.INVALID_PHONE -> Res.string.error_invalid_phone
+        AppErrorCode.INVALID_PHONE_NUMBER -> Res.string.error_invalid_phone_number
         AppErrorCode.INVALID_CODE -> Res.string.error_invalid_code
         AppErrorCode.CODE_EXPIRED -> Res.string.error_code_expired
         AppErrorCode.USER_NOT_FOUND -> Res.string.error_user_not_found

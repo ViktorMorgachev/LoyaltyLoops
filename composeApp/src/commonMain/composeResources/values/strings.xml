@@ -36,6 +36,7 @@
     <string name="error_invalid_reset_token">Ссылка для сброса PIN недействительна</string>
     
     <string name="error_invalid_phone">Неверный формат телефона</string>
+    <string name="error_invalid_phone_number">Неверный формат номера телефона</string>
     <string name="error_invalid_code">Неверный код подтверждения</string>
     <string name="error_code_expired">Код истек</string>
     <string name="error_user_not_found">Пользователь не найден</string>
@@ -326,11 +327,14 @@
     <string name="map_type_tire_service">Вулканизация</string>
     <string name="map_type_auto_parts">Автозапчасти</string>
     <string name="map_type_bank">Банк</string>
+    <string name="map_type_grocery_store">Магазин продуктов</string>
+    <string name="map_type_beauty_salon">Салон красоты</string>
     <string name="map_type_other">Другое</string>
     <string name="map_locate_me">Я здесь</string>
     <string name="point_no_address">Адрес не указан</string>
     <string name="common_open">Открыто</string>
     <string name="common_closed">Закрыто</string>
+    <string name="status_temporarily_closed">Временно закрыто</string>
     <string name="common_apply">Применить</string>
     <string name="empty"> </string>
 

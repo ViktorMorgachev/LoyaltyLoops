@@ -13,8 +13,10 @@ fun isValidEmail(email: String): Boolean {
  * @return Строку с ошибкой, если не валиден.
  */
 fun validatePhoneNumber(phone: String): String? {
-    // 1. Ищем страну по префиксу
-    val country = Country.entries.find { phone.startsWith(it.phonePrefix) }
+    // 1. Ищем страну по префиксу, сортируем по длине префикса (сначала более длинные), чтобы +998 не путался с +9 и т.д.
+    val country = Country.entries
+        .sortedByDescending { it.phonePrefix.length }
+        .find { phone.startsWith(it.phonePrefix) }
 
     if (country == null) {
         return "Неизвестный код страны (поддерживаются: KG, KZ, UZ, BY)"

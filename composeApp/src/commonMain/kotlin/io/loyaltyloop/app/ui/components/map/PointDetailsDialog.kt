@@ -80,16 +80,35 @@ fun PointDetailsDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    val isPaused = point.temporarilyPaused
                     val isOpen = point.isOpenNow == true
                     
+                    val statusText = when {
+                        isPaused -> stringResource(Res.string.status_temporarily_closed)
+                        isOpen -> stringResource(Res.string.common_open)
+                        else -> stringResource(Res.string.common_closed)
+                    }
+                    
+                    val statusColor = when {
+                        isPaused -> Color(0xFFE65100) // Orange Dark
+                        isOpen -> Color(0xFF2E7D32) // Green
+                        else -> Color(0xFFC62828) // Red
+                    }
+                    
+                    val statusBg = when {
+                        isPaused -> Color(0xFFFFF3E0) // Orange Light
+                        isOpen -> Color(0xFFE8F5E9) // Green Light
+                        else -> Color(0xFFFFEBEE) // Red Light
+                    }
+                    
                     Surface(
-                        color = if (isOpen) Color(0xFFE8F5E9) else Color(0xFFFFEBEE),
+                        color = statusBg,
                         shape = RoundedCornerShape(8.dp)
                     ) {
                         Text(
-                            text = if (isOpen) stringResource(Res.string.common_open) else stringResource(Res.string.common_closed),
+                            text = statusText,
                             style = MaterialTheme.typography.labelMedium,
-                            color = if (isOpen) Color(0xFF2E7D32) else Color(0xFFC62828),
+                            color = statusColor,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )

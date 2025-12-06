@@ -19,6 +19,8 @@ enum class TradingPointType {
     TIRE_SERVICE,
     AUTO_PARTS,
     BANK,
+    GROCERY_STORE,
+    BEAUTY_SALON,
     OTHER
 }
 

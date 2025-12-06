@@ -47,6 +47,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.INVALID_REQUEST,
                 AppErrorCode.INVALID_PHONE,
+                AppErrorCode.INVALID_PHONE_NUMBER,
                 AppErrorCode.QR_EXPIRED,
                 AppErrorCode.INVALID_QR_SIGNATURE,
                 AppErrorCode.INVALID_AMOUNT,
