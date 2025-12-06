@@ -83,4 +83,19 @@ class AuthRepository(private val client: HttpClient) {
             }
         }
     }
+
+    suspend fun requestAccountDeletion(): NetworkResult<io.loyaltyloop.shared.models.RequestAccountDeletionResponse> {
+        return safeNetworkCall {
+            client.post("/auth/account/delete/request")
+        }
+    }
+
+    suspend fun confirmAccountDeletion(code: String, reason: String): NetworkResult<Unit> {
+        return safeNetworkCall {
+            client.post("/auth/account/delete/confirm") {
+                contentType(ContentType.Application.Json)
+                setBody(io.loyaltyloop.shared.models.ConfirmAccountDeletionRequest(code, reason))
+            }
+        }
+    }
 }

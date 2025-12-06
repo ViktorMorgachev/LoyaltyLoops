@@ -20,6 +20,8 @@ import io.loyaltyloop.shared.models.VerifyCodeRequest
 import java.util.UUID
 import io.loyaltyloop.shared.models.SendCodeRequest
 
+import io.loyaltyloop.shared.models.ConfirmAccountDeletionRequest
+import io.loyaltyloop.shared.models.RequestAccountDeletionResponse
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
 
@@ -41,7 +43,13 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            val code = verificationService.startVerification(phone = request.phone)
+            val deletedUser = repository.getDeletedUserByPhone(request.phone)
+            if (deletedUser != null) {
+                throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
+            }
+
+            val existingUser = repository.getUserByPhone(request.phone)
+            val code = verificationService.startVerification(phone = request.phone, userId = existingUser?.id)
 
             call.respond(
                 mapOf(
@@ -62,27 +70,33 @@ fun Route.authRoutes(
 
             if (verificationService.checkCode(request.phone, request.code)) {
                 var user = repository.getUserByPhone(request.phone)
+
                 val isNew = user == null
                 if (user == null) {
-                    user = UserDto(
-                        id = UUID.randomUUID().toString(),
-                        phoneNumber = request.phone,
-                        countryCode = request.code,
-                        language = lang,
-                        qrSecret = tokenService.generateQrSecret(),
-                        firstName = null
-                    )
-                    repository.createUser(user)
-                    val savedUser = repository.getUserById(user.id)
-                    if (savedUser == null) {
-                        throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
+                    val deletedUser = repository.getDeletedUserByPhone(request.phone)
+                    if (deletedUser != null) {
+                        throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
+                    } else {
+                        user = UserDto(
+                            id = UUID.randomUUID().toString(),
+                            phoneNumber = request.phone,
+                            countryCode = request.code,
+                            language = lang,
+                            qrSecret = tokenService.generateQrSecret(),
+                            firstName = null
+                        )
+                        repository.createUser(user)
+                        val savedUser = repository.getUserById(user.id)
+                        if (savedUser == null) {
+                            throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
+                        }
+                        eventLogger.log(
+                            type = SystemEventType.REGISTER,
+                            userId = user.id,
+                            userPhone = request.phone,
+                            payload = "User registered via phone"
+                        )
                     }
-                    eventLogger.log(
-                        type = SystemEventType.REGISTER,
-                        userId = user.id,
-                        userPhone = request.phone,
-                        payload = "User registered via phone"
-                    )
                 } else {
                     if (user.language != lang) {
                         repository.updateUserLanguage(user.id, lang)
@@ -185,13 +199,37 @@ fun Route.authRoutes(
                     )
                     throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
                 }
-                return@post
+            }
 
-                // If workspace not found or not partner? Assume OK or specific error
-                // For now OK implies "no pin needed" or "not found so whatever"
-                // But let's keep old logic: respond OK if partner not found? That's weird.
-                // Old code: if (partner != null) ... else respond(OK).
-                // Assuming it means "No pin required".
+            post("/account/delete/request") {
+                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val user = repository.getUserById(userId)!!
+
+                verificationService.startVerification(phone = user.phoneNumber, userId = userId)
+
+                call.respond(RequestAccountDeletionResponse("Confirmation code sent"))
+            }
+
+            post("/account/delete/confirm") {
+                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val user = repository.getUserById(userId)!!
+                val request = call.receive<ConfirmAccountDeletionRequest>()
+
+                if (verificationService.checkCode(user.phoneNumber, request.code)) {
+                    repository.markUserDeleted(userId, request.reason)
+                    repository.deleteAllTokensForUser(userId)
+
+                    eventLogger.log(
+                        type = SystemEventType.INFO,
+                        userId = userId,
+                        userPhone = user.phoneNumber,
+                        payload = "Account deleted. Reason: ${request.reason}"
+                    )
+
+                    call.respond(HttpStatusCode.OK)
+                } else {
+                    throw LoyaltyException(AppErrorCode.INVALID_CODE)
+                }
             }
         }
     }

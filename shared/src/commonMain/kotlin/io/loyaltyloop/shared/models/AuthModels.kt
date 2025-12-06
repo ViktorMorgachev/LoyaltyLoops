@@ -56,3 +56,14 @@ data class VerifyPinRequest(
     val workspaceId: String,
     val pin: String
 )
+
+@Serializable
+data class RequestAccountDeletionResponse(
+    val message: String
+)
+
+@Serializable
+data class ConfirmAccountDeletionRequest(
+    val code: String,
+    val reason: String
+)

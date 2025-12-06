@@ -71,20 +71,25 @@ class UserRepository {
         }
     }
 
-
     // Получить всех (для теста)
     suspend fun getAllUsers(): List<UserDto> = dbQuery {
         UsersTable.selectAll().map { rowToUserDto(it) }
     }
 
     suspend fun getUserByPhone(phone: String): UserDto? = dbQuery {
-        UsersTable.selectAll().where { UsersTable.phoneNumber eq phone }
+        UsersTable.selectAll().where { (UsersTable.phoneNumber eq phone) and (UsersTable.isDeleted eq false) }
+            .map { rowToUserDto(it) }
+            .singleOrNull()
+    }
+
+    suspend fun getDeletedUserByPhone(phone: String): UserDto? = dbQuery {
+        UsersTable.selectAll().where { (UsersTable.phoneNumber eq phone) and (UsersTable.isDeleted eq true) }
             .map { rowToUserDto(it) }
             .singleOrNull()
     }
 
     suspend fun getUserById(userId: String): UserDto? = dbQuery {
-        UsersTable.selectAll().where { UsersTable.id eq userId }
+        UsersTable.selectAll().where { (UsersTable.id eq userId) and (UsersTable.isDeleted eq false) }
             .map { rowToUserDto(it) }
             .singleOrNull()
     }
@@ -104,8 +109,16 @@ class UserRepository {
             email = row[UsersTable.email],
             qrSecret = row[UsersTable.qrSecret],
             language = row[UsersTable.language],
-            isFrozenUntil = row[UsersTable.frozenUntil]
+            isFrozenUntil = row[UsersTable.frozenUntil],
+            isDeleted = row[UsersTable.isDeleted]
         )
+    }
+
+    suspend fun markUserDeleted(userId: String, reason: String) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
+            it[isDeleted] = true
+            it[deletionReason] = reason
+        }
     }
 
     suspend fun setSuperAdmin(userId: String, isAdmin: Boolean) = dbQuery {

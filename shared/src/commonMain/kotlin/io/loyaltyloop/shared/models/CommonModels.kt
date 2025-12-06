@@ -16,6 +16,7 @@ enum class AppErrorCode {
     INVALID_RESET_TOKEN,
     TOO_MANY_REQUESTS,
     OTP_ATTEMPTS_EXCEEDED,
+    ACCOUNT_DELETED,
 
     // Auth
     INVALID_PHONE,

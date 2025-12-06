@@ -15,7 +15,7 @@ class PreludeVerificationService(
     private val logger = LoggerFactory.getLogger("Prelude")
     private val baseUrl = "https://api.prelude.so/v2"
 
-    override suspend fun startVerification(phone: String): String {
+    override suspend fun startVerification(phone: String, userId: String?): String {
         return try {
             val response: PreludeStartResponse = client.post("$baseUrl/verification") {
                 header(HttpHeaders.Authorization, "Bearer $apiKey")

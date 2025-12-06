@@ -105,7 +105,7 @@
     <string name="onboarding_why_info">Sizning ismingiz kassirda salomlashish va bonuslarni taqdirlash uchun namoyish etiladi.</string>
     <string name="profile_about_description">Sadoqatkorloop sizga bitta ilovadan sodiqlik dasturlari va filiallarini boshqarishga yordam beradi.</string>
     <string name="profile_about_title">Ilova haqida</string>
-    <string name="profile_about_version">Versiya: __l_var_0__</string>
+    <string name="profile_about_version">Versiya:</string>
     <string name="profile_btn_create_business">Loyihalash</string>
     <string name="profile_btn_join_team">Kodni kiriting</string>
     <string name="profile_btn_logout">Hisob qaydnomangizdan chiqing</string>
