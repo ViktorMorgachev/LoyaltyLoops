@@ -27,6 +27,56 @@ components:
         inviteCode:
           type: string
 
+    CreatePlatformRequest:
+      type: object
+      required: [type, targetPointId]
+      properties:
+        type: { type: string, enum: [ACTIVATE_POINT, BLOCK_PARTNER, UNBLOCK_PARTNER] }
+        targetPointId: { type: string }
+        amount: { type: number, format: double, nullable: true }
+        duration: { type: string, enum: [DAY_1, DAY_3, WEEK_2, MONTH_1, MONTH_3, MONTH_6, YEAR_1, YEAR_2, YEAR_3, YEAR_5], nullable: true }
+        isTrial: { type: boolean, default: false }
+        blockReason: { type: string, nullable: true }
+
+    PlatformRequestDto:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        status: { type: string }
+        requesterId: { type: string }
+        requesterName: { type: string, nullable: true }
+        requesterPhone: { type: string, nullable: true }
+        approverId: { type: string, nullable: true }
+        approverName: { type: string, nullable: true }
+        createdAt: { type: integer, format: int64 }
+        updatedAt: { type: integer, format: int64 }
+        targetPartnerId: { type: string }
+        targetPartnerName: { type: string, nullable: true }
+        targetPointId: { type: string, nullable: true }
+        targetPointName: { type: string, nullable: true }
+        currency: { type: string, nullable: true }
+        amount: { type: number, format: double, nullable: true }
+        duration: { type: string, nullable: true }
+        isTrial: { type: boolean }
+        blockReason: { type: string, nullable: true }
+        rejectReason: { type: string, nullable: true }
+
+    RejectRequestDto:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string }
+
+    SubscriptionWarningDto:
+      type: object
+      properties:
+        partnerId: { type: string }
+        partnerName: { type: string }
+        pointId: { type: string }
+        pointName: { type: string }
+        endDate: { type: integer, format: int64 }
+
     # --- AUTH & USERS ---
     UserDto:
       type: object
@@ -453,6 +503,7 @@ tags:
   - name: Partner
   - name: Terminal
   - name: Admin
+  - name: Platform
 
 paths:
   # --- AUTH ---
@@ -1113,3 +1164,155 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ApiMessage' }
+
+  # --- PLATFORM ---
+  /platform/join:
+    post:
+      tags: [Platform]
+      summary: Join platform staff via invite code
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinPlatformAdminRequest' }
+      responses:
+        '200': { description: Joined }
+        '409': { description: Already joined }
+
+  /platform/alerts:
+    get:
+      tags: [Platform]
+      summary: Get expiring subscription alerts
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SubscriptionWarningDto' }
+
+  /platform/requests:
+    post:
+      tags: [Platform]
+      summary: Create a platform request (Activate Point, Block Partner)
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePlatformRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string }
+    get:
+      tags: [Platform]
+      summary: List platform requests
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [PENDING, APPROVED, REJECTED] }
+        - in: query
+          name: requesterId
+          schema: { type: string }
+        - in: query
+          name: targetPartnerId
+          schema: { type: string }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PlatformRequestDto' }
+
+  /platform/requests/{id}/approve:
+    post:
+      tags: [Platform]
+      summary: Approve a request
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Approved }
+
+  /platform/requests/{id}/reject:
+    post:
+      tags: [Platform]
+      summary: Reject a request
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectRequestDto' }
+      responses:
+        '200': { description: Rejected }
+
+  /platform/invite:
+    post:
+      tags: [Platform]
+      summary: Invite new platform staff
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: role
+          required: true
+          schema: { type: string, enum: [PLATFORM_SUPER_MANAGER, PLATFORM_MANAGER] }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  code: { type: string }
+
+  /platform/staff:
+    get:
+      tags: [Platform]
+      summary: List platform staff
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: role
+          schema: { type: string, enum: [PLATFORM_SUPER_ADMIN, PLATFORM_SUPER_MANAGER, PLATFORM_MANAGER] }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object # Employer-like structure
+                  properties:
+                    id: { type: string }
+                    userId: { type: string }
+                    name: { type: string }
+                    phone: { type: string }
+                    pointName: { type: string, description: Role }
+
+  /platform/staff/{id}:
+    delete:
+      tags: [Platform]
+      summary: Fire platform staff member
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: Deleted }

@@ -44,6 +44,9 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.TOO_MANY_REQUESTS -> Res.string.error_to_many_requests
         AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> Res.string.error_otp_attempts_exceeded
         AppErrorCode.ACCOUNT_DELETED -> Res.string.error_account_deleted
+        AppErrorCode.TRIAL_ALREADY_USED -> Res.string.ignore
+        AppErrorCode.PARTNER_ON_REVIEW -> Res.string.ignore
+        AppErrorCode.PARTNER_BLOCKED -> Res.string.error_partner_blocked
     }
 }
 

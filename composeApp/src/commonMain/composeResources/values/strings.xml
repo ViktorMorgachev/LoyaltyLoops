@@ -13,6 +13,7 @@
     <string name="profile_loading">Загрузка...</string>
     <string name="profile_error_load">Ошибка загрузки</string>
     <string name="auth_success">Успешный вход</string>
+    <string name="ignore" />
 
     <!-- Ошибки -->
     <string name="error_network">Нет подключения к интернету</string>
@@ -50,6 +51,7 @@
     <string name="error_to_many_requests">Слишком много запросов. Попробуйте позже.</string>
     <string name="error_otp_attempts_exceeded">Превышен лимит попыток. Попробуйте через час.</string>
     <string name="error_account_deleted">Этот номер телефона связан с удаленным аккаунтом. Пожалуйста, используйте другой номер.</string>
+    <string name="error_partner_blocked">Этот партнер заблокирован.</string>
     
     <string name="error_business_already_exists">Бизнес уже существует</string>
     <string name="error_business_not_found">Бизнес не найден</string>

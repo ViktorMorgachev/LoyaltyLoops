@@ -25,12 +25,14 @@ import io.loyaltyloop.shared.models.TransactionSuccessType
 import io.loyaltyloop.shared.models.UserRole
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
+import io.loyaltyloop.server.service.LoyaltyEngineService
 
 @Suppress("CyclomaticComplexMethod", "ThrowsCount")
 fun Route.testSupportRoutes(
     userRepository: UserRepository,
     transactionRepository: TransactionRepository,
-    cardRealtimeService: CardRealtimeService
+    cardRealtimeService: CardRealtimeService,
+    loyaltyEngineService: LoyaltyEngineService
 ) {
     val logger = LoggerFactory.getLogger("TestSupportRoutes")
 
@@ -149,6 +151,12 @@ fun Route.testSupportRoutes(
                 cardRealtimeService.notifyUser(card.userId, payload)
 
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Realtime event delivered"))
+            }
+
+            post("/subscription-check") {
+                ensureSuperAdmin(call, userRepository)
+                loyaltyEngineService.runSubscriptionCheck()
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Subscription check triggered"))
             }
         }
     }

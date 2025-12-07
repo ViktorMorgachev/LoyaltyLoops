@@ -45,10 +45,13 @@ const unflatten = (input: FlatMap) => {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const PLACEHOLDER_REGEX = /{{\s*[^}]+\s*}}/g;
+const BRAND_NAME = 'LoyaltyLoop';
+const BRAND_TOKEN = '__LL_BRAND__';
 
 const protectPlaceholders = (text: string) => {
   const matches = text.match(PLACEHOLDER_REGEX) ?? [];
-  let protectedText = text;
+  let protectedText = text.replace(new RegExp(BRAND_NAME, 'g'), BRAND_TOKEN);
+  
   matches.forEach((placeholder, index) => {
     const token = `__LL_VAR_${index}__`;
     protectedText = protectedText.replace(placeholder, token);
@@ -62,7 +65,7 @@ const restorePlaceholders = (text: string, placeholders: string[]) => {
     const token = new RegExp(`__LL_VAR_${index}__`, 'g');
     restored = restored.replace(token, placeholder);
   });
-  return restored;
+  return restored.replace(new RegExp(BRAND_TOKEN, 'g'), BRAND_NAME);
 };
 
 const translateText = async (text: string, target: string) => {

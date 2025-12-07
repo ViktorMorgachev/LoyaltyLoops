@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, Divider } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, Divider, Alert, Stack } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
@@ -19,6 +19,7 @@ export const BusinessSettingsPage = () => {
     const [burnBonusesDays, setBurnBonusesDays] = useState('');
     const [downgradeTierDays, setDowngradeTierDays] = useState('');
     const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
+    const [subscriptionWarnings, setSubscriptionWarnings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -35,6 +36,7 @@ export const BusinessSettingsPage = () => {
             setBurnBonusesDays(data.burnBonusesDays !== null && data.burnBonusesDays !== undefined ? String(data.burnBonusesDays) : '');
             setDowngradeTierDays(data.downgradeTierDays !== null && data.downgradeTierDays !== undefined ? String(data.downgradeTierDays) : '');
             setDefaultVisitsTarget(data.defaultVisitsTarget !== null && data.defaultVisitsTarget !== undefined ? String(data.defaultVisitsTarget) : '10');
+            setSubscriptionWarnings(data.subscriptionWarnings || []);
         } catch (e: any) {
             if (e.response && e.response.status === 404) {
                 // No business yet -> Redirect to create
@@ -68,6 +70,30 @@ export const BusinessSettingsPage = () => {
     return (
         <Box maxWidth="lg" mx="auto" mt={4}>
             <Typography variant="h4" fontWeight="bold" gutterBottom>{t('settings.title')}</Typography>
+
+            {subscriptionWarnings.length > 0 && (
+                <Stack spacing={2} mb={4}>
+                    {subscriptionWarnings.map((warning, idx) => {
+                        const dateStr = new Date(warning.endDate).toLocaleDateString();
+                        const now = Date.now();
+                        const diff = warning.endDate - now;
+                        const isCritical = diff < 24 * 60 * 60 * 1000; // < 24h
+
+                        return (
+                            <Alert 
+                                key={idx} 
+                                severity={isCritical ? "error" : "warning"} 
+                                variant="filled"
+                            >
+                                {isCritical
+                                    ? t('settings.subscription_expiring_critical', { point: warning.pointName, date: dateStr })
+                                    : t('settings.subscription_expiring', { point: warning.pointName, date: dateStr })
+                                }
+                            </Alert>
+                        );
+                    })}
+                </Stack>
+            )}
 
             <Paper elevation={0} sx={{ p: 4, maxWidth: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
 

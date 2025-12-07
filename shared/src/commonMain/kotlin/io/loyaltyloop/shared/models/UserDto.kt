@@ -10,7 +10,8 @@ enum class UserRole {
 
     // Системные роли
     PLATFORM_SUPER_ADMIN, // Бог
-    PLATFORM_MANAGER      // Менеджер поддержки
+    PLATFORM_SUPER_MANAGER, // Руководитель отдела продаж
+    PLATFORM_MANAGER      // Менеджер поддержки / Продаж
 }
 
 @Serializable

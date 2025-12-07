@@ -73,7 +73,15 @@ export const TestLabPage: React.FC = () => {
     deleteUser: false,
     deleteCard: false,
     mutateCard: false,
-    sendEvent: false
+    sendEvent: false,
+    createSub: false,
+    checkSub: false
+  });
+
+  const [subForm, setSubForm] = useState({
+    partnerId: '',
+    pointId: '',
+    duration: 'DAY_3'
   });
 
   const appendLog = (message: string) => {
@@ -207,6 +215,48 @@ export const TestLabPage: React.FC = () => {
       appendLog(`EVENT card ${payload.cardId}: ${message}`);
     } finally {
       setLoading((prev) => ({ ...prev, sendEvent: false }));
+    }
+  };
+
+  const handleCreateRequest = async () => {
+    // Only Point ID is now exposed
+    if (!subForm.pointId.trim()) {
+        showError(t('test_lab.validation_point_id'));
+        return;
+    }
+    setLoading(prev => ({ ...prev, createSub: true }));
+    try {
+        const payload = {
+            type: 'ACTIVATE_POINT',
+            targetPointId: subForm.pointId.trim(),
+            amount: 0,
+            duration: subForm.duration,
+            isTrial: false
+        };
+        const { data } = await api.post('/platform/requests', payload);
+        showSuccess(t('test_lab.success_generic'));
+        appendLog(`CREATE REQUEST: ${JSON.stringify(data)}`);
+    } catch (error: any) {
+        const message = error?.response?.data?.message || error.message || 'Error';
+        showError(message);
+        appendLog(`CREATE REQUEST ERROR: ${message}`);
+    } finally {
+        setLoading(prev => ({ ...prev, createSub: false }));
+    }
+  };
+
+  const handleCheckSubscription = async () => {
+    setLoading(prev => ({ ...prev, checkSub: true }));
+    try {
+        const { data } = await api.post('/test-support/subscription-check');
+        showSuccess(t('test_lab.check_triggered'));
+        appendLog(`SUBSCRIPTION CHECK: ${data?.message}`);
+    } catch (error: any) {
+        const message = error?.response?.data?.message || error.message || 'Error';
+        showError(message);
+        appendLog(`SUBSCRIPTION CHECK ERROR: ${message}`);
+    } finally {
+        setLoading(prev => ({ ...prev, checkSub: false }));
     }
   };
 
@@ -428,6 +478,55 @@ export const TestLabPage: React.FC = () => {
                 sx={{ borderRadius: 2 }}
               >
                 {t('test_lab.event_btn')}
+              </Button>
+            </Stack>
+        </Paper>
+
+        <Paper elevation={0} sx={{ p: 3, height: '100%', borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+            <Typography variant="h6" fontWeight="bold" gutterBottom>{t('test_lab.subscription_title')}</Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              {t('test_lab.subscription_desc')}
+            </Typography>
+            <Stack spacing={2}>
+              {/* REMOVED PARTNER ID FIELD AS REQUESTED */}
+              <TextField
+                label={t('test_lab.sub_point_id')}
+                placeholder="Required"
+                value={subForm.pointId}
+                onChange={(e) => setSubForm(prev => ({ ...prev, pointId: e.target.value }))}
+                fullWidth
+                size="small"
+              />
+              <TextField
+                label={t('test_lab.sub_duration')}
+                select
+                size="small"
+                value={subForm.duration}
+                onChange={(e) => setSubForm(prev => ({ ...prev, duration: e.target.value }))}
+              >
+                <MenuItem value="DAY_1">{t('test_lab.sub_day_1')}</MenuItem>
+                <MenuItem value="DAY_3">{t('test_lab.sub_day_3')}</MenuItem>
+              </TextField>
+              <Button
+                variant="contained"
+                onClick={handleCreateRequest}
+                disabled={loading.createSub}
+                sx={{ borderRadius: 2 }}
+              >
+                {t('test_lab.create_request_btn')}
+              </Button>
+              <Divider sx={{ my: 2 }} />
+              <Typography variant="body2" color="text.secondary">
+                  {t('test_lab.check_subscription_desc')}
+              </Typography>
+              <Button
+                variant="outlined"
+                color="warning"
+                onClick={handleCheckSubscription}
+                disabled={loading.checkSub}
+                sx={{ borderRadius: 2 }}
+              >
+                {t('test_lab.check_subscription_btn')}
               </Button>
             </Stack>
         </Paper>

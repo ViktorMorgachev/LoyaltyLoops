@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class FeatureToggleDto(
     val pushEnabled: Boolean = true,
-    val testLabEnabled: Boolean = false
+    val enableTestSupport: Boolean = false
 )
 
 @Serializable

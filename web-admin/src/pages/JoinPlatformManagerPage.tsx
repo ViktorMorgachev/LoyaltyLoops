@@ -17,9 +17,12 @@ export const JoinPlatformManagerPage = () => {
     if (!inviteCode.trim()) return;
     setLoading(true);
     try {
-      await api.post('/admin/platform/manager/join', { inviteCode: inviteCode.trim() });
+      await api.post('/platform/join', { inviteCode: inviteCode.trim() });
       showSuccess(t('join_platform_manager.success'));
       setInviteCode('');
+      // Redirect to role selection after successful join
+      // Use window.location.reload() or navigate to update workspace list
+      window.location.replace('/select-role');
     } catch (error: any) {
       showError(getErrorMessage(error));
     } finally {
@@ -49,7 +52,7 @@ export const JoinPlatformManagerPage = () => {
               onChange={(e) => setInviteCode(e.target.value)}
               margin="normal"
               variant="outlined"
-              placeholder="PM-..."
+              placeholder="P-..."
             />
             <Button
               variant="contained"
@@ -71,4 +74,3 @@ export const JoinPlatformManagerPage = () => {
     </Box>
   );
 };
-

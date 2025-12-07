@@ -26,9 +26,11 @@ import kotlinx.serialization.json.Json
 import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.PlatformRepository
 import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.routes.adminRoutes
+import io.loyaltyloop.server.routes.adminPlatformRoutes
 import io.loyaltyloop.server.routes.authRoutes
 import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.routes.partnerRoutes
@@ -39,7 +41,7 @@ import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
-import io.loyaltyloop.server.service.ConsoleEmailService
+import io.loyaltyloop.server.service.email.ConsoleEmailService
 import io.loyaltyloop.server.repository.DeviceTokenRepository
 import io.loyaltyloop.server.repository.SupportChatRepository
 import io.loyaltyloop.server.service.SupportChatService
@@ -59,6 +61,8 @@ import java.time.Duration
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.ktor.server.plugins.ratelimit.*
+import io.loyaltyloop.server.utils.bool
+import io.loyaltyloop.server.utils.int
 import kotlin.time.Duration.Companion.seconds
 
 fun main(args: Array<String>) {
@@ -150,6 +154,7 @@ fun Application.module() {
     // Создаем экземпляр репозитория
     val userRepository = UserRepository()
     val partnerRepository = PartnerRepository()
+    val platformRepository = PlatformRepository()
     val transactionRepository = TransactionRepository()
     val pinResetTokenRepository = PinResetTokenRepository()
     val supportChatRepository = SupportChatRepository()
@@ -307,27 +312,10 @@ fun Application.module() {
 
     routing {
 
-        swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
-        get("/health") {
-            // 1. Делаем реальный пинг
-            val isDbAlive = DatabaseFactory.ping()
 
-            // 2. Формируем ответ
-            val response = HealthResponse(
-                status = if (isDbAlive) "OK" else "ERROR",
-                db = if (isDbAlive) "connected" else "disconnected",
-                uptime = System.currentTimeMillis() - startTime
-            )
-
-            // 3. Выбираем HTTP код
-            // Если база лежит - возвращаем 500 (Service Unavailable), чтобы мониторинг забил тревогу
-            val status = if (isDbAlive) HttpStatusCode.OK else HttpStatusCode.InternalServerError
-
-            call.respond(status, response)
-        }
-
-        get("/") {
-            call.respondText("LoyaltyLoop Backend is ALIVE! 🐘")
+        val enableSwagger =  environment?.config?.bool("features.enableSwagger", false) ?: false
+        if (enableSwagger) {
+            swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
         }
 
         // Подключаем наши новые маршруты
@@ -363,16 +351,40 @@ fun Application.module() {
                 supportChatService = supportChatService,
                 systemEventRepository = systemEventRepository
             )
+            adminPlatformRoutes(
+                platformRepository = platformRepository,
+                userRepository = userRepository,
+                emailService = emailService
+            )
         }
-        val enableTestSupport =
-            environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()
-                ?.toBoolean() ?: false
+        val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
         if (enableTestSupport) {
             testSupportRoutes(
                 userRepository = userRepository,
                 transactionRepository = transactionRepository,
-                cardRealtimeService = cardRealtimeService
+                cardRealtimeService = cardRealtimeService,
+                loyaltyEngineService = loyaltyEngine
             )
+            get("/health") {
+                val isDbAlive = DatabaseFactory.ping()
+
+                // 2. Формируем ответ
+                val response = HealthResponse(
+                    status = if (isDbAlive) "OK" else "ERROR",
+                    db = if (isDbAlive) "connected" else "disconnected",
+                    uptime = System.currentTimeMillis() - startTime
+                )
+
+                // 3. Выбираем HTTP код
+                // Если база лежит - возвращаем 500 (Service Unavailable), чтобы мониторинг забил тревогу
+                val status = if (isDbAlive) HttpStatusCode.OK else HttpStatusCode.InternalServerError
+
+                call.respond(status, response)
+            }
+
+            get("/") {
+                call.respondText("LoyaltyLoop Backend is ALIVE! 🐘")
+            }
         }
 
         webSocket("/ws/cards") {
