@@ -24,6 +24,7 @@ interface UserContextType {
   isPartnerAdmin: boolean;
   isPartnerManager: boolean;
   isSuperAdmin: boolean;
+  isSuperManager: boolean;
   isPlatformManager: boolean;
   isPlatformStaff: boolean;
   isNewUser: boolean; // Вообще нет ролей
@@ -126,11 +127,12 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   // Вычисляемые права зависят от ТЕКУЩЕГО выбора
   const role = currentWorkspace?.role;
   const isSuperAdmin = role === 'PLATFORM_SUPER_ADMIN';
+  const isSuperManager = role === 'PLATFORM_SUPER_MANAGER';
   const isPlatformManager = role === 'PLATFORM_MANAGER';
   const isPartnerAdmin = role === 'PARTNER_ADMIN';
   const isPartnerManager = role === 'PARTNER_MANAGER';
   const isPartner = isPartnerAdmin || isPartnerManager;
-  const isPlatformStaff = isSuperAdmin || isPlatformManager;
+  const isPlatformStaff = isSuperAdmin || isPlatformManager || isSuperManager;
   
   // isNewUser - если вообще нет воркспейсов (чистый лист)
   const isNewUser = workspaces.length === 0; 
@@ -148,6 +150,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isPartnerAdmin,
         isPartnerManager,
         isSuperAdmin,
+        isSuperManager,
         isPlatformManager,
         isPlatformStaff,
         isNewUser 

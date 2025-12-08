@@ -173,6 +173,9 @@ export const PhoneInput: React.FC<PhoneInputProps> = ({
                         <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 0.5, height: 'auto' }} />
                     </InputAdornment>
                 ),
+                sx: {
+                    alignItems: 'center'
+                }
             }}
         />
     );

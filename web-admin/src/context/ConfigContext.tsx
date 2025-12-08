@@ -11,7 +11,7 @@ export interface FeatureToggleConfig {
     realtimeEnabled: boolean;
     pushEnabled: boolean;
     mapEnabled: boolean;
-    testLabEnabled: boolean;
+    enableTestSupport: boolean;
 }
 
 export interface MapSettingsConfig {
@@ -43,7 +43,7 @@ const DEFAULT_CONFIG: PublicConfig = {
         realtimeEnabled: true,
         pushEnabled: true,
         mapEnabled: true,
-        testLabEnabled: false,
+        enableTestSupport: false,
     },
     map: {
         basePoints: {},

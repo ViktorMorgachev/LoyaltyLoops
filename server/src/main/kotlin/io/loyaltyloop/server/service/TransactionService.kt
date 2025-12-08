@@ -19,6 +19,7 @@ import io.loyaltyloop.shared.models.CardRealtimeEventType
 import io.loyaltyloop.shared.models.CardRealtimePayload
 import io.loyaltyloop.shared.utils.CryptoUtils
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.shared.models.PartnerStatus
 import kotlin.math.abs
 
 class TransactionService(
@@ -49,8 +50,11 @@ class TransactionService(
         }
 
         val partnerIdFromRepo = partnerRepository.getPartnerIdByPoint(request.tradingPointId)
-
         val partner = partnerRepository.getPartnerById(partnerIdFromRepo)
+
+        if (partner.status == PartnerStatus.BLOCKED) {
+            throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED, "Partner account is blocked")
+        }
 
         // 3. Парсинг QR-кода
         val qrData = parseQrCode(request.qrContent)
@@ -200,6 +204,11 @@ class TransactionService(
         // 3. Получаем настройки ТОЧКИ (чтобы понять, какую стратегию применять)
         val settings = partnerRepository.getSettingsByPointId(tradingPointId)
         val partnerId = partnerRepository.getPartnerIdByPoint(tradingPointId)
+        val partner = partnerRepository.getPartnerById(partnerId) // Fetch partner to check status
+
+        if (partner.status == PartnerStatus.BLOCKED) {
+            throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED, "Partner account is blocked")
+        }
 
         // 3. Получаем проверяем условие настройки лояльности точки и то что пришло к нам
         with(settings) {

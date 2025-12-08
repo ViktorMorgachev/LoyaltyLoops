@@ -37,7 +37,16 @@ fun Route.adminRoutes(
 
             get("/events") {
                 val userId = call.getUserIdOrRespond(userRepo) ?: return@get
-                requireAdminRole(userRepo, userId, requireWrite = false)
+                
+                // RESTRICT ACCESS: Only Super Admin and Super Manager can view logs
+                val workspaces = userRepo.getUserWorkspaces(userId)
+                val canViewLogs = workspaces.any { 
+                    it.role == UserRole.PLATFORM_SUPER_ADMIN || it.role == UserRole.PLATFORM_SUPER_MANAGER 
+                }
+                
+                if (!canViewLogs) {
+                    throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Logs are restricted")
+                }
 
                 val filter = SystemEventFilter(
                     type = call.request.queryParameters["type"]?.let { SystemEventType.valueOf(it) },
@@ -109,6 +118,16 @@ fun Route.adminRoutes(
                 call.respond(partners)
             }
 
+            // ДЕТАЛИ ПАРТНЕРА
+            get("/partners/{id}") {
+                val userId = call.getUserIdOrRespond(userRepo) ?: return@get
+                requireAdminRole(userRepo, userId, requireWrite = false)
+
+                val partnerId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Partner ID required")
+                val partner = partnerRepo.getPartnerById(partnerId)
+                call.respond(partner)
+            }
+
             delete("/users/{id}") {
                 val requesterId = call.getUserIdOrRespond(userRepo) ?: return@delete
                 requireAdminRole(userRepo, requesterId, requireWrite = true)
@@ -125,31 +144,6 @@ fun Route.adminRoutes(
                 }
 
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "User deleted"))
-            }
-            post("/platform/manager/join") {
-                val userId = call.getUserIdOrRespond(userRepo) ?: return@post
-                val request = call.receive<JoinPlatformAdminRequest>()
-
-                val expectedCode = applicationConfig.propertyOrNull("platform.managerInviteCode")?.getString()
-                    ?: applicationConfig.propertyOrNull("platform.inviteCode")?.getString()
-                    ?: throw LoyaltyException(AppErrorCode.INTERNAL_ERROR, "Invite code is not configured")
-
-                if (request.inviteCode != expectedCode) {
-                    throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE, "Invalid platform invite code")
-                }
-
-                val workspaces = userRepo.getUserWorkspaces(userId)
-                val alreadyStaff = workspaces.any {
-                    it.role == UserRole.PLATFORM_SUPER_ADMIN || it.role == UserRole.PLATFORM_MANAGER
-                }
-                if (alreadyStaff) {
-                    throw LoyaltyException(AppErrorCode.ALREADY_JOINED, "User already has platform role")
-                }
-
-                val defaultPin = applicationConfig.propertyOrNull("admin.defaultPin")?.getString() ?: "0000"
-                userRepo.createSystemStaff(userId, UserRole.PLATFORM_MANAGER, defaultPinHash = defaultPin)
-
-                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Platform manager role granted"))
             }
 
             route("/support") {
@@ -196,13 +190,16 @@ private suspend fun requireAdminRole(userRepo: UserRepository, userId: String, r
     val workspaces = userRepo.getUserWorkspaces(userId)
 
     val isSuperAdmin = workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN }
+    val isSuperManager = workspaces.any { it.role == UserRole.PLATFORM_SUPER_MANAGER }
     val isManager = workspaces.any { it.role == UserRole.PLATFORM_MANAGER }
 
-    if (!isSuperAdmin && !isManager) {
+    if (!isSuperAdmin && !isManager && !isSuperManager) {
         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Admins only")
     }
 
-    if (requireWrite && !isSuperAdmin) {
+    // Write access (direct manipulation) is restricted for Managers
+    // They must use Requests flow.
+    if (requireWrite && !isSuperAdmin && !isSuperManager) {
         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied: Read-only for Managers")
     }
 }
@@ -211,6 +208,7 @@ private suspend fun resolveAdminSenderRole(userRepo: UserRepository, userId: Str
     val workspaces = userRepo.getUserWorkspaces(userId)
     return when {
         workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN } -> UserRole.PLATFORM_SUPER_ADMIN
+        workspaces.any { it.role == UserRole.PLATFORM_SUPER_MANAGER } -> UserRole.PLATFORM_SUPER_MANAGER
         workspaces.any { it.role == UserRole.PLATFORM_MANAGER } -> UserRole.PLATFORM_MANAGER
         else -> UserRole.CLIENT
     }

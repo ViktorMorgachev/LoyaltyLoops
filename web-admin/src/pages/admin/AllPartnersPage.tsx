@@ -7,11 +7,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
+import { useUser } from '../../context/UserContext';
+import { maskPhone } from '../../utils/maskPhone';
 
 export const AllPartnersPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
+  const { isSuperAdmin } = useUser();
   const [partners, setPartners] = useState<any[]>([]);
 
   useEffect(() => { loadPartners(); }, []);
@@ -28,7 +31,7 @@ export const AllPartnersPage = () => {
   const changeStatus = async (id: string, newStatus: string) => {
     try {
       await api.post(`/admin/partners/${id}/status`, { status: newStatus });
-      showSuccess("Status changed");
+      showSuccess(t('common.status_changed'));
       loadPartners();
     } catch (e: any) {
       showError(getErrorMessage(e));
@@ -60,7 +63,7 @@ export const AllPartnersPage = () => {
                   <TableRow key={p.id} hover>
                     <TableCell sx={{ fontWeight: 500 }}>{p.businessName || p.name || t('dashboard.table_name')}</TableCell>
                 <TableCell>{p.countryCode}</TableCell>
-                <TableCell>{p.ownerPhone || "N/A"}</TableCell>
+                <TableCell>{isSuperAdmin ? p.ownerPhone : (maskPhone(p.ownerPhone) || "N/A")}</TableCell>
                 <TableCell>
                   <Chip
                     label={p.status === 'ACTIVE' ? t('common.active') : p.status === 'BLOCKED' ? t('common.blocked') : t('common.pending')}
@@ -73,7 +76,7 @@ export const AllPartnersPage = () => {
                     <TableCell align="right">
                       <Box display="flex" gap={1} justifyContent="flex-end">
                         <Button size="small" variant="outlined" onClick={() => navigate(`/admin/partners/${p.id}`)} sx={{ borderRadius: 2 }}>
-                        Details
+                        {t('common.details')}
                     </Button>
                     {p.status === 'PENDING' && (
                           <Button size="small" variant="contained" color="success" onClick={() => changeStatus(p.id, 'ACTIVE')} sx={{ borderRadius: 2 }}>
