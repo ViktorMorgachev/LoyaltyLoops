@@ -43,6 +43,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.BUSINESS_ALREADY_EXISTS,
                 AppErrorCode.ALREADY_JOINED,
                 AppErrorCode.POINT_INACTIVE,
+                AppErrorCode.TRIAL_ALREADY_USED,
                 AppErrorCode.INVALID_INVITE_CODE -> HttpStatusCode.Conflict
 
                 AppErrorCode.INVALID_REQUEST,
@@ -54,7 +55,9 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.INVALID_TIER_VALUE,
                 AppErrorCode.INVALID_RESET_TOKEN,
                 AppErrorCode.CARD_IS_BLOCKED,
-                AppErrorCode.INVALID_CODE-> HttpStatusCode.BadRequest
+                AppErrorCode.INVALID_CODE,
+                AppErrorCode.PARTNER_BLOCKED, // Added
+                AppErrorCode.PARTNER_ON_REVIEW -> HttpStatusCode.BadRequest
 
                 AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
                 AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> HttpStatusCode.TooManyRequests // or Forbidden/429

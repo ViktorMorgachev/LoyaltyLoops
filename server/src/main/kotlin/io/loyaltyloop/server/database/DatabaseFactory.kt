@@ -26,6 +26,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
 import io.loyaltyloop.server.database.SystemEventsTable
+import io.loyaltyloop.server.database.tables.PlatformInvitesTable
+import io.loyaltyloop.server.database.tables.PlatformRequestsTable
+import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
 
 object DatabaseFactory {
 
@@ -71,7 +74,10 @@ object DatabaseFactory {
                 SupportThreadsTable,
                 SupportMessagesTable,
                 DeviceTokensTable,
-                SystemEventsTable
+                SystemEventsTable,
+                PlatformSubscriptionsTable,
+                PlatformRequestsTable,
+                PlatformInvitesTable
             )
         }
     }

@@ -46,6 +46,12 @@ data class PinResetConfirmRequest(
 
 
 @Serializable
+data class ExpiringPointDto(
+    val pointName: String,
+    val endDate: Long
+)
+
+@Serializable
 data class PartnerEntity(
     val id: String,
     val ownerId: String,
@@ -58,7 +64,8 @@ data class PartnerEntity(
     val burnBonusesDays: Int?,
     val downgradeTierDays: Int?,
     val defaultVisitsTarget: Int = 10,
-    val ownerPhone: String? = null
+    val ownerPhone: String? = null,
+    val subscriptionWarnings: List<ExpiringPointDto>? = null
 )
 
 @Serializable

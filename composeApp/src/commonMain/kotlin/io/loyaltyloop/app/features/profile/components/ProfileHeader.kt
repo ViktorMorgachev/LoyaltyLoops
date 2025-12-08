@@ -195,6 +195,7 @@ fun WorkspaceItem(workspace: UserWorkspace, onClick: () -> Unit) {
         // Клиент сюда попасть не должен, но на всякий случай
         UserRole.PARTNER_MANAGER -> Pair(Icons.Default.ManageAccounts, Res.string.profile_role_administrator)
         UserRole.CLIENT -> return
+        UserRole.PLATFORM_SUPER_MANAGER -> return
     }
 
     SettingsItem(

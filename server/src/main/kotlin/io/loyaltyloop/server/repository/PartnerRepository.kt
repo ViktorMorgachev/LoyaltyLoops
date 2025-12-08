@@ -14,7 +14,6 @@ import io.loyaltyloop.server.database.tables.PartnerManagersTable
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.Employer
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
@@ -25,14 +24,12 @@ import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointSearchResponse
-import io.loyaltyloop.shared.models.TradingPointType
 import io.loyaltyloop.shared.models.UpdatePartnerRequest
 import io.loyaltyloop.shared.models.UpdateTradingPointRequest
 import io.loyaltyloop.shared.models.PartnerStatsDto
 import io.loyaltyloop.shared.models.WeeklyScheduleDto
+import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable // Added
 import org.jetbrains.exposed.sql.JoinType
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jetbrains.exposed.sql.ResultRow
@@ -51,6 +48,7 @@ import java.util.UUID
 import kotlin.jvm.Throws
 import io.loyaltyloop.server.utils.haversineMeters
 import io.loyaltyloop.server.utils.isOpen
+import io.loyaltyloop.shared.models.ExpiringPointDto
 
 class PartnerRepository {
 
@@ -161,6 +159,7 @@ class PartnerRepository {
         val baseQuery = TradingPointsTable
             .join(PartnersTable, JoinType.INNER, TradingPointsTable.partnerId, PartnersTable.id)
             .select {
+                // PartnerStatus.ACTIVE check is crucial here for Soft Ban logic
                 (TradingPointsTable.isActive eq true) and (PartnersTable.status eq PartnerStatus.ACTIVE)
             }
 
@@ -172,7 +171,7 @@ class PartnerRepository {
 
             val schedule = row.parseSchedule()
             val paused = row[TradingPointsTable.isTemporarilyPaused]
-            val isOpenNow = if (paused) false else schedule.isOpen(now)
+            val isOpenNow = if (paused) false else schedule?.isOpen(now)
             val dto = mapTradingPointEntity(
                 row = row,
                 schedule = schedule,
@@ -262,20 +261,72 @@ class PartnerRepository {
         pointID
     }
 
-    private fun mapPartnerEntity(row: ResultRow) = PartnerEntity(
-        id = row[PartnersTable.id],
-        ownerId = row[PartnersTable.ownerId],
-        businessName = row[PartnersTable.businessName],
-        countryCode = row[PartnersTable.countryCode],
-        hasPin = !row[PartnersTable.adminPinHash].isNullOrBlank(),
-        status = row[PartnersTable.status],
-        logoUrl = row[PartnersTable.logoUrl],
-        color = row[PartnersTable.color],
-        burnBonusesDays = row[PartnersTable.burnBonusesDays],
-        downgradeTierDays = row[PartnersTable.downgradeTierDays],
-        defaultVisitsTarget = row[PartnersTable.defaultVisitsTarget],
-        ownerPhone = null
-    )
+    private fun mapPartnerEntity(row: ResultRow): PartnerEntity {
+        val partnerId = row[PartnersTable.id]
+        
+        // Find expiring subscriptions (<= 3 days)
+        val now = System.currentTimeMillis()
+        val warningThreshold = now + (3 * 24 * 60 * 60 * 1000L)
+        
+        val allSubs = PlatformSubscriptionsTable
+            .innerJoin(TradingPointsTable)
+            .select {
+                (TradingPointsTable.partnerId eq partnerId) and
+                (PlatformSubscriptionsTable.isActive eq true) and
+                (TradingPointsTable.isActive eq true) and // Check Point is Active
+                (PlatformSubscriptionsTable.endDate.isNotNull())
+            }
+            .map {
+                Triple(
+                    it[TradingPointsTable.id], // PointId
+                    it[PlatformSubscriptionsTable.endDate]!!, // EndDate
+                    it[TradingPointsTable.name] // PointName
+                )
+            }
+
+        // Group by PointId and find the MAX end date for each point
+        val maxEndDates = allSubs
+            .groupBy { it.first }
+            .mapValues { (_, subs) -> subs.maxOf { it.second } }
+
+        // Filter logic:
+        // 1. Only include points where the MAX end date is expiring soon (<= 3 days).
+        // 2. If maxDate > threshold, the point is safe (renewed).
+        
+        val expiringPoints = allSubs
+            .filter { (pointId, endDate, _) ->
+                val maxDate = maxEndDates[pointId] ?: return@filter false
+                
+                if (maxDate > warningThreshold) return@filter false // Point is safe (renewed)
+                if (maxDate < now) return@filter false // Already expired (handled by job)
+                
+                // Only return the warning for the sub that matches the max date (avoid duplicates)
+                endDate == maxDate
+            }
+            .distinctBy { it.first } // Ensure unique points just in case
+            .map { (_, endDate, pointName) ->
+                ExpiringPointDto(
+                    pointName = pointName,
+                    endDate = endDate
+                )
+            }
+            
+        return PartnerEntity(
+            id = partnerId,
+            ownerId = row[PartnersTable.ownerId],
+            businessName = row[PartnersTable.businessName],
+            countryCode = row[PartnersTable.countryCode],
+            hasPin = !row[PartnersTable.adminPinHash].isNullOrBlank(),
+            status = row[PartnersTable.status],
+            logoUrl = row[PartnersTable.logoUrl],
+            color = row[PartnersTable.color],
+            burnBonusesDays = row[PartnersTable.burnBonusesDays],
+            downgradeTierDays = row[PartnersTable.downgradeTierDays],
+            defaultVisitsTarget = row[PartnersTable.defaultVisitsTarget],
+            ownerPhone = null,
+            subscriptionWarnings = if (expiringPoints.isNotEmpty()) expiringPoints else null
+        )
+    }
 
     private fun mapTradingPointEntity(
         row: ResultRow,

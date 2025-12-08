@@ -28,6 +28,10 @@ import { AllPartnersPage } from './pages/admin/AllPartnersPage';
 import { PartnerDetailsAdminPage } from './pages/admin/PartnerDetailsAdminPage';
 import { SystemEventsPage } from './pages/admin/SystemEventsPage'; // NEW
 
+// Платформа (B2B CRM)
+import { PlatformRequestsPage } from './pages/platform/PlatformRequestsPage';
+import { PlatformStaffPage } from './pages/platform/PlatformStaffPage'; 
+
 // Лейаут
 import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
@@ -72,6 +76,11 @@ function App() {
             <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
             <Route path="/admin/support" element={<SupportChatPage mode="admin" />} />
             <Route path="/admin/events" element={<SystemEventsPage />} />
+
+            {/* Platform CRM (B2B) */}
+            <Route path="/platform/requests" element={<PlatformRequestsPage />} />
+            <Route path="/platform/staff" element={<PlatformStaffPage />} />
+
           </Route>
 
           {/* Фоллбэк */}

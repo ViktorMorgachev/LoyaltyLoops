@@ -27,7 +27,7 @@ fun Route.configRoutes(
         
         val features = FeatureToggleDto(
             pushEnabled = applicationConfig.bool("features.pushEnabled", true),
-            testLabEnabled = applicationConfig.bool("features.testLabEnabled", false)
+            enableTestSupport = applicationConfig.bool("features.enableTestSupport", false)
         )
 
         val mapSettings = MapSettingsDto(

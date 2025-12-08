@@ -37,7 +37,7 @@ import io.loyaltyloop.shared.models.UpdateLoyaltySettingsRequest
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.server.utils.SecurityUtils
-import io.loyaltyloop.server.service.EmailService
+import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.SendSupportMessageRequest
 import io.loyaltyloop.shared.models.UserRole
@@ -236,8 +236,6 @@ fun Route.partnerRoutes(
                 val myPartner = partners.firstOrNull()
 
                 if (myPartner == null) {
-                    // Попробуем найти, где он менеджер
-                    // TODO: Реализовать getPartnersByManager(userId) если нужно
                     call.respond(listOf<TradingPointDto>())
                     return@get
                 }

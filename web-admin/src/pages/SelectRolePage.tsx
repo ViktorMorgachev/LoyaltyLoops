@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Container, Typography, Paper, Avatar, Box } from '@mui/material';
-import { Store as StoreIcon, AdminPanelSettings as AdminIcon } from '@mui/icons-material';
+import { Store as StoreIcon, AdminPanelSettings as AdminIcon, SupervisorAccount as ManagerIcon, SupportAgent as SupportIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext'; 
 import type { Workspace } from '../context/UserContext';
@@ -17,6 +17,8 @@ export const SelectRolePage = () => {
       
       if (ws.role === 'PLATFORM_SUPER_ADMIN') {
           navigate('/admin/partners');
+      } else if (ws.role === 'PLATFORM_SUPER_MANAGER' || ws.role === 'PLATFORM_MANAGER') {
+          navigate('/platform/requests');
       } else if (ws.role === 'PARTNER_ADMIN') {
           navigate('/partner/dashboard');
       } else {
@@ -28,6 +30,20 @@ export const SelectRolePage = () => {
 
   const handleSelect = (ws: Workspace) => {
       requestPinVerification(ws);
+  };
+
+  const getRoleIcon = (role: string) => {
+      if (role === 'PLATFORM_SUPER_ADMIN') return <AdminIcon fontSize="large" />;
+      if (role === 'PLATFORM_SUPER_MANAGER') return <ManagerIcon fontSize="large" />;
+      if (role === 'PLATFORM_MANAGER') return <SupportIcon fontSize="large" />;
+      return <StoreIcon fontSize="large" />;
+  };
+
+  const getRoleColor = (role: string) => {
+      if (role === 'PLATFORM_SUPER_ADMIN') return 'error';
+      if (role === 'PLATFORM_SUPER_MANAGER') return 'warning';
+      if (role === 'PLATFORM_MANAGER') return 'info';
+      return 'primary';
   };
 
   return (
@@ -43,7 +59,9 @@ export const SelectRolePage = () => {
       </Box>
 
       <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
-          {workspaces.map((ws) => (
+          {workspaces.map((ws) => {
+             const color = getRoleColor(ws.role);
+             return (
             <Paper
                 key={`${ws.id}-${ws.role}`}
                 elevation={0}
@@ -58,7 +76,7 @@ export const SelectRolePage = () => {
                     '&:hover': {
                         transform: 'translateY(-4px)',
                         boxShadow: '0 12px 24px -8px rgba(0, 0, 0, 0.15)',
-                        borderColor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main'
+                        borderColor: `${color}.main`
                     },
                     display: 'flex',
                     alignItems: 'center',
@@ -69,11 +87,11 @@ export const SelectRolePage = () => {
                     sx={{ 
                         width: 56, 
                         height: 56, 
-                        bgcolor: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.light' : 'primary.light',
-                        color: ws.role === 'PLATFORM_SUPER_ADMIN' ? 'error.main' : 'primary.main'
+                        bgcolor: `${color}.light`,
+                        color: `${color}.main`
                     }}
                 >
-                    {ws.role === 'PLATFORM_SUPER_ADMIN' ? <AdminIcon fontSize="large" /> : <StoreIcon fontSize="large" />}
+                    {getRoleIcon(ws.role)}
                   </Avatar>
                 <Box>
                     <Typography variant="h6" fontWeight="bold">
@@ -84,7 +102,7 @@ export const SelectRolePage = () => {
                     </Typography>
                 </Box>
       </Paper>
-          ))}
+          )})}
       </Box>
     </Container>
     {PinDialog}

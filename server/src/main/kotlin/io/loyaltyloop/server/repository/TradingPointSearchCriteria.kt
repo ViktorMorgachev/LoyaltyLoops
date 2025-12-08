@@ -39,3 +39,4 @@ fun TradingPointSearchCriteria.matches(point: TradingPointDto): Boolean {
     return true
 }
 
+

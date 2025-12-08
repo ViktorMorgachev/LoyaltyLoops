@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress, Stack } from '@mui/material';
 import { ContentCopy as ContentCopyIcon, Store as StoreIcon, AdminPanelSettings as AdminIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
 import { api } from '../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ export const ProfilePage = () => {
     const [resetLoading, setResetLoading] = useState(false);
     const [hasOwnerPin, setHasOwnerPin] = useState<boolean | null>(null);
     const [pinMetaLoading, setPinMetaLoading] = useState(false);
+    const [subscriptionWarnings, setSubscriptionWarnings] = useState<any[]>([]); // Added
     const uniqueWorkspaces = useMemo(() => {
         const list: Workspace[] = [];
         const seen = new Set<string>();
@@ -65,6 +66,7 @@ export const ProfilePage = () => {
         try {
             const res = await api.get('/partners/me');
             setHasOwnerPin(Boolean(res.data?.hasPin));
+            setSubscriptionWarnings(res.data?.subscriptionWarnings || []); // Added
         } catch (error) {
             console.error('Failed to load partner data', error);
             setHasOwnerPin(true);
@@ -175,27 +177,48 @@ export const ProfilePage = () => {
                     </Alert>
                 )}
                 
+                {subscriptionWarnings.length > 0 && (
+                    <Stack spacing={2} mb={3}>
+                        {subscriptionWarnings.map((warning, idx) => {
+                            const dateStr = new Date(warning.endDate).toLocaleDateString();
+                            const now = Date.now();
+                            const diff = warning.endDate - now;
+                            const isCritical = diff < 24 * 60 * 60 * 1000; // < 24h
+                            
+                            return (
+                                <Alert 
+                                    key={idx} 
+                                    severity={isCritical ? "error" : "warning"} 
+                                    variant="filled" 
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    {isCritical 
+                                        ? t('settings.subscription_expiring_critical', { point: warning.pointName, date: dateStr })
+                                        : t('settings.subscription_expiring', { point: warning.pointName, date: dateStr })
+                                    }
+                                </Alert>
+                            );
+                        })}
+                    </Stack>
+                )}
+                
                 <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={3}>
-                    <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1, mb: 0.5, display: 'block' }}>
-                            {t('profile.id_label')}
-                        </Typography>
-                        <TextField
-                            value={profile.userId || ''}
-                            fullWidth 
-                            disabled
-                            variant="outlined"
-                            InputProps={{
-                                endAdornment: (
-                                    <Tooltip title={t('common.copied')}>
-                                        <IconButton onClick={copyId} edge="end">
-                                            <ContentCopyIcon fontSize="small" />
-                                        </IconButton>
-                                    </Tooltip>
-                                )
-                            }}
-                        />
-                    </Box>
+                    <TextField
+                        label={t('profile.id_label')}
+                        value={profile.userId || ''}
+                        fullWidth 
+                        disabled
+                        variant="outlined"
+                        InputProps={{
+                            endAdornment: (
+                                <Tooltip title={t('common.copied')}>
+                                    <IconButton onClick={copyId} edge="end">
+                                        <ContentCopyIcon fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )
+                        }}
+                    />
                     <PhoneInput 
                         label={t('profile.phone_label')}
                         value={profile.phone || ''}

@@ -16,12 +16,13 @@ import {
   Info as InfoIcon,
   ChatBubbleOutline as ChatIcon,
   Science as ScienceIcon,
-  ListAlt as ListAltIcon // Added
+  ListAlt as ListAltIcon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { LanguageSwitcher } from './LanguageSwitcher';
-import { useUser } from '../context/UserContext'; // <-- ИСПОЛЬЗУЕМ КОНТЕКСТ
+import { useUser } from '../context/UserContext';
+import { useAppConfig } from '../context/ConfigContext';
 
 const drawerWidth = 240;
 
@@ -29,10 +30,11 @@ export const MainLayout = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { config } = useAppConfig();
 
   // БЕРЕМ ДАННЫЕ ИЗ КОНТЕКСТА (Они реактивные!)
-  const { isPartner, isPartnerAdmin, isSuperAdmin, isPlatformManager, isNewUser, workspaces, currentWorkspace, logout } = useUser();
-  const isPlatformStaff = isSuperAdmin || isPlatformManager;
+  const { isPartner, isPartnerAdmin, isSuperAdmin, isSuperManager, isPlatformManager, isNewUser, workspaces, currentWorkspace, logout } = useUser();
+  const isPlatformStaff = isSuperAdmin || isPlatformManager || isSuperManager;
 
   React.useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
@@ -110,17 +112,24 @@ export const MainLayout = () => {
   if (isPlatformStaff) {
       menuItems.push(
           { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' },
-          { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' }
+          { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' },
+          { text: t('platform.requests_title'), icon: <ListAltIcon />, path: '/platform/requests' }
       );
 
+      if (isSuperAdmin || isSuperManager) {
+          menuItems.push({ text: t('menu.platform_staff', { defaultValue: 'Staff' }), icon: <GroupIcon />, path: '/platform/staff' });
+      }
+
       if (isSuperAdmin) {
+        if (config.features.enableTestSupport) {
+            menuItems.push({
+              text: t('menu.test_lab'),
+              icon: <ScienceIcon />,
+              path: '/test-lab'
+            });
+        }
         menuItems.push({
-          text: t('menu.test_lab'),
-          icon: <ScienceIcon />,
-          path: '/test-lab'
-        });
-        menuItems.push({
-            text: t('menu.system_events', { defaultValue: 'Audit Logs' }),
+            text: t('menu.system_events'),
             icon: <ListAltIcon />,
             path: '/admin/events'
         });
