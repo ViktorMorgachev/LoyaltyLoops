@@ -8,8 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Help
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -19,7 +17,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -75,24 +72,6 @@ class ProfileScreen : Screen {
             }
         }
 
-        // 2. Настройка Pull-to-Refresh
-        val pullRefreshState = rememberPullToRefreshState()
-
-        // Если юзер потянул вниз (state.isRefreshing стало true) -> вызываем загрузку
-        if (pullRefreshState.isRefreshing) {
-            LaunchedEffect(Unit) {
-                viewModel.onAction(ProfileScreenModel.Action.OnRefresh)
-            }
-        }
-
-        // Если загрузка закончилась (в ViewModel) -> сообщаем об этом UI, чтобы убрать крутилку
-        LaunchedEffect(state.isLoading) {
-            if (!state.isLoading) {
-                pullRefreshState.endRefresh()
-            }
-        }
-
-
         LoyaltyScaffold(
             snackbarHostState = snackbarHostState,
             containerColor = MaterialTheme.colorScheme.background
@@ -102,7 +81,6 @@ class ProfileScreen : Screen {
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .nestedScroll(pullRefreshState.nestedScrollConnection) // <-- Магия свайпа здесь
             ) {
                 if (state.isLoading && state.phone.isBlank()) {
                     // Показываем большую крутилку только если данных НЕТ совсем
@@ -213,12 +191,13 @@ class ProfileScreen : Screen {
                 }
 
                 // Индикатор обновления (поверх списка)
-                PullToRefreshContainer(
-                    state = pullRefreshState,
-                    modifier = Modifier.align(Alignment.TopCenter),
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.primary
-                )
+                // TODO если что заменить пулл то рефреш
+//                PullToRefreshContainer(
+//                    state = pullRefreshState,
+//                    modifier = Modifier.align(Alignment.TopCenter),
+//                    containerColor = MaterialTheme.colorScheme.surface,
+//                    contentColor = MaterialTheme.colorScheme.primary
+//                )
             }
         }
 

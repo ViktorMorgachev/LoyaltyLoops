@@ -17,6 +17,7 @@ enum class AppErrorCode {
     TOO_MANY_REQUESTS,
     OTP_ATTEMPTS_EXCEEDED,
     ACCOUNT_DELETED,
+    SMS_PROVIDER_ERROR,
 
     // Auth
     INVALID_PHONE,
@@ -50,7 +51,12 @@ enum class AppErrorCode {
     CARD_PAUSED,
     TRIAL_ALREADY_USED,
     PARTNER_ON_REVIEW,
-    PARTNER_BLOCKED // Added
+    PARTNER_BLOCKED,
+    
+    // Moderation
+    USER_BANNED,
+    BLOCK_REQUEST_CREATED,
+    BLOCK_REQUEST_ALREADY_EXISTS
 }
 
 

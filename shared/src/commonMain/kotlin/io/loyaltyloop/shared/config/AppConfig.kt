@@ -11,5 +11,7 @@ object AppConfig {
         realtimeEnabled = true
     )
     val appVersion: String = BuildConfig.APP_VERSION
+    val isProd = BuildConfig.IS_PROD
+    const val VERSION_CODE: Int = BuildConfig.VERSION_CODE
 }
 

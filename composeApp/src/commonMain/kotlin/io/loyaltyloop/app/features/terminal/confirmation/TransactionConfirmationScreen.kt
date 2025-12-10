@@ -23,24 +23,27 @@ import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.show
 import io.loyaltyloop.app.utils.TransactionCalculationMessageMapper
 import io.loyaltyloop.app.utils.formatAmount
+import io.loyaltyloop.shared.utils.formatCurrency
 import io.loyaltyloop.shared.models.TransactionCalculationDto
 import io.loyaltyloop.shared.models.TransactionStrategy
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlinx.coroutines.launch
+import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
 
 data class TransactionConfirmationScreen(
     val calculation: TransactionCalculationDto,
     val tradingPointId: String,
     val cardId: String,
+    val userId: String,
     val strategy: TransactionStrategy,
     val currency: String
 ) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<TransactionConfirmationScreenModel> { parametersOf(calculation, tradingPointId, cardId, strategy) }
+        val viewModel = koinScreenModel<TransactionConfirmationScreenModel> { parametersOf(calculation, tradingPointId, cardId, userId, strategy) }
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -58,6 +61,9 @@ data class TransactionConfirmationScreen(
                         // Возвращаемся на экран сканирования (TerminalScreen)
                         // popUntil { it is TerminalScreen }
                         navigator?.popUntil { it is TerminalScreen }
+                    }
+                    is TransactionConfirmationScreenModel.Event.NavigateToRating -> {
+                        navigator?.replace(RateClientScreen(event.userId, event.tradingPointId))
                     }
                 }
             }
@@ -94,9 +100,8 @@ data class TransactionConfirmationScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                val formatCurrency: (Double) -> String = { value ->
-                    val formatted = formatAmount(value)
-                    if (currency.isNotBlank()) "$formatted $currency" else formatted
+                val formatCurrencyText: (Double) -> String = { value ->
+                    formatCurrency(value, currency)
                 }
                 val pointsSuffix = stringResource(Res.string.term_res_points_suffix)
                 val formatPoints: (Double) -> String = { value ->
@@ -110,7 +115,7 @@ data class TransactionConfirmationScreen(
                     Column(modifier = Modifier.padding(16.dp)) {
                         InfoRow(
                             stringResource(Res.string.term_confirm_purchase),
-                            formatCurrency(calculation.purchaseAmount)
+                            formatCurrencyText(calculation.purchaseAmount)
                         )
                         
                         if (calculation.pointsSpent > 0) {
@@ -142,7 +147,7 @@ data class TransactionConfirmationScreen(
                         ) {
                             Text(stringResource(Res.string.term_confirm_total_pay), style = MaterialTheme.typography.titleLarge)
                             Text(
-                                text = formatCurrency(calculation.moneyPaid),
+                                text = formatCurrencyText(calculation.moneyPaid),
                                 style = MaterialTheme.typography.headlineMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.primary

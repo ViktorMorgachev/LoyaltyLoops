@@ -59,6 +59,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.PARTNER_BLOCKED, // Added
                 AppErrorCode.PARTNER_ON_REVIEW -> HttpStatusCode.BadRequest
 
+                AppErrorCode.SMS_PROVIDER_ERROR -> HttpStatusCode.ServiceUnavailable
+
                 AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
                 AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> HttpStatusCode.TooManyRequests // or Forbidden/429
 
@@ -66,6 +68,10 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.USER_CREATION_FAILED,
                 AppErrorCode.INTERNAL_ERROR,
                 AppErrorCode.UNKNOWN_ERROR -> HttpStatusCode.InternalServerError
+
+                AppErrorCode.USER_BANNED,
+                AppErrorCode.BLOCK_REQUEST_CREATED,
+                AppErrorCode.BLOCK_REQUEST_ALREADY_EXISTS -> HttpStatusCode.Conflict
 
                 AppErrorCode.SUCCESS -> HttpStatusCode.OK
                 AppErrorCode.UNAUTHORIZED,
@@ -88,6 +94,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
         // Legacy mapping
         is IllegalArgumentException -> {
+            logger.warn("IllegalArgumentException: ${exception.message} at ${call.request.uri}")
             call.respond(
                 HttpStatusCode.BadRequest,
                 ApiMessage(AppErrorCode.INVALID_REQUEST, exception.message)
@@ -115,11 +122,11 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
             )
         }
 
-        else -> {
-            call.respond(
-                HttpStatusCode.InternalServerError,
-                ApiMessage(AppErrorCode.INTERNAL_ERROR, "Internal Server Error")
-            )
-        }
+                    else -> {
+                        call.respond(
+                            HttpStatusCode.InternalServerError,
+                            ApiMessage(AppErrorCode.INTERNAL_ERROR, "Internal Server Error: ${exception.message}")
+                        )
+                    }
     }
 }

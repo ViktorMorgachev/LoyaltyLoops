@@ -19,14 +19,16 @@ data class CelebrationState(
     val newBalance: Double? = null,
     val newVisits: Int? = null,
     val visitsTarget: Int? = null,
-    val dismissAfterMs: Long = 6_400L
+    val dismissAfterMs: Long = 6_400L,
+    val tradingPointId: String? = null
 ) {
     companion object {
         fun from(
             card: LoyaltyCardDto,
             event: CardAnimationEvent,
             newBalance: Double?,
-            newVisits: Int?
+            newVisits: Int?,
+            tradingPointId: String?
         ): CelebrationState? {
             return when (event) {
                 is CardAnimationEvent.BalanceEarned -> CelebrationState(
@@ -34,7 +36,8 @@ data class CelebrationState(
                     cardName = card.partnerName,
                     type = CelebrationType.Earn,
                     amount = event.amount,
-                    newBalance = newBalance ?: card.balance
+                    newBalance = newBalance ?: card.balance,
+                    tradingPointId = tradingPointId
                 )
 
                 is CardAnimationEvent.BalanceSpent -> CelebrationState(
@@ -42,7 +45,8 @@ data class CelebrationState(
                     cardName = card.partnerName,
                     type = CelebrationType.Spend,
                     amount = event.amount,
-                    newBalance = newBalance ?: card.balance
+                    newBalance = newBalance ?: card.balance,
+                    tradingPointId = tradingPointId
                 )
 
                 is CardAnimationEvent.VisitProgress -> CelebrationState(
@@ -52,7 +56,8 @@ data class CelebrationState(
                     visitsIncrement = event.increment,
                     remainingVisits = event.remainingToReward,
                     newVisits = newVisits ?: card.visitsCount,
-                    visitsTarget = card.visitsTarget
+                    visitsTarget = card.visitsTarget,
+                    tradingPointId = tradingPointId
                 )
 
                 CardAnimationEvent.RewardUnlocked -> CelebrationState(
@@ -60,20 +65,23 @@ data class CelebrationState(
                     cardName = card.partnerName,
                     type = CelebrationType.Reward,
                     newVisits = newVisits ?: card.visitsCount,
-                    visitsTarget = card.visitsTarget
+                    visitsTarget = card.visitsTarget,
+                    tradingPointId = tradingPointId
                 )
 
                 is CardAnimationEvent.TierUpgrade -> CelebrationState(
                     cardId = card.id,
                     cardName = card.partnerName,
                     type = CelebrationType.Tier,
-                    tierLevel = event.newLevel
+                    tierLevel = event.newLevel,
+                    tradingPointId = tradingPointId
                 )
 
                 CardAnimationEvent.CardCreated -> CelebrationState(
                     cardId = card.id,
                     cardName = card.partnerName,
-                    type = CelebrationType.Created
+                    type = CelebrationType.Created,
+                    tradingPointId = tradingPointId
                 )
 
                 CardAnimationEvent.CardSynced,

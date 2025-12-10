@@ -21,9 +21,43 @@ import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
+import io.loyaltyloop.shared.models.CashierDailyStatsDto
 
 @Suppress("TooManyFunctions")
 class TransactionRepository {
+
+    suspend fun getCashierStats(cashierId: String, from: Long, to: Long): CashierDailyStatsDto = dbQuery {
+        val rows = TransactionsHistoryTable.join(
+            TradingPointsTable,
+            JoinType.INNER,
+            onColumn = TransactionsHistoryTable.tradingPointId,
+            otherColumn = TradingPointsTable.id
+        )
+            .select {
+                (TransactionsHistoryTable.cashierId eq cashierId) and
+                (TransactionsHistoryTable.timestamp greaterEq from) and
+                (TransactionsHistoryTable.timestamp lessEq to)
+            }
+            .toList()
+
+        val currency = rows.firstOrNull()?.get(TradingPointsTable.currency) ?: ""
+        
+        val count = rows.size
+        val revenue = rows.sumOf { it[TransactionsHistoryTable.amount] }
+        val pointsDeltaList = rows.map { it[TransactionsHistoryTable.pointsDelta] }
+        val pointsAwarded = pointsDeltaList.filter { it > 0 }.sum()
+        val pointsSpent = pointsDeltaList.filter { it < 0 }.sumOf { -it }
+        val visits = rows.sumOf { it[TransactionsHistoryTable.visitsDelta] }
+
+        CashierDailyStatsDto(
+            transactionsCount = count,
+            totalRevenue = revenue,
+            pointsAwarded = pointsAwarded,
+            pointsSpent = pointsSpent,
+            visitsRecorded = visits,
+            currency = currency
+        )
+    }
 
     // Получить карту по ID (для транзакций)
     suspend fun getCardById(cardId: String): LoyaltyCardDto? = dbQuery {
@@ -34,6 +68,18 @@ class TransactionRepository {
             otherColumn = PartnersTable.id
         )
             .select { LoyaltyCardTable.id eq cardId }
+            .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
+            .singleOrNull()
+    }
+
+    suspend fun getCardByUserAndPartner(userId: String, partnerId: String): LoyaltyCardDto? = dbQuery {
+        LoyaltyCardTable.join(
+            otherTable = PartnersTable,
+            joinType = JoinType.INNER,
+            onColumn = LoyaltyCardTable.partnerId,
+            otherColumn = PartnersTable.id
+        )
+            .select { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
             .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
             .singleOrNull()
     }
@@ -214,6 +260,13 @@ class TransactionRepository {
             }
     }
 
+    suspend fun updateTrustScore(cardId: String, score: Double, fraud: Boolean) = dbQuery {
+        LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
+            it[trustScore] = score
+            it[fraudFlag] = fraud
+        }
+    }
+
     private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
         val block = row[LoyaltyCardTable.blockedUntil]?.let {
             CardBlockStatus(
@@ -225,6 +278,16 @@ class TransactionRepository {
             CardPauseStatus(reason = row[LoyaltyCardTable.pauseReason])
         } else {
             null
+        }
+
+        val score = row[LoyaltyCardTable.trustScore]
+        val fraud = row[LoyaltyCardTable.fraudFlag]
+        val risk = when {
+            fraud -> io.loyaltyloop.shared.models.RiskLevel.BLACK
+            score >= 4.5 -> io.loyaltyloop.shared.models.RiskLevel.GREEN
+            score >= 3.5 -> io.loyaltyloop.shared.models.RiskLevel.YELLOW
+            score >= 2.0 -> io.loyaltyloop.shared.models.RiskLevel.ORANGE
+            else -> io.loyaltyloop.shared.models.RiskLevel.RED
         }
 
         return LoyaltyCardDto(
@@ -239,7 +302,10 @@ class TransactionRepository {
             partnerName = "",
             cardColor = "#000000",
             logoUrl = null,
-            visitsCount = row[LoyaltyCardTable.visitsCount]
+            visitsCount = row[LoyaltyCardTable.visitsCount],
+            trustScore = score,
+            fraudFlag = fraud,
+            riskLevel = risk
         )
     }
 }

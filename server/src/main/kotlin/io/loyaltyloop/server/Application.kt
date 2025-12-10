@@ -2,7 +2,6 @@ package io.loyaltyloop.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.HttpClient
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -13,7 +12,6 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.CORS
@@ -35,8 +33,9 @@ import io.loyaltyloop.server.routes.authRoutes
 import io.loyaltyloop.server.routes.clientRoutes
 import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
-import io.loyaltyloop.server.routes.testSupportRoutes
 import io.loyaltyloop.server.routes.configRoutes
+import io.loyaltyloop.server.routes.appRoutes
+import io.loyaltyloop.server.routes.appRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
@@ -56,14 +55,17 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
 import io.loyaltyloop.server.service.sms.ConsoleSmsService
-import io.loyaltyloop.server.service.sms.InternalVerificationService
 import java.time.Duration
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.ktor.server.plugins.ratelimit.*
 import io.loyaltyloop.server.utils.bool
-import io.loyaltyloop.server.utils.int
 import kotlin.time.Duration.Companion.seconds
+import io.loyaltyloop.server.service.sms.PreludeSmsService
+import io.loyaltyloop.server.repository.RatingRepository
+import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.server.utils.string
+import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -88,6 +90,12 @@ fun Application.module() {
         allowHeader(HttpHeaders.ContentType)
         allowHeader(HttpHeaders.AcceptLanguage)
         allowHeader(HttpHeaders.AccessControlAllowOrigin)
+        // Allow custom headers for Device Signals
+        allowHeader("X-Device-Id")
+        allowHeader("X-Device-Platform")
+        allowHeader("X-Device-Model")
+        allowHeader("X-Os-Version")
+        allowHeader("X-App-Version")
 
         // Разрешаем куки/токены
         allowCredentials = true
@@ -159,25 +167,35 @@ fun Application.module() {
     val pinResetTokenRepository = PinResetTokenRepository()
     val supportChatRepository = SupportChatRepository()
     val deviceTokenRepository = DeviceTokenRepository()
+    val ratingRepository = RatingRepository()
     val systemEventRepository = SystemEventRepository()
     val eventLogger = EventLogger(systemEventRepository)
 
     val tokenService = TokenService(environment.config)
     val otpService = OtpService(environment.config)
     val cardRealtimeService = CardRealtimeService()
+    
+    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, environment.config)
+    
     val transactionService = TransactionService(
         userRepository,
         transactionRepository,
         partnerRepository,
         cardRealtimeService,
-        eventLogger
+        eventLogger,
     )
-    val smsService = ConsoleSmsService()
+
+//    val ratingService = RatingService(
+//        ratingRepository = ratingRepository,
+//        transactionRepository = transactionRepository,
+//        eventLogger = eventLogger
+//    )
+
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
 
     var webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
-    
+
     // Fix common configuration error where protocol is missing
     if (!webBaseUrl.startsWith("http://") && !webBaseUrl.startsWith("https://")) {
         webBaseUrl = "https://$webBaseUrl"
@@ -190,8 +208,19 @@ fun Application.module() {
         supportChatService = supportChatService
     )
 
+    val smsProvider = environment.config.string("sms.smsProvider", "internal")
+    val preludeApiKey = environment.config.string("sms.prelude_conf.apiKey", "")
+
+    val smsService = if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
+        PreludeSmsService(preludeApiKey, PreludeOkHttpClient.builder()
+            .apiToken(preludeApiKey)
+            .build(), eventLogger, emailService)
+    } else {
+        ConsoleSmsService(otpService,eventLogger, systemEventRepository )
+    }
+
     // Start Background Jobs
-    val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService()
+    val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService(smsService, emailService, systemEventRepository)
     loyaltyEngine.start(this)
 
     install(ContentNegotiation) {
@@ -244,30 +273,12 @@ fun Application.module() {
 
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
-    val forcePartnerPin = environment.config.propertyOrNull("admin.forcePartnerPin")?.getString()?.takeIf { it.isNotBlank() }
-    val provider = environment.config.propertyOrNull("auth.provider")?.getString() ?: "internal"
 
-    val verificationService = if (provider == "prelude") {
-        // Если в конфиге prelude - используем сервис Prelude
-        InternalVerificationService(
-            smsService = smsService,
-            otpService = otpService,
-            eventLogger = eventLogger,
-            systemEventRepository = systemEventRepository
-        )
-    } else {
-        // Иначе - используем внутреннюю логику (Console SMS + DB)
-        InternalVerificationService(
-            smsService = smsService,
-            otpService = otpService,
-            eventLogger = eventLogger,
-            systemEventRepository = systemEventRepository
-        )
-    }
+    val forcePartnerPin = environment.config.bool("features.forcePartnerPin", false)
 
-    if (forcePartnerPin != null) {
+    if (forcePartnerPin) {
         launch {
-            val affected = partnerRepository.resetAllPartnerPins(forcePartnerPin)
+            val affected = partnerRepository.resetAllPartnerPins("123456789")
             log.warn("Force-set PIN for $affected partners to the configured default.")
         }
     }
@@ -320,7 +331,7 @@ fun Application.module() {
 
         // Подключаем наши новые маршруты
         rateLimit(RateLimitName("auth")) {
-            authRoutes(userRepository, partnerRepository, tokenService, verificationService, eventLogger)
+            authRoutes(userRepository, partnerRepository, tokenService, smsService, eventLogger)
         }
 
         rateLimit {
@@ -332,8 +343,14 @@ fun Application.module() {
                 partnerRepository = partnerRepository,
                 userRepository = userRepository
             )
-            clientRoutes(userRepository, deviceTokenRepository)
-            terminalRoutes(userRepository = userRepository, transactionService = transactionService)
+            clientRoutes(userRepository,
+                deviceTokenRepository,
+                ratingService)
+            terminalRoutes(
+                userRepository = userRepository,
+                transactionService = transactionService,
+                ratingService = ratingService
+            )
             partnerRoutes(
                 userRepository = userRepository,
                 partnerRepository = partnerRepository,
@@ -342,29 +359,26 @@ fun Application.module() {
                 emailService = emailService,
                 webBaseUrl = webBaseUrl,
                 supportChatService = supportChatService,
-                eventLogger = eventLogger
+                eventLogger = eventLogger,
+                ratingRepository = ratingRepository
             )
-            adminRoutes(
-                applicationConfig = environment!!.config,
-                userRepo = userRepository,
-                partnerRepo = partnerRepository,
-                supportChatService = supportChatService,
-                systemEventRepository = systemEventRepository
-            )
+        adminRoutes(
+            applicationConfig = environment!!.config,
+            userRepo = userRepository,
+            partnerRepo = partnerRepository,
+            supportChatService = supportChatService,
+            systemEventRepository = systemEventRepository
+        )
             adminPlatformRoutes(
                 platformRepository = platformRepository,
                 userRepository = userRepository,
                 emailService = emailService
             )
+            appRoutes(environment!!.config)
         }
         val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
         if (enableTestSupport) {
-            testSupportRoutes(
-                userRepository = userRepository,
-                transactionRepository = transactionRepository,
-                cardRealtimeService = cardRealtimeService,
-                loyaltyEngineService = loyaltyEngine
-            )
+
             get("/health") {
                 val isDbAlive = DatabaseFactory.ping()
 

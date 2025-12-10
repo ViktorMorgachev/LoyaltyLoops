@@ -15,6 +15,7 @@ class TokenStorage(private val settings: Settings) {
         private const val KEY_CURRENT_WORKSPACE_ID = "current_workspace_id"
         private const val KEY_IS_ROLE_SELECTED = "is_role_selected"
         private const val KEY_APP_LANGUAGE = "app_language"
+        private const val KEY_LAST_SHOWN_WHATS_NEW_VERSION = "last_shown_whats_new_version"
     }
 
     // --- IN-MEMORY CACHE (Мгновенный доступ) ---
@@ -81,6 +82,14 @@ class TokenStorage(private val settings: Settings) {
     }
 
     fun getAppLanguageCode(): String? = settings.getStringOrNull(KEY_APP_LANGUAGE)
+
+    fun getLastShownWhatsNewVersion(): Int {
+        return settings.getInt(KEY_LAST_SHOWN_WHATS_NEW_VERSION, 0)
+    }
+
+    fun setLastShownWhatsNewVersion(versionCode: Int) {
+        settings.putInt(KEY_LAST_SHOWN_WHATS_NEW_VERSION, versionCode)
+    }
 
     fun clear() {
         log.write("💾 STORAGE: Clearing all data")

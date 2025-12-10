@@ -11,6 +11,7 @@ export const uz = {
       close: "Yopish",
       all: "Barchasi",
       reset: "Qayta tiklash",
+      back: "Назад",
       details: "Batafsil",
       status: "Holat",
       actions: "Amallar",
@@ -701,6 +702,8 @@ export const uz = {
       hero_subtitle: "Kichik va o'rta biznes uchun zamonaviy sodiqlik tizimi.",
       start_free: "Bepul boshlash",
       roadmap_btn: "Rivojlanish rejasi",
+      download_play: "Google Play orqali yuklab olish",
+      privacy: "Maxfiylik siyosati",
       roadmap: {
         title: "Loyiha xaritasi 🚀",
         subtitle: "LoyaltyLoop kelajagi.",
@@ -718,14 +721,86 @@ export const uz = {
           analytics_desc: "Daromad, o'rtacha chek, mijozlar faolligi.",
           push_label: "Push-xabarlar",
           push_desc: "Marketing kampaniyalarini yuborish.",
-          ban_label: "Ban tizimi",
-          ban_desc: "Biznesni himoya qilish.",
+          gamification_label: "Mijozlar gamifikatsiyasi",
+          gamification_desc: "Yutuqlar, sodiqlik darajalari, faollik uchun mukofotlar.",
           referral_label: "Referal dastur (B2C)",
           referral_desc: "Do'stingni taklif qil.",
           b2b_label: "B2B Kengaytirish",
           b2b_desc: "Platforma menejeri kabineti."
         }
       },
+
+      problem: {
+        title: "Muammo: Eskirgan tizimlar",
+        desc: "Mahalliy tarmoqlar har bir savdo nuqtasining o'ziga xosligini inobatga olmaydigan moslashuvchan bo'lmagan sodiqlik dasturlari sababli mijozlarini yo'qotmoqda. Do'kon egalari mijozlarni ushlab qolishda qiynaladi va nimasi yetishmayotganini tushunmaydi."
+      },
+      solution: {
+        title: "Yechimimiz: Aqlli platforma",
+        desc: "Har bir nuqta uchun nozik sozlashlar va MDH bozorining ehtiyojlarini hisobga oladigan sodiqlik tizimini yaratamiz.",
+        item_1: "Nozik sozlash",
+        item_2: "MDHga yo'nalish",
+        item_3: "Darhol natija"
+      },
+
+      mechanics_title: "Sodiqlik mexanikasi variantlari",
+      mechanics: {
+        accumulative: {
+          title: "To'plovchi tizim",
+          desc: "Mijoz aylanmani oshiradi, Start → Silver → Gold darajasiga ko'tariladi va ko'proq keshbek oladi."
+        },
+        visits: {
+          title: "Tashrif hisoblagichi",
+          desc: "Har bir tashrif sovg'aga yaqinlashtiradi: 6-qahva bepul, 10-soch olish chegirma bilan."
+        },
+        hybrid: {
+          title: "Gibrid model",
+          desc: "Mijoz strategiyani tanlaydi: tashrif qo'shish yoki keshbek hisoblash. Tanlov erkinligi sodiqlikni oshiradi."
+        }
+      },
+
+      security: {
+        title: "Xavfsizlik va nazorat",
+        desc: "Tokenlar bilan markazlashgan ish, kirish huquqlarini to'liq nazorat qilish va barcha harakatlarning batafsil jurnali."
+      },
+
+      benefits_title: "Asosiy afzalliklar",
+      localization: {
+        title: "MDH uchun lokalizatsiya",
+        desc: "Rus, qozoq, o'zbek va boshqa tillarda qulay interfeyslar."
+      },
+      analytics: {
+        title: "Analitika va hisobotlar",
+        item_1: "Daromad, o'rtacha chek va mijoz faolligi bo'yicha batafsil statistika",
+        item_2: "Haftalik fikrlar dinamikasini ko'rish imkoniyati",
+        item_3: "Hisobotlarni biznes bo'yicha ham, har bir filial bo'yicha alohida ham ko'rish"
+      },
+      admin: {
+        title: "Adminlashtirish",
+        desc: "Filiallar va xodimlarni veb-interfeys orqali to'liq boshqarish. Markazlashgan nazorat."
+      },
+      partnership: {
+        title: "Hamkorlik imkoniyatlari",
+        desc: "Platforma menejeri bo'ling va boshqa kompaniyalarni ulang. Ularning abonent to'lovining 50% oling."
+      },
+      multiregion: {
+        title: "Ko'p mintaqali tizim",
+        desc: "Turli mamlakatlarda filiallarga ega bo'lish, har bir joy uchun valyutani tanlash."
+      },
+      multirole: {
+        title: "Ko'p rol tizimi",
+        desc: "Bitta akkaunt — mijoz, hamkor, menejer rollari. Kontekstlar orasida qulay almashish."
+      },
+      protection: {
+        title: "Biznesni himoya qilish",
+        desc: "Kassirlar mijozlar haqida fikr qoldira oladi (ishonchli, murakkab, xavfli). Bu mojarolarni kamaytiradi va daromadga ta'sir qiladi."
+      },
+      result: {
+        title: "Biznes uchun natija",
+        stat_1: "+40% Qayta xaridlar o'sishi",
+        stat_2: "+25% O'rtacha chek o'sishi",
+        stat_3: "Mijoz xulq-atvori bo'yicha to'liq analitika"
+      },
+
       features: {
         flexible_title: "Moslashuvchan sodiqlik",
         flexible_desc: "Keshbek, Shtamplar yoki Gibrid.",

@@ -68,7 +68,6 @@ import kotlinx.datetime.toLocalDateTime
 import kotlinx.coroutines.flow.Flow
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.wallet_card_back_goal_prefix
-import loyaltyloop.composeapp.generated.resources.wallet_card_back_goal_suffix
 import loyaltyloop.composeapp.generated.resources.wallet_card_back_progress_title
 import loyaltyloop.composeapp.generated.resources.wallet_card_back_remaining_prefix
 import loyaltyloop.composeapp.generated.resources.wallet_card_back_remaining_suffix
@@ -79,10 +78,9 @@ import loyaltyloop.composeapp.generated.resources.wallet_card_blocked_until
 import loyaltyloop.composeapp.generated.resources.wallet_card_closed_default
 import loyaltyloop.composeapp.generated.resources.wallet_card_closed_reason
 import loyaltyloop.composeapp.generated.resources.wallet_card_new_level
-import loyaltyloop.composeapp.generated.resources.wallet_card_points_suffix
 import loyaltyloop.composeapp.generated.resources.wallet_card_reward_badge
 import loyaltyloop.composeapp.generated.resources.wallet_card_type
-import loyaltyloop.composeapp.generated.resources.wallet_card_visit_suffix
+import loyaltyloop.composeapp.generated.resources.wallet_card_visits
 import org.jetbrains.compose.resources.stringResource
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import kotlin.math.abs
@@ -125,8 +123,8 @@ fun LoyaltyCardItem(
     }
     val highlight = remember { Animatable(0f) }
 
-    val pointsSuffix = stringResource(Res.string.wallet_card_points_suffix)
-    val visitSuffix = stringResource(Res.string.wallet_card_visit_suffix)
+    val pointsSuffix = "Б"
+    val visitSuffix = stringResource(Res.string.wallet_card_visits)
     val newLevelLabel = stringResource(Res.string.wallet_card_new_level)
     val rewardLabel = stringResource(Res.string.wallet_card_reward_badge)
     val activeBlock = card.block?.takeIf { it.until > Clock.System.now().toEpochMilliseconds() }
@@ -213,8 +211,9 @@ fun LoyaltyCardItem(
                 .clip(shape = cornerShape)
                 .fillMaxSize()
                 .clickable(
-                    interactionSource = interactionSource,
-                    indication = rememberRipple(bounded = true, color = Color.White.copy(alpha = 0.35f)),
+                    // TODO разобраться с рипл
+//                    interactionSource = interactionSource,
+//                    indication = rememberRipple(bounded = true, radius = 4.dp, color = Color.White.copy(alpha = 0.35f)),
                     onClick = onFlipToggle
                 )
                 .graphicsLayer {
@@ -392,7 +391,7 @@ private fun LoyaltyCardBackContent(card: LoyaltyCardDto, cardColor: Color) {
     val goalText = UiText.concat(
         UiText.Resource(Res.string.wallet_card_back_goal_prefix),
         UiText.DynamicString(goal.toString()),
-        UiText.Resource(Res.string.wallet_card_back_goal_suffix)
+        UiText.Resource(Res.string.wallet_card_visits)
     ).asString()
 
     Column(

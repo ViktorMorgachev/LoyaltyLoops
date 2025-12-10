@@ -167,9 +167,9 @@ class ProfileScreenModel(
                         name = UiText.Resource(Res.string.profile_error_load)
                     )
                 }
-                .onError { code, _ ->
+                .onError { code, msg ->
                     log.write("Failed to load profile: $code", LogType.Error)
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                     _state.value = _state.value.copy(
                         isLoading = false,
                         name = UiText.Resource(Res.string.profile_error_load)
@@ -227,10 +227,10 @@ class ProfileScreenModel(
                         )
                     )
                 }
-                .onError { errorCode, _ ->
+                .onError { errorCode, msg ->
                     log.write("Failed to update language: $errorCode", LogType.Warning)
                     _events.send(
-                        Event.ShowMessage(UiText.Resource(errorCode.toResource()), SnackbarType.Error)
+                        Event.ShowMessage(UiText.Resource(errorCode.toResource(msg)), SnackbarType.Error)
                     )
                 }
                 .onFailure { throwable ->
@@ -266,9 +266,9 @@ class ProfileScreenModel(
                     _state.value = _state.value.copy(isDeletingAccount = false)
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                 }
-                .onError { code, _ ->
+                .onError { code, msg ->
                     _state.value = _state.value.copy(isDeletingAccount = false)
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                 }
         }
     }
@@ -290,9 +290,9 @@ class ProfileScreenModel(
                     _state.value = _state.value.copy(isDeletingAccount = false)
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                 }
-                .onError { code, _ ->
+                .onError { code, msg ->
                     _state.value = _state.value.copy(isDeletingAccount = false)
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                 }
         }
     }

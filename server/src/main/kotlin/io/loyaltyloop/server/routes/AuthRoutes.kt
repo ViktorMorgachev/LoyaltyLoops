@@ -8,7 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.TokenService
-import io.loyaltyloop.server.service.sms.verification.VerificationService
+import io.loyaltyloop.server.service.sms.verification.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
@@ -24,12 +24,14 @@ import io.loyaltyloop.shared.models.ConfirmAccountDeletionRequest
 import io.loyaltyloop.shared.models.RequestAccountDeletionResponse
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
+import io.loyaltyloop.server.service.sms.PreludeSmsService
+import io.loyaltyloop.server.service.sms.SmsService
 
 fun Route.authRoutes(
     repository: UserRepository,
     partnerRepository: io.loyaltyloop.server.repository.PartnerRepository,
     tokenService: TokenService,
-    verificationService: VerificationService,
+    smsService: SmsService,
     eventLogger: EventLogger
 ) {
 
@@ -49,12 +51,14 @@ fun Route.authRoutes(
             }
 
             val existingUser = repository.getUserByPhone(request.phone)
-            val code = verificationService.startVerification(phone = request.phone, userId = existingUser?.id)
+            val signals = call.extractSignals()
+            val verificationId = smsService.startVerification(phone = request.phone, userId = existingUser?.id, signals = signals)
 
             call.respond(
                 mapOf(
                     "status" to "Code sent",
-                    "debugCode" to code
+                    "verificationId" to verificationId,
+                    "debugCode" to verificationId // For backward compatibility if client used this
                 )
             )
         }
@@ -68,7 +72,9 @@ fun Route.authRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
 
-            if (verificationService.checkCode(request.phone, request.code)) {
+            val verificationId = request.verificationId ?: request.phone
+
+            if (smsService.checkCode(verificationId, request.phone, request.code)) {
                 var user = repository.getUserByPhone(request.phone)
 
                 val isNew = user == null
@@ -80,7 +86,7 @@ fun Route.authRoutes(
                         user = UserDto(
                             id = UUID.randomUUID().toString(),
                             phoneNumber = request.phone,
-                            countryCode = request.code,
+                            countryCode = request.countryCode.name,
                             language = lang,
                             qrSecret = tokenService.generateQrSecret(),
                             firstName = null
@@ -205,9 +211,10 @@ fun Route.authRoutes(
                 val userId = call.getUserIdOrRespond(repository) ?: return@post
                 val user = repository.getUserById(userId)!!
 
-                verificationService.startVerification(phone = user.phoneNumber, userId = userId)
+                val signals = call.extractSignals()
+                val verificationId = smsService.startVerification(phone = user.phoneNumber, userId = userId, signals = signals)
 
-                call.respond(RequestAccountDeletionResponse("Confirmation code sent"))
+                call.respond(RequestAccountDeletionResponse("Confirmation code sent", verificationId))
             }
 
             post("/account/delete/confirm") {
@@ -215,7 +222,9 @@ fun Route.authRoutes(
                 val user = repository.getUserById(userId)!!
                 val request = call.receive<ConfirmAccountDeletionRequest>()
 
-                if (verificationService.checkCode(user.phoneNumber, request.code)) {
+                val verificationId = request.verificationId ?: user.phoneNumber
+
+                if (smsService.checkCode(verificationId, user.phoneNumber, request.code)) {
                     repository.markUserDeleted(userId, request.reason)
                     repository.deleteAllTokensForUser(userId)
 
@@ -233,4 +242,15 @@ fun Route.authRoutes(
             }
         }
     }
+}
+
+private fun ApplicationCall.extractSignals(): VerificationSignals {
+    return VerificationSignals(
+        ip = request.header("X-Forwarded-For")?.split(",")?.firstOrNull() ?: request.local.remoteHost,
+        deviceId = request.header("X-Device-Id"),
+        platform = request.header("X-Device-Platform"),
+        deviceModel = request.header("X-Device-Model"),
+        osVersion = request.header("X-Os-Version"),
+        appVersion = request.header("X-App-Version")
+    )
 }

@@ -11,8 +11,14 @@ import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.CalculateTransactionRequest
 import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.ScanQrRequest
+import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.shared.models.CreateClientRatingDto
 
-fun Route.terminalRoutes(userRepository: UserRepository, transactionService: TransactionService) {
+fun Route.terminalRoutes(
+    userRepository: UserRepository,
+    transactionService: TransactionService,
+    ratingService: RatingService
+) {
     route("/terminal") {
         authenticate("auth-jwt") {
             
@@ -51,6 +57,20 @@ fun Route.terminalRoutes(userRepository: UserRepository, transactionService: Tra
                     strategy = request.strategy
                 )
                 
+                call.respond(result)
+            }
+            
+            get("/stats") {
+                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val stats = transactionService.getCashierDailyStats(cashierUserId)
+                call.respond(stats)
+            }
+
+            post("/rate-client") {
+                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val request = call.receive<CreateClientRatingDto>()
+                
+                val result = ratingService.rateClient(cashierUserId, request)
                 call.respond(result)
             }
         }

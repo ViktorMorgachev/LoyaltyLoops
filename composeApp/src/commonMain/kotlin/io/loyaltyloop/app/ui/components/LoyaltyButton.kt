@@ -20,7 +20,8 @@ fun LoyaltyButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    containerColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Button(
         onClick = onClick,
@@ -28,8 +29,8 @@ fun LoyaltyButton(
         shape = RoundedCornerShape(12.dp), // Единый стиль скругления
         enabled = enabled && !isLoading, // Блокируем при загрузке
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.primary,
-            disabledContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            containerColor = containerColor,
+            disabledContainerColor = containerColor.copy(alpha = 0.5f)
         )
     ) {
         if (isLoading) {

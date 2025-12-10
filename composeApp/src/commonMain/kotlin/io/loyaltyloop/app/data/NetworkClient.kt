@@ -25,6 +25,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.serialization.kotlinx.KotlinxWebsocketSerializationConverter
 import io.loyaltyloop.app.config.AppConfig
 import io.loyaltyloop.app.data.network.jsonParser
+import io.loyaltyloop.app.utils.DeviceInfoProvider
 import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.AuthResponse
@@ -34,7 +35,12 @@ object NetworkClient {
 
     private val netLog = KermitLogger.withTag("LoyaltyNetwork")
 
-    fun create(engine: HttpClientEngine, tokenStorage: TokenStorage,  sessionManager: SessionManager): HttpClient {
+    fun create(
+        engine: HttpClientEngine,
+        tokenStorage: TokenStorage,
+        sessionManager: SessionManager,
+        deviceInfo: DeviceInfoProvider
+    ): HttpClient {
         return HttpClient(engine) {
 
             install(ContentNegotiation) {
@@ -121,6 +127,13 @@ object NetworkClient {
             url(AppConfig.SERVER_URL)
             val language = tokenStorage.getAppLanguageCode() ?: "ru"
             header(HttpHeaders.AcceptLanguage, language)
+            
+            // Device Signals
+            header("X-Device-Id", deviceInfo.deviceId)
+            header("X-Device-Platform", deviceInfo.platform)
+            header("X-Device-Model", deviceInfo.model)
+            header("X-Os-Version", deviceInfo.osVersion)
+            header("X-App-Version", deviceInfo.appVersion)
         }
         }
     }

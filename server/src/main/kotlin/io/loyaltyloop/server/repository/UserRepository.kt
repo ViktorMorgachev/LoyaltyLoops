@@ -201,6 +201,8 @@ class UserRepository {
             it[blockedReason] = null
             it[isPaused] = false
             it[pauseReason] = null
+            it[trustScore] = 4.0
+            it[fraudFlag] = false
         }
 
         // 3. Собираем полный DTO сразу
@@ -218,7 +220,10 @@ class UserRepository {
             partnerName = partnerName,
             cardColor = partnerColor,
             logoUrl = partnerLogo,
-            visitsCount = 0
+            visitsCount = 0,
+            trustScore = 4.0,
+            fraudFlag = false,
+            riskLevel = io.loyaltyloop.shared.models.RiskLevel.YELLOW // Default 4.0 is Yellow (Standard)
         )
 
         newCard to true
@@ -238,6 +243,16 @@ class UserRepository {
             null
         }
 
+        val score = row[LoyaltyCardTable.trustScore]
+        val fraud = row[LoyaltyCardTable.fraudFlag]
+        val risk = when {
+            fraud -> io.loyaltyloop.shared.models.RiskLevel.BLACK
+            score >= 4.5 -> io.loyaltyloop.shared.models.RiskLevel.GREEN
+            score >= 3.5 -> io.loyaltyloop.shared.models.RiskLevel.YELLOW
+            score >= 2.0 -> io.loyaltyloop.shared.models.RiskLevel.ORANGE
+            else -> io.loyaltyloop.shared.models.RiskLevel.RED
+        }
+
         return LoyaltyCardDto(
             id = row[LoyaltyCardTable.id],
             userId = row[LoyaltyCardTable.userId],
@@ -248,10 +263,12 @@ class UserRepository {
             block = block,
             pause = pause,
             partnerName = "",
-            cardColor = "#000000",
+            cardColor = null,
             logoUrl = null,
-            visitsCount = row[LoyaltyCardTable.visitsCount]
-
+            visitsCount = row[LoyaltyCardTable.visitsCount],
+            trustScore = score,
+            fraudFlag = fraud,
+            riskLevel = risk
         )
     }
 

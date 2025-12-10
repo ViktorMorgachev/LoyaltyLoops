@@ -16,38 +16,39 @@ export const RoadmapPage = () => {
             label: t('landing.roadmap.steps.mvp_label'),
             description: t('landing.roadmap.steps.mvp_desc'),
             status: 'DONE',
-            date: 'Q1 2025'
+            date: 'Q4 2025'
         },
         {
             label: t('landing.roadmap.steps.analytics_label'),
             description: t('landing.roadmap.steps.analytics_desc'),
-            status: 'IN_PROGRESS',
-            date: 'Q2 2025'
-        },
-        {
-            label: t('landing.roadmap.steps.push_label'),
-            description: t('landing.roadmap.steps.push_desc'),
-            status: 'PLANNED',
-            date: 'Q3 2025'
-        },
-        {
-            label: t('landing.roadmap.steps.ban_label'),
-            description: t('landing.roadmap.steps.ban_desc'),
-            status: 'PLANNED',
-            date: 'Q3 2025'
-        },
-        {
-            label: t('landing.roadmap.steps.referral_label'),
-            description: t('landing.roadmap.steps.referral_desc'),
-            status: 'PLANNED',
+            status: 'DONE',
             date: 'Q4 2025'
         },
         {
             label: t('landing.roadmap.steps.b2b_label'),
             description: t('landing.roadmap.steps.b2b_desc'),
-            status: 'PLANNED',
-            date: '2026'
+            status: 'DONE',
+            date: 'Q4 2025'
         },
+        {
+            label: t('landing.roadmap.steps.push_label'),
+            description: t('landing.roadmap.steps.push_desc'),
+            status: 'PLANNED',
+            date: 'Q1 2026'
+        },
+        {
+            label: t('landing.roadmap.steps.gamification_label'),
+            description: t('landing.roadmap.steps.gamification_desc'),
+            status: 'PLANNED',
+            date: 'Q1 2026'
+        },
+        {
+            label: t('landing.roadmap.steps.referral_label'),
+            description: t('landing.roadmap.steps.referral_desc'),
+            status: 'PLANNED',
+            date: 'Q2 2026'
+        },
+        
     ];
 
     const getStepIcon = (status: string) => {
