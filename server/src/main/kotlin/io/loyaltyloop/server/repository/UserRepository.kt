@@ -285,7 +285,7 @@ class UserRepository {
             .map {
                 rowToCardDto(it).copy(
                     partnerName = it[PartnersTable.businessName],
-                    cardColor = it[PartnersTable.color],
+                    cardColor = it[PartnersTable.color].ifBlank { "#4F46E5" }, // fallback на дефолт партнёра
                     logoUrl = it[PartnersTable.logoUrl],
                     visitsTarget = it[PartnersTable.defaultVisitsTarget]
                 )
