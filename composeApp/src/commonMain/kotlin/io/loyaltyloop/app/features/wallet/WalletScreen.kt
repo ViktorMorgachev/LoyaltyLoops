@@ -6,12 +6,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.QrCode
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -57,18 +56,7 @@ class WalletScreen : Screen {
             viewModel.loadCards()
         }
 
-        // Pull To Refresh
         val pullRefreshState = rememberPullToRefreshState()
-        LaunchedEffect(pullRefreshState.isRefreshing) {
-            if (pullRefreshState.isRefreshing) {
-                viewModel.onAction(WalletScreenModel.Action.OnRefresh)
-            }
-        }
-        LaunchedEffect(state.isLoading) {
-            if (!state.isLoading && pullRefreshState.isRefreshing) {
-                pullRefreshState.endRefresh()
-            }
-        }
 
         val openQrSheet: () -> Unit = {
             viewModel.onAction(WalletScreenModel.Action.OnQrCodeClicked)
@@ -112,17 +100,17 @@ class WalletScreen : Screen {
                     }
                 }
             ) { padding ->
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(padding)
-                        .nestedScroll(pullRefreshState.nestedScrollConnection)
+                PullToRefreshBox(
+                    isRefreshing = state.isLoading,
+                    onRefresh = { viewModel.onAction(WalletScreenModel.Action.OnRefresh) },
+                    state = pullRefreshState,
+                    modifier = Modifier.fillMaxSize().padding(padding)
                 ) {
                     if (state.cards.isEmpty()) {
                         EmptyWalletView(
                             onShowQrClicked = { openQrSheet() },
                         )
-                    } else if (!state.isLoading) {
+                    } else {
                         LazyColumn(
                             modifier = Modifier.fillMaxSize(),
                             contentPadding = PaddingValues(16.dp)
@@ -151,13 +139,6 @@ class WalletScreen : Screen {
                             item { Spacer(modifier = Modifier.height(80.dp)) }
                         }
                     }
-
-                    PullToRefreshContainer(
-                        state = pullRefreshState,
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
                 }
 
                 if (showQrSheet) {

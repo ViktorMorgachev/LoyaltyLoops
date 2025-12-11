@@ -1,235 +1,489 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LoyaltyLoop</string>
-    <string name="auth_btn_next">Continue</string>
-    <string name="auth_enter_code">Enter the code from SMS</string>
-    <string name="auth_phone_label">Your phone number</string>
-    <string name="auth_resend_btn">Resend code</string>
-    <string name="auth_resend_timer">Resend via</string>
-    <string name="auth_subtitle">Login for clients and partners</string>
-    <string name="auth_success">Successful login</string>
+
+    <!-- Auth Screen -->
     <string name="auth_title">LoyaltyLoop</string>
-    <string name="btn_exit_mode">Exit mode</string>
-    <string name="btn_exit_short">Log out</string>
-    <string name="btn_retry">Repeat</string>
-    <string name="btn_save">Save and login</string>
-    <string name="cashier_join_success">You have successfully joined the team!</string>
-    <string name="celebration_close">Close</string>
-    <string name="celebration_new_balance_prefix">New balance:</string>
-    <string name="celebration_reward_text">You can pick up your gift now!</string>
-    <string name="celebration_rules_hint">Check the promotion rules on site. Point ratings and visit details will appear here soon.</string>
-    <string name="celebration_title_created">New map</string>
-    <string name="celebration_title_earn">Accrual of bonuses</string>
-    <string name="celebration_title_reward">The reward is ready!</string>
-    <string name="celebration_title_spend">Write-off of bonuses</string>
-    <string name="celebration_title_tier_prefix">New level:</string>
-    <string name="celebration_title_visit">The visit is counted</string>
-    <string name="celebration_visit_increment_prefix">+</string>
-    <string name="celebration_visit_increment_suffix">visit</string>
-    <string name="celebration_visit_logged">The visit has been taken into account</string>
-    <string name="celebration_visit_remaining_prefix">Time left until the gift</string>
-    <string name="celebration_visit_reward_ready">The gift is already waiting!</string>
-    <string name="err_field_required">This field is required</string>
-    <string name="err_invalid_email">Incorrect Email format</string>
-    <string name="err_invalid_phone_format">Invalid number format</string>
+    <string name="auth_subtitle">Login for customers and partners</string>
+    <string name="auth_phone_label">Your phone number</string>
+    <string name="auth_btn_next">Continue</string>
+    <string name="auth_enter_code">Enter SMS code</string>
+    <string name="auth_resend_btn">Resend code</string>
+    <string name="auth_resend_timer">Resend in</string>
+    <string name="profile_loading">Loading...</string>
+    <string name="profile_error_load">Load error</string>
+    <string name="auth_success">Login successful</string>
+    <string name="ignore" />
+
+    <!-- Errors -->
+    <string name="error_network">No internet connection</string>
+    <string name="error_server">Service temporarily unavailable</string>
+    <string name="error_session_expired">Session expired, please login again</string>
+    <string name="error_unknown">An unknown error occurred</string>
+    <string name="err_invalid_email">Invalid Email format</string>
+    <string name="error_profile_loading">Failed to load profile</string>
+    <string name="btn_retry">Retry</string>
+
+    <!-- AppErrorCode Translations (Server Mapped) -->
+    <string name="error_success">Success</string>
+    <string name="error_unknown_error">Unknown error</string>
+    <string name="error_internal_error">Internal server error</string>
+    <string name="error_invalid_request">Invalid request</string>
+    <string name="error_unauthorized">Authorization required</string>
+    <string name="error_forbidden">Access denied</string>
+    <string name="error_not_found">Resource not found</string>
     <string name="error_account_frozen">Account temporarily frozen</string>
-    <string name="error_already_joined">You have already joined</string>
+    <string name="error_email_required">Email required for PIN reset</string>
+    <string name="error_invalid_reset_token">Invalid PIN reset link</string>
+    
+    <string name="error_invalid_phone">Invalid phone format</string>
+    <string name="error_invalid_phone_number">Invalid phone number format</string>
+    <string name="error_invalid_code">Invalid verification code</string>
+    <string name="error_code_expired">Code expired</string>
+    <string name="error_user_not_found">User not found</string>
+    <string name="error_token_expired">Session expired</string>
+    <string name="error_point_paused">Partner has a day off</string>
+    <string name="error_client_card_blocked">Client card is blocked</string>
+    <string name="error_invalid_tier_value">Invalid loyalty settings</string>
+    <string name="error_token_invalid">Session error (Invalid token)</string>
+    <string name="error_invalid_pin">Invalid PIN</string>
+    <string name="error_user_creation_failed">User creation failed</string>
+    <string name="error_to_many_requests">Already rated today</string>
+    <string name="error_otp_attempts_exceeded">Too many attempts. Try again in an hour.</string>
+    <string name="error_account_deleted">This phone number is linked to a deleted account. Please use another number.</string>
+    <string name="error_partner_blocked">This partner is blocked.</string>
+    
     <string name="error_business_already_exists">Business already exists</string>
     <string name="error_business_not_found">Business not found</string>
-    <string name="error_card_blocked">Card blocked</string>
-    <string name="error_card_not_found">Loyalty card not found</string>
-    <string name="error_card_paused">Card is suspended</string>
-    <string name="error_client_card_blocked">Client card is blocked</string>
-    <string name="error_code_expired">Code expired</string>
-    <string name="error_email_required">Enter your email to reset PIN</string>
-    <string name="error_forbidden">Access denied</string>
-    <string name="error_internal_error">Internal Server Error</string>
-    <string name="error_invalid_amount">Incorrect amount</string>
-    <string name="error_invalid_code">Invalid verification code</string>
+    <string name="error_point_not_found">Trading point not found</string>
+    <string name="error_point_inactive">Point is inactive</string>
+    <string name="error_already_joined">You have already joined</string>
     <string name="error_invalid_invite_code">Invalid invite code</string>
-    <string name="error_invalid_phone">Invalid phone format</string>
-    <string name="error_invalid_pin">Incorrect PIN</string>
+    
+    <string name="error_qr_expired">QR code expired</string>
     <string name="error_invalid_qr_signature">Fake QR code</string>
-    <string name="error_invalid_request">Request Error</string>
-    <string name="error_invalid_reset_token">Reset PIN link is invalid</string>
-    <string name="error_invalid_tier_value">Invalid point of sale loyalty settings</string>
+    <string name="error_security_qr_secret_missing">QR security error</string>
+    <string name="error_invalid_amount">Invalid amount</string>
     <string name="error_loyalty_setting_not_found">Loyalty settings not found</string>
-    <string name="error_network">No internet connection</string>
-    <string name="error_no_workspace">Error: No work shift (context lost)</string>
-    <string name="error_not_found">Resource not found</string>
-    <string name="error_point_inactive">The point is not active</string>
-    <string name="error_point_not_found">Store not found</string>
-    <string name="error_profile_loading">Failed to load profile</string>
-    <string name="error_qr_expired">QR code has expired</string>
-    <string name="error_security_qr_secret_missing">QR Security Error</string>
-    <string name="error_server">The service is temporarily unavailable</string>
-    <string name="error_session_expired">Session expired, please log in again</string>
-    <string name="error_success">Successfully</string>
-    <string name="error_token_expired">Session expired</string>
-    <string name="error_token_invalid">Session error (Token is invalid)</string>
-    <string name="error_unauthorized">Authorization required</string>
-    <string name="error_unknown">An unknown error has occurred</string>
-    <string name="error_unknown_error">Unknown error</string>
-    <string name="error_user_creation_failed">Error creating user</string>
-    <string name="error_user_not_found">User not found</string>
-    <string name="field_email">Email (to restore access)</string>
-    <string name="field_firstname">Name *</string>
-    <string name="field_lastname">Surname</string>
-    <string name="hybrid_action_bonus">Bonuses / Cashback</string>
-    <string name="hybrid_action_visit">Add a visit</string>
-    <string name="hybrid_dialog_text">The client can accumulate a visit or use bonuses. Select action:</string>
-    <string name="hybrid_dialog_title">Select operation type</string>
-    <string name="join_btn_submit">Join</string>
-    <string name="join_code_label">Invite code</string>
-    <string name="join_description">Enter the invitation code that the owner of the establishment gave you.</string>
-    <string name="join_title">Become an employee</string>
-    <string name="language_be">Bielaruskaja</string>
-    <string name="language_kk">Qazaqsha</string>
-    <string name="language_ky">Kyrgyzcha</string>
-    <string name="language_ru">Russian</string>
-    <string name="language_uz">Oʻzbekcha</string>
-    <string name="msg_balance_info">Balance:</string>
-    <string name="msg_points_earned">Accrued:</string>
-    <string name="msg_points_spent">Written off:</string>
-    <string name="msg_points_spent_earned">Written off:</string>
-    <string name="msg_points_spent_earned_middle">, Accrued:</string>
-    <string name="msg_points_suffix">B</string>
-    <string name="msg_success_default">Operation successful!</string>
-    <string name="msg_visit_progress">The visit has been taken into account! Total:</string>
-    <string name="msg_visit_progress_suffix">from</string>
-    <string name="msg_visit_reward">Goal achieved! Gift available! (</string>
+    <string name="error_card_not_found">Loyalty card not found</string>
+    <string name="error_card_blocked">Card is blocked</string>
+    <string name="error_card_paused">Card is paused</string>
+    <string name="error_sms_provider_error">Failed to send code. Try again later.</string>
+    <string name="error_prelude_unsupported_country">Sending unavailable for this country.</string>
+    <string name="error_prelude_channel_not_enabled_in_region">Channel unavailable in this region.</string>
+    <string name="error_prelude_too_many_attempts">Too many attempts. Try again later.</string>
+    <string name="error_prelude_too_many_checks">Too many checks. Try again later.</string>
+    <string name="error_prelude_impossible_code">Invalid code. Request a new one.</string>
+    <string name="error_prelude_insufficient_balance">Service temporarily unavailable. Try again later.</string>
+    <string name="error_prelude_suspended_account">Service temporarily unavailable. Try again later.</string>
+
+    <!-- Transaction Results (NEW) -->
+    <string name="msg_points_earned">Earned: </string>
+    <string name="msg_points_spent">Spent: </string>
+    <string name="msg_points_spent_earned">Spent: </string>
+    <string name="msg_points_spent_earned_middle">, Earned: </string>
+    <string name="msg_points_suffix"> P</string>
+    <string name="msg_visit_progress">Visit recorded! Total: </string>
+    <string name="msg_visit_progress_suffix"> of </string>
+    <string name="msg_visit_reward">Goal reached! Reward available! (</string>
     <string name="msg_visit_reward_suffix">)</string>
-    <string name="onboarding_subtitle">Fill in the details to receive personalized bonuses</string>
+    <string name="msg_balance_info">Balance: </string>
+    <string name="msg_success_default">Operation successful!</string>
+
+    <!-- Join Company Screen -->
+    <string name="join_title">Join as Staff</string>
+    <string name="join_description">Enter the invite code provided by the business owner.</string>
+    <string name="join_code_label">Invite Code</string>
+    <string name="join_btn_submit">Join</string>
+    <string name="cashier_join_success">You successfully joined the team!</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Let's get acquainted!</string>
+    <string name="onboarding_subtitle">Fill in your details to receive personalized bonuses</string>
+    <string name="field_firstname">First Name *</string>
+    <string name="field_lastname">Last Name</string>
+    <string name="field_email">Email (for recovery)</string>
+    <string name="btn_save">Save and Enter</string>
+    <string name="onboarding_why_info">Your name will be shown to the cashier for greeting and bonus accrual.</string>
+    <string name="err_field_required">This field is required</string>
+    <string name="err_invalid_phone_format">Invalid number format</string>
     <string name="onboarding_success">Profile saved!</string>
-    <string name="onboarding_title">Let&apos;s get acquainted!</string>
-    <string name="onboarding_why_info">Your name will be displayed at the cashier for greeting and awarding of bonuses.</string>
-    <string name="profile_about_description">LoyaltyLoop helps you manage your loyalty programs and affiliates from one app.</string>
-    <string name="profile_about_title">About the application</string>
-    <string name="profile_about_version">Version:</string>
-    <string name="profile_btn_create_business">Launch LoyaltyLoop</string>
-    <string name="profile_btn_join_team">Enter invite code</string>
-    <string name="profile_btn_logout">Log out of your account</string>
-    <string name="profile_desc_create_business">For establishment owners</string>
-    <string name="profile_desc_join_team">For employees</string>
-    <string name="profile_error_load">Loading error</string>
-    <string name="profile_header_actions">Possibilities</string>
-    <string name="profile_header_workspaces">My jobs</string>
-    <string name="profile_item_language">Application language</string>
+
+    <!-- Role Selection -->
+    <string name="role_select_title">Select Mode</string>
+    <string name="role_client_title">I am a Customer</string>
+    <string name="role_client_desc">I want to collect bonuses and get discounts</string>
+    <string name="role_partner_title">I am a Business Owner</string>
+    <string name="role_partner_desc">I want to launch a loyalty system</string>
+    <string name="role_cashier_title">I am an Employee</string>
+    <string name="role_cashier_desc">I want to work with the terminal</string>
+
+    <string name="workspace_cashier_title">Workplace</string>
+    <string name="workspace_partner_title">Owner Cabinet</string>
+    <string name="workspace_partner_stub">Full business management is available in the web version.</string>
+    <string name="btn_exit_mode">Exit Mode</string>
+    <string name="btn_exit_short">Exit</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workspaces_title">My Workplaces</string>
+    <string name="profile_role_partner">Owner</string>
+    <string name="profile_role_cashier">Cashier</string>
+    <string name="profile_role_administrator">Administrator</string>
+    <string name="profile_btn_logout">Logout</string>
+    <string name="profile_section_general">General</string>
+    <string name="profile_section_business">Business &amp; Career</string>
+
+    <string name="profile_item_language">App Language</string>
     <string name="profile_item_support">Support</string>
+    <string name="profile_language_dialog_title">Select Language</string>
     <string name="profile_language_dialog_apply">Apply</string>
     <string name="profile_language_dialog_cancel">Cancel</string>
-    <string name="profile_language_dialog_title">Select language</string>
     <string name="profile_language_updated">Language updated</string>
-    <string name="profile_loading">Loading...</string>
-    <string name="profile_role_administrator">Administrator</string>
-    <string name="profile_role_cashier">Cashier</string>
-    <string name="profile_role_partner">Owner</string>
-    <string name="profile_role_platform_manager">Platform Manager</string>
-    <string name="profile_role_platform_owner">Platform owner</string>
-    <string name="profile_section_business">Business and Career</string>
-    <string name="profile_section_general">Basics</string>
+    <string name="language_ru">Russian</string>
+    <string name="language_ky">Kyrgyz</string>
+    <string name="language_kk">Kazakh</string>
+    <string name="language_uz">Uzbek</string>
+    <string name="language_be">Belarusian</string>
+    <string name="profile_about_title">About App</string>
+    <string name="profile_about_version">Version:</string>
+    <string name="profile_about_description">LoyaltyLoop is your single wallet for loyalty cards. Collect bonuses, get gifts, and track your status in your favorite places.</string>
+
+    <string name="profile_btn_create_business">Launch LoyaltyLoop</string>
+    <string name="profile_desc_create_business">For business owners</string>
+
+    <string name="profile_btn_join_team">Enter Invite Code</string>
+    <string name="profile_desc_join_team">For employees</string>
+    <string name="profile_web_error_token">Failed to open portal. Restart the app and login again.</string>
+    <string name="web_error_title">Failed to load portal</string>
+    <string name="web_error_retry">Retry</string>
+    <string name="web_loading_message">Loading cabinet...</string>
+
     <string name="profile_version">Version %s</string>
-    <string name="profile_web_error_token">Failed to open portal. Restart the application and log in again.</string>
-    <string name="profile_workspaces_title">My jobs</string>
-    <string name="qr_sec">sec</string>
-    <string name="qr_sheet_title">Show it to the cashier</string>
-    <string name="qr_timer_update">Will be updated in</string>
-    <string name="role_cashier_desc">I want to work with the terminal</string>
-    <string name="role_cashier_title">I am an employee</string>
-    <string name="role_client_desc">I want to accumulate bonuses and receive discounts</string>
-    <string name="role_client_title">I am a Buyer</string>
-    <string name="role_partner_desc">I want to launch a loyalty system</string>
-    <string name="role_partner_title">I am a business owner</string>
-    <string name="role_select_title">Select mode</string>
+    <!-- Profile Roles -->
+    <string name="profile_role_platform_owner">Platform Owner</string>
+    <string name="profile_role_platform_manager">Platform Manager</string>
+
+    <!-- Profile Sections -->
+    <string name="profile_header_workspaces">My Workplaces</string>
+    <string name="profile_header_actions">Features</string>
+
+    <!-- Bottom Navigation -->
+    <string name="tab_wallet">Wallet</string>
     <string name="tab_locations">Places</string>
     <string name="tab_profile">Profile</string>
-    <string name="tab_wallet">Wallet</string>
-    <string name="term_btn_confirm">Confirm</string>
-    <string name="term_btn_next">Next</string>
-    <string name="term_calc_msg_charge">We will award bonuses at the current level</string>
-    <string name="term_calc_msg_charge_upgrade">Level up! The client receives more bonuses</string>
-    <string name="term_calc_msg_error">Incorrect amount</string>
-    <string name="term_calc_msg_next_reward">One visit left until the award</string>
-    <string name="term_calc_msg_spend">We wrote off the maximum according to the rules of the point</string>
-    <string name="term_calc_msg_spend_limit_balance">All available points were written off, the rest - in money</string>
-    <string name="term_calc_msg_visit">The visit will be taken into account</string>
-    <string name="term_calc_msg_visit_reward">The reward is issued - the cycle is reset</string>
-    <string name="term_confirm_balance">Balance after</string>
-    <string name="term_confirm_earned">Accrual of points</string>
-    <string name="term_confirm_purchase">Check amount</string>
-    <string name="term_confirm_spent">Write off points</string>
-    <string name="term_confirm_status">Status</string>
-    <string name="term_confirm_title">Confirmation</string>
-    <string name="term_confirm_total_pay">For payment</string>
-    <string name="term_confirm_visits">Visits after</string>
-    <string name="term_err_no_workspace">Error: No work shift</string>
-    <string name="term_err_scan_generic">Scan Error</string>
-    <string name="term_msg_success">Transaction successful!</string>
-    <string name="term_res_amount_hint">We will calculate the total cost and write-off in the next step according to the rules of the point.</string>
-    <string name="term_res_amount_label">Check amount</string>
-    <string name="term_res_award_hint">Even if bonuses are written off, we will provide cashback for cash payments.</string>
-    <string name="term_res_award_will_earn">Will be credited:</string>
-    <string name="term_res_balance_prefix">Current balance:</string>
-    <string name="term_res_btn_add_points">Accrue bonuses</string>
-    <string name="term_res_btn_add_visit">Count the visit (+1)</string>
-    <string name="term_res_calc_prefix">Will be credited:</string>
-    <string name="term_res_calculating">We think...</string>
-    <string name="term_res_client_default">Client</string>
-    <string name="term_res_new_client_chip">New client! 🎉</string>
-    <string name="term_res_next_free">NEXT VISIT IS A PRIZE! 🎁</string>
-    <string name="term_res_points_suffix">B</string>
-    <string name="term_res_spend_available">Available:</string>
-    <string name="term_res_spend_explain">We write off the maximum according to the rules of the point - details in the next step</string>
-    <string name="term_res_spend_title">Write off points</string>
-    <string name="term_res_spend_will_spend">Will be written off:</string>
-    <string name="term_res_tiered_title">Accumulation system</string>
-    <string name="term_res_title">Result</string>
-    <string name="term_res_total_pay">Total to be paid:</string>
-    <string name="term_res_visit_action_prefix">PROMOTION:</string>
-    <string name="term_res_visit_action_suffix">th item as a gift</string>
-    <string name="terminal_btn_scan">Process</string>
-    <string name="terminal_btn_simulate">Simulate scanning</string>
-    <string name="terminal_camera_hint">Point your camera at the QR code</string>
-    <string name="terminal_camera_instruction">Point your camera at the QR code</string>
-    <string name="terminal_camera_placeholder">Scanner (Plug)</string>
-    <string name="terminal_client_found_fmt">Client found: %s</string>
-    <string name="terminal_debug_card_title">Debug Mode (Emulator)</string>
-    <string name="terminal_debug_title">Manual input (Test)</string>
-    <string name="terminal_input_label">QR string</string>
-    <string name="terminal_input_placeholder">Insert QR string</string>
-    <string name="terminal_scan_success">Client found!</string>
-    <string name="terminal_title">Terminal</string>
-    <string name="wallet_card_back_goal_prefix">Target:</string>
-    <string name="wallet_card_back_goal_suffix">visits</string>
-    <string name="wallet_card_back_progress_title">Progress and rules</string>
-    <string name="wallet_card_back_remaining_prefix">Time left until the gift</string>
-    <string name="wallet_card_back_remaining_suffix">visits.</string>
-    <string name="wallet_card_back_reward_ready">Congratulations! Goal accomplished - ask the cashier about the gift.</string>
-    <string name="wallet_card_back_total_prefix">Total visits:</string>
-    <string name="wallet_card_balance_label">Balance</string>
-    <string name="wallet_card_blocked">Card blocked</string>
-    <string name="wallet_card_blocked_until">Blocked until</string>
-    <string name="wallet_card_closed_default">The program is temporarily suspended</string>
-    <string name="wallet_card_closed_reason">Suspended:</string>
-    <string name="wallet_card_inactive">Card is inactive</string>
-    <string name="wallet_card_new_level">New level</string>
-    <string name="wallet_card_paused">Temporarily disabled</string>
-    <string name="wallet_card_points_suffix">B</string>
-    <string name="wallet_card_reward_badge">The gift is ready!</string>
-    <string name="wallet_card_type">Bonus card</string>
-    <string name="wallet_card_visit_suffix">visits</string>
-    <string name="wallet_card_visits_label">Visits</string>
-    <string name="wallet_empty_desc">Show your QR code to the cashier upon your first purchase to receive your card.</string>
-    <string name="wallet_empty_refresh">Update list</string>
-    <string name="wallet_empty_title">You don&apos;t have loyalty cards yet</string>
-    <string name="wallet_my_cards">My cards</string>
-    <string name="wallet_my_qr">My code</string>
-    <string name="wallet_show_qr_btn">Show my QR</string>
+
+    <!-- Wallet Screen -->
     <string name="wallet_title">Wallet</string>
-    <string name="web_error_retry">Repeat</string>
-    <string name="web_error_title">Failed to load portal</string>
-    <string name="web_loading_message">Loading your account...</string>
-    <string name="workspace_cashier_title">Workplace</string>
-    <string name="workspace_partner_stub">Complete business management is available in the web version.</string>
-    <string name="workspace_partner_title">Owner&apos;s Account</string>
+    <string name="wallet_my_cards">My Cards</string>
+    <string name="wallet_my_qr">My Code</string>
+    <string name="wallet_empty_title">You have no loyalty cards yet</string>
+    <string name="wallet_empty_desc">Show your QR code to the cashier at your first purchase to get a card.</string>
+    <string name="wallet_show_qr_btn">Show my QR</string>
+    <string name="wallet_empty_refresh">Refresh list</string>
+    <string name="wallet_card_type">Bonus Card</string>
+    <string name="wallet_card_balance_label">Balance</string>
+    <string name="wallet_card_visits_label">Visits</string>
+    <string name="wallet_card_suffix">P</string>
+    <string name="wallet_card_visit_suffix"> visits</string>
+    <string name="wallet_card_new_level">New Level</string>
+    <string name="wallet_card_reward_badge">Reward Ready!</string>
+    <string name="wallet_card_inactive">Card Inactive</string>
+    <string name="wallet_card_blocked">Card Blocked</string>
+    <string name="wallet_card_blocked_until">Blocked until </string>
+    <string name="wallet_card_closed_reason">Paused: </string>
+    <string name="wallet_card_closed_default">Program temporarily paused</string>
+    <string name="wallet_card_paused">Temporarily Disabled</string>
+    <string name="wallet_card_back_progress_title">Progress &amp; Rules</string>
+    <string name="wallet_card_back_total_prefix">Total visits: </string>
+    <string name="wallet_card_back_remaining_prefix">Visits left for reward: </string>
+    <string name="wallet_card_back_remaining_suffix">.</string>
+    <string name="wallet_card_back_goal_suffix"> visits</string>
+    <string name="wallet_card_back_reward_ready">Congratulations! Goal reached — ask cashier for your reward.</string>
+    <string name="wallet_card_back_goal_prefix">Goal: </string>
+    <string name="wallet_card_visits"> visits</string>
+
+    <!-- Terminal Screen -->
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_camera_hint">Point camera at QR code</string>
+    <string name="terminal_debug_title">Manual Input (Test)</string>
+    <string name="terminal_input_label">QR string</string>
+    <string name="terminal_btn_scan">Process</string>
+    <string name="terminal_download_title">QR to download the app</string>
+    <string name="terminal_download_subtitle">Show this to the client to install from Google Play</string>
+    <string name="terminal_download_show_qr">Show QR</string>
+    <string name="terminal_download_hide_qr">Hide QR</string>
+    <string name="update_downloaded_message">Update downloaded. Restart now?</string>
+    <string name="update_restart_btn">Restart</string>
+    <string name="error_no_workspace">Error: No active shift (context lost)</string>
+    <string name="terminal_scan_success">Client found!</string>
+
+    <!-- Terminal Scanner -->
+    <string name="terminal_camera_placeholder">Scanner (Stub)</string>
+    <string name="terminal_camera_instruction">Point camera at QR code</string>
+    <string name="terminal_debug_card_title">Debug Mode (Emulator)</string>
+    <string name="terminal_input_placeholder">Paste QR string</string>
+    <string name="terminal_btn_simulate">Simulate Scan</string>
+    <string name="terminal_client_found_fmt">Client found: %s</string>
+
+    <!-- Terminal Result -->
+    <string name="term_res_title">Result</string>
+    <string name="term_res_client_default">Client</string>
+    <string name="term_res_new_client_chip">New Client! 🎉</string>
+
+    <!-- Visits Strategy -->
+    <string name="term_res_visit_action_prefix">PROMO: </string>
+    <string name="term_res_visit_action_suffix">-th item free</string>
+    <string name="term_res_next_free">NEXT VISIT - REWARD! 🎁</string>
+    <string name="term_res_btn_add_visit">Add Visit (+1)</string>
+
+    <!-- Tiered Strategy -->
+    <string name="term_res_tiered_title">Accumulation System</string>
+    <string name="term_res_amount_label">Check Amount</string>
+    <string name="term_res_amount_hint">Total cost and redemption will be calculated in the next step according to rules.</string>
+    <string name="term_res_calc_prefix">Will earn:</string>
+    <string name="term_res_points_suffix">P</string>
+    <string name="term_res_balance_prefix">Current Balance:</string>
+    <string name="term_res_btn_add_points">Add Points</string>
+
+    <!-- Terminal New UI -->
+    <string name="term_res_spend_title">Redeem Points</string>
+    <string name="term_res_spend_available">Available:</string>
+    <string name="term_res_spend_will_spend">Will spend:</string>
+    <string name="term_res_award_will_earn">Will earn:</string>
+    <string name="term_res_award_hint">Cashback will be awarded for cash payment part even when redeeming points</string>
+    <string name="term_res_spend_explain">Redeeming max according to rules — details in next step</string>
+    <string name="term_res_total_pay">Total to pay:</string>
+    <string name="term_res_calculating">Calculating...</string>
+    <string name="term_calc_msg_visit">Visit will be recorded</string>
+    <string name="term_calc_msg_visit_reward">Reward issued — cycle reset</string>
+    <string name="term_calc_msg_next_reward">One visit left until reward</string>
+    <string name="term_calc_msg_spend_limit_balance">Redeemed all available points, rest in cash</string>
+    <string name="term_calc_msg_spend">Redeemed max per rules</string>
+    <string name="term_calc_msg_charge">Points will be awarded per current tier</string>
+    <string name="term_calc_msg_charge_upgrade">Level Up! Client gets more points</string>
+    <string name="term_calc_msg_error">Invalid amount</string>
+
+    <!-- Confirmation Screen -->
+    <string name="term_confirm_title">Confirmation</string>
+    <string name="term_confirm_total_pay">To Pay</string>
+    <string name="term_confirm_purchase">Check Amount</string>
+    <string name="term_confirm_spent">Points Redemption</string>
+    <string name="term_confirm_earned">Points Awarded</string>
+    <string name="term_confirm_balance">Balance After</string>
+    <string name="term_confirm_visits">Visits After</string>
+    <string name="term_confirm_status">Status</string>
+    <string name="term_btn_confirm">Confirm</string>
+
+    <!-- Messages -->
+    <string name="term_msg_success">Transaction successful!</string>
+    <string name="term_err_no_workspace">Error: No active shift</string>
+    <string name="term_err_scan_generic">Scan error</string>
+
+    <!-- QR Sheet -->
+    <string name="qr_sheet_title">Show to cashier</string>
+    <string name="qr_timer_update">Updates in</string>
+    <string name="qr_sec">sec</string>
+
+    <!-- Hybrid Dialog -->
+    <string name="hybrid_dialog_title">Select Operation Type</string>
+    <string name="hybrid_dialog_text">Client can accumulate a visit or use bonuses. Select action:</string>
+    <string name="hybrid_action_bonus">Bonuses / Cashback</string>
+    <string name="hybrid_action_visit">Add Visit</string>
+    <string name="term_btn_next">Next</string>
+
+    <!-- Celebration Overlay -->
+    <string name="celebration_new_balance_prefix">New Balance: </string>
+    <string name="celebration_rules_hint">Check promo rules on site. Soon point rating and visit details will appear here.</string>
+    <string name="celebration_visit_logged">Visit Recorded</string>
+    <string name="celebration_visit_reward_ready">Gift is waiting!</string>
+    <string name="celebration_visit_remaining_prefix">Visits left for gift: </string>
+    <string name="celebration_visit_increment_prefix">+</string>
+    <string name="celebration_visit_increment_suffix"> visit</string>
+    <string name="celebration_reward_text">Gift can be claimed now!</string>
+    <string name="celebration_close">Close</string>
+    <string name="celebration_title_earn">Points Earned</string>
+    <string name="celebration_title_spend">Points Spent</string>
+    <string name="celebration_title_visit">Visit Counted</string>
+    <string name="celebration_title_reward">Reward Ready!</string>
+    <string name="celebration_title_tier_prefix">New Level: </string>
+    <string name="celebration_title_created">New Card</string>
+
+    <!-- MAP SCREEN & PERMISSIONS -->
+    <string name="map_search_hint">Search...</string>
+    <string name="map_filter_mine">My Branches</string>
+    <string name="map_filter_all_types">All Types</string>
+
+    <string name="map_locate_content_desc">My Location</string>
+    <string name="map_back_content_desc">Back</string>
+    <string name="map_clear_content_desc">Clear</string>
+
+    <string name="permission_location_rationale_title">Location Required</string>
+    <string name="permission_location_rationale_text">To show nearest trading points, the app needs access to your location.</string>
+    <string name="permission_allow">Allow</string>
+
+    <string name="permission_location_denied_title">Access Denied</string>
+    <string name="permission_location_denied_text">You denied location access. Please enable it in app settings to see yourself on the map.</string>
+    <string name="permission_settings">To Settings</string>
+
+    <string name="common_cancel">Cancel</string>
+
+    <string name="map_filter_open">Open</string>
+    <string name="map_type_coffee_shop">Coffee Shop</string>
+    <string name="map_type_restaurant">Restaurant</string>
+    <string name="map_type_retail">Retail</string>
+    <string name="map_type_service">Service</string>
+    <string name="map_type_flowers">Flowers</string>
+    <string name="map_type_gifts">Gifts</string>
+    <string name="map_type_cakes">Cakes</string>
+    <string name="map_type_barbershop">Barbershop</string>
+    <string name="map_type_clothing">Clothing</string>
+    <string name="map_type_toys">Toys</string>
+    <string name="map_type_car_rental">Car Rental</string>
+    <string name="map_type_scooter_rental">Scooter Rental</string>
+    <string name="map_type_auto_service">Auto Service</string>
+    <string name="map_type_tire_service">Tire Service</string>
+    <string name="map_type_auto_parts">Auto Parts</string>
+    <string name="map_type_bank">Bank</string>
+    <string name="map_type_grocery_store">Grocery Store</string>
+    <string name="map_type_beauty_salon">Beauty Salon</string>
+    <string name="map_type_other">Other</string>
+    <string name="map_locate_me">I am here</string>
+    <string name="point_no_address">No address</string>
+    <string name="common_open">Open</string>
+    <string name="common_closed">Closed</string>
+    <string name="status_temporarily_closed">Temporarily Closed</string>
+    <string name="common_apply">Apply</string>
+    <string name="empty"> </string>
+
+    <!-- Point Details -->
+    <string name="point_details_btn">Details</string>
+    <string name="point_details_title">Point Info</string>
+    <string name="point_details_address">Address</string>
+    <string name="point_details_schedule">Schedule</string>
+    <string name="point_details_contacts">Contacts</string>
+    <string name="point_details_info">Extra Info</string>
+    <string name="point_details_social_telegram">Telegram</string>
+    <string name="point_details_social_whatsapp">WhatsApp</string>
+    <string name="point_details_social_instagram">Instagram</string>
+    <string name="point_details_day_mon">Mon</string>
+    <string name="point_details_day_tue">Tue</string>
+    <string name="point_details_day_wed">Wed</string>
+    <string name="point_details_day_thu">Thu</string>
+    <string name="point_details_day_fri">Fri</string>
+    <string name="point_details_day_sat">Sat</string>
+    <string name="point_details_day_sun">Sun</string>
+    <string name="point_details_closed">Closed</string>
+
+    <!-- Support Screen -->
+    <string name="support_screen_title">Support</string>
+    <string name="support_write_email">Email us</string>
+    <string name="support_write_telegram">Telegram us</string>
+    <string name="support_description">If you have questions or suggestions, you can contact us in any convenient way.</string>
+
+    <!-- Delete Account -->
+    <string name="delete_account_btn">Delete Account</string>
+    <string name="delete_account_title">Delete Account</string>
+    <string name="delete_account_reason_hint">Reason for deletion</string>
+    <string name="delete_account_reason_description">Please specify a reason so we can improve</string>
+    <string name="delete_account_confirm_btn">Delete Permanently</string>
+    <string name="delete_account_code_sent">Confirmation code sent</string>
+    <string name="delete_account_enter_code">A confirmation code has been sent to your number.</string>
+    <string name="account_deleted_success">Account successfully deleted</string>
+
+    <!-- Report User -->
+    <string name="term_report_title">Report User</string>
+    <string name="term_report_message">Specify reason for report. This will create a block request.</string>
+    <string name="term_report_hint">Reason</string>
+    <string name="term_report_btn">Submit Report</string>
+    <string name="term_report_success">Report successfully submitted</string>
+    <string name="term_report_action">Report</string>
+    
+    <string name="error_user_banned">User is blocked</string>
+    <string name="error_block_request_exists">Complaint already under review</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Statistics for Today</string>
+    <string name="stats_transactions">Transactions</string>
+    <string name="stats_revenue">Revenue</string>
+    <string name="stats_points_awarded">Points Awarded</string>
+    <string name="stats_points_spent">Points Spent</string>
+    <string name="stats_visits">Visits</string>
+
+    <!-- Terminal Tabs -->
+    <string name="terminal_tab_scanner">Terminal</string>
+    <string name="terminal_tab_stats">Stats</string>
+
+    <!-- Risk Level Descriptions for Cashier -->
+    <string name="risk_level_green">Reliable Client</string>
+    <string name="risk_desc_green">Greet, offer specials</string>
+    
+    <string name="risk_level_yellow">Regular Client</string>
+    <string name="risk_desc_yellow">Standard service</string>
+    
+    <string name="risk_level_orange">Complex Client</string>
+    <string name="risk_desc_orange">Be attentive, clarify order, do not argue</string>
+    
+    <string name="risk_level_red">Difficult Client</string>
+    <string name="risk_desc_red">Maximum caution</string>
+    
+
+    <!-- Rate Client Screen -->
+    <string name="rate_client_title">Rate Client</string>
+    <string name="rate_client_skip">Skip</string>
+    <string name="rate_client_submit">Rate</string>
+    <string name="rate_client_tag_rude">Rude / Boorish</string>
+    <string name="rate_client_tag_no_payment">Non-payment</string>
+    <string name="rate_client_tag_fraud">Fraud Attempt</string>
+    <string name="rate_client_tag_tip">Left Tip</string>
+    <string name="rate_client_tag_polite">Polite</string>
+    <string name="rate_client_tag_friendly">Friendly</string>
+    <string name="rate_client_tag_late">Late</string>
+    <string name="rate_client_tag_no_show">No Show</string>
+    <string name="rate_client_tag_abuse">Insults</string>
+    <string name="rate_client_success">Rating saved</string>
+    <string name="rate_client_how_was">How was the meeting?</string>
+    <string name="rate_client_select_tags">Select tags (optional):</string>
+    <string name="error_rate_limit_exceeded">Already rated today</string>
+
+    <!-- Rate Service Screen -->
+    <string name="rate_service_title">Rate Service</string>
+    <string name="rate_service_submit">Submit</string>
+    <string name="rate_service_skip">Skip</string>
+    <string name="rate_service_comment_hint">Comment (optional)</string>
+    <string name="rate_service_tag_slow">Slow</string>
+    <string name="rate_service_tag_dirty">Dirty</string>
+    <string name="rate_service_tag_rude_staff">Rude Staff</string>
+    <string name="rate_service_tag_tasty">Tasty</string>
+    <string name="rate_service_tag_fast">Fast</string>
+    <string name="rate_service_tag_friendly">Friendly</string>
+    <string name="rate_service_success">Review submitted</string>
+    <string name="rate_service_tag_clean">Clean</string>
+    <string name="rate_service_tag_comfort">Cozy</string>
+    <string name="rate_service_tag_pricey">Expensive</string>
+    <string name="rate_service_tag_attentive">Attentive</string>
+    <string name="rate_service_tag_wait_time">Long Wait</string>
+
+    <!-- Scanner permissions -->
+    <string name="scanner_permission_rationale">Camera access required to scan QR codes</string>
+    <string name="scanner_permission_open_settings">Open Settings</string>
+
+    <!-- Force Update -->
+    <string name="force_update_title">Important Update Available</string>
+    <string name="force_update_message">We have added new features and fixed bugs. Please update the app to continue using it.</string>
+    <string name="force_update_btn">Update</string>
+
+    <!-- What's New -->
+    <string name="whats_new_title">What's New</string>
+    <string name="whats_new_btn_awesome">Awesome!</string>
+    <!-- Change these for every release -->
+    <string name="whats_new_features_list">
+        • You can now rate service after a visit
+        • Updated client rating screen design
+        • Fixed scanner bugs on Android
+        • Added update notifications
+    </string>
+
+    <!-- Coming Soon -->
+    <string name="coming_soon_title">Coming Soon</string>
+    <string name="coming_soon_description">We are working on detailed stats and reports for cashiers. Stay tuned!</string>
 </resources>

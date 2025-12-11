@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Web
 import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -23,6 +25,7 @@ import io.loyaltyloop.app.features.tabs.LocationsTab
 import io.loyaltyloop.app.features.tabs.ProfileTab
 import io.loyaltyloop.app.features.tabs.WalletTab
 import io.loyaltyloop.app.features.terminal.TerminalScreen
+import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
 import io.loyaltyloop.shared.models.UserRole
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
@@ -41,6 +44,7 @@ class MainScreen : Screen {
                 is MainScreenAction.LogoutToClientMode -> {
                     sessionManager.switchWorkspace(null)
                 }
+
                 is MainScreenAction.SwitchWorkspace -> {
                     sessionManager.switchWorkspace(action.workspace)
                 }
@@ -80,12 +84,21 @@ class MainScreen : Screen {
     fun CashierUi(
         onAction: (MainScreenAction) -> Unit
     ) {
+        val sessionManager = koinInject<SessionManager>()
+        val workspaceName = sessionManager.currentWorkspace.collectAsState().value?.title
+            ?: stringResource(Res.string.workspace_cashier_title)
         // Запускаем Навигатор специально для флоу Кассира
         Navigator(TerminalScreen()) { navigator ->
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
-                        title = { Text(stringResource(Res.string.workspace_cashier_title)) },
+                        title = {
+                            Text(
+                                text = workspaceName,
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Medium,
+                            )
+                        },
                         actions = {
                             TextButton(onClick = { onAction(MainScreenAction.LogoutToClientMode) }) {
                                 Text(stringResource(Res.string.btn_exit_short))

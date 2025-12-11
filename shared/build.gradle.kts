@@ -9,9 +9,14 @@ plugins {
     alias(libs.plugins.buildConfig)
 }
 
+val activeEnv = project.findProperty("env") as? String ?: "dev"
+
 buildConfig {
     packageName("io.loyaltyloop.shared")
     buildConfigField("String", "APP_VERSION", "\"1.0.0\"")
+    buildConfigField("int", "VERSION_CODE", "1")
+    val isProd = activeEnv == "prod"
+    buildConfigField("boolean", "IS_PROD", "$isProd")
 }
 
 kotlin {

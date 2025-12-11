@@ -41,11 +41,14 @@ class TerminalScreenModel(
     sealed interface Action {
         data class OnManualInputChanged(val value: String) : Action
         data object OnScanClicked : Action
+        data class OnQrScanned(val content: String) : Action
         data class OnHybridStrategySelected(val strategy: TransactionStrategy) : Action
+        data object OnStatsClicked : Action
     }
 
     sealed interface Event {
         data class NavigateToResult(val scanData: ScanQrResponse, val tradingPointId: String, val strategy: TransactionStrategy) : Event
+        data object NavigateToStats : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -63,11 +66,17 @@ class TerminalScreenModel(
             is Action.OnScanClicked -> {
                 processScan(_state.value.manualInput)
             }
+            is Action.OnQrScanned -> {
+                processScan(action.content)
+            }
             is Action.OnHybridStrategySelected -> {
                 val data = _state.value.pendingScanData ?: return
                 val workspaceId = sessionManager.currentWorkspace.value?.id ?: return
                 _state.value = _state.value.copy(showHybridDialog = false, pendingScanData = null)
                 _events.trySend(Event.NavigateToResult(data, workspaceId, action.strategy))
+            }
+            is Action.OnStatsClicked -> {
+                 _events.trySend(Event.NavigateToStats)
             }
         }
     }
@@ -116,9 +125,9 @@ class TerminalScreenModel(
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.term_err_scan_generic), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false)
                 }
-                .onError { code, _ ->
+                .onError { code, msg ->
                     log.write("Scan failed: $code", LogType.Error)
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false)
                 }
         }

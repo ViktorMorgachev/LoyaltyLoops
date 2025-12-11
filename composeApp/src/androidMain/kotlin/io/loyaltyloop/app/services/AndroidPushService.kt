@@ -11,6 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.loyaltyloop.app.data.SessionManager
+import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.shared.models.DevicePlatform
 import io.loyaltyloop.shared.models.DeviceTokenContext
 import io.loyaltyloop.shared.models.RegisterDeviceTokenRequest
@@ -29,7 +30,8 @@ import kotlin.jvm.Volatile
 class AndroidPushService(
     private val appContext: Context,
     private val httpClient: HttpClient,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val tokenStorage: TokenStorage
 ) : PushService {
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
@@ -108,6 +110,10 @@ class AndroidPushService(
     ) {
         val token = cachedToken ?: return
         if (!force && context == lastContext) return
+        if (tokenStorage.getAccessToken().isNullOrBlank()) {
+            Logger.w { "Skip FCM sync: no auth token yet" }
+            return
+        }
 
         if (lastContext != null && lastContext != context) {
             removeTokenFromServer(lastContext)

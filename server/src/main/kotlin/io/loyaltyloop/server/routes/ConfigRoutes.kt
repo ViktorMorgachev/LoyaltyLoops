@@ -13,6 +13,11 @@ import io.loyaltyloop.shared.models.FeatureToggleDto
 import io.loyaltyloop.shared.models.GeoLocation
 import io.loyaltyloop.shared.models.MapSettingsDto
 import io.loyaltyloop.shared.models.PublicConfigResponse
+import io.loyaltyloop.shared.models.RatingTagDto
+import io.loyaltyloop.shared.models.RatingTagsDto
+import io.loyaltyloop.shared.models.ClientRatingTag
+import io.loyaltyloop.shared.models.ServiceReviewTag
+import io.loyaltyloop.server.utils.double
 
 fun Route.configRoutes(
     applicationConfig: ApplicationConfig,
@@ -41,6 +46,21 @@ fun Route.configRoutes(
             basePoints = mapOf(CountryCode.KG to GeoLocation(42.8746, 74.5698)),
         )
 
-        call.respond(PublicConfigResponse(features = features, map = mapSettings))
+        val ratingTags = RatingTagsDto(
+            client = ClientRatingTag.entries.filter { it != ClientRatingTag.NONE }.map { tag ->
+                RatingTagDto(
+                    code = tag.name,
+                    weight = applicationConfig.double("rating.tags.client.${tag.name}", tag.penalty)
+                )
+            },
+            service = ServiceReviewTag.entries.map { tag ->
+                RatingTagDto(
+                    code = tag.name,
+                    weight = applicationConfig.double("rating.tags.service.${tag.name}", tag.penalty)
+                )
+            }
+        )
+
+        call.respond(PublicConfigResponse(features = features, map = mapSettings, ratingTags = ratingTags))
     }
 }

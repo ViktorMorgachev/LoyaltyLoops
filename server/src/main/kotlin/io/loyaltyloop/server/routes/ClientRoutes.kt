@@ -19,17 +19,27 @@ import io.loyaltyloop.shared.models.RegisterDeviceTokenRequest
 import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
-
 import io.loyaltyloop.shared.models.Country
+import io.loyaltyloop.shared.models.CreateServiceReviewDto
+import io.loyaltyloop.server.service.RatingService
 
 @Suppress("ThrowsCount")
 fun Route.clientRoutes(
     userRepository: UserRepository,
-    deviceTokenRepository: DeviceTokenRepository
+    deviceTokenRepository: DeviceTokenRepository,
+    ratingService: RatingService
 ) {
     route("/client") {
         authenticate("auth-jwt") {
 
+            
+            post("/rate-service") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val request = call.receive<CreateServiceReviewDto>()
+                
+                ratingService.rateService(userId, request)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
             
            post("/profile") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@post

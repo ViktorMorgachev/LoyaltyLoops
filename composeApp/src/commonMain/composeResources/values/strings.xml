@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">LoyaltyLoop</string>
 
+    <string name="notif_default_body">У вас новое событие по карте лояльности</string>
     <!-- Auth Screen -->
     <string name="auth_title">LoyaltyLoop</string>
     <string name="auth_subtitle">Вход для клиентов и партнеров</string>
@@ -48,7 +49,7 @@
     <string name="error_token_invalid">Ошибка сессии (Токен невалиден)</string>
     <string name="error_invalid_pin">Неверный PIN-код</string>
     <string name="error_user_creation_failed">Ошибка создания пользователя</string>
-    <string name="error_to_many_requests">Слишком много запросов. Попробуйте позже.</string>
+    <string name="error_to_many_requests">Уже оценили сегодня</string>
     <string name="error_otp_attempts_exceeded">Превышен лимит попыток. Попробуйте через час.</string>
     <string name="error_account_deleted">Этот номер телефона связан с удаленным аккаунтом. Пожалуйста, используйте другой номер.</string>
     <string name="error_partner_blocked">Этот партнер заблокирован.</string>
@@ -68,6 +69,14 @@
     <string name="error_card_not_found">Карта лояльности не найдена</string>
     <string name="error_card_blocked">Карта заблокирована</string>
     <string name="error_card_paused">Карта приостановлена</string>
+    <string name="error_sms_provider_error">Не удалось отправить код. Попробуйте позже.</string>
+    <string name="error_prelude_unsupported_country">Отправка недоступна для этой страны.</string>
+    <string name="error_prelude_channel_not_enabled_in_region">Канал недоступен в этом регионе.</string>
+    <string name="error_prelude_too_many_attempts">Слишком много попыток. Попробуйте позже.</string>
+    <string name="error_prelude_too_many_checks">Слишком много проверок. Попробуйте позже.</string>
+    <string name="error_prelude_impossible_code">Некорректный код. Запросите новый.</string>
+    <string name="error_prelude_insufficient_balance">Сервис временно недоступен. Попробуйте позже.</string>
+    <string name="error_prelude_suspended_account">Сервис временно недоступен. Попробуйте позже.</string>
 
     <!-- Transaction Results (NEW) -->
     <string name="msg_points_earned">Начислено: </string>
@@ -175,8 +184,8 @@
     <string name="wallet_card_type">Бонусная карта</string>
     <string name="wallet_card_balance_label">Баланс</string>
     <string name="wallet_card_visits_label">Визиты</string>
-    <string name="wallet_card_points_suffix">Б</string>
-    <string name="wallet_card_visit_suffix">визитов</string>
+    <string name="wallet_card_suffix">Б</string>
+    <string name="wallet_card_visit_suffix"> визитов</string>
     <string name="wallet_card_new_level">Новый уровень</string>
     <string name="wallet_card_reward_badge">Подарок готов!</string>
     <string name="wallet_card_inactive">Карта неактивна</string>
@@ -189,9 +198,10 @@
     <string name="wallet_card_back_total_prefix">Всего визитов: </string>
     <string name="wallet_card_back_remaining_prefix">До подарка осталось </string>
     <string name="wallet_card_back_remaining_suffix"> визитов.</string>
+    <string name="wallet_card_back_goal_suffix"> визитов</string>
     <string name="wallet_card_back_reward_ready">Поздравляем! Цель выполнена — спросите кассира про подарок.</string>
     <string name="wallet_card_back_goal_prefix">Цель: </string>
-    <string name="wallet_card_back_goal_suffix"> визитов</string>
+    <string name="wallet_card_visits"> визитов</string>
 
     <!-- Terminal Screen -->
     <string name="terminal_title">Терминал</string>
@@ -199,6 +209,12 @@
     <string name="terminal_debug_title">Ручной ввод (Тест)</string>
     <string name="terminal_input_label">QR строка</string>
     <string name="terminal_btn_scan">Обработать</string>
+    <string name="terminal_download_title">QR для скачивания приложения</string>
+    <string name="terminal_download_subtitle">Покажите клиенту, чтобы установить приложение из Google Play</string>
+    <string name="terminal_download_show_qr">Показать QR</string>
+    <string name="terminal_download_hide_qr">Скрыть QR</string>
+    <string name="update_downloaded_message">Обновление загружено. Перезапустить?</string>
+    <string name="update_restart_btn">Перезапустить</string>
     <string name="error_no_workspace">Ошибка: Нет рабочей смены (контекст потерян)</string>
     <string name="terminal_scan_success">Клиент найден!</string>
 
@@ -375,4 +391,100 @@
     <string name="delete_account_enter_code">На ваш номер отправлен код подтверждения.</string>
     <string name="account_deleted_success">Аккаунт успешно удален</string>
 
+    <!-- Report User -->
+    <string name="term_report_title">Пожаловаться на пользователя</string>
+    <string name="term_report_message">Укажите причину жалобы. Это создаст запрос на блокировку пользователя.</string>
+    <string name="term_report_hint">Причина</string>
+    <string name="term_report_btn">Отправить жалобу</string>
+    <string name="term_report_success">Жалоба успешно отправлена</string>
+    <string name="term_report_action">Пожаловаться</string>
+    
+    <string name="error_user_banned">Пользователь заблокирован</string>
+    <string name="error_block_request_exists">Жалоба уже рассматривается</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Статистика за сегодня</string>
+    <string name="stats_transactions">Транзакции</string>
+    <string name="stats_revenue">Выручка</string>
+    <string name="stats_points_awarded">Начислено баллов</string>
+    <string name="stats_points_spent">Списано баллов</string>
+    <string name="stats_visits">Посещения</string>
+
+    <!-- Terminal Tabs -->
+    <string name="terminal_tab_scanner">Терминал</string>
+    <string name="terminal_tab_stats">Статистика</string>
+
+    <!-- Risk Level Descriptions for Cashier -->
+    <string name="risk_level_green">Надежный клиент</string>
+    <string name="risk_desc_green">Приветствуем, предлагаем новинки</string>
+    
+    <string name="risk_level_yellow">Обычный клиент</string>
+    <string name="risk_desc_yellow">Стандартное обслуживание</string>
+    
+    <string name="risk_level_orange">Сложный клиент</string>
+    <string name="risk_desc_orange">Быть внимательнее, четко проговаривать заказ, не спорить</string>
+    
+    <string name="risk_level_red">Вредный клиент</string>
+    <string name="risk_desc_red">Максимальная осторожность</string>
+    
+
+    <!-- Rate Client Screen -->
+    <string name="rate_client_title">Оценить клиента</string>
+    <string name="rate_client_skip">Пропустить</string>
+    <string name="rate_client_submit">Оценить</string>
+    <string name="rate_client_tag_rude">Хамство / Грубость</string>
+    <string name="rate_client_tag_no_payment">Неоплата</string>
+    <string name="rate_client_tag_fraud">Попытка обмана</string>
+    <string name="rate_client_tag_tip">Оставил чай</string>
+    <string name="rate_client_tag_polite">Вежливый</string>
+    <string name="rate_client_tag_friendly">Дружелюбный</string>
+    <string name="rate_client_tag_late">Опоздал</string>
+    <string name="rate_client_tag_no_show">Не пришёл</string>
+    <string name="rate_client_tag_abuse">Оскорбления</string>
+    <string name="rate_client_success">Оценка сохранена</string>
+    <string name="rate_client_how_was">Как прошла встреча с клиентом?</string>
+    <string name="rate_client_select_tags">Выберите теги (необязательно):</string>
+    <string name="error_rate_limit_exceeded">Уже оценили сегодня</string>
+
+    <!-- Rate Service Screen -->
+    <string name="rate_service_title">Оцените сервис</string>
+    <string name="rate_service_submit">Отправить</string>
+    <string name="rate_service_skip">Пропустить</string>
+    <string name="rate_service_comment_hint">Комментарий (необязательно)</string>
+    <string name="rate_service_tag_slow">Медленно</string>
+    <string name="rate_service_tag_dirty">Грязно</string>
+    <string name="rate_service_tag_rude_staff">Грубо</string>
+    <string name="rate_service_tag_tasty">Вкусно</string>
+    <string name="rate_service_tag_fast">Быстро</string>
+    <string name="rate_service_tag_friendly">Приветливые</string>
+    <string name="rate_service_success">Отзыв отправлен</string>
+    <string name="rate_service_tag_clean">Чисто</string>
+    <string name="rate_service_tag_comfort">Уютно</string>
+    <string name="rate_service_tag_pricey">Дорого</string>
+    <string name="rate_service_tag_attentive">Внимательные</string>
+    <string name="rate_service_tag_wait_time">Долго</string>
+
+    <!-- Scanner permissions -->
+    <string name="scanner_permission_rationale">Нужен доступ к камере, чтобы сканировать QR-коды</string>
+    <string name="scanner_permission_open_settings">Открыть настройки</string>
+
+    <!-- Force Update -->
+    <string name="force_update_title">Доступно важное обновление</string>
+    <string name="force_update_message">Мы добавили новые функции и исправили ошибки. Пожалуйста, обновите приложение, чтобы продолжить использование.</string>
+    <string name="force_update_btn">Обновить</string>
+
+    <!-- What's New -->
+    <string name="whats_new_title">Что нового</string>
+    <string name="whats_new_btn_awesome">Круто!</string>
+    <!-- Change these for every release -->
+    <string name="whats_new_features_list">
+        • Теперь можно оценивать сервис после визита
+        • Обновленный дизайн экрана оценки клиента
+        • Исправлены ошибки сканера на Android
+        • Добавлены уведомления об обновлениях
+    </string>
+
+    <!-- Coming Soon -->
+    <string name="coming_soon_title">Скоро появится</string>
+    <string name="coming_soon_description">Мы работаем над подробной статистикой и отчетами для кассиров. Следите за обновлениями!</string>
 </resources>

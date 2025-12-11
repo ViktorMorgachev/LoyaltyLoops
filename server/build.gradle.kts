@@ -35,16 +35,17 @@ dependencies {
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.javatime)
     implementation(libs.postgresql.driver)
     implementation(libs.hikaricp)
     implementation(libs.ktor.server.forwarded.header)
+    implementation(libs.okhttp)
 
 
-    // 1. Логирование
     implementation(libs.ktor.server.call.logging)
     implementation(libs.ktor.server.rate.limit)
+    implementation("so.prelude.sdk:prelude-java:0.10.0")
 
-    // 2. Тесты (обрати внимание на testImplementation)
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.h2.database)

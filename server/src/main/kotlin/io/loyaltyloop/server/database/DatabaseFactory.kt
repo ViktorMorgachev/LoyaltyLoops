@@ -29,6 +29,8 @@ import io.loyaltyloop.server.database.SystemEventsTable
 import io.loyaltyloop.server.database.tables.PlatformInvitesTable
 import io.loyaltyloop.server.database.tables.PlatformRequestsTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
+import io.loyaltyloop.server.database.tables.ClientRatingsTable
+import io.loyaltyloop.server.database.tables.ServiceReviewsTable
 
 object DatabaseFactory {
 
@@ -77,7 +79,9 @@ object DatabaseFactory {
                 SystemEventsTable,
                 PlatformSubscriptionsTable,
                 PlatformRequestsTable,
-                PlatformInvitesTable
+                PlatformInvitesTable,
+                ClientRatingsTable,
+                ServiceReviewsTable
             )
         }
     }

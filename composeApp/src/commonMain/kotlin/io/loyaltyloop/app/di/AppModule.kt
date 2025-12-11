@@ -13,17 +13,21 @@ import io.loyaltyloop.app.features.splash.SplashScreenModel
 import io.loyaltyloop.app.features.terminal.TerminalScreenModel
 import io.loyaltyloop.app.features.terminal.confirmation.TransactionConfirmationScreenModel
 import io.loyaltyloop.app.features.terminal.result.TerminalResultScreenModel
+import io.loyaltyloop.app.features.terminal.stats.CashierStatsScreenModel
 import io.loyaltyloop.app.features.wallet.WalletScreenModel
 import io.loyaltyloop.app.repository.AuthRepository
 import io.loyaltyloop.app.repository.ConfigRepository
 import io.loyaltyloop.app.repository.MapRepository
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.repository.WalletRepository
+import io.loyaltyloop.app.data.repository.AppRepository
+import io.loyaltyloop.app.platform.UrlOpener
 import io.loyaltyloop.shared.models.ScanQrResponse
 import io.loyaltyloop.shared.models.TransactionCalculationDto
 import io.loyaltyloop.shared.models.TransactionStrategy
 import org.koin.core.module.Module
 import org.koin.dsl.module
+import io.loyaltyloop.app.features.terminal.rating.RateClientScreenModel
 
 expect val platformModule: Module
 
@@ -42,9 +46,10 @@ val appModule = module {
     single { MapRepository(get()) }
     single { ConfigRepository(get()) }
     single { WalletRepository(get()) }
+    single { AppRepository(get()) }
 
     // ViewModels
-    factory { SplashScreenModel(get(), get(), get(), get()) }
+    factory { SplashScreenModel(get(), get(), get(), get(), get()) }
     factory { LoginScreenModel(get(), get(), get(), get()) }
     factory { OnboardingScreenModel(get(), get(), get()) }
     factory { RoleSelectionScreenModel(get()) }
@@ -56,8 +61,12 @@ val appModule = module {
     factory { (scanData: ScanQrResponse, tradingPointId: String, strategy: TransactionStrategy) ->
         TerminalResultScreenModel(scanData, tradingPointId, strategy, get())
     }
-    factory { (calc: TransactionCalculationDto, tpId: String, cardId: String, strategy: TransactionStrategy) ->
-        TransactionConfirmationScreenModel(calc, tpId, cardId, strategy, get())
+    factory { (calc: TransactionCalculationDto, tpId: String, cardId: String, userId: String, strategy: TransactionStrategy) ->
+        TransactionConfirmationScreenModel(calc, tpId, cardId, userId, strategy, get())
+    }
+    factory { CashierStatsScreenModel(get()) }
+    factory { (userId: String, tpId: String) ->
+        RateClientScreenModel(userId, tpId, get())
     }
     factory { PointsMapScreenModel(get(), get(), get()) }
 

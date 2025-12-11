@@ -43,7 +43,8 @@ import io.loyaltyloop.shared.models.SendSupportMessageRequest
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.models.SystemEventType
-
+import io.loyaltyloop.server.repository.RatingRepository
+import java.time.Instant
 private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
 private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
 
@@ -55,10 +56,50 @@ fun Route.partnerRoutes(
     emailService: EmailService,
     webBaseUrl: String,
     supportChatService: SupportChatService,
-    eventLogger: EventLogger
+    eventLogger: EventLogger,
+    ratingRepository: RatingRepository // Injected repo
 ) {
     route("/partners") {
         authenticate("auth-jwt") {
+
+            get("/reviews/summary") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                // DEBUG: Dump data if special param is present
+                val from = call.request.queryParameters["from"]?.toLongOrNull()
+                val to = call.request.queryParameters["to"]?.toLongOrNull()
+                val pointId = call.request.queryParameters["pointId"]
+                
+                val data = ratingRepository.getAnalyticsData(partner.id, from, to, pointId)
+                call.respond(data)
+            }
+
+            get("/reviews") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
+                val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
+                
+                // By default return client reviews of service
+                val list = ratingRepository.getServiceReviews(partner.id, limit, offset)
+                call.respond(list)
+            }
+            
+            get("/client-ratings") {
+                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
+                
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
+                val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
+                
+                val list = ratingRepository.getClientRatings(partner.id, limit, offset)
+                call.respond(list)
+            }
 
             get("/analytics") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get

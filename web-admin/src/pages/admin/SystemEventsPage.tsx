@@ -37,11 +37,13 @@ const EVENT_TYPE_COLORS: Record<SystemEventType, "default" | "primary" | "second
     [SystemEventType.VISIT]: 'primary',
     [SystemEventType.ERROR]: 'error',
     [SystemEventType.INFO]: 'default',
+    [SystemEventType.WARNING]: 'warning',
     [SystemEventType.OTP_VERIFICATION_FAILED]: 'warning',
     [SystemEventType.PIN_CHANGE_SUCCESS]: 'success',
     [SystemEventType.PIN_RESET_REQUEST]: 'info',
     [SystemEventType.PIN_RESET_SUCCESS]: 'success',
-    [SystemEventType.PIN_VERIFICATION_FAILED]: 'error'
+    [SystemEventType.PIN_VERIFICATION_FAILED]: 'error',
+    [SystemEventType.USER_BANNED]: 'error'
 };
 
 export const SystemEventsPage = () => {

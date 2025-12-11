@@ -67,12 +67,12 @@ import loyaltyloop.composeapp.generated.resources.celebration_title_visit
 import loyaltyloop.composeapp.generated.resources.celebration_visit_logged
 import loyaltyloop.composeapp.generated.resources.celebration_visit_reward_ready
 import org.jetbrains.compose.resources.stringResource
-import kotlinx.coroutines.delay
 import loyaltyloop.composeapp.generated.resources.celebration_new_balance_prefix
 import loyaltyloop.composeapp.generated.resources.celebration_title_tier_prefix
 import loyaltyloop.composeapp.generated.resources.celebration_visit_increment_prefix
 import loyaltyloop.composeapp.generated.resources.celebration_visit_increment_suffix
 import loyaltyloop.composeapp.generated.resources.celebration_visit_remaining_prefix
+import loyaltyloop.composeapp.generated.resources.rate_service_title
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.roundToInt
@@ -83,7 +83,8 @@ import kotlin.random.Random
 @Composable
 fun CelebrationOverlay(
     state: CelebrationState,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onRateClick: (() -> Unit)? = null
 ) {
     val colors = celebrationColors(state.type)
     val visibility = remember {
@@ -102,7 +103,7 @@ fun CelebrationOverlay(
             enter = fadeIn(tween(250)) + scaleIn(initialScale = 0.94f, animationSpec = tween(350, easing = FastOutSlowInEasing)),
             exit = fadeOut(tween(200)) + scaleOut(targetScale = 0.94f, animationSpec = tween(200))
         ) {
-            CelebrationCard(state = state, onDismiss = onDismiss, colors = colors)
+            CelebrationCard(state = state, onDismiss = onDismiss, colors = colors, onRateClick = onRateClick)
         }
     }
 }
@@ -111,7 +112,8 @@ fun CelebrationOverlay(
 private fun CelebrationCard(
     state: CelebrationState,
     onDismiss: () -> Unit,
-    colors: Pair<Color, Color>
+    colors: Pair<Color, Color>,
+    onRateClick: (() -> Unit)? = null
 ) {
     var showTooltip by remember { mutableStateOf(false) }
 
@@ -190,6 +192,26 @@ private fun CelebrationCard(
                             text = stringResource(Res.string.celebration_rules_hint),
                             style = MaterialTheme.typography.bodyMedium,
                             color = colors.second
+                        )
+                    }
+                }
+
+                if (onRateClick != null) {
+                    Surface(
+                        color = colors.second.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(20.dp))
+                            .clickable { onRateClick() }
+                    ) {
+                        Text(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            text = stringResource(Res.string.rate_service_title),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.first,
+                            textAlign = TextAlign.Center
                         )
                     }
                 }

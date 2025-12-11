@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.googleServices)
+    alias(libs.plugins.firebaseCrashlytics)
     alias(libs.plugins.kotlinCocoapods)
     alias(libs.plugins.buildConfig)
 }
@@ -18,14 +19,20 @@ plugins {
 val activeEnv = project.findProperty("env") as? String ?: "dev"
 val isServerBuild = project.hasProperty("serverBuild")
 
+val currentVersionCode = 1
+val currentVersionName = "1.0"
+
 buildConfig {
     packageName("io.loyaltyloop.app.config")
     className("AppConfig")
 
+    buildConfigField("int", "VERSION_CODE", "$currentVersionCode")
+    buildConfigField("String", "VERSION_NAME", "\"$currentVersionName\"")
+
     // Логика выбора URL
     val serverUrl = when(activeEnv) {
-        "prod" -> "server-loyalityloop-prod.up.railway.app"
-        "stage" -> "server-loyalityloop-stage.up.railway.app"
+        "prod" -> "https://server-loyalityloop-prod.up.railway.app"
+        "stage" -> "https://server-loyalityloop-stage.up.railway.app"
         // Локалхост для Android эмулятора.
         // Для iOS эмулятора это должен быть localhost или 127.0.0.1, но 10.0.2.2 тоже иногда мапится, но надежнее localhost.
         // Однако, 10.0.2.2 - стандарт Android.
@@ -39,6 +46,9 @@ buildConfig {
         else -> "http://10.0.2.2:3000"
     }
 
+    val isProd = activeEnv == "prod"
+
+    buildConfigField("boolean", "IS_PROD", "$isProd")
     buildConfigField("String", "WEB_URL", "\"$webUrl\"")
     buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
     buildConfigField("String", "MAP_API_KEY", "\"913bd734-3e88-42fd-ae0d-b5f16c05110c\"")
@@ -125,6 +135,7 @@ kotlin {
                 implementation(libs.kotlinx.coroutines.android)
                 implementation(project.dependencies.platform(libs.firebase.bom))
                 implementation(libs.firebase.messaging)
+                implementation("com.google.firebase:firebase-crashlytics-ktx")
                 implementation(libs.kotlinx.coroutines.play.services)
                 implementation(libs.process.phoenix)
 
@@ -133,6 +144,15 @@ kotlin {
                 implementation(libs.yandex.maps.mobile)
 
                 implementation(compose.components.resources)
+
+                implementation("androidx.camera:camera-core:${libs.versions.camerax.get()}")
+                implementation("androidx.camera:camera-camera2:${libs.versions.camerax.get()}")
+                implementation("androidx.camera:camera-lifecycle:${libs.versions.camerax.get()}")
+                implementation("androidx.camera:camera-view:${libs.versions.camerax.get()}")
+                implementation("com.google.mlkit:barcode-scanning:${libs.versions.mlkit.barcode.get()}")
+                implementation(libs.play.app.update)
+                implementation(libs.play.app.update.ktx)
+                implementation(libs.android.material)
             }
 
 
@@ -146,14 +166,14 @@ kotlin {
 
 android {
     namespace = "io.loyaltyloop.app"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "io.loyaltyloop.app"
-        minSdk = 24
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = currentVersionCode
+        versionName = currentVersionName
         resConfigs("en", "ru", "be", "kk", "ky", "uz")
     }
 }

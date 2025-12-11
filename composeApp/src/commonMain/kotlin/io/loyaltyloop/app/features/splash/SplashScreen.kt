@@ -5,14 +5,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.features.auth.LoginScreen
+import io.loyaltyloop.app.features.forceupdate.ForceUpdateScreen
 import io.loyaltyloop.app.features.main.MainScreen
 import io.loyaltyloop.app.features.onboarding.OnboardingScreen
+import io.loyaltyloop.app.features.whatsnew.WhatsNewScreen
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.btn_retry
 import org.jetbrains.compose.resources.stringResource
@@ -35,6 +43,10 @@ class SplashScreen : Screen {
                     is SplashScreenModel.Event.NavigateToHome -> navigator.replaceAll(MainScreen())
                     is SplashScreenModel.Event.NavigateToLogin -> navigator.replaceAll(LoginScreen())
                     is SplashScreenModel.Event.NavigateToOnboarding -> navigator.replaceAll(OnboardingScreen())
+                    is SplashScreenModel.Event.NavigateToForceUpdate -> navigator.replaceAll(ForceUpdateScreen(event.url))
+                    is SplashScreenModel.Event.NavigateToWhatsNew -> navigator.replaceAll(WhatsNewScreen {
+                        navigator.replaceAll(MainScreen())
+                    })
                 }
             }
         }
@@ -64,10 +76,25 @@ class SplashScreen : Screen {
                 // --- ЛОГОТИП (Загрузка) ---
                 // Можно добавить CircularProgressIndicator, если долго грузится
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val gradient = Brush.linearGradient(
+                        listOf(
+                            Color(0xFF4565E8),
+                            Color(0xFF8C52D6)
+                        )
+                    )
                     Text(
-                        text = "LoyaltyLoop",
-                        style = MaterialTheme.typography.displayMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        text = buildAnnotatedString {
+                            withStyle(
+                                SpanStyle(
+                                    brush = gradient,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append("LoyaltyLoop")
+                            }
+                        },
+                        style = MaterialTheme.typography.displayMedium.copy(fontWeight = FontWeight.Bold),
+                        color = Color.Unspecified
                     )
                     if (state.isLoading) {
                         Spacer(modifier = Modifier.height(16.dp))

@@ -21,6 +21,7 @@ data class CardAnimationMessage(
     val event: CardAnimationEvent,
     val card: LoyaltyCardDto? = null,
     val newBalance: Double? = null,
-    val newVisits: Int? = null
+    val newVisits: Int? = null,
+    val tradingPointId: String? = null
 )
 

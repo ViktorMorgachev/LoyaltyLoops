@@ -21,6 +21,7 @@ import io.loyaltyloop.shared.utils.CryptoUtils
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.shared.models.PartnerStatus
 import kotlin.math.abs
+import io.loyaltyloop.shared.models.CashierDailyStatsDto
 
 class TransactionService(
     private val userRepository: UserRepository,
@@ -29,6 +30,14 @@ class TransactionService(
     private val realtimeService: CardRealtimeService,
     private val eventLogger: EventLogger
 ) {
+
+    suspend fun getCashierDailyStats(cashierId: String): CashierDailyStatsDto {
+        val zoneId = java.time.ZoneId.systemDefault()
+        val now = System.currentTimeMillis()
+        val todayStart = java.time.LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant().toEpochMilli()
+        
+        return transactionRepository.getCashierStats(cashierId, todayStart, now)
+    }
 
     suspend fun scanQr(cashierUserId: String, request: ScanQrRequest): ScanQrResponse {
         // 1. Проверка прав кассира
@@ -99,7 +108,8 @@ class TransactionService(
                 payload = CardRealtimePayload(
                     eventType = CardRealtimeEventType.CARD_CREATED,
                     cardId = card.id,
-                    cardSnapshot = card
+                    cardSnapshot = card,
+                    tradingPointId = request.tradingPointId
                 )
             )
         }
@@ -124,7 +134,10 @@ class TransactionService(
             maxBurnPercentage = settings.maxBurnPercentage,
             currency = point.currency,
             awardOnMixedPayment = settings.awardOnMixedPayment,
-            isNewCard = isCreatedNow
+            isNewCard = isCreatedNow,
+            trustScore = card.trustScore,
+            riskLevel = card.riskLevel,
+            fraudFlag = card.fraudFlag
         )
     }
 
@@ -370,7 +383,8 @@ class TransactionService(
                 successType = successType,
                 args = successArgs,
                 newBalance = calc.newBalance,
-                newVisits = calc.newVisits
+                newVisits = calc.newVisits,
+                tradingPointId = tradingPointId
             )
         )
 

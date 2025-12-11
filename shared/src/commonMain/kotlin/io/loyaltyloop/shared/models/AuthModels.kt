@@ -11,7 +11,8 @@ data class SendCodeRequest(
 data class VerifyCodeRequest(
     val phone: String,
     val code: String,
-    val countryCode: CountryCode = CountryCode.KG
+    val countryCode: CountryCode = CountryCode.KG,
+    val verificationId: String? = null
 )
 
 // ОТВЕТ СЕРВЕРА (Самое важное)
@@ -59,11 +60,13 @@ data class VerifyPinRequest(
 
 @Serializable
 data class RequestAccountDeletionResponse(
-    val message: String
+    val message: String,
+    val verificationId: String? = null
 )
 
 @Serializable
 data class ConfirmAccountDeletionRequest(
     val code: String,
-    val reason: String
+    val reason: String,
+    val verificationId: String? = null
 )

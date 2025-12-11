@@ -98,10 +98,10 @@ class JoinCompanyScreenModel(
                         error = null
                     )
                 }
-                .onError { appCode, _ ->
+                .onError { appCode, msg ->
                     log.write("Join failed: $appCode", LogType.Error)
                     _events.send(Event.ShowMessage(
-                        message = UiText.Resource(appCode.toResource()),
+                        message = UiText.Resource(appCode.toResource(msg)),
                         type = SnackbarType.Error
                     ))
                     _state.value = _state.value.copy(

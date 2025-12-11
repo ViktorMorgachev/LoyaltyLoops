@@ -32,6 +32,7 @@ import java.util.UUID
 import kotlin.time.Duration.Companion.hours
 import io.loyaltyloop.server.i18n.ServerResources
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.service.sms.SmsService
 import kotlinx.coroutines.CoroutineScope
 
 
@@ -43,13 +44,9 @@ data class SubscriptionWarningDto(
     val endDate: Long
 )
 
-class LoyaltyEngineService {
+class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailService,  val systemEventRepository: SystemEventRepository) {
 
     private val logger = LoggerFactory.getLogger("LoyaltyEngine")
-    // Ideally inject these, but for background job simplistic instantiation is fine or use global
-    private val systemEventRepository = SystemEventRepository()
-    private val smsService = ConsoleSmsService() // Placeholder for notifications
-    private val emailService = ConsoleEmailService() // Placeholder
 
     fun start(scope: CoroutineScope) {
         scope.launch(Dispatchers.IO) {

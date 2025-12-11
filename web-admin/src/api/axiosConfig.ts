@@ -88,6 +88,26 @@ const refreshAccessToken = () => {
     return refreshPromise;
 };
 
+// --- HELPER: Device Signals ---
+const getDeviceId = (): string => {
+    let deviceId = localStorage.getItem('deviceId');
+    if (!deviceId) {
+        // Modern browsers
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            deviceId = crypto.randomUUID();
+        } else {
+            // Fallback for older browsers
+            deviceId = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                const r = (Math.random() * 16) | 0,
+                    v = c === 'x' ? r : (r & 0x3) | 0x8;
+                return v.toString(16);
+            });
+        }
+        localStorage.setItem('deviceId', deviceId);
+    }
+    return deviceId;
+};
+
 // --- ИНТЕРЦЕПТОР ЗАПРОСА ---
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem('accessToken');
@@ -95,6 +115,13 @@ api.interceptors.request.use((config) => {
         config.headers.Authorization = `Bearer ${token}`;
     }
     config.headers['Accept-Language'] = i18n.language;
+
+    // Device Signals for Prelude
+    config.headers['X-Device-Id'] = getDeviceId();
+    config.headers['X-Device-Platform'] = 'web';
+    config.headers['X-Device-Model'] = navigator.userAgent; // Browser User Agent
+    config.headers['X-Os-Version'] = navigator.platform; // OS Platform
+    config.headers['X-App-Version'] = '1.0.0'; // Web Admin Version
 
     return config;
 }, (error) => {
@@ -117,10 +144,18 @@ api.interceptors.response.use(
         // 2. ЛОКАЛИЗАЦИЯ
         if (error.response?.data?.code) {
             const code = error.response.data.code;
-            const key = `errors.${code}`;
-            // Проверка exists, чтобы не показывать ключи, если перевода нет
-            if (i18n.exists(key)) {
-                error.message = i18n.t(key);
+            const message = error.response.data.message;
+
+            if (code === 'SMS_PROVIDER_ERROR') {
+                const preludeKey = `errors.prelude.${message || 'try_later'}`;
+                error.message = i18n.exists(preludeKey)
+                    ? i18n.t(preludeKey)
+                    : i18n.t('errors.SMS_PROVIDER_ERROR');
+            } else {
+                const key = `errors.${code}`;
+                if (i18n.exists(key)) {
+                    error.message = i18n.t(key);
+                }
             }
         }
 
@@ -135,18 +170,18 @@ api.interceptors.response.use(
 
         // 3. ПОПЫТКА ОБНОВИТЬ ТОКЕН
         if (canAttemptRefresh) {
-            originalRequest._retry = true;
+            Object.defineProperty(originalRequest, '_retry', { value: true, writable: true, enumerable: true, configurable: true });
             try {
-                logger.warn('[API] Trying to refresh access token…'); // Используем logger
+                logger.warn('[API] Trying to refresh access token…');
                 const newToken = await refreshAccessToken();
                 if (newToken) {
                     originalRequest.headers = originalRequest.headers || {};
                     originalRequest.headers.Authorization = `Bearer ${newToken}`;
-                    logger.warn('[API] Token refreshed, repeating request', originalRequest?.url); // Используем logger
+                    logger.warn('[API] Token refreshed, repeating request', originalRequest?.url);
                     return api(originalRequest);
                 }
             } catch (refreshError) {
-                logger.warn('[API] Refresh failed, forcing logout'); // Используем logger
+                logger.warn('[API] Refresh failed, forcing logout');
                 performLogout();
                 return Promise.reject(refreshError);
             }

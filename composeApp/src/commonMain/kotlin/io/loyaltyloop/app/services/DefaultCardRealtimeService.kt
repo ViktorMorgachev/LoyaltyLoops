@@ -106,7 +106,8 @@ class DefaultCardRealtimeService(
                     event = CardAnimationEvent.CardCreated,
                     card = cardSnapshot,
                     newBalance = newBalance,
-                    newVisits = newVisits
+                    newVisits = newVisits,
+                    tradingPointId = tradingPointId
                 )
             )
 
@@ -116,7 +117,8 @@ class DefaultCardRealtimeService(
                     event = CardAnimationEvent.CardSynced,
                     card = cardSnapshot,
                     newBalance = newBalance,
-                    newVisits = newVisits
+                    newVisits = newVisits,
+                    tradingPointId = tradingPointId
                 )
             )
 
@@ -124,7 +126,8 @@ class DefaultCardRealtimeService(
                 CardAnimationMessage(
                     cardId = cardId,
                     event = CardAnimationEvent.CardDeleted,
-                    card = cardSnapshot
+                    card = cardSnapshot,
+                    tradingPointId = tradingPointId
                 )
             )
 
@@ -141,7 +144,8 @@ class DefaultCardRealtimeService(
                 CardAnimationEvent.BalanceEarned(amount),
                 cardSnapshot,
                 newBalance,
-                newVisits
+                newVisits,
+                tradingPointId
             )
 
             TransactionSuccessType.POINTS_SPENT -> events += CardAnimationMessage(
@@ -149,7 +153,8 @@ class DefaultCardRealtimeService(
                 CardAnimationEvent.BalanceSpent(amount),
                 cardSnapshot,
                 newBalance,
-                newVisits
+                newVisits,
+                tradingPointId
             )
 
             TransactionSuccessType.POINTS_SPENT_EARNED -> {
@@ -161,7 +166,8 @@ class DefaultCardRealtimeService(
                         CardAnimationEvent.BalanceSpent(spent),
                         cardSnapshot,
                         newBalance,
-                        newVisits
+                        newVisits,
+                        tradingPointId
                     )
                 }
                 if (earned > 0.0) {
@@ -170,7 +176,8 @@ class DefaultCardRealtimeService(
                         CardAnimationEvent.BalanceEarned(earned),
                         cardSnapshot,
                         newBalance,
-                        newVisits
+                        newVisits,
+                        tradingPointId
                     )
                 }
             }
@@ -188,7 +195,8 @@ class DefaultCardRealtimeService(
                     ),
                     cardSnapshot,
                     newBalance,
-                    newVisits
+                    newVisits,
+                    tradingPointId
                 )
             }
 
@@ -198,7 +206,8 @@ class DefaultCardRealtimeService(
                     CardAnimationEvent.RewardUnlocked,
                     cardSnapshot,
                     newBalance,
-                    newVisits
+                    newVisits,
+                    tradingPointId
                 )
             }
 
@@ -212,7 +221,8 @@ class DefaultCardRealtimeService(
                     CardAnimationEvent.BalanceEarned(amount),
                     cardSnapshot,
                     newBalance,
-                    newVisits
+                    newVisits,
+                    tradingPointId
                 )
             }
         }

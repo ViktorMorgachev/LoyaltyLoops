@@ -9,6 +9,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
 import cafe.adriel.voyager.navigator.currentOrThrow
 import co.touchlab.kermit.Logger
@@ -17,9 +18,17 @@ import io.loyaltyloop.app.features.wallet.LoyaltyCardDetailsScreen
 import io.loyaltyloop.app.services.LoyaltyFirebaseMessagingService
 import io.loyaltyloop.app.utils.LocaleManager
 import io.loyaltyloop.shared.config.AppConfig
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
+import com.google.android.play.core.install.model.InstallStatus
+import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.FirebaseApp
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 
 class MainActivity : ComponentActivity() {
 
+    private val UPDATE_REQUEST_CODE = 500
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -28,10 +37,53 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        FirebaseApp.initializeApp(this)
+        FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = AppConfig.isProd
         handleNotificationIntent(intent)
+        checkForFlexibleUpdate()
 
         setContent {
             App()
+        }
+    }
+
+    private fun checkForFlexibleUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        appUpdateInfoTask.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.FLEXIBLE)
+            ) {
+                appUpdateManager.startUpdateFlowForResult(
+                    appUpdateInfo,
+                    AppUpdateType.FLEXIBLE,
+                    this,
+                    UPDATE_REQUEST_CODE
+                )
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        appUpdateManager.appUpdateInfo.addOnSuccessListener { appUpdateInfo ->
+            if (appUpdateInfo.installStatus() == InstallStatus.DOWNLOADED) {
+                popupSnackbarForCompleteUpdate()
+            }
+        }
+    }
+
+    private fun popupSnackbarForCompleteUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(this)
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            getString(R.string.update_downloaded_message),
+            Snackbar.LENGTH_INDEFINITE
+        ).apply {
+            setAction(getString(R.string.update_restart_btn)) { appUpdateManager.completeUpdate() }
+            show()
         }
     }
 

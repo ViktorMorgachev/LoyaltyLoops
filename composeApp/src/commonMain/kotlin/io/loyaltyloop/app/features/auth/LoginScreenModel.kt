@@ -155,8 +155,8 @@ class LoginScreenModel(
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false, otpInput = "")
                 }
-                .onError { apiCode, _ ->
-                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
+                .onError { apiCode, msg ->
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(msg)), SnackbarType.Error))
                     val newTimer = if (apiCode == AppErrorCode.TOO_MANY_REQUESTS) 20 else _state.value.timerSeconds
                     _state.value = _state.value.copy(
                         isLoading = false, 
@@ -212,8 +212,8 @@ class LoginScreenModel(
                             _events.send(Event.NavigateToHome)
                         }
                 }
-                .onError { apiCode, _ ->
-                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
+                .onError { apiCode, msg ->
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(msg)), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false, otpInput = "")
                 }
                 .onFailure { exception ->

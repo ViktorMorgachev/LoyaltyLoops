@@ -12,11 +12,13 @@ enum class SystemEventType {
     VISIT,
     ERROR,
     INFO,
+    WARNING, // Added
     OTP_VERIFICATION_FAILED,
     PIN_CHANGE_SUCCESS,
     PIN_RESET_REQUEST,
     PIN_RESET_SUCCESS,
-    PIN_VERIFICATION_FAILED
+    PIN_VERIFICATION_FAILED,
+    USER_BANNED
 }
 
 @Serializable
@@ -41,4 +43,3 @@ data class SystemEventFilter(
     val limit: Int = 100,
     val offset: Long = 0
 )
-

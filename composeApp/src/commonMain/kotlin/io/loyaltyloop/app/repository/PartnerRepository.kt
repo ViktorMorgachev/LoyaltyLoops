@@ -17,14 +17,32 @@ import io.loyaltyloop.shared.models.TransactionCalculationDto
 import io.loyaltyloop.shared.models.TransactionResult
 import io.loyaltyloop.shared.models.TransactionStrategy
 import io.loyaltyloop.app.data.network.safeNetworkCall
+import io.loyaltyloop.shared.models.CashierDailyStatsDto
 import io.loyaltyloop.shared.models.NetworkResult
-import io.loyaltyloop.shared.models.PublicConfigResponse
-import io.loyaltyloop.shared.models.TradingPointDto
-import io.loyaltyloop.shared.models.TradingPointSearchResponse
-import io.loyaltyloop.shared.models.TradingPointType
+
+import io.loyaltyloop.shared.models.CreateClientRatingDto
+import io.loyaltyloop.shared.models.CreateServiceReviewDto
+import io.loyaltyloop.shared.models.TrustScoreDto
 
 class PartnerRepository(private val client: HttpClient) {
 
+    suspend fun rateClient(dto: CreateClientRatingDto): NetworkResult<TrustScoreDto> {
+        return safeNetworkCall {
+             client.post("/terminal/rate-client") {
+                 contentType(ContentType.Application.Json)
+                 setBody(dto)
+             }
+        }
+    }
+
+    suspend fun rateService(dto: CreateServiceReviewDto): NetworkResult<ApiMessage> {
+        return safeNetworkCall {
+            client.post("/client/rate-service") {
+                contentType(ContentType.Application.Json)
+                setBody(dto)
+            }
+        }
+    }
 
     // Присоединиться к компании по инвайт-коду
     suspend fun joinCompany(inviteCode: String): NetworkResult<ApiMessage> {
@@ -80,6 +98,12 @@ class PartnerRepository(private val client: HttpClient) {
                     strategy = strategy
                 ))
             }
+        }
+    }
+
+    suspend fun getCashierStats(): NetworkResult<CashierDailyStatsDto> {
+        return safeNetworkCall {
+            client.get("/terminal/stats")
         }
     }
 }
