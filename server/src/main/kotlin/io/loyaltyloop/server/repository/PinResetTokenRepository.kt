@@ -5,10 +5,11 @@ import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import io.loyaltyloop.server.utils.SecurityUtils
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
@@ -37,19 +38,23 @@ class PinResetTokenRepository {
     suspend fun findValidToken(token: String): PinResetToken? = dbQuery {
         val hash = SecurityUtils.hashValue(token)
         val now = System.currentTimeMillis()
-        PinResetTokensTable.select {
-            (PinResetTokensTable.tokenHash eq hash) and
-                (PinResetTokensTable.usedAt.isNull()) and
-                (PinResetTokensTable.expiresAt greaterEq now)
-        }.map {
-            PinResetToken(
-                id = it[PinResetTokensTable.id],
-                userId = it[PinResetTokensTable.userId],
-                tokenHash = it[PinResetTokensTable.tokenHash],
-                expiresAt = it[PinResetTokensTable.expiresAt],
-                usedAt = it[PinResetTokensTable.usedAt]
-            )
-        }.singleOrNull()
+        val condition = (PinResetTokensTable.tokenHash eq hash) and
+            (PinResetTokensTable.usedAt.isNull()) and
+            (PinResetTokensTable.expiresAt greaterEq now)
+
+        PinResetTokensTable
+            .selectAll()
+            .where { condition }
+            .map {
+                PinResetToken(
+                    id = it[PinResetTokensTable.id],
+                    userId = it[PinResetTokensTable.userId],
+                    tokenHash = it[PinResetTokensTable.tokenHash],
+                    expiresAt = it[PinResetTokensTable.expiresAt],
+                    usedAt = it[PinResetTokensTable.usedAt]
+                )
+            }
+            .singleOrNull()
     }
 
     suspend fun markUsed(tokenId: String) = dbQuery {

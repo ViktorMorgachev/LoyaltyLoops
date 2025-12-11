@@ -6,7 +6,7 @@ import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.email.EmailService
-import io.loyaltyloop.server.service.sms.verification.VerificationSignals
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.UserRole
@@ -17,12 +17,11 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.slf4j.LoggerFactory
 import so.prelude.sdk.client.PreludeClient
 import so.prelude.sdk.core.JsonValue
 import so.prelude.sdk.models.VerificationCheckParams
-import so.prelude.sdk.client.okhttp.PreludeOkHttpClient;
 import so.prelude.sdk.models.VerificationCheckResponse
 import so.prelude.sdk.models.VerificationCreateParams
 import java.io.IOException
@@ -202,8 +201,8 @@ class PreludeSmsService(
     private suspend fun notifyAdmins(code: String, body: String) {
         val recipients: List<String> = dbQuery {
             val superAdmins = UsersTable
-                .slice(UsersTable.email)
-                .select { UsersTable.isSuperAdmin eq true }
+                .selectAll()
+                .where { UsersTable.isSuperAdmin eq true }
                 .mapNotNull { it[UsersTable.email] }
             val superManagers = SystemStaffTable
                 .join(
@@ -212,8 +211,8 @@ class PreludeSmsService(
                     SystemStaffTable.userId,
                     UsersTable.id
                 )
-                .slice(UsersTable.email)
-                .select { SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER }
+                .selectAll()
+                .where { SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER }
                 .mapNotNull { it[UsersTable.email] }
             (superAdmins + superManagers).filter { it.isNotBlank() }.distinct()
         }

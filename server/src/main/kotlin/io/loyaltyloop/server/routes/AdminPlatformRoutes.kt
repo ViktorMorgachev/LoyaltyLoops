@@ -10,6 +10,7 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.repository.PlatformRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.LoyaltyException
@@ -21,6 +22,7 @@ import io.loyaltyloop.shared.models.PlatformRequestStatus
 import io.loyaltyloop.shared.models.RejectRequestDto
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.server.service.email.EmailService // Added
+import org.jetbrains.exposed.sql.select
 
 fun Route.adminPlatformRoutes(
     platformRepository: PlatformRepository,
@@ -44,7 +46,7 @@ fun Route.adminPlatformRoutes(
                     throw LoyaltyException(AppErrorCode.ALREADY_JOINED)
                 }
 
-                platformRepository.addSystemStaff(userId, role)
+                platformRepository.createSystemStaff(userId, role)
                 call.respond(HttpStatusCode.OK)
             }
 

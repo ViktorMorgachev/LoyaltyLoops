@@ -49,12 +49,15 @@ import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
 import io.loyaltyloop.server.utils.handleError
+import io.loyaltyloop.server.utils.int
+import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
 import io.loyaltyloop.server.service.sms.ConsoleSmsService
+import io.loyaltyloop.server.service.sms.SmsRateLimits
 import java.time.Duration
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
@@ -210,13 +213,19 @@ fun Application.module() {
 
     val smsProvider = environment.config.string("sms.smsProvider", "internal")
     val preludeApiKey = environment.config.string("sms.prelude_conf.apiKey", "")
+    val smsRateLimits = SmsRateLimits(
+        maxPerMinute = environment.config.int("sms.limits.perMinute", 1),
+        maxPerHour = environment.config.int("sms.limits.perHour", 5),
+        maxFailedAttempts = environment.config.int("sms.limits.maxOtpAttempts", 3),
+        blockDurationMs = environment.config.long("sms.limits.blockDurationMs", 3_600_000L)
+    )
 
     val smsService = if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
         PreludeSmsService(preludeApiKey, PreludeOkHttpClient.builder()
             .apiToken(preludeApiKey)
             .build(), eventLogger, emailService)
     } else {
-        ConsoleSmsService(otpService,eventLogger, systemEventRepository )
+        ConsoleSmsService(otpService, eventLogger, systemEventRepository, smsRateLimits)
     }
 
     // Start Background Jobs
@@ -274,14 +283,8 @@ fun Application.module() {
     val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
     val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
 
-    val forcePartnerPin = environment.config.bool("features.forcePartnerPin", false)
 
-    if (forcePartnerPin) {
-        launch {
-            val affected = partnerRepository.resetAllPartnerPins("123456789")
-            log.warn("Force-set PIN for $affected partners to the configured default.")
-        }
-    }
+    
     if (superPhone != null) {
         launch {
             // 1. Пытаемся найти
@@ -295,7 +298,7 @@ fun Application.module() {
                     phoneNumber = superPhone,
                     countryCode = "KG",
                     firstName = null,
-                    qrSecret = "admin_secret_key",
+                    qrSecret = tokenService.generateQrSecret(),
                     language = "ru"
                 )
                 userRepository.createUser(newUser)
@@ -305,7 +308,7 @@ fun Application.module() {
             // 3. Выдаем права
             if (user != null) {
                 val created = try {
-                    userRepository.createSystemStaff(
+                    platformRepository.createSystemStaff(
                         userId = user.id,
                         role = io.loyaltyloop.shared.models.UserRole.PLATFORM_SUPER_ADMIN,
                         defaultPinHash = defaultPin

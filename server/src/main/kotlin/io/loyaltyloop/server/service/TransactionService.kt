@@ -261,6 +261,7 @@ class TransactionService(
                 cashierId = cashierUserId,
                 type = "VISIT",
                 amount = 0.0,
+                pointsDelta = 0.0,
                 visitsDelta = 1
             )
             eventLogger.log(

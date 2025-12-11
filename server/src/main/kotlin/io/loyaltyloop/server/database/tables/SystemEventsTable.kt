@@ -1,4 +1,4 @@
-package io.loyaltyloop.server.database
+package io.loyaltyloop.server.database.tables
 
 import org.jetbrains.exposed.sql.Table
 

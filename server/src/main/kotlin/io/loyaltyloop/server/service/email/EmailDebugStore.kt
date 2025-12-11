@@ -1,4 +1,4 @@
-package io.loyaltyloop.server.service
+package io.loyaltyloop.server.service.email
 
 /**
  * Simple helper to keep the last PIN reset link for tests/debug.

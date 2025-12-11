@@ -1,6 +1,5 @@
 package io.loyaltyloop.server.service.email
 
-import io.loyaltyloop.server.service.EmailDebugStore
 import org.slf4j.LoggerFactory
 
 interface EmailService {
