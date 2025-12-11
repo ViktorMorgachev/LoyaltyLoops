@@ -263,7 +263,7 @@ class UserRepository {
             block = block,
             pause = pause,
             partnerName = "",
-            cardColor = null,
+            cardColor = "",
             logoUrl = null,
             visitsCount = row[LoyaltyCardTable.visitsCount],
             trustScore = score,
