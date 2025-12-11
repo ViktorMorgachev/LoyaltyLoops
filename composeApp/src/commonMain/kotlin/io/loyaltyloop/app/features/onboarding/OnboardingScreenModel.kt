@@ -93,7 +93,7 @@ class OnboardingScreenModel(
                         .onFailure { exception ->
                             log.write("Profile refresh failed", LogType.Error, exception)
                         }
-                        .onError { code, _ ->
+                        .onError { code, msg ->
                             log.write("Profile refresh failed: $code", LogType.Error)
                         }
                     _events.send(Event.ShowMessage(
@@ -109,7 +109,7 @@ class OnboardingScreenModel(
                 }
                 .onError { apiCode, string ->
                     log.write("Update failed: $apiCode", LogType.Error)
-                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(string)), SnackbarType.Error))
                     _state.value = currentState.copy(isLoading = false)
                 }
         }

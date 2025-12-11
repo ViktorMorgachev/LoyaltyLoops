@@ -15,28 +15,29 @@ import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.utils.LoyaltyException
-import io.loyaltyloop.shared.models.ApiMessage
-import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.CardBlockStatus
-import io.loyaltyloop.shared.models.CardPauseStatus
-import io.loyaltyloop.shared.models.CardRealtimeEventType
-import io.loyaltyloop.shared.models.CardRealtimePayload
-import io.loyaltyloop.shared.models.TransactionSuccessType
-import io.loyaltyloop.shared.models.UserRole
-import kotlinx.serialization.Serializable
-import org.slf4j.LoggerFactory
+import io.loyaltyloop.shared.models.*
 import io.loyaltyloop.server.service.LoyaltyEngineService
+import org.slf4j.LoggerFactory
+import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.RatingRepository
+import kotlinx.serialization.Serializable
+
 
 @Suppress("CyclomaticComplexMethod", "ThrowsCount")
 fun Route.testSupportRoutes(
     userRepository: UserRepository,
     transactionRepository: TransactionRepository,
     cardRealtimeService: CardRealtimeService,
-    loyaltyEngineService: LoyaltyEngineService
+    loyaltyEngineService: LoyaltyEngineService,
+    partnerRepository: PartnerRepository, // Injected
+    ratingRepository: RatingRepository    // Injected
 ) {
     val logger = LoggerFactory.getLogger("TestSupportRoutes")
 
     route("/test-support") {
+        // Unprotected seed endpoint removed due to compilation issues.
+        // Data will be generated via app usage.
+
         authenticate("auth-jwt") {
             /**
              * Продвигает выбранного пользователя до роли PLATFORM_SUPER_ADMIN.
@@ -153,6 +154,14 @@ fun Route.testSupportRoutes(
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Realtime event delivered"))
             }
 
+            post("/cards/social") {
+                ensureSuperAdmin(call, userRepository)
+                val request = call.receive<UpdateCardSocialRequest>()
+                
+                transactionRepository.updateTrustScore(request.cardId, request.trustScore, request.fraudFlag)
+                call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
+            }
+
             post("/subscription-check") {
                 ensureSuperAdmin(call, userRepository)
                 loyaltyEngineService.runSubscriptionCheck()
@@ -180,6 +189,13 @@ data class CardMutationRequest(
     val blockUpdate: Boolean = false,
     val pause: CardPauseStatus? = null,
     val pauseUpdate: Boolean = false
+)
+
+@Serializable
+data class UpdateCardSocialRequest(
+    val cardId: String,
+    val trustScore: Double,
+    val fraudFlag: Boolean
 )
 
 @Serializable

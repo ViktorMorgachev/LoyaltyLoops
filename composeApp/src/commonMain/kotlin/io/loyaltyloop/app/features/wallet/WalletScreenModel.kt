@@ -108,9 +108,9 @@ class WalletScreenModel(
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                     _state.update { it.copy(isLoading = false) }
                 }
-                .onError { code, _ ->
+                .onError { code, msg ->
                     log.write("Failed to load cards: $code", LogType.Error)
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                     _state.update { it.copy(isLoading = false) }
                 }
         }
@@ -415,7 +415,7 @@ class WalletScreenModel(
         if (!shouldCelebrate) return
 
         val card = message.card ?: _state.value.cards.find { it.id == message.cardId } ?: return
-        val celebration = CelebrationState.from(card, message.event, message.newBalance, message.newVisits) ?: return
+        val celebration = CelebrationState.from(card, message.event, message.newBalance, message.newVisits, message.tradingPointId) ?: return
         _celebrationState.value = celebration
     }
 

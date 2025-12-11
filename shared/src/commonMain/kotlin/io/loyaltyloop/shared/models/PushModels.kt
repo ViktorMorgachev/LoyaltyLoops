@@ -35,7 +35,8 @@ data class CardRealtimePayload(
     val successType: TransactionSuccessType? = null,
     val args: List<String> = emptyList(),
     val newBalance: Double? = null,
-    val newVisits: Int? = null
+    val newVisits: Int? = null,
+    val tradingPointId: String? = null
 )
 
 @Serializable

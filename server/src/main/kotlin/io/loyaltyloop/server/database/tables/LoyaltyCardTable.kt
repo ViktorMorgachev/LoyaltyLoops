@@ -30,6 +30,10 @@ object LoyaltyCardTable : Table("loyalty_cards") {
     val blockedUntil = long("blocked_until").nullable()
     val blockedReason = varchar("blocked_reason", 255).nullable()
 
+    // Рейтинг доверия (Social Score)
+    val trustScore = double("trust_score").default(4.0)
+    val fraudFlag = bool("fraud_flag").default(false)
+
     // Дата последней активности (для сгорания бонусов)
     val lastActivityAt = long("last_activity_at").default(System.currentTimeMillis())
 

@@ -19,12 +19,17 @@ data class ScanQrResponse(
     val visitsCount: Int,       // Для VISITS
     // Правила игры (Контекст точки)
     val programType: LoyaltyProgramType, // TIERED или VISITS  или Hybrid
-    val visitsTarget: Int? = null,       // Например, 6 (если VISITS)
+    val visitsTarget: Int,       // Например, 6 (если VISITS)
     val cashbackPercent: Double? = null,  // Например 5 (если TIERED)
-    val maxBurnPercentage: Int = 100,     // Макс % оплаты баллами
-    val currency: String = "KGS",         // Валюта точки
+    val maxBurnPercentage: Int,     // Макс % оплаты баллами
+    val currency: String,        // Валюта точки
     val awardOnMixedPayment: Boolean = false, // Начисление бонусов при комбинированном платеже
 
-    val isNewCard: Boolean
+    val isNewCard: Boolean,
+    
+    // Social Rating
+    val trustScore: Double,
+    val riskLevel: RiskLevel,
+    val fraudFlag: Boolean = false
 )
 

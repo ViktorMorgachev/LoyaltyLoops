@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LoyaltyLoop</string>
-    <string name="notif_default_body">У вас новое событие по карте лояльности</string>
+    <string name="app_name" translatable="false">LoyaltyLoop</string>
+    <string name="notif_default_body">You have a new loyalty card event</string>
+    <string name="update_downloaded_message">Update downloaded. Restart now?</string>
+    <string name="update_restart_btn">Restart</string>
 </resources>
 

@@ -4,8 +4,20 @@ import io.loyaltyloop.shared.models.AppErrorCode
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.StringResource
 
-fun AppErrorCode.toResource(): StringResource {
+fun AppErrorCode.toResource(message: String? = null): StringResource {
     return when (this) {
+        AppErrorCode.SMS_PROVIDER_ERROR -> {
+            when (message) {
+                "unsupported_country" -> Res.string.error_prelude_unsupported_country
+                "channel_not_enabled_in_region" -> Res.string.error_prelude_channel_not_enabled_in_region
+                "too_many_attempts" -> Res.string.error_prelude_too_many_attempts
+                "too_many_checks" -> Res.string.error_prelude_too_many_checks
+                "impossible_code" -> Res.string.error_prelude_impossible_code
+                "insufficient_balance" -> Res.string.error_prelude_insufficient_balance
+                "suspended_account" -> Res.string.error_prelude_suspended_account
+                else -> Res.string.error_sms_provider_error
+            }
+        }
         AppErrorCode.SUCCESS -> Res.string.error_success
         AppErrorCode.UNKNOWN_ERROR -> Res.string.error_unknown_error
         AppErrorCode.INTERNAL_ERROR -> Res.string.error_internal_error
@@ -47,6 +59,10 @@ fun AppErrorCode.toResource(): StringResource {
         AppErrorCode.TRIAL_ALREADY_USED -> Res.string.ignore
         AppErrorCode.PARTNER_ON_REVIEW -> Res.string.ignore
         AppErrorCode.PARTNER_BLOCKED -> Res.string.error_partner_blocked
+        // Moderation
+        AppErrorCode.USER_BANNED -> Res.string.error_user_banned
+        AppErrorCode.BLOCK_REQUEST_CREATED -> Res.string.term_report_success
+        AppErrorCode.BLOCK_REQUEST_ALREADY_EXISTS -> Res.string.error_block_request_exists
     }
 }
 

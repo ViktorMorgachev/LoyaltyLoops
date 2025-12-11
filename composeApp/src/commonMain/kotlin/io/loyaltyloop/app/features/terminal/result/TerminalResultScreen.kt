@@ -20,8 +20,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -34,6 +36,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -53,13 +57,15 @@ import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.show
 import io.loyaltyloop.shared.models.LoyaltyProgramType
+import io.loyaltyloop.shared.models.RiskLevel
 import io.loyaltyloop.shared.models.ScanQrResponse
 import io.loyaltyloop.shared.models.TransactionStrategy
 import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlinx.coroutines.launch
-
+import io.loyaltyloop.shared.utils.getCurrencySymbol
+import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
 
 data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId: String, val strategy: TransactionStrategy) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -79,12 +85,16 @@ data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId
                     is TerminalResultScreenModel.Event.NavigateBack -> {
                         navigator?.pop()
                     }
+                    is TerminalResultScreenModel.Event.NavigateToRating -> {
+                        navigator?.replace(RateClientScreen(event.userId, event.tradingPointId))
+                    }
                     is TerminalResultScreenModel.Event.NavigateToConfirmation -> {
                         navigator?.push(
                             TransactionConfirmationScreen(
                                 calculation = event.calculation,
                                 tradingPointId = event.tradingPointId,
                                 cardId = event.cardId,
+                                userId = event.userId,
                                 strategy = event.strategy,
                                 currency = event.currency
                             )
@@ -135,7 +145,6 @@ data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId
                 Spacer(modifier = Modifier.weight(1f))
 
                 // --- КНОПКА ДЕЙСТВИЯ ---
-                // Для визитов кнопка может сразу быть "Add Visit" и вести на подтверждение с нулевой суммой
                 val btnText = if (state.data.programType == LoyaltyProgramType.VISIT_COUNTER) {
                     stringResource(Res.string.term_res_btn_add_visit)
                 } else {
@@ -151,21 +160,76 @@ data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId
                 )
             }
         }
+
     }
 }
 
 @Composable
 fun CustomerHeader(data: ScanQrResponse) {
+    // Clamp BLACK to RED on UI — no explicit fraud status shown
+    val displayLevel = if (data.riskLevel == RiskLevel.BLACK) RiskLevel.RED else data.riskLevel
+
+    val riskColor = when (displayLevel) {
+        RiskLevel.GREEN -> Color(0xFF4CAF50)
+        RiskLevel.YELLOW -> Color(0xFFFFC107)
+        RiskLevel.ORANGE -> Color(0xFFFF9800)
+        RiskLevel.RED -> Color(0xFFF44336)
+        RiskLevel.BLACK -> Color(0xFFF44336)
+    }
+    
+    val riskText = when (displayLevel) {
+        RiskLevel.GREEN -> stringResource(Res.string.risk_level_green)
+        RiskLevel.YELLOW -> stringResource(Res.string.risk_level_yellow)
+        RiskLevel.ORANGE -> stringResource(Res.string.risk_level_orange)
+        RiskLevel.RED -> stringResource(Res.string.risk_level_red)
+        RiskLevel.BLACK -> stringResource(Res.string.risk_level_red)
+    }
+
+    val riskDesc = when (displayLevel) {
+        RiskLevel.GREEN -> stringResource(Res.string.risk_desc_green)
+        RiskLevel.YELLOW -> stringResource(Res.string.risk_desc_yellow)
+        RiskLevel.ORANGE -> stringResource(Res.string.risk_desc_orange)
+        RiskLevel.RED -> stringResource(Res.string.risk_desc_red)
+        RiskLevel.BLACK -> stringResource(Res.string.risk_desc_red)
+    }
+
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Box(
-            modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Default.Person, null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Box(
+                modifier = Modifier
+                    .size(80.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Person, null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            }
+            
+            // Risk Indicator Badge
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(2.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(riskColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = data.trustScore.toString().take(3), 
+                        style = MaterialTheme.typography.labelSmall, 
+                        color = if (displayLevel == RiskLevel.YELLOW) Color.Black else Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
         }
+
         Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = data.firstName.takeIf { !it.isNullOrBlank() } ?: stringResource(Res.string.term_res_client_default),
@@ -178,6 +242,20 @@ fun CustomerHeader(data: ScanQrResponse) {
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.secondary
         )
+        
+        // Risk Label
+        Spacer(modifier = Modifier.height(4.dp))
+        AssistChip(
+            onClick = {},
+            label = { Text(riskText) },
+            leadingIcon = {
+                Icon(Icons.Default.Shield, null, tint = riskColor, modifier = Modifier.size(16.dp))
+            },
+            colors = AssistChipDefaults.assistChipColors(
+                labelColor = riskColor
+            )
+        )
+
         if (data.isNewCard) {
             Spacer(modifier = Modifier.height(8.dp))
             SuggestionChip(
@@ -185,6 +263,7 @@ fun CustomerHeader(data: ScanQrResponse) {
                 label = { Text(stringResource(Res.string.term_res_new_client_chip)) }
             )
         }
+        Spacer(modifier = Modifier.height(8.dp))
     }
 }
 
@@ -234,7 +313,7 @@ fun TieredContent(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             textStyle = MaterialTheme.typography.headlineSmall,
-            suffix = { Text(state.data.currency, style = MaterialTheme.typography.headlineSmall) }
+            suffix = { Text(getCurrencySymbol(state.data.currency), style = MaterialTheme.typography.headlineSmall) }
         )
 
         Spacer(modifier = Modifier.height(8.dp))

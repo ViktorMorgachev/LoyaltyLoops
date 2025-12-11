@@ -1,235 +1,489 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">LoyaltyLoop</string>
-    <string name="auth_btn_next">Працягнуць</string>
-    <string name="auth_enter_code">Увядзіце код з SMS</string>
-    <string name="auth_phone_label">Ваш нумар тэлефона</string>
-    <string name="auth_resend_btn">Паўторна адправіць код</string>
-    <string name="auth_resend_timer">Адправіць паўторна праз</string>
-    <string name="auth_subtitle">Уваход для кліентаў і партнёраў</string>
-    <string name="auth_success">Паспяховы ўваход</string>
+
+    <!-- Auth Screen -->
     <string name="auth_title">LoyaltyLoop</string>
-    <string name="btn_exit_mode">Выйсці з рэжыму</string>
-    <string name="btn_exit_short">Выйсці</string>
-    <string name="btn_retry">Паўтарыць</string>
-    <string name="btn_save">Захаваць і ўвайсці</string>
-    <string name="cashier_join_success">Вы паспяхова далучыліся да каманды!</string>
-    <string name="celebration_close">Блізка</string>
-    <string name="celebration_new_balance_prefix">Новы баланс:</string>
-    <string name="celebration_reward_text">Вы можаце забраць свой падарунак зараз!</string>
-    <string name="celebration_rules_hint">Праверце правілы акцыі на сайце. Неўзабаве тут з&apos;явяцца рэйтынгі балаў і падрабязнасці наведванняў.</string>
-    <string name="celebration_title_created">Новая карта</string>
-    <string name="celebration_title_earn">Налічэнне бонусаў</string>
-    <string name="celebration_title_reward">Узнагарода гатовая!</string>
-    <string name="celebration_title_spend">Спісанне бонусаў</string>
-    <string name="celebration_title_tier_prefix">Новы ўзровень:</string>
-    <string name="celebration_title_visit">Візіт залічаны</string>
-    <string name="celebration_visit_increment_prefix">+</string>
-    <string name="celebration_visit_increment_suffix">наведванне</string>
-    <string name="celebration_visit_logged">Візіт улічаны</string>
-    <string name="celebration_visit_remaining_prefix">Да падарунка застаўся час</string>
-    <string name="celebration_visit_reward_ready">Падарунак ужо чакае!</string>
-    <string name="err_field_required">Гэта поле абавязковае</string>
-    <string name="err_invalid_email">Няправільны фармат электроннай пошты</string>
-    <string name="err_invalid_phone_format">Няправільны фармат ліку</string>
-    <string name="error_account_frozen">Рахунак часова замарожаны</string>
-    <string name="error_already_joined">Вы ўжо далучыліся</string>
-    <string name="error_business_already_exists">Бізнэс ужо існуе</string>
-    <string name="error_business_not_found">Кампанія не знойдзена</string>
-    <string name="error_card_blocked">Картка заблакаваная</string>
-    <string name="error_card_not_found">Картка лаяльнасці не знойдзена</string>
-    <string name="error_card_paused">Карта прыпыненая</string>
-    <string name="error_client_card_blocked">Картка кліента заблакаваная</string>
-    <string name="error_code_expired">Код скончыўся</string>
-    <string name="error_email_required">Каб скінуць PIN-код, увядзіце свой адрас электроннай пошты</string>
-    <string name="error_forbidden">Доступ забаронены</string>
-    <string name="error_internal_error">Унутраная памылка сервера</string>
-    <string name="error_invalid_amount">Няправільная сума</string>
-    <string name="error_invalid_code">Няправільны код спраўджання</string>
-    <string name="error_invalid_invite_code">Няправільны код запрашэння</string>
-    <string name="error_invalid_phone">Няправільны фармат тэлефона</string>
-    <string name="error_invalid_pin">Няправільны PIN-код</string>
-    <string name="error_invalid_qr_signature">Фальшывы QR-код</string>
-    <string name="error_invalid_request">Памылка запыту</string>
-    <string name="error_invalid_reset_token">Спасылка для скіду PIN-кода несапраўдная</string>
-    <string name="error_invalid_tier_value">Няправільныя налады лаяльнасці гандлёвых кропак</string>
-    <string name="error_loyalty_setting_not_found">Налады лаяльнасці не знойдзены</string>
-    <string name="error_network">Няма падключэння да інтэрнэту</string>
-    <string name="error_no_workspace">Памылка: няма працоўнай змены (кантэкст страчаны)</string>
-    <string name="error_not_found">Рэсурс не знойдзены</string>
-    <string name="error_point_inactive">Пункт не актыўны</string>
-    <string name="error_point_not_found">Крама не знойдзена</string>
-    <string name="error_profile_loading">Не ўдалося загрузіць профіль</string>
-    <string name="error_qr_expired">Тэрмін дзеяння QR-кода скончыўся</string>
-    <string name="error_security_qr_secret_missing">Памылка бяспекі QR</string>
-    <string name="error_server">Паслуга часова недаступная</string>
-    <string name="error_session_expired">Тэрмін сеансу скончыўся, увайдзіце яшчэ раз</string>
-    <string name="error_success">Паспяхова</string>
-    <string name="error_token_expired">Сеанс скончыўся</string>
-    <string name="error_token_invalid">Памылка сеанса (токен несапраўдны)</string>
-    <string name="error_unauthorized">Патрабуецца аўтарызацыя</string>
+    <string name="auth_subtitle">Уваход для кліентаў і партнёраў</string>
+    <string name="auth_phone_label">Ваш нумар тэлефона</string>
+    <string name="auth_btn_next">Працягнуць</string>
+    <string name="auth_enter_code">Увядзіце код з СМС</string>
+    <string name="auth_resend_btn">Адправіць код паўторна</string>
+    <string name="auth_resend_timer">Адправіць паўторна праз</string>
+    <string name="profile_loading">Загрузка...</string>
+    <string name="profile_error_load">Памылка загрузкі</string>
+    <string name="auth_success">Паспяховы ўваход</string>
+    <string name="ignore" />
+
+    <!-- Errors -->
+    <string name="error_network">Няма падлучэння да інтэрнэту</string>
+    <string name="error_server">Сэрвіс часова недаступны</string>
+    <string name="error_session_expired">Сесія скончылася, увайдзіце зноў</string>
     <string name="error_unknown">Адбылася невядомая памылка</string>
+    <string name="err_invalid_email">Некарэктны фармат Email</string>
+    <string name="error_profile_loading">Не атрымалася загрузіць профіль</string>
+    <string name="btn_retry">Паўтарыць</string>
+
+    <!-- AppErrorCode Translations -->
+    <string name="error_success">Паспяхова</string>
     <string name="error_unknown_error">Невядомая памылка</string>
-    <string name="error_user_creation_failed">Памылка стварэння карыстальніка</string>
+    <string name="error_internal_error">Унутраная памылка сервера</string>
+    <string name="error_invalid_request">Памылка запыту</string>
+    <string name="error_unauthorized">Патрэбна аўтарызацыя</string>
+    <string name="error_forbidden">Доступ забаронены</string>
+    <string name="error_not_found">Рэсурс не знойдзены</string>
+    <string name="error_account_frozen">Акаўнт часова замарожаны</string>
+    <string name="error_email_required">Укажыце e-mail для скіду PIN</string>
+    <string name="error_invalid_reset_token">Спасылка для скіду PIN несапраўдная</string>
+    
+    <string name="error_invalid_phone">Няправільны фармат тэлефона</string>
+    <string name="error_invalid_phone_number">Няправільны фармат нумара тэлефона</string>
+    <string name="error_invalid_code">Няправільны код пацверджання</string>
+    <string name="error_code_expired">Код пратэрмінаваны</string>
     <string name="error_user_not_found">Карыстальнік не знойдзены</string>
-    <string name="field_email">Электронная пошта (для аднаўлення доступу)</string>
-    <string name="field_firstname">імя *</string>
-    <string name="field_lastname">Прозвішча</string>
-    <string name="hybrid_action_bonus">Бонусы / Кэшбэк</string>
-    <string name="hybrid_action_visit">Дадайце візіт</string>
-    <string name="hybrid_dialog_text">Кліент можа назапашваць наведванне або выкарыстоўваць бонусы. Выберыце дзеянне:</string>
-    <string name="hybrid_dialog_title">Выберыце тып аперацыі</string>
-    <string name="join_btn_submit">Далучайцеся</string>
-    <string name="join_code_label">Код запрашэння</string>
-    <string name="join_description">Увядзіце запрашальны код, які вам даў уладальнік ўстановы.</string>
-    <string name="join_title">Стаць супрацоўнікам</string>
-    <string name="language_be">Беларуская</string>
-    <string name="language_kk">Казакша</string>
-    <string name="language_ky">Кыргызстан</string>
-    <string name="language_ru">рускі</string>
-    <string name="language_uz">Узбекча</string>
-    <string name="msg_balance_info">баланс:</string>
-    <string name="msg_points_earned">Налічана:</string>
-    <string name="msg_points_spent">Спісаны:</string>
-    <string name="msg_points_spent_earned">Спісаны:</string>
-    <string name="msg_points_spent_earned_middle">, Налічана:</string>
-    <string name="msg_points_suffix">Б</string>
-    <string name="msg_success_default">Аперацыя паспяхова!</string>
-    <string name="msg_visit_progress">Візіт улічаны! Усяго:</string>
-    <string name="msg_visit_progress_suffix">ад</string>
+    <string name="error_token_expired">Сесія скончылася</string>
+    <string name="error_point_paused">У партнёра выхадны дзень</string>
+    <string name="error_client_card_blocked">Карта кліента заблакаваная</string>
+    <string name="error_invalid_tier_value">Няправільныя налады лаяльнасці</string>
+    <string name="error_token_invalid">Памылка сесіі (Токен несапраўдны)</string>
+    <string name="error_invalid_pin">Няправільны PIN-код</string>
+    <string name="error_user_creation_failed">Памылка стварэння карыстальніка</string>
+    <string name="error_to_many_requests">Ужо ацанілі сёння</string>
+    <string name="error_otp_attempts_exceeded">Перавышаны ліміт спробаў. Паспрабуйце праз гадзіну.</string>
+    <string name="error_account_deleted">Гэты нумар тэлефона звязаны з выдаленым акаўнтам. Калі ласка, выкарыстоўвайце іншы нумар.</string>
+    <string name="error_partner_blocked">Гэты партнёр заблакаваны.</string>
+    
+    <string name="error_business_already_exists">Бізнес ужо існуе</string>
+    <string name="error_business_not_found">Бізнес не знойдзены</string>
+    <string name="error_point_not_found">Гандлёвая кропка не знойдзена</string>
+    <string name="error_point_inactive">Кропка не актыўная</string>
+    <string name="error_already_joined">Вы ўжо далучыліся</string>
+    <string name="error_invalid_invite_code">Няправільны інвайт-код</string>
+    
+    <string name="error_qr_expired">QR код пратэрмінаваны</string>
+    <string name="error_invalid_qr_signature">Падроблены QR код</string>
+    <string name="error_security_qr_secret_missing">Памылка бяспекі QR</string>
+    <string name="error_invalid_amount">Некарэктная сума</string>
+    <string name="error_loyalty_setting_not_found">Налады лаяльнасці не знойдзены</string>
+    <string name="error_card_not_found">Карта лаяльнасці не знойдзена</string>
+    <string name="error_card_blocked">Карта заблакаваная</string>
+    <string name="error_card_paused">Карта прыпыненая</string>
+    <string name="error_sms_provider_error">Не атрымалася адправіць код. Паспрабуйце пазней.</string>
+    <string name="error_prelude_unsupported_country">Адпраўка недаступная для гэтай краіны.</string>
+    <string name="error_prelude_channel_not_enabled_in_region">Канал недаступны ў гэтым рэгіёне.</string>
+    <string name="error_prelude_too_many_attempts">Занадта шмат спробаў. Паспрабуйце пазней.</string>
+    <string name="error_prelude_too_many_checks">Занадта шмат праверак. Паспрабуйце пазней.</string>
+    <string name="error_prelude_impossible_code">Некарэктны код. Запытайце новы.</string>
+    <string name="error_prelude_insufficient_balance">Сэрвіс часова недаступны. Паспрабуйце пазней.</string>
+    <string name="error_prelude_suspended_account">Сэрвіс часова недаступны. Паспрабуйце пазней.</string>
+
+    <!-- Transaction Results -->
+    <string name="msg_points_earned">Налічана: </string>
+    <string name="msg_points_spent">Спісана: </string>
+    <string name="msg_points_spent_earned">Спісана: </string>
+    <string name="msg_points_spent_earned_middle">, Налічана: </string>
+    <string name="msg_points_suffix"> Б</string>
+    <string name="msg_visit_progress">Візіт улічаны! Усяго: </string>
+    <string name="msg_visit_progress_suffix"> з </string>
     <string name="msg_visit_reward">Мэта дасягнута! Падарунак даступны! (</string>
     <string name="msg_visit_reward_suffix">)</string>
-    <string name="onboarding_subtitle">Запоўніце дадзеныя, каб атрымаць персаналізаваныя бонусы</string>
+    <string name="msg_balance_info">Баланс: </string>
+    <string name="msg_success_default">Аперацыя паспяховая!</string>
+
+    <!-- Join Company Screen -->
+    <string name="join_title">Стаць супрацоўнікам</string>
+    <string name="join_description">Увядзіце код запрашэння, які вам даў уладальнік установы.</string>
+    <string name="join_code_label">Інвайт-код</string>
+    <string name="join_btn_submit">Далучыцца</string>
+    <string name="cashier_join_success">Вы паспяхова далучыліся да каманды!</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Давайце знаёміцца!</string>
+    <string name="onboarding_subtitle">Запоўніце дадзеныя, каб атрымліваць імянныя бонусы</string>
+    <string name="field_firstname">Імя *</string>
+    <string name="field_lastname">Прозвішча</string>
+    <string name="field_email">Email (для аднаўлення доступу)</string>
+    <string name="btn_save">Захаваць і ўвайсці</string>
+    <string name="onboarding_why_info">Ваша імя будзе адлюстроўвацца ў касіра для прывітання і налічэння бонусаў.</string>
+    <string name="err_field_required">Гэта поле абавязковае</string>
+    <string name="err_invalid_phone_format">Няправільны фармат нумара</string>
     <string name="onboarding_success">Профіль захаваны!</string>
-    <string name="onboarding_title">Будзем знаёміцца!</string>
-    <string name="onboarding_why_info">Ваша імя будзе адлюстроўвацца ў касіра для прывітання і ўзнагароджання бонусамі.</string>
-    <string name="profile_about_description">LoyaltyLoop дапамагае вам кіраваць праграмамі лаяльнасці і партнёрамі з аднаго прыкладання.</string>
-    <string name="profile_about_title">Аб дадатку</string>
-    <string name="profile_about_version">Версія:</string>
-    <string name="profile_btn_create_business">Запусціце LoyaltyLoop</string>
-    <string name="profile_btn_join_team">Увядзіце код запрашэння</string>
-    <string name="profile_btn_logout">Выйдзіце са свайго акаўнта</string>
-    <string name="profile_desc_create_business">Для ўладальнікаў устаноў</string>
-    <string name="profile_desc_join_team">Для супрацоўнікаў</string>
-    <string name="profile_error_load">Памылка загрузкі</string>
-    <string name="profile_header_actions">Магчымасці</string>
-    <string name="profile_header_workspaces">Мае працоўныя месцы</string>
-    <string name="profile_item_language">Мова прыкладання</string>
-    <string name="profile_item_support">Падтрымка</string>
-    <string name="profile_language_dialog_apply">Ужыць</string>
-    <string name="profile_language_dialog_cancel">Адмяніць</string>
-    <string name="profile_language_dialog_title">Выберыце мову</string>
-    <string name="profile_language_updated">Мова абноўлена</string>
-    <string name="profile_loading">Загрузка...</string>
-    <string name="profile_role_administrator">Адміністратар</string>
-    <string name="profile_role_cashier">Касір</string>
-    <string name="profile_role_partner">Уладальнік</string>
-    <string name="profile_role_platform_manager">Менеджэр платформы</string>
-    <string name="profile_role_platform_owner">Уладальнік платформы</string>
-    <string name="profile_section_business">Бізнес і кар&apos;ера</string>
-    <string name="profile_section_general">Асновы</string>
-    <string name="profile_version">Версія %s</string>
-    <string name="profile_web_error_token">Не ўдалося адкрыць партал. Перазапусціце прыкладанне і ўвайдзіце зноў.</string>
-    <string name="profile_workspaces_title">Мае працоўныя месцы</string>
-    <string name="qr_sec">сек</string>
-    <string name="qr_sheet_title">Пакажыце яго касіру</string>
-    <string name="qr_timer_update">Будзе абноўлена ў</string>
-    <string name="role_cashier_desc">Я хачу працаваць з тэрміналам</string>
-    <string name="role_cashier_title">Я наёмны работнік</string>
-    <string name="role_client_desc">Хачу назапашваць бонусы і атрымліваць зніжкі</string>
+
+    <!-- Role Selection -->
+    <string name="role_select_title">Абярыце рэжым</string>
     <string name="role_client_title">Я Пакупнік</string>
-    <string name="role_partner_desc">Я хачу запусціць сістэму лаяльнасці</string>
-    <string name="role_partner_title">Я ўладальнік бізнесу</string>
-    <string name="role_select_title">Выберыце рэжым</string>
+    <string name="role_client_desc">Хачу збіраць бонусы і атрымліваць зніжкі</string>
+    <string name="role_partner_title">Я Уладальнік бізнесу</string>
+    <string name="role_partner_desc">Хачу запусціць сістэму лаяльнасці</string>
+    <string name="role_cashier_title">Я Супрацоўнік</string>
+    <string name="role_cashier_desc">Хачу працаваць з тэрміналам</string>
+
+    <string name="workspace_cashier_title">Працоўнае месца</string>
+    <string name="workspace_partner_title">Кабінет Уладальніка</string>
+    <string name="workspace_partner_stub">Поўнае кіраванне бізнесам даступна ў вэб-версіі.</string>
+    <string name="btn_exit_mode">Выйсці з рэжыму</string>
+    <string name="btn_exit_short">Выйсці</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workspaces_title">Мае працоўныя месцы</string>
+    <string name="profile_role_partner">Уладальнік</string>
+    <string name="profile_role_cashier">Касір</string>
+    <string name="profile_role_administrator">Адміністратар</string>
+    <string name="profile_btn_logout">Выйсці з акаўнта</string>
+    <string name="profile_section_general">Асноўнае</string>
+    <string name="profile_section_business">Бізнес і Кар'ера</string>
+
+    <string name="profile_item_language">Мова праграмы</string>
+    <string name="profile_item_support">Падтрымка</string>
+    <string name="profile_language_dialog_title">Абярыце мову</string>
+    <string name="profile_language_dialog_apply">Прымяніць</string>
+    <string name="profile_language_dialog_cancel">Адмена</string>
+    <string name="profile_language_updated">Мова абноўлена</string>
+    <string name="language_ru">Руская</string>
+    <string name="language_ky">Кыргызская</string>
+    <string name="language_kk">Казахская</string>
+    <string name="language_uz">Узбекская</string>
+    <string name="language_be">Беларуская</string>
+    <string name="profile_about_title">Пра праграму</string>
+    <string name="profile_about_version">Версія:</string>
+    <string name="profile_about_description">LoyaltyLoop — гэта ваш адзіны кашалёк для карт лаяльнасці. Збірайце бонусы, атрымлівайце падарункі і сачыце за сваім статусам у любімых месцах.</string>
+
+    <string name="profile_btn_create_business">Запусціць LoyaltyLoop</string>
+    <string name="profile_desc_create_business">Для ўладальнікаў устаноў</string>
+
+    <string name="profile_btn_join_team">Увесці інвайт-код</string>
+    <string name="profile_desc_join_team">Для супрацоўнікаў</string>
+    <string name="profile_web_error_token">Не атрымалася адкрыць партал. Перазапусціце праграму і ўвайдзіце нанова.</string>
+    <string name="web_error_title">Не атрымалася загрузіць партал</string>
+    <string name="web_error_retry">Паўтарыць</string>
+    <string name="web_loading_message">Загружаем кабінет...</string>
+
+    <string name="profile_version">Версія %s</string>
+    <!-- Profile Roles -->
+    <string name="profile_role_platform_owner">Уладальнік платформы</string>
+    <string name="profile_role_platform_manager">Менеджэр Платформы</string>
+
+    <!-- Profile Sections -->
+    <string name="profile_header_workspaces">Мае працоўныя месцы</string>
+    <string name="profile_header_actions">Магчымасці</string>
+
+    <!-- Bottom Navigation -->
+    <string name="tab_wallet">Кашалёк</string>
     <string name="tab_locations">Месцы</string>
     <string name="tab_profile">Профіль</string>
-    <string name="tab_wallet">Кашалёк</string>
-    <string name="term_btn_confirm">Пацвердзіць</string>
-    <string name="term_btn_next">Далей</string>
-    <string name="term_calc_msg_charge">Мы будзем налічваць бонусы на бягучым узроўні</string>
-    <string name="term_calc_msg_charge_upgrade">Павышайце ўзровень! Кліент атрымлівае больш бонусаў</string>
-    <string name="term_calc_msg_error">Няправільная сума</string>
-    <string name="term_calc_msg_next_reward">Да ўзнагароджання застаўся адзін візіт</string>
-    <string name="term_calc_msg_spend">Спісалі максімум па правілах кропкі</string>
-    <string name="term_calc_msg_spend_limit_balance">Усе наяўныя балы спісалі, астатнія - грашыма</string>
-    <string name="term_calc_msg_visit">Візіт будзе ўлічаны</string>
-    <string name="term_calc_msg_visit_reward">Узнагарода выдадзена - цыкл абнулены</string>
-    <string name="term_confirm_balance">Баланс пасля</string>
-    <string name="term_confirm_earned">Налічэнне балаў</string>
-    <string name="term_confirm_purchase">Сума чэка</string>
-    <string name="term_confirm_spent">Спісаць балы</string>
-    <string name="term_confirm_status">Статус</string>
-    <string name="term_confirm_title">Пацверджанне</string>
-    <string name="term_confirm_total_pay">За аплату</string>
-    <string name="term_confirm_visits">Наведванні пасля</string>
-    <string name="term_err_no_workspace">Памылка: няма працоўнай змены</string>
-    <string name="term_err_scan_generic">Памылка сканавання</string>
-    <string name="term_msg_success">Трансакцыя паспяховая!</string>
-    <string name="term_res_amount_hint">Агульны кошт і спісанне разлічым на наступным этапе па правілах пункта.</string>
-    <string name="term_res_amount_label">Сума чэка</string>
-    <string name="term_res_award_hint">Нават калі бонусы будуць спісаныя, мы забяспечым кэшбэк пры аплаце наяўнымі.</string>
-    <string name="term_res_award_will_earn">Будзе залічана:</string>
-    <string name="term_res_balance_prefix">Бягучы баланс:</string>
-    <string name="term_res_btn_add_points">Налічвайце бонусы</string>
-    <string name="term_res_btn_add_visit">Падлічыць наведванне (+1)</string>
-    <string name="term_res_calc_prefix">Будзе залічана:</string>
-    <string name="term_res_calculating">Мы лічым...</string>
-    <string name="term_res_client_default">Кліент</string>
-    <string name="term_res_new_client_chip">Новы кліент! 🎉</string>
-    <string name="term_res_next_free">НАСТУПНЫ ВІЗІТ - ПРЫЗ! 🎁</string>
-    <string name="term_res_points_suffix">Б</string>
-    <string name="term_res_spend_available">У наяўнасці:</string>
-    <string name="term_res_spend_explain">Спісваем максімум па правілах пункта - падрабязнасці ў наступным кроку</string>
-    <string name="term_res_spend_title">Спісаць балы</string>
-    <string name="term_res_spend_will_spend">Спішуць:</string>
-    <string name="term_res_tiered_title">Накапляльная сістэма</string>
-    <string name="term_res_title">Вынік</string>
-    <string name="term_res_total_pay">Усяго да аплаты:</string>
-    <string name="term_res_visit_action_prefix">АКЦЫЯ:</string>
-    <string name="term_res_visit_action_suffix">тавар у падарунак</string>
-    <string name="terminal_btn_scan">Працэс</string>
-    <string name="terminal_btn_simulate">Імітацыя сканавання</string>
-    <string name="terminal_camera_hint">Навядзіце камеру на QR-код</string>
-    <string name="terminal_camera_instruction">Навядзіце камеру на QR-код</string>
-    <string name="terminal_camera_placeholder">Сканер (разетка)</string>
-    <string name="terminal_client_found_fmt">Кліент знойдзены: %s</string>
-    <string name="terminal_debug_card_title">Рэжым адладкі (эмулятар)</string>
-    <string name="terminal_debug_title">Ручной увод (тэст)</string>
-    <string name="terminal_input_label">Радок QR</string>
-    <string name="terminal_input_placeholder">Устаўце радок QR</string>
-    <string name="terminal_scan_success">Кліент знойдзены!</string>
-    <string name="terminal_title">Тэрмінал</string>
-    <string name="wallet_card_back_goal_prefix">Мэта:</string>
-    <string name="wallet_card_back_goal_suffix">візіты</string>
-    <string name="wallet_card_back_progress_title">Прагрэс і правілы</string>
-    <string name="wallet_card_back_remaining_prefix">Да падарунка застаўся час</string>
-    <string name="wallet_card_back_remaining_suffix">візіты.</string>
-    <string name="wallet_card_back_reward_ready">Віншую! Мэта выканана - спытаеце ў касіра пра падарунак.</string>
-    <string name="wallet_card_back_total_prefix">Усяго наведванняў:</string>
-    <string name="wallet_card_balance_label">Баланс</string>
-    <string name="wallet_card_blocked">Картка заблакаваная</string>
-    <string name="wallet_card_blocked_until">Заблакіраваны да</string>
-    <string name="wallet_card_closed_default">Праграма часова прыпыненая</string>
-    <string name="wallet_card_closed_reason">Прыпынена:</string>
-    <string name="wallet_card_inactive">Карта неактыўная</string>
-    <string name="wallet_card_new_level">Новы ўзровень</string>
-    <string name="wallet_card_paused">Часова адключаны</string>
-    <string name="wallet_card_points_suffix">Б</string>
-    <string name="wallet_card_reward_badge">Падарунак гатовы!</string>
-    <string name="wallet_card_type">Бонусная карта</string>
-    <string name="wallet_card_visit_suffix">візіты</string>
-    <string name="wallet_card_visits_label">Наведванні</string>
-    <string name="wallet_empty_desc">Пакажыце свой QR-код касіру пры першай пакупцы, каб атрымаць картку.</string>
-    <string name="wallet_empty_refresh">Абнавіць спіс</string>
-    <string name="wallet_empty_title">У вас яшчэ няма карт лаяльнасці</string>
+
+    <!-- Wallet Screen -->
+    <string name="wallet_title">Кашалёк</string>
     <string name="wallet_my_cards">Мае карты</string>
     <string name="wallet_my_qr">Мой код</string>
+    <string name="wallet_empty_title">У вас пакуль няма карт лаяльнасці</string>
+    <string name="wallet_empty_desc">Пакажыце свой QR-код касіру пры першай пакупцы, каб атрымаць карту.</string>
     <string name="wallet_show_qr_btn">Паказаць мой QR</string>
-    <string name="wallet_title">Кашалёк</string>
-    <string name="web_error_retry">Паўтарыць</string>
-    <string name="web_error_title">Не ўдалося загрузіць партал</string>
-    <string name="web_loading_message">Загрузка вашага ўліковага запісу...</string>
-    <string name="workspace_cashier_title">Працоўнае месца</string>
-    <string name="workspace_partner_stub">Поўнае кіраванне бізнесам даступна ў вэб-версіі.</string>
-    <string name="workspace_partner_title">Уліковы запіс уладальніка</string>
+    <string name="wallet_empty_refresh">Абнавіць спіс</string>
+    <string name="wallet_card_type">Бонусная карта</string>
+    <string name="wallet_card_balance_label">Баланс</string>
+    <string name="wallet_card_visits_label">Візіты</string>
+    <string name="wallet_card_suffix">Б</string>
+    <string name="wallet_card_visit_suffix"> візітаў</string>
+    <string name="wallet_card_new_level">Новы ўзровень</string>
+    <string name="wallet_card_reward_badge">Падарунак гатовы!</string>
+    <string name="wallet_card_inactive">Карта неактыўная</string>
+    <string name="wallet_card_blocked">Карта заблакаваная</string>
+    <string name="wallet_card_blocked_until">Заблакаваная да </string>
+    <string name="wallet_card_closed_reason">Прыпыненая: </string>
+    <string name="wallet_card_closed_default">Праграма часова прыпыненая</string>
+    <string name="wallet_card_paused">Часова адключаная</string>
+    <string name="wallet_card_back_progress_title">Прагрэс і правілы</string>
+    <string name="wallet_card_back_total_prefix">Усяго візітаў: </string>
+    <string name="wallet_card_back_remaining_prefix">Да падарунка засталося </string>
+    <string name="wallet_card_back_remaining_suffix"> візітаў.</string>
+    <string name="wallet_card_back_goal_suffix"> візітаў</string>
+    <string name="wallet_card_back_reward_ready">Віншуем! Мэта дасягнута — спытайце касіра пра падарунак.</string>
+    <string name="wallet_card_back_goal_prefix">Мэта: </string>
+    <string name="wallet_card_visits"> візітаў</string>
+
+    <!-- Terminal Screen -->
+    <string name="terminal_title">Тэрмінал</string>
+    <string name="terminal_camera_hint">Навядзіце камеру на QR-код</string>
+    <string name="terminal_debug_title">Ручны ўвод (Тэст)</string>
+    <string name="terminal_input_label">QR радок</string>
+    <string name="terminal_btn_scan">Апрацаваць</string>
+    <string name="terminal_download_title">QR для спампоўкі прыкладання</string>
+    <string name="terminal_download_subtitle">Пакажыце кліенту, каб усталяваць з Google Play</string>
+    <string name="terminal_download_show_qr">Паказаць QR</string>
+    <string name="terminal_download_hide_qr">Схаваць QR</string>
+    <string name="update_downloaded_message">Абнаўленне загружана. Перазапусціць?</string>
+    <string name="update_restart_btn">Перазапусціць</string>
+    <string name="error_no_workspace">Памылка: Няма працоўнай змены (кантэкст страчаны)</string>
+    <string name="terminal_scan_success">Кліент знойдзены!</string>
+
+    <!-- Terminal Scanner -->
+    <string name="terminal_camera_placeholder">Сканер (Заглушка)</string>
+    <string name="terminal_camera_instruction">Навядзіце камеру на QR-код</string>
+    <string name="terminal_debug_card_title">Рэжым адладкі (Эмулятар)</string>
+    <string name="terminal_input_placeholder">Устаўце радок QR</string>
+    <string name="terminal_btn_simulate">Імітаваць сканаванне</string>
+    <string name="terminal_client_found_fmt">Кліент знойдзены: %s</string>
+
+    <!-- Terminal Result -->
+    <string name="term_res_title">Вынік</string>
+    <string name="term_res_client_default">Кліент</string>
+    <string name="term_res_new_client_chip">Новы кліент! 🎉</string>
+
+    <!-- Visits Strategy -->
+    <string name="term_res_visit_action_prefix">АКЦЫЯ: </string>
+    <string name="term_res_visit_action_suffix">-ы тавар у падарунак</string>
+    <string name="term_res_next_free">НАСТУПНЫ ВІЗІТ - ПРЫЗАВЫ! 🎁</string>
+    <string name="term_res_btn_add_visit">Залічыць візіт (+1)</string>
+
+    <!-- Tiered Strategy -->
+    <string name="term_res_tiered_title">Назапашвальная сістэма</string>
+    <string name="term_res_amount_label">Сума чэка</string>
+    <string name="term_res_amount_hint">Выніковы кошт і спісанне разлічым на наступным кроку па правілах кропкі.</string>
+    <string name="term_res_calc_prefix">Будзе налічана:</string>
+    <string name="term_res_points_suffix">Б</string>
+    <string name="term_res_balance_prefix">Бягучы баланс:</string>
+    <string name="term_res_btn_add_points">Налічыць бонусы</string>
+
+    <!-- Terminal New UI -->
+    <string name="term_res_spend_title">Спісаць балы</string>
+    <string name="term_res_spend_available">Даступна:</string>
+    <string name="term_res_spend_will_spend">Будзе спісана:</string>
+    <string name="term_res_award_will_earn">Будзе налічана:</string>
+    <string name="term_res_award_hint">Нават пры спісанні бонусаў налічым кешбэк на аплату грашыма</string>
+    <string name="term_res_spend_explain">Спісваем максімум па правілах кропкі — дэталі на наступным кроку</string>
+    <string name="term_res_total_pay">Разам да аплаты:</string>
+    <string name="term_res_calculating">Лічым...</string>
+    <string name="term_calc_msg_visit">Візіт будзе ўлічаны</string>
+    <string name="term_calc_msg_visit_reward">Узнагарода выдадзена — цыкл абнулены</string>
+    <string name="term_calc_msg_next_reward">Застаўся адзін візіт да ўзнагароды</string>
+    <string name="term_calc_msg_spend_limit_balance">Спісалі ўсе даступныя балы, астатняе — грашыма</string>
+    <string name="term_calc_msg_spend">Спісалі максімум па правілах кропкі</string>
+    <string name="term_calc_msg_charge">Налічым бонусы па бягучым узроўні</string>
+    <string name="term_calc_msg_charge_upgrade">Узровень павышаны! Кліент атрымлівае больш бонусаў</string>
+    <string name="term_calc_msg_error">Некарэктная сума</string>
+
+    <!-- Confirmation Screen -->
+    <string name="term_confirm_title">Пацверджанне</string>
+    <string name="term_confirm_total_pay">Да аплаты</string>
+    <string name="term_confirm_purchase">Сума чэка</string>
+    <string name="term_confirm_spent">Спісанне балаў</string>
+    <string name="term_confirm_earned">Налічэнне балаў</string>
+    <string name="term_confirm_balance">Баланс пасля</string>
+    <string name="term_confirm_visits">Візіты пасля</string>
+    <string name="term_confirm_status">Статус</string>
+    <string name="term_btn_confirm">Пацвердзіць</string>
+
+    <!-- Messages -->
+    <string name="term_msg_success">Транзакцыя паспяховая!</string>
+    <string name="term_err_no_workspace">Памылка: Няма працоўнай змены</string>
+    <string name="term_err_scan_generic">Памылка сканавання</string>
+
+    <!-- QR Sheet -->
+    <string name="qr_sheet_title">Пакажыце касіру</string>
+    <string name="qr_timer_update">Абновіцца праз</string>
+    <string name="qr_sec">сек</string>
+
+    <!-- Hybrid Dialog -->
+    <string name="hybrid_dialog_title">Абярыце тып аперацыі</string>
+    <string name="hybrid_dialog_text">Кліент можа назапасіць візіт або выкарыстаць бонусы. Абярыце дзеянне:</string>
+    <string name="hybrid_action_bonus">Бонусы / Кешбэк</string>
+    <string name="hybrid_action_visit">Дадаць візіт</string>
+    <string name="term_btn_next">Далей</string>
+
+    <!-- Celebration Overlay -->
+    <string name="celebration_new_balance_prefix">Новы баланс: </string>
+    <string name="celebration_rules_hint">Правілы акцый удакладняйце на месцы. Хутка тут з'явяцца рэйтынг кропкі і дэталі візітаў.</string>
+    <string name="celebration_visit_logged">Візіт улічаны</string>
+    <string name="celebration_visit_reward_ready">Падарунак ужо чакае!</string>
+    <string name="celebration_visit_remaining_prefix">Да падарунка засталося </string>
+    <string name="celebration_visit_increment_prefix">+</string>
+    <string name="celebration_visit_increment_suffix"> візіт</string>
+    <string name="celebration_reward_text">Падарунак можна забраць зараз!</string>
+    <string name="celebration_close">Закрыць</string>
+    <string name="celebration_title_earn">Налічэнне бонусаў</string>
+    <string name="celebration_title_spend">Спісанне бонусаў</string>
+    <string name="celebration_title_visit">Візіт залічаны</string>
+    <string name="celebration_title_reward">Узнагарода гатова!</string>
+    <string name="celebration_title_tier_prefix">Новы ўзровень: </string>
+    <string name="celebration_title_created">Новая карта</string>
+
+    <!-- MAP SCREEN & PERMISSIONS -->
+    <string name="map_search_hint">Пошук...</string>
+    <string name="map_filter_mine">Мае філіялы</string>
+    <string name="map_filter_all_types">Усе тыпы</string>
+
+    <string name="map_locate_content_desc">Маё месцазнаходжанне</string>
+    <string name="map_back_content_desc">Назад</string>
+    <string name="map_clear_content_desc">Ачысціць</string>
+
+    <string name="permission_location_rationale_title">Патрэбна геалакацыя</string>
+    <string name="permission_location_rationale_text">Каб паказаць бліжэйшыя да вас гандлёвыя кропкі, праграме патрэбен доступ да вашага месцазнаходжання.</string>
+    <string name="permission_allow">Дазволіць</string>
+
+    <string name="permission_location_denied_title">Доступ забаронены</string>
+    <string name="permission_location_denied_text">Вы забаранілі доступ да геалакацыі. Калі ласка, уключыце яго ў наладах праграмы, каб бачыць сябе на карце.</string>
+    <string name="permission_settings">У налады</string>
+
+    <string name="common_cancel">Адмена</string>
+
+    <string name="map_filter_open">Адкрыта</string>
+    <string name="map_type_coffee_shop">Кавярня</string>
+    <string name="map_type_restaurant">Рэстаран</string>
+    <string name="map_type_retail">Крама</string>
+    <string name="map_type_service">Паслугі</string>
+    <string name="map_type_flowers">Кветкі</string>
+    <string name="map_type_gifts">Падарункі</string>
+    <string name="map_type_cakes">Торты</string>
+    <string name="map_type_barbershop">Цырульня</string>
+    <string name="map_type_clothing">Адзенне</string>
+    <string name="map_type_toys">Цацкі</string>
+    <string name="map_type_car_rental">Арэнда аўто</string>
+    <string name="map_type_scooter_rental">Арэнда скутараў</string>
+    <string name="map_type_auto_service">СТА</string>
+    <string name="map_type_tire_service">Вулканізацыя</string>
+    <string name="map_type_auto_parts">Аўтазапчасткі</string>
+    <string name="map_type_bank">Банк</string>
+    <string name="map_type_grocery_store">Крама прадуктаў</string>
+    <string name="map_type_beauty_salon">Салон прыгажосці</string>
+    <string name="map_type_other">Іншае</string>
+    <string name="map_locate_me">Я тут</string>
+    <string name="point_no_address">Адрас не пазначаны</string>
+    <string name="common_open">Адкрыта</string>
+    <string name="common_closed">Закрыта</string>
+    <string name="status_temporarily_closed">Часова закрыта</string>
+    <string name="common_apply">Прымяніць</string>
+    <string name="empty"> </string>
+
+    <!-- Point Details -->
+    <string name="point_details_btn">Падрабязней</string>
+    <string name="point_details_title">Інфармацыя пра кропку</string>
+    <string name="point_details_address">Адрас</string>
+    <string name="point_details_schedule">Графік працы</string>
+    <string name="point_details_contacts">Кантакты</string>
+    <string name="point_details_info">Дадаткова</string>
+    <string name="point_details_social_telegram">Telegram</string>
+    <string name="point_details_social_whatsapp">WhatsApp</string>
+    <string name="point_details_social_instagram">Instagram</string>
+    <string name="point_details_day_mon">Пн</string>
+    <string name="point_details_day_tue">Аў</string>
+    <string name="point_details_day_wed">Ср</string>
+    <string name="point_details_day_thu">Чц</string>
+    <string name="point_details_day_fri">Пт</string>
+    <string name="point_details_day_sat">Сб</string>
+    <string name="point_details_day_sun">Нд</string>
+    <string name="point_details_closed">Выхадны</string>
+
+    <!-- Support Screen -->
+    <string name="support_screen_title">Падтрымка</string>
+    <string name="support_write_email">Напісаць на Email</string>
+    <string name="support_write_telegram">Напісаць у Telegram</string>
+    <string name="support_description">Калі ў вас узніклі пытанні ці прапановы, вы можаце звязацца з намі любым зручным спосабам.</string>
+
+    <!-- Delete Account -->
+    <string name="delete_account_btn">Выдаліць акаўнт</string>
+    <string name="delete_account_title">Выдаленне акаўнта</string>
+    <string name="delete_account_reason_hint">Прычына выдалення</string>
+    <string name="delete_account_reason_description">Калі ласка, укажыце прычыну, каб мы маглі стаць лепш</string>
+    <string name="delete_account_confirm_btn">Выдаліць назаўжды</string>
+    <string name="delete_account_code_sent">Код пацверджання адпраўлены</string>
+    <string name="delete_account_enter_code">На ваш нумар адпраўлены код пацверджання.</string>
+    <string name="account_deleted_success">Акаўнт паспяхова выдалены</string>
+
+    <!-- Report User -->
+    <string name="term_report_title">Паскардзіцца на карыстальніка</string>
+    <string name="term_report_message">Укажыце прычыну скаргі. Гэта створыць запыт на блакіроўку карыстальніка.</string>
+    <string name="term_report_hint">Прычына</string>
+    <string name="term_report_btn">Адправіць скаргу</string>
+    <string name="term_report_success">Скарга паспяхова адпраўлена</string>
+    <string name="term_report_action">Паскардзіцца</string>
+    
+    <string name="error_user_banned">Карыстальнік заблакаваны</string>
+    <string name="error_block_request_exists">Скарга ўжо разглядаецца</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Статыстыка за сёння</string>
+    <string name="stats_transactions">Транзакцыі</string>
+    <string name="stats_revenue">Выручка</string>
+    <string name="stats_points_awarded">Налічана балаў</string>
+    <string name="stats_points_spent">Спісана балаў</string>
+    <string name="stats_visits">Наведванні</string>
+
+    <!-- Terminal Tabs -->
+    <string name="terminal_tab_scanner">Тэрмінал</string>
+    <string name="terminal_tab_stats">Статыстыка</string>
+
+    <!-- Risk Level Descriptions for Cashier -->
+    <string name="risk_level_green">Надзейны кліент</string>
+    <string name="risk_desc_green">Вітаем, прапануем навінкі</string>
+    
+    <string name="risk_level_yellow">Звычайны кліент</string>
+    <string name="risk_desc_yellow">Стандартнае абслугоўванне</string>
+    
+    <string name="risk_level_orange">Складаны кліент</string>
+    <string name="risk_desc_orange">Быць уважлівей, дакладна прагаворваць заказ, не спрачацца</string>
+    
+    <string name="risk_level_red">Шкодны кліент</string>
+    <string name="risk_desc_red">Максімальная асцярожнасць</string>
+    
+
+    <!-- Rate Client Screen -->
+    <string name="rate_client_title">Ацаніць кліента</string>
+    <string name="rate_client_skip">Прапусціць</string>
+    <string name="rate_client_submit">Ацаніць</string>
+    <string name="rate_client_tag_rude">Хамства / Грубасць</string>
+    <string name="rate_client_tag_no_payment">Неаплата</string>
+    <string name="rate_client_tag_fraud">Спроба падману</string>
+    <string name="rate_client_tag_tip">Пакінуў чаявыя</string>
+    <string name="rate_client_tag_polite">Ветлівы</string>
+    <string name="rate_client_tag_friendly">Прыязна</string>
+    <string name="rate_client_tag_late">Спазніўся</string>
+    <string name="rate_client_tag_no_show">Не прыйшоў</string>
+    <string name="rate_client_tag_abuse">Абразы</string>
+    <string name="rate_client_success">Адзнака захавана</string>
+    <string name="rate_client_how_was">Як прайшла сустрэча з кліентам?</string>
+    <string name="rate_client_select_tags">Абярыце тэгі (неабавязкова):</string>
+    <string name="error_rate_limit_exceeded">Ужо ацанілі сёння</string>
+
+    <!-- Rate Service Screen -->
+    <string name="rate_service_title">Ацаніце сэрвіс</string>
+    <string name="rate_service_submit">Адправіць</string>
+    <string name="rate_service_skip">Прапусціць</string>
+    <string name="rate_service_comment_hint">Каментарый (неабавязкова)</string>
+    <string name="rate_service_tag_slow">Павольна</string>
+    <string name="rate_service_tag_dirty">Брудна</string>
+    <string name="rate_service_tag_rude_staff">Груба</string>
+    <string name="rate_service_tag_tasty">Смачна</string>
+    <string name="rate_service_tag_fast">Хутка</string>
+    <string name="rate_service_tag_friendly">Прыязна</string>
+    <string name="rate_service_success">Водгук адпраўлены</string>
+    <string name="rate_service_tag_clean">Чыста</string>
+    <string name="rate_service_tag_comfort">Утульна</string>
+    <string name="rate_service_tag_pricey">Дорага</string>
+    <string name="rate_service_tag_attentive">Уважлівыя</string>
+    <string name="rate_service_tag_wait_time">Доўга</string>
+
+    <!-- Scanner permissions -->
+    <string name="scanner_permission_rationale">Патрэбен доступ да камеры, каб сканаваць QR-коды</string>
+    <string name="scanner_permission_open_settings">Адкрыць налады</string>
+
+    <!-- Force Update -->
+    <string name="force_update_title">Даступна важнае абнаўленне</string>
+    <string name="force_update_message">Мы дадалі новыя функцыі і выправілі памылкі. Калі ласка, абнавіце праграму, каб працягнуць выкарыстанне.</string>
+    <string name="force_update_btn">Абнавіць</string>
+
+    <!-- What's New -->
+    <string name="whats_new_title">Што новага</string>
+    <string name="whats_new_btn_awesome">Крута!</string>
+    <!-- Change these for every release -->
+    <string name="whats_new_features_list">
+        • Цяпер можна ацэньваць сэрвіс пасля візіту
+        • Абноўлены дызайн экрана ацэнкі кліента
+        • Выпраўлены памылкі сканера на Android
+        • Дададзены паведамленні пра абнаўленні
+    </string>
+
+    <!-- Coming Soon Placeholder -->
+    <string name="coming_soon_title">Хутка з\'явіцца</string>
+    <string name="coming_soon_description">Мы працуем над падрабязнай статыстыкай і справаздачамі для касіраў. Сачыце за абнаўленнямі!</string>
 </resources>

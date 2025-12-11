@@ -25,7 +25,10 @@ data class LoyaltyCardDto(
     val legacyClosedReason: String? = pause?.reason,
     val partnerName: String = "",
     val cardColor: String = "#808080",
-    val logoUrl: String? = null
+    val logoUrl: String? = null,
+    val trustScore: Double = 4.0,
+    val fraudFlag: Boolean = false,
+    val riskLevel: RiskLevel = RiskLevel.YELLOW
 )
 
 @Serializable

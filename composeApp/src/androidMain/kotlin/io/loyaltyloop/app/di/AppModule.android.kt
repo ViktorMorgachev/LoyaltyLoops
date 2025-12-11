@@ -9,11 +9,14 @@ import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.platform.AndroidAppRestarter
 import io.loyaltyloop.app.platform.AppRestarter
 import io.loyaltyloop.app.platform.MapInitializer
+import io.loyaltyloop.app.platform.UrlOpener
 import io.loyaltyloop.app.services.AndroidPushService
 import io.loyaltyloop.app.services.CardRealtimeService
 import io.loyaltyloop.app.services.DefaultCardRealtimeService
 import io.loyaltyloop.app.services.PushService
+import io.loyaltyloop.app.utils.AndroidDeviceInfoProvider
 import io.loyaltyloop.app.utils.AndroidPlatformManager
+import io.loyaltyloop.app.utils.DeviceInfoProvider
 import io.loyaltyloop.app.utils.LocationService
 import io.loyaltyloop.app.utils.PlatformManager
 import org.koin.android.ext.koin.androidContext
@@ -28,20 +31,24 @@ actual val platformModule = module {
         )
     }
 
+    single<DeviceInfoProvider> { AndroidDeviceInfoProvider(androidContext()) }
+
     // 2. HttpClient (используем общую фабрику)
     single {
         NetworkClient.create(
             engine = OkHttp.create(),
             tokenStorage = get<TokenStorage>(),
-            sessionManager = get()
+            sessionManager = get(),
+            deviceInfo = get()
         )
     }
 
     single<PlatformManager> { AndroidPlatformManager(androidContext()) }
 
-    single<PushService> { AndroidPushService(androidContext(), get(), get()) }
+    single<PushService> { AndroidPushService(androidContext(), get(), get(), get()) }
     single<CardRealtimeService> { DefaultCardRealtimeService(get()) }
     single<AppRestarter> { AndroidAppRestarter(androidContext()) }
     single { LocationService(androidContext()) }
     single { MapInitializer(androidContext()) }
+    single { UrlOpener(androidContext()) }
 }

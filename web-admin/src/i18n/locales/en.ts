@@ -11,6 +11,7 @@ export const en = {
       close: "Close",
       all: "All",
       reset: "Reset",
+      back: "Back",
       details: "Details",
       status: "Status",
       actions: "Actions",
@@ -85,6 +86,17 @@ export const en = {
       TRIAL_ALREADY_USED: "Partner has already used a trial period",
       PARTNER_ON_REVIEW: "Partner is on review. Approve partner first.",
       PARTNER_BLOCKED: "Partner account is blocked, please unblock account first",
+      SMS_PROVIDER_ERROR: "Unable to send code right now. Try again later.",
+      prelude: {
+        unsupported_country: "Sending is not available for this country.",
+        channel_not_enabled_in_region: "Channel is not available in this region.",
+        too_many_attempts: "Too many attempts. Please try later.",
+        too_many_checks: "Too many verifications. Please try later.",
+        impossible_code: "The code looks invalid. Request a new one.",
+        insufficient_balance: "Provider temporarily unavailable. Try again later.",
+        suspended_account: "Provider temporarily unavailable. Try again later.",
+        try_later: "Temporarily unavailable. Try again later."
+      }
     },
     auth: {
       title: "Control Panel Login",
@@ -696,14 +708,149 @@ export const en = {
           PIN_VERIFICATION_FAILED: "PIN Failed"
       }
     },
+    analytics: {
+      title: "Reviews & Analytics",
+      nps_title: "NPS (Net Promoter Score)",
+      avg_rating: "Average Rating",
+      total_reviews: "Total Reviews",
+      heatmap_title: "Problem Heatmap",
+      heatmap_subtitle: "Frequent complaints by trading point",
+      tabs: {
+        dashboard: "Dashboard",
+        service_reviews: "Client Reviews",
+        client_ratings: "Staff Feedback"
+      },
+      filters: {
+        tags: "Tag filter",
+        rating: "Rating filter",
+        sort: "Sort",
+        sort_best: "Best first",
+        sort_worst: "Worst first",
+        rating_all: "All",
+        rating_good: "Good (>=4)",
+        rating_neutral: "Neutral (3-4)",
+        rating_bad: "Bad (<3)",
+        date_from: "From",
+        date_to: "To",
+        point: "Point"
+      },
+      nps_hint: "NPS = (Promoters - Detractors) / All, where 5 = promoter, 1-3 = detractor, 4 = neutral.",
+      weekly_title: "Reviews dynamics by week",
+      weekly_subtitle: "Client reviews count and average rating per week.",
+      weekly_count: "Reviews",
+      weekly_avg: "Average",
+      reviews_table: {
+        date: "Date",
+        author: "Author",
+        rating: "Rating",
+        tags: "Tags",
+        comment: "Comment",
+        point: "Point",
+        target: "Client"
+      },
+      empty_reviews: "No reviews yet",
+      tags: {
+        SLOW: "Slow Service",
+        DIRTY: "Dirty",
+        RUDE_STAFF: "Rude Staff",
+        TASTY: "Tasty",
+        FAST: "Fast",
+        FRIENDLY: "Friendly Staff",
+        RUDE: "Rude Client",
+        NON_PAYMENT: "Non-payment",
+        FRAUD: "Fraud",
+        POLITE: "Polite",
+        TIPS: "Left Tips",
+        OTHER: "Other",
+        CLEAN: "Clean",
+        COMFORT: "Cozy",
+        PRICEY: "Pricey",
+        ATTENTIVE: "Attentive Staff",
+        WAIT_TIME: "Long Wait"
+      }
+    },
     landing: {
-      hero_title: "LoyaltyLoop",
-      hero_subtitle: "Modern loyalty system for SMBs. Turn visitors into regulars.",
+      hero_title: "Next-Gen Loyalty System",
+      hero_subtitle: "Flexible platform for local CIS networks with per-store customization.",
       start_free: "Start Free",
       roadmap_btn: "Roadmap",
+      download_play: "Get it on Google Play",
+      privacy: "Privacy Policy",
+
+      problem: {
+        title: "Problem: Legacy Loyalty",
+        desc: "Local chains lose customers because loyalty programs are rigid and ignore the specifics of each store. Owners struggle to retain clients and don't see what is missing."
+      },
+      solution: {
+        title: "Our Solution: Smart Platform",
+        desc: "We build a loyalty platform with fine-tuned settings for every location and the needs of the CIS market.",
+        item_1: "Fine-tuned controls",
+        item_2: "CIS-focused",
+        item_3: "Instant results"
+      },
+
+      mechanics_title: "Loyalty Mechanics",
+      mechanics: {
+        accumulative: {
+          title: "Accumulation System",
+          desc: "Client grows turnover, upgrades Start → Silver → Gold, and gets higher cashback."
+        },
+        visits: {
+          title: "Visit Counter",
+          desc: "Each visit brings a gift closer: every 6th coffee free, 10th haircut with a discount."
+        },
+        hybrid: {
+          title: "Hybrid Model",
+          desc: "Client chooses strategy: add a visit or calculate cashback with optional redemption. Choice boosts loyalty."
+        }
+      },
+
+      security: {
+        title: "Security & Control",
+        desc: "Centralized token handling, granular access control, and detailed activity logs."
+      },
+
+      benefits_title: "Key Advantages",
+      localization: {
+        title: "Localization for CIS",
+        desc: "Comfortable interfaces in Russian, Kazakh, Uzbek, and other regional languages."
+      },
+      analytics: {
+        title: "Analytics & Reports",
+        item_1: "Detailed stats on revenue, average check, and client activity",
+        item_2: "Weekly dynamics of reviews",
+        item_3: "Reports per business or per branch"
+      },
+      admin: {
+        title: "Administration",
+        desc: "Full cycle of branch and staff management via web. Centralized control."
+      },
+      partnership: {
+        title: "Partnership Opportunity",
+        desc: "Become a platform manager, onboard other companies, and earn 50% of their subscription."
+      },
+      multiregion: {
+        title: "Multi-region System",
+        desc: "Operate branches across countries with consistent ops. Choose currency per location."
+      },
+      multirole: {
+        title: "Multi-role System",
+        desc: "One account for all roles: client, partner, manager. Seamless context switch."
+      },
+      protection: {
+        title: "Business Protection",
+        desc: "Cashiers can leave feedback on clients (reliable, tricky, risky). Reduces conflicts and protects revenue."
+      },
+      result: {
+        title: "Business Impact",
+        stat_1: "+40% Repeat purchases",
+        stat_2: "+25% Higher average check",
+        stat_3: "Complete visibility of client behavior"
+      },
+
       roadmap: {
         title: "Project Roadmap 🚀",
-        subtitle: "Future plans for LoyaltyLoop.",
+        subtitle: "What's next for LoyaltyLoop.",
         back: "Back",
         contact_support: "Ideas? Contact Support!",
         status: {
@@ -718,14 +865,15 @@ export const en = {
           analytics_desc: "Detailed stats on revenue, avg check, client activity.",
           push_label: "Push Notifications",
           push_desc: "Send marketing campaigns via app.",
-          ban_label: "Ban System",
-          ban_desc: "Protect business from fraud.",
+          gamification_label: "Client Gamification",
+          gamification_desc: "Achievements, loyalty levels, badges and rewards. Engage through play.",
           referral_label: "Referral Program (B2C)",
-          referral_desc: "Invite a friend mechanics.",
+          referral_desc: "Invite-a-friend mechanics.",
           b2b_label: "B2B Expansion",
           b2b_desc: "Platform Manager cabinet. Earn commissions."
         }
       },
+
       features: {
         flexible_title: "Flexible Loyalty",
         flexible_desc: "Cashback, Stamps, or Hybrid. For Retail, HoReCa, Services.",

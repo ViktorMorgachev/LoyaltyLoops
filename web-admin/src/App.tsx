@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
+import { useEffect } from 'react';
 
 // Страницы
 import { LoginPage } from './pages/LoginPage';
@@ -13,6 +14,7 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { PinResetPage } from './pages/PinResetPage';
 import { SupportChatPage } from './pages/SupportChatPage';
 import { TestLabPage } from './pages/TestLabPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 
 // Партнер
 import { PartnerDashboardPage } from './pages/partner/PartnerDashboardPage';
@@ -22,6 +24,7 @@ import { CreateBusinessPage } from './pages/partner/CreateBusinessPage';
 import { BusinessSettingsPage } from './pages/partner/BusinessSettingsPage';
 import { TransactionsPage } from './pages/partner/TransactionsPage';
 import { PartnerStaffPage } from './pages/partner/PartnerStaffPage'; // NEW
+import { ReviewsPage } from './pages/partner/ReviewsPage';
 
 // Админ
 import { AllPartnersPage } from './pages/admin/AllPartnersPage';
@@ -38,6 +41,43 @@ import { SelectRolePage } from './pages/SelectRolePage';
 import { AuthSync } from './components/AuthSync';
 
 function App() {
+  // --- Site Protection (No Download) ---
+  useEffect(() => {
+    // 1. Disable Right Click
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    // 2. Disable Shortcuts (Save, Print, Source)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        (e.key === 's' || e.key === 'S' || // Save
+         e.key === 'p' || e.key === 'P' || // Print
+         e.key === 'u' || e.key === 'U')   // View Source
+      ) {
+        e.preventDefault();
+      }
+    };
+
+    // 3. Disable Image Dragging
+    const handleDragStart = (e: DragEvent) => {
+      if (e.target instanceof HTMLImageElement) {
+        e.preventDefault();
+      }
+    };
+
+    document.addEventListener('contextmenu', handleContextMenu);
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('dragstart', handleDragStart);
+
+    return () => {
+      document.removeEventListener('contextmenu', handleContextMenu);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('dragstart', handleDragStart);
+    };
+  }, []);
+
   return (
     <>
       <CssBaseline />
@@ -50,6 +90,7 @@ function App() {
           {/* Публичные страницы "О проекте" и "Роадмап" (вынесены из лэйаута для красоты) */}
           <Route path="/about" element={<AboutPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/" element={<Navigate to="/profile" />} />
 
           {/* Внутри Лейаута */}
@@ -69,6 +110,7 @@ function App() {
             <Route path="/partner/onboarding" element={<CreateBusinessPage />} />
             <Route path="/partner/settings" element={<BusinessSettingsPage />} />
             <Route path="/partner/staff" element={<PartnerStaffPage />} />
+            <Route path="/partner/reviews" element={<ReviewsPage />} />
             <Route path="/partner/support" element={<SupportChatPage mode="partner" />} />
 
             {/* Супер-Админ */}

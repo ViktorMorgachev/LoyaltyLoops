@@ -73,6 +73,14 @@ val serverUrl = when(activeEnv) {
 ```properties
 VITE_API_URL=http://localhost:8080
 ```
+```
+docker build \
+--build-arg VITE_API_URL=https://api.stage \
+--build-arg VITE_APP_ENV=stage \
+--build-arg VITE_YMAPS_API_KEY=xxx \
+--build-arg VITE_SHOW_PLAY_LINKS=true \
+-t web-admin
+```
 
 ### Продакшн
 Railway автоматически собирает проект через `npm run build`.

@@ -49,7 +49,7 @@ data class UpdateTradingPointRequest(
     val address: String,
     val latitude: Double,
     val longitude: Double,
-    val currency: String = "KGS",
+    val currency: String,
     val settings: UpdateLoyaltySettingsRequest,
     val schedule: WeeklyScheduleDto? = null,
     val temporarilyPaused: Boolean = false,

@@ -16,7 +16,8 @@ import {
   Info as InfoIcon,
   ChatBubbleOutline as ChatIcon,
   Science as ScienceIcon,
-  ListAlt as ListAltIcon
+  ListAlt as ListAltIcon,
+  RateReview as ReviewsIcon // Added icon
 } from '@mui/icons-material';
 import { useNavigate, Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -99,6 +100,7 @@ export const MainLayout = () => {
 
       if (isPartnerAdmin) {
         menuItems.push({ text: t('menu.staff'), icon: <GroupIcon />, path: '/partner/staff' });
+        menuItems.push({ text: t('analytics.title'), icon: <ReviewsIcon />, path: '/partner/reviews' }); // Added
         menuItems.push({ text: t('menu.support_chat'), icon: <ChatIcon />, path: '/partner/support' });
       }
 

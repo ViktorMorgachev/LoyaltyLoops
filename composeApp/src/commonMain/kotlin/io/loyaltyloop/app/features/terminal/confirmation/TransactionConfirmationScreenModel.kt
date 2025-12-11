@@ -30,6 +30,7 @@ class TransactionConfirmationScreenModel(
     private val calculation: TransactionCalculationDto,
     private val tradingPointId: String,
     private val cardId: String,
+    private val userId: String,
     private val strategy: TransactionStrategy,
     private val repository: PartnerRepository
 ) : ScreenModel {
@@ -41,6 +42,7 @@ class TransactionConfirmationScreenModel(
     sealed interface Event {
         data object NavigateBack : Event
         data object NavigateToScan : Event // Вернуться на сканирование после успеха
+        data class NavigateToRating(val userId: String, val tradingPointId: String) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -64,15 +66,15 @@ class TransactionConfirmationScreenModel(
                 .onSuccess { result ->
                     _events.send(Event.ShowMessage(TransactionResultMapper.getMessage(result), SnackbarType.Success))
                     delay(1000)
-                    _events.send(Event.NavigateToScan)
+                    _events.send(Event.NavigateToRating(userId, tradingPointId))
                 }
                 .onFailure { exception ->
                     log.write("Transaction failed", LogType.Error, exception)
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                     _state.update { it.copy(isLoading = false) }
                 }
-                .onError { code, _ ->
-                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource()), SnackbarType.Error))
+                .onError { code, msg ->
+                    _events.send(Event.ShowMessage(UiText.Resource(code.toResource(msg)), SnackbarType.Error))
                     _state.update { it.copy(isLoading = false) }
                 }
         }

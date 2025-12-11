@@ -1,235 +1,489 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LoyTytyloop</string>
-    <string name="auth_btn_next">Улантыңыз</string>
-    <string name="auth_enter_code">SMS кодду киргизиңиз</string>
-    <string name="auth_phone_label">Телефон номериңиз</string>
-    <string name="auth_resend_btn">Кодду кайра орнотуу</string>
-    <string name="auth_resend_timer">Аркылуу калыбына келтирүү</string>
+    <string name="app_name">LoyaltyLoop</string>
+
+    <!-- Auth Screen -->
+    <string name="auth_title">LoyaltyLoop</string>
     <string name="auth_subtitle">Кардарлар жана өнөктөштөр үчүн кирүү</string>
-    <string name="auth_success">Ийгиликтүү кирүү</string>
-    <string name="auth_title">LoyTytyloop</string>
-    <string name="btn_exit_mode">Чыгуу режими</string>
-    <string name="btn_exit_short">Чыгуу</string>
-    <string name="btn_retry">Кайталоо</string>
-    <string name="btn_save">Сактоо жана Кирүү</string>
-    <string name="cashier_join_success">Сиз командага ийгиликтүү кошулдуңуз!</string>
-    <string name="celebration_close">Жабуу</string>
-    <string name="celebration_new_balance_prefix">Жаңы Балансты:</string>
-    <string name="celebration_reward_text">Сиз азыр белегиңизди ала аласыз!</string>
-    <string name="celebration_rules_hint">Сайттагы жарнамалык эрежелерди текшериңиз. Жакында бул жерде пункт рейтинги жана визитикалык маалыматтар болот.</string>
-    <string name="celebration_title_created">Жаңы карта</string>
-    <string name="celebration_title_earn">Бонустарды эсептөө</string>
-    <string name="celebration_title_reward">Сыйлык даяр!</string>
-    <string name="celebration_title_spend">Бонустарды жазуу</string>
-    <string name="celebration_title_tier_prefix">Жаңы деңгээл:</string>
-    <string name="celebration_title_visit">Иш сапар эсептелет</string>
-    <string name="celebration_visit_increment_prefix">+</string>
-    <string name="celebration_visit_increment_suffix">баруу</string>
-    <string name="celebration_visit_logged">Иш сапар эске алынды</string>
-    <string name="celebration_visit_remaining_prefix">Белекке чейин убакыт калды</string>
-    <string name="celebration_visit_reward_ready">Белек буга чейин күтүп жатат!</string>
-    <string name="err_field_required">Бул талаа талап кылынат</string>
-    <string name="err_invalid_email">Туура эмес электрондук почта форматы</string>
-    <string name="err_invalid_phone_format">Жараксыз номер форматы</string>
-    <string name="error_account_frozen">Эсеп убактылуу тоңдурулган</string>
-    <string name="error_already_joined">Сиз буга чейин кошулдуңуз</string>
-    <string name="error_business_already_exists">Бизнес мурунтан эле бар</string>
-    <string name="error_business_not_found">Бизнес табылган жок</string>
-    <string name="error_card_blocked">Картаны бөгөттөлгөн</string>
-    <string name="error_card_not_found">Берилгендик карта табылган жок</string>
-    <string name="error_card_paused">Карта токтотулган</string>
-    <string name="error_client_card_blocked">Кардардын картасы бөгөттөлгөн</string>
-    <string name="error_code_expired">Код мөөнөтү бүттү</string>
-    <string name="error_email_required">Пинди баштапкы абалга келтирүү үчүн электрондук почтаңызды киргизиңиз</string>
-    <string name="error_forbidden">Кирүү четке кагылды</string>
-    <string name="error_internal_error">Ички сервер катасы</string>
-    <string name="error_invalid_amount">Туура эмес сумма</string>
-    <string name="error_invalid_code">Текшерүү коду жараксыз</string>
-    <string name="error_invalid_invite_code">Жараксыз чакырык коду</string>
-    <string name="error_invalid_phone">Телефон форматы жараксыз</string>
-    <string name="error_invalid_pin">Туура эмес PIN</string>
-    <string name="error_invalid_qr_signature">Fake QR CODE</string>
-    <string name="error_invalid_request">Сурам катасы</string>
-    <string name="error_invalid_reset_token">PIN шилтемесин баштапкы абалга келтирүү жараксыз</string>
-    <string name="error_invalid_tier_value">Жараксыз жерлерди сатуу</string>
-    <string name="error_loyalty_setting_not_found">Берилгендик жөндөөлөр табылган жок</string>
-    <string name="error_network">Интернет туташуусу жок</string>
-    <string name="error_no_workspace">Ката: Эч кандай жумушсуз (контекст жоголгон)</string>
-    <string name="error_not_found">Ресурс табылган жок</string>
-    <string name="error_point_inactive">Мунун мааниси жигердүү эмес</string>
-    <string name="error_point_not_found">Дүкөн табылган жок</string>
-    <string name="error_profile_loading">Профиль жүктөлбөй калды</string>
-    <string name="error_qr_expired">QR код мөөнөтү бүттү</string>
-    <string name="error_security_qr_secret_missing">QR коопсуздук катасы</string>
-    <string name="error_server">Кызмат убактылуу жеткиликтүү эмес</string>
-    <string name="error_session_expired">Сессия мөөнөтү өтүп кетти, сураныч, дагы кириңиз</string>
-    <string name="error_success">Ийгиликтүү</string>
-    <string name="error_token_expired">Сессия мөөнөтү бүттү</string>
-    <string name="error_token_invalid">Сабактын катасы (Токен жараксыз)</string>
-    <string name="error_unauthorized">Уруксат талап кылынат</string>
-    <string name="error_unknown">Белгисиз ката кетти</string>
-    <string name="error_unknown_error">Белгисиз ката</string>
-    <string name="error_user_creation_failed">Колдонуучу түзүүдөгү ката</string>
-    <string name="error_user_not_found">Колдонуучу табылган жок</string>
-    <string name="field_email">Электрондук почта (кирүүсүн калыбына келтирүү үчүн)</string>
-    <string name="field_firstname">Аты *</string>
-    <string name="field_lastname">Фамилиясы</string>
-    <string name="hybrid_action_bonus">Бонустар / Cashback</string>
-    <string name="hybrid_action_visit">Баруу</string>
-    <string name="hybrid_dialog_text">Кардар иш сапарын топтой алат же бонустарды колдоно алат. Аракет тандаңыз:</string>
-    <string name="hybrid_dialog_title">Иштөө түрүн тандаңыз</string>
-    <string name="join_btn_submit">Кошулуу</string>
-    <string name="join_code_label">Чакыруу кодун</string>
-    <string name="join_description">Чакыруунун кодун киргизиңиз, ал мекеменин ээси сизге берди.</string>
-    <string name="join_title">Кызматкер болууга</string>
-    <string name="language_be">Bielaruskaja</string>
-    <string name="language_kk">Qazaqsha</string>
-    <string name="language_ky">Kyrgyzcha</string>
-    <string name="language_ru">Орусча</string>
-    <string name="language_uz">O&apos;zbekcha</string>
-    <string name="msg_balance_info">Баланс:</string>
-    <string name="msg_points_earned">Эсептелген:</string>
-    <string name="msg_points_spent">Жазылган:</string>
-    <string name="msg_points_spent_earned">Жазылган:</string>
-    <string name="msg_points_spent_earned_middle">, Эсептелген:</string>
-    <string name="msg_points_suffix">Б</string>
-    <string name="msg_success_default">Операция ийгиликтүү!</string>
-    <string name="msg_visit_progress">Иш сапар эске алынды! Бардыгы:</string>
-    <string name="msg_visit_progress_suffix">from</string>
-    <string name="msg_visit_reward">Максатка жетишилди! Белек жеткиликтүү! (</string>
-    <string name="msg_visit_reward_suffix">)</string>
-    <string name="onboarding_subtitle">Жекелештирилген бонустарды алуу үчүн маалыматтарды толтуруңуз</string>
-    <string name="onboarding_success">Профиль сакталды!</string>
-    <string name="onboarding_title">Келгиле, таанышалы!</string>
-    <string name="onboarding_why_info">Сиздин атыңыз кассирге саламдашуу жана бонустарды сыйлоо үчүн көрсөтүлөт.</string>
-    <string name="profile_about_description">Берилгендик менен берилгендик программаларыңызды жана аффилирлериңизди бир колдонмону башкарууга жардам берет.</string>
-    <string name="profile_about_title">Колдонмо жөнүндө</string>
-    <string name="profile_about_version">Версия:</string>
-    <string name="profile_btn_create_business">Иш-аракет</string>
-    <string name="profile_btn_join_team">Чакыруу кодун киргизиңиз</string>
-    <string name="profile_btn_logout">Каттоо эсебиңизден чыгуу</string>
-    <string name="profile_desc_create_business">Түзүмдүн ээлери үчүн</string>
-    <string name="profile_desc_join_team">Кызматкерлер үчүн</string>
+    <string name="auth_phone_label">Сиздин телефон номериңиз</string>
+    <string name="auth_btn_next">Улантуу</string>
+    <string name="auth_enter_code">СМС кодду киргизиңиз</string>
+    <string name="auth_resend_btn">Кодду кайра жөнөтүү</string>
+    <string name="auth_resend_timer">Кайра жөнөтүү убактысы:</string>
+    <string name="profile_loading">Жүктөлүүдө...</string>
     <string name="profile_error_load">Жүктөө катасы</string>
-    <string name="profile_header_actions">Мүмкүнчүлүктөр</string>
-    <string name="profile_header_workspaces">Менин жумуштарым</string>
-    <string name="profile_item_language">Өтүнмөнүн тили</string>
-    <string name="profile_item_support">Колдоо</string>
+    <string name="auth_success">Ийгиликтүү кирдиңиз</string>
+    <string name="ignore" />
+
+    <!-- Errors -->
+    <string name="error_network">Интернет байланышы жок</string>
+    <string name="error_server">Сервис убактылуу жеткиликсиз</string>
+    <string name="error_session_expired">Сессия бүттү, кайра кириңиз</string>
+    <string name="error_unknown">Белгисиз ката кетти</string>
+    <string name="err_invalid_email">Email форматы туура эмес</string>
+    <string name="error_profile_loading">Профилди жүктөө мүмкүн болбоду</string>
+    <string name="btn_retry">Кайталоо</string>
+
+    <!-- AppErrorCode Translations -->
+    <string name="error_success">Ийгиликтүү</string>
+    <string name="error_unknown_error">Белгисиз ката</string>
+    <string name="error_internal_error">Сервердин ички катасы</string>
+    <string name="error_invalid_request">Сурам катасы</string>
+    <string name="error_unauthorized">Авторизация талап кылынат</string>
+    <string name="error_forbidden">Кирүүгө тыюу салынган</string>
+    <string name="error_not_found">Ресурс табылган жок</string>
+    <string name="error_account_frozen">Аккаунт убактылуу тоңдурулган</string>
+    <string name="error_email_required">PIN калыбына келтирүү үчүн e-mail керек</string>
+    <string name="error_invalid_reset_token">PIN калыбына келтирүү шилтемеси жараксыз</string>
+    
+    <string name="error_invalid_phone">Телефон форматы туура эмес</string>
+    <string name="error_invalid_phone_number">Телефон номеринин форматы туура эмес</string>
+    <string name="error_invalid_code">Тастыктоо коду туура эмес</string>
+    <string name="error_code_expired">Коддун мөөнөтү бүттү</string>
+    <string name="error_user_not_found">Колдонуучу табылган жок</string>
+    <string name="error_token_expired">Сессиянын мөөнөтү бүттү</string>
+    <string name="error_point_paused">Өнөктөштүн дем алыш күнү</string>
+    <string name="error_client_card_blocked">Кардардын картасы бөгөттөлгөн</string>
+    <string name="error_invalid_tier_value">Лоялдуулук жөндөөлөрү туура эмес</string>
+    <string name="error_token_invalid">Сессия катасы (Токен жараксыз)</string>
+    <string name="error_invalid_pin">PIN-код туура эмес</string>
+    <string name="error_user_creation_failed">Колдонуучуну түзүү катасы</string>
+    <string name="error_to_many_requests">Бүгүн баа койгонсуз</string>
+    <string name="error_otp_attempts_exceeded">Аракеттердин чеги ашты. Бир сааттан кийин кайталап көрүңүз.</string>
+    <string name="error_account_deleted">Бул номер өчүрүлгөн аккаунтка байланган. Сураныч, башка номер колдонуңуз.</string>
+    <string name="error_partner_blocked">Бул өнөктөш бөгөттөлгөн.</string>
+    
+    <string name="error_business_already_exists">Бизнес мурунтан бар</string>
+    <string name="error_business_not_found">Бизнес табылган жок</string>
+    <string name="error_point_not_found">Соода түйүнү табылган жок</string>
+    <string name="error_point_inactive">Түйүн активдүү эмес</string>
+    <string name="error_already_joined">Сиз мурунтан эле кошулгансыз</string>
+    <string name="error_invalid_invite_code">Чакыруу коду туура эмес</string>
+    
+    <string name="error_qr_expired">QR коддун мөөнөтү бүттү</string>
+    <string name="error_invalid_qr_signature">Жасалма QR код</string>
+    <string name="error_security_qr_secret_missing">QR коопсуздук катасы</string>
+    <string name="error_invalid_amount">Сумма туура эмес</string>
+    <string name="error_loyalty_setting_not_found">Лоялдуулук жөндөөлөрү табылган жок</string>
+    <string name="error_card_not_found">Лоялдуулук картасы табылган жок</string>
+    <string name="error_card_blocked">Карта бөгөттөлгөн</string>
+    <string name="error_card_paused">Карта токтотулган</string>
+    <string name="error_sms_provider_error">Код жөнөтүү мүмкүн болбоду. Кийинчерээк кайталап көрүңүз.</string>
+    <string name="error_prelude_unsupported_country">Бул өлкөгө жөнөтүү мүмкүн эмес.</string>
+    <string name="error_prelude_channel_not_enabled_in_region">Бул аймакта канал жеткиликсиз.</string>
+    <string name="error_prelude_too_many_attempts">Аракеттер өтө көп. Кийинчерээк кайталап көрүңүз.</string>
+    <string name="error_prelude_too_many_checks">Текшерүүлөр өтө көп. Кийинчерээк кайталап көрүңүз.</string>
+    <string name="error_prelude_impossible_code">Туура эмес код. Жаңысын сураңыз.</string>
+    <string name="error_prelude_insufficient_balance">Сервис убактылуу жеткиликсиз. Кийинчерээк кайталап көрүңүз.</string>
+    <string name="error_prelude_suspended_account">Сервис убактылуу жеткиликсиз. Кийинчерээк кайталап көрүңүз.</string>
+
+    <!-- Transaction Results -->
+    <string name="msg_points_earned">Топтолду: </string>
+    <string name="msg_points_spent">Колдонулду: </string>
+    <string name="msg_points_spent_earned">Колдонулду: </string>
+    <string name="msg_points_spent_earned_middle">, Топтолду: </string>
+    <string name="msg_points_suffix"> Б</string>
+    <string name="msg_visit_progress">Келүү катталды! Бардыгы: </string>
+    <string name="msg_visit_progress_suffix"> / </string>
+    <string name="msg_visit_reward">Максат аткарылды! Белек жеткиликтүү! (</string>
+    <string name="msg_visit_reward_suffix">)</string>
+    <string name="msg_balance_info">Баланс: </string>
+    <string name="msg_success_default">Операция ийгиликтүү!</string>
+
+    <!-- Join Company Screen -->
+    <string name="join_title">Кызматкер болуу</string>
+    <string name="join_description">Бизнес ээси берген чакыруу кодун киргизиңиз.</string>
+    <string name="join_code_label">Чакыруу коду</string>
+    <string name="join_btn_submit">Кошулуу</string>
+    <string name="cashier_join_success">Сиз командага ийгиликтүү кошулдуңуз!</string>
+
+    <!-- Onboarding -->
+    <string name="onboarding_title">Таанышып алалы!</string>
+    <string name="onboarding_subtitle">Жеке бонустарды алуу үчүн маалыматты толтуруңуз</string>
+    <string name="field_firstname">Атыңыз *</string>
+    <string name="field_lastname">Фамилияңыз</string>
+    <string name="field_email">Email (калыбына келтирүү үчүн)</string>
+    <string name="btn_save">Сактоо жана кирүү</string>
+    <string name="onboarding_why_info">Сиздин атыңыз кассирге саламдашуу жана бонус топтоо үчүн көрсөтүлөт.</string>
+    <string name="err_field_required">Бул талааны толтуруу милдеттүү</string>
+    <string name="err_invalid_phone_format">Номердин форматы туура эмес</string>
+    <string name="onboarding_success">Профиль сакталды!</string>
+
+    <!-- Role Selection -->
+    <string name="role_select_title">Режимди тандаңыз</string>
+    <string name="role_client_title">Мен Кардармын</string>
+    <string name="role_client_desc">Бонус топтоп, арзандатуу алгым келет</string>
+    <string name="role_partner_title">Мен Бизнес Ээсимин</string>
+    <string name="role_partner_desc">Лоялдуулук системасын иштетким келет</string>
+    <string name="role_cashier_title">Мен Кызматкермин</string>
+    <string name="role_cashier_desc">Терминал менен иштегим келет</string>
+
+    <string name="workspace_cashier_title">Жумуш орду</string>
+    <string name="workspace_partner_title">Ээсинин кабинети</string>
+    <string name="workspace_partner_stub">Бизнести толук башкаруу веб-версияда жеткиликтүү.</string>
+    <string name="btn_exit_mode">Режимден чыгуу</string>
+    <string name="btn_exit_short">Чыгуу</string>
+
+    <!-- Profile Screen -->
+    <string name="profile_workspaces_title">Менин жумуш орундарым</string>
+    <string name="profile_role_partner">Ээси</string>
+    <string name="profile_role_cashier">Кассир</string>
+    <string name="profile_role_administrator">Администратор</string>
+    <string name="profile_btn_logout">Аккаунттан чыгуу</string>
+    <string name="profile_section_general">Негизги</string>
+    <string name="profile_section_business">Бизнес жана Карьера</string>
+
+    <string name="profile_item_language">Тиркеменин тили</string>
+    <string name="profile_item_support">Колдоо кызматы</string>
+    <string name="profile_language_dialog_title">Тилди тандаңыз</string>
     <string name="profile_language_dialog_apply">Колдонуу</string>
     <string name="profile_language_dialog_cancel">Жокко чыгаруу</string>
-    <string name="profile_language_dialog_title">Тилди тандаңыз</string>
     <string name="profile_language_updated">Тил жаңыртылды</string>
-    <string name="profile_loading">Жүктөө ...</string>
-    <string name="profile_role_administrator">Администратор</string>
-    <string name="profile_role_cashier">Кассир</string>
-    <string name="profile_role_partner">Ээси</string>
-    <string name="profile_role_platform_manager">Платформа менеджери</string>
+    <string name="language_ru">Орусча</string>
+    <string name="language_ky">Кыргызча</string>
+    <string name="language_kk">Казакча</string>
+    <string name="language_uz">Өзбекче</string>
+    <string name="language_be">Белорусча</string>
+    <string name="profile_about_title">Тиркеме жөнүндө</string>
+    <string name="profile_about_version">Версия:</string>
+    <string name="profile_about_description">LoyaltyLoop — бул сиздин лоялдуулук карталарыңыз үчүн бирдиктүү капчык. Бонус топтоңуз, белектерди алыңыз жана сүйүктүү жайларыңызда макамыңызды байкап туруңуз.</string>
+
+    <string name="profile_btn_create_business">LoyaltyLoop'ту иштетүү</string>
+    <string name="profile_desc_create_business">Бизнес ээлери үчүн</string>
+
+    <string name="profile_btn_join_team">Чакыруу кодун киргизүү</string>
+    <string name="profile_desc_join_team">Кызматкерлер үчүн</string>
+    <string name="profile_web_error_token">Порталды ачуу мүмкүн болбоду. Тиркемени кайра иштетип, кайра кириңиз.</string>
+    <string name="web_error_title">Порталды жүктөө катасы</string>
+    <string name="web_error_retry">Кайталоо</string>
+    <string name="web_loading_message">Кабинет жүктөлүүдө...</string>
+
+    <string name="profile_version">Версия %s</string>
+    <!-- Profile Roles -->
     <string name="profile_role_platform_owner">Платформа ээси</string>
-    <string name="profile_section_business">Бизнес жана карьера</string>
-    <string name="profile_section_general">Негиздер</string>
-    <string name="profile_version">%s версия</string>
-    <string name="profile_web_error_token">Порталды ачкан жок. Колдонмону өчүрүп күйгүзүп, кайра кириңиз.</string>
-    <string name="profile_workspaces_title">Менин жумуштарым</string>
-    <string name="qr_sec">сек</string>
-    <string name="qr_sheet_title">Аны кассирге көрсөт</string>
-    <string name="qr_timer_update">Жаңыртылат</string>
-    <string name="role_cashier_desc">Мен терминал менен иштегим келет</string>
-    <string name="role_cashier_title">Мен кызматкермин</string>
-    <string name="role_client_desc">Мен бонустарды топтогум келет жана арзандатууларды алыңыз</string>
-    <string name="role_client_title">Мен сатып алуучу болом</string>
-    <string name="role_partner_desc">Мен берилгендик системаны ишке киргизгим келет</string>
-    <string name="role_partner_title">Мен бизнес ээсимин</string>
-    <string name="role_select_title">Режимин тандаңыз</string>
-    <string name="tab_locations">Жерлер</string>
-    <string name="tab_profile">Өздүк кабинет</string>
+    <string name="profile_role_platform_manager">Платформа менеджери</string>
+
+    <!-- Profile Sections -->
+    <string name="profile_header_workspaces">Менин жумуш орундарым</string>
+    <string name="profile_header_actions">Мүмкүнчүлүктөр</string>
+
+    <!-- Bottom Navigation -->
     <string name="tab_wallet">Капчык</string>
-    <string name="term_btn_confirm">Ыраста</string>
-    <string name="term_btn_next">Кийинки</string>
-    <string name="term_calc_msg_charge">Учурдагы деңгээлдеги бонустарды сыйлайбыз</string>
-    <string name="term_calc_msg_charge_upgrade">Level Up! Кардар көп бонустарды алат</string>
-    <string name="term_calc_msg_error">Туура эмес сумма</string>
-    <string name="term_calc_msg_next_reward">Сыйлыкка чейин бир сапар</string>
-    <string name="term_calc_msg_spend">Мунун максималдуу чекиттин эрежелерине ылайык жаздык</string>
-    <string name="term_calc_msg_spend_limit_balance">Бардык жеткиликтүү чекиттер жазылган, калган - акча</string>
-    <string name="term_calc_msg_visit">Иш сапар эске алынат</string>
-    <string name="term_calc_msg_visit_reward">Сыйлык чыгарылды - цикл баштапкы абалга келтирилди</string>
-    <string name="term_confirm_balance">Кийинки баланс</string>
-    <string name="term_confirm_earned">Упайларды эсептөө</string>
-    <string name="term_confirm_purchase">Чек суммасы</string>
-    <string name="term_confirm_spent">Упайларды жаз</string>
-    <string name="term_confirm_status">Абалы</string>
-    <string name="term_confirm_title">Ырастоо</string>
-    <string name="term_confirm_total_pay">Төлөө үчүн</string>
-    <string name="term_confirm_visits">Андан кийин</string>
-    <string name="term_err_no_workspace">Ката: Эч кандай жумуш жок</string>
-    <string name="term_err_scan_generic">Катаны скандоо</string>
-    <string name="term_msg_success">Транзакция ийгиликтүү!</string>
-    <string name="term_res_amount_hint">Кийинки кадамды кийинки кадамдын чекитинин эрежелерине жараша эсептеп чыгабыз.</string>
-    <string name="term_res_amount_label">Чек суммасы</string>
-    <string name="term_res_award_hint">Бонустар жазылса дагы, биз накталай төлөмдөр үчүн накталай акча менен камсыз кылабыз.</string>
-    <string name="term_res_award_will_earn">Эсепке алынат:</string>
-    <string name="term_res_balance_prefix">Учурдагы баланс:</string>
-    <string name="term_res_btn_add_points">Бонустар</string>
-    <string name="term_res_btn_add_visit">Иш сапарды (+1) сана</string>
-    <string name="term_res_calc_prefix">Эсепке алынат:</string>
-    <string name="term_res_calculating">Биз ойлойбуз ...</string>
-    <string name="term_res_client_default">Кардар</string>
-    <string name="term_res_new_client_chip">Жаңы кардар! 🎉</string>
-    <string name="term_res_next_free">Кийинки сапар - бул сыйлык! 🎁</string>
-    <string name="term_res_points_suffix">Б</string>
-    <string name="term_res_spend_available">Жеткиликтүү:</string>
-    <string name="term_res_spend_explain">Мунун максималдуу чекиттин эрежелерине ылайык, кийинки кадамда маалыматтарды жазабыз</string>
-    <string name="term_res_spend_title">Упайларды жаз</string>
-    <string name="term_res_spend_will_spend">Жазылып алынат:</string>
-    <string name="term_res_tiered_title">Топтоо тутуму</string>
-    <string name="term_res_title">Натыйжа</string>
-    <string name="term_res_total_pay">Жалпысынан төлөнөт:</string>
-    <string name="term_res_visit_action_prefix">Жарнак:</string>
-    <string name="term_res_visit_action_suffix">белек катары</string>
-    <string name="terminal_btn_scan">Процесс</string>
-    <string name="terminal_btn_simulate">Скандоо</string>
-    <string name="terminal_camera_hint">QR кодунда камераңызды көрсөтүңүз</string>
-    <string name="terminal_camera_instruction">QR кодунда камераңызды көрсөтүңүз</string>
-    <string name="terminal_camera_placeholder">Сканер (сайгыч)</string>
-    <string name="terminal_client_found_fmt">Кардар табылган: __ll_var_0__</string>
-    <string name="terminal_debug_card_title">Миңектүү режим (эмулятор)</string>
-    <string name="terminal_debug_title">Кол менен киргизүү (тест)</string>
-    <string name="terminal_input_label">QR сап</string>
-    <string name="terminal_input_placeholder">QR сапын кыстаруу</string>
-    <string name="terminal_scan_success">Кардар табылган!</string>
-    <string name="terminal_title">Терминал</string>
-    <string name="wallet_card_back_goal_prefix">Максаты:</string>
-    <string name="wallet_card_back_goal_suffix">сапарлар</string>
-    <string name="wallet_card_back_progress_title">Прогресс жана эрежелер</string>
-    <string name="wallet_card_back_remaining_prefix">Белекке чейин убакыт калды</string>
-    <string name="wallet_card_back_remaining_suffix">сапарлар.</string>
-    <string name="wallet_card_back_reward_ready">Куттуктайбыз! Максат аяктады - Кассирден белек жөнүндө сураңыз.</string>
-    <string name="wallet_card_back_total_prefix">Жалпы иш-чаралар:</string>
-    <string name="wallet_card_balance_label">Баланс</string>
-    <string name="wallet_card_blocked">Картаны бөгөттөлгөн</string>
-    <string name="wallet_card_blocked_until">Чейин бөгөттөлгөн</string>
-    <string name="wallet_card_closed_default">Программа убактылуу токтотулган</string>
-    <string name="wallet_card_closed_reason">Токтотулган:</string>
-    <string name="wallet_card_inactive">Карта жигерсиз</string>
-    <string name="wallet_card_new_level">Жаңы деңгээл</string>
-    <string name="wallet_card_paused">Убактылуу иштен чыгарылган</string>
-    <string name="wallet_card_points_suffix">Б</string>
-    <string name="wallet_card_reward_badge">Белек даяр!</string>
-    <string name="wallet_card_type">Бонустук карта</string>
-    <string name="wallet_card_visit_suffix">сапарлар</string>
-    <string name="wallet_card_visits_label">Сапарлар</string>
-    <string name="wallet_empty_desc">Сиздин картаңызды алуу үчүн биринчи сатып алуу үчүн QR кодун кассирге көрсөтүңүз.</string>
-    <string name="wallet_empty_refresh">Жаңыртуу тизмеси</string>
-    <string name="wallet_empty_title">Азырынча берилгендик карталары жок</string>
+    <string name="tab_locations">Жайлар</string>
+    <string name="tab_profile">Профиль</string>
+
+    <!-- Wallet Screen -->
+    <string name="wallet_title">Капчык</string>
     <string name="wallet_my_cards">Менин карталарым</string>
     <string name="wallet_my_qr">Менин кодум</string>
-    <string name="wallet_show_qr_btn">Менин QR</string>
-    <string name="wallet_title">Капчык</string>
-    <string name="web_error_retry">Кайталоо</string>
-    <string name="web_error_title">Портал жүктөлбөй койду</string>
-    <string name="web_loading_message">Эсебиңизди жүктөө ...</string>
-    <string name="workspace_cashier_title">Жумуш орду</string>
-    <string name="workspace_partner_stub">Толук бизнести башкаруу веб-нускасында жеткиликтүү.</string>
-    <string name="workspace_partner_title">Ээсинин эсеби</string>
+    <string name="wallet_empty_title">Сизде азырынча карта жок</string>
+    <string name="wallet_empty_desc">Карта алуу үчүн биринчи сатып алууда кассирге QR-кодуңузду көрсөтүңүз.</string>
+    <string name="wallet_show_qr_btn">Менин QR-кодумду көрсөтүү</string>
+    <string name="wallet_empty_refresh">Тизмени жаңылоо</string>
+    <string name="wallet_card_type">Бонус картасы</string>
+    <string name="wallet_card_balance_label">Баланс</string>
+    <string name="wallet_card_visits_label">Келүүлөр</string>
+    <string name="wallet_card_suffix">Б</string>
+    <string name="wallet_card_visit_suffix"> келүү</string>
+    <string name="wallet_card_new_level">Жаңы деңгээл</string>
+    <string name="wallet_card_reward_badge">Белек даяр!</string>
+    <string name="wallet_card_inactive">Карта активдүү эмес</string>
+    <string name="wallet_card_blocked">Карта бөгөттөлгөн</string>
+    <string name="wallet_card_blocked_until">Бөгөттөлгөн убактысы: </string>
+    <string name="wallet_card_closed_reason">Токтотулган: </string>
+    <string name="wallet_card_closed_default">Программа убактылуу токтотулган</string>
+    <string name="wallet_card_paused">Убактылуу өчүрүлгөн</string>
+    <string name="wallet_card_back_progress_title">Прогресс жана эрежелер</string>
+    <string name="wallet_card_back_total_prefix">Бардык келүүлөр: </string>
+    <string name="wallet_card_back_remaining_prefix">Белекке чейин </string>
+    <string name="wallet_card_back_remaining_suffix"> келүү калды.</string>
+    <string name="wallet_card_back_goal_suffix"> келүү</string>
+    <string name="wallet_card_back_reward_ready">Куттуктайбыз! Максат аткарылды — кассирден белекти сураңыз.</string>
+    <string name="wallet_card_back_goal_prefix">Максат: </string>
+    <string name="wallet_card_visits"> келүү</string>
+
+    <!-- Terminal Screen -->
+    <string name="terminal_title">Терминал</string>
+    <string name="terminal_camera_hint">Камераны QR-кодго багыттаңыз</string>
+    <string name="terminal_debug_title">Кол менен киргизүү (Тест)</string>
+    <string name="terminal_input_label">QR сабы</string>
+    <string name="terminal_btn_scan">Иштетүү</string>
+    <string name="terminal_download_title">Тиркемени жүктөө үчүн QR</string>
+    <string name="terminal_download_subtitle">Google Play аркылуу орнотуу үчүн кардарға көрсөтүңүз</string>
+    <string name="terminal_download_show_qr">QR көрсөтүү</string>
+    <string name="terminal_download_hide_qr">QR жашыруу</string>
+    <string name="update_downloaded_message">Жаңыртуу жүктөлдү. Кайра баштайбызбы?</string>
+    <string name="update_restart_btn">Кайра баштоо</string>
+    <string name="error_no_workspace">Ката: Жумушчу смена жок (контекст жоголду)</string>
+    <string name="terminal_scan_success">Кардар табылды!</string>
+
+    <!-- Terminal Scanner -->
+    <string name="terminal_camera_placeholder">Сканер (Орду)</string>
+    <string name="terminal_camera_instruction">Камераны QR-кодго багыттаңыз</string>
+    <string name="terminal_debug_card_title">Мүчүлүштүктөрдү оңдоо режими (Эмулятор)</string>
+    <string name="terminal_input_placeholder">QR сабын коюңуз</string>
+    <string name="terminal_btn_simulate">Сканерлөөнү имитациялоо</string>
+    <string name="terminal_client_found_fmt">Кардар табылды: %s</string>
+
+    <!-- Terminal Result -->
+    <string name="term_res_title">Жыйынтык</string>
+    <string name="term_res_client_default">Кардар</string>
+    <string name="term_res_new_client_chip">Жаңы кардар! 🎉</string>
+
+    <!-- Visits Strategy -->
+    <string name="term_res_visit_action_prefix">АКЦИЯ: </string>
+    <string name="term_res_visit_action_suffix">-товар белекке</string>
+    <string name="term_res_next_free">КИЙИНКИ КЕЛҮҮ - БЕЛЕК МЕНЕН! 🎁</string>
+    <string name="term_res_btn_add_visit">Келүү кошуу (+1)</string>
+
+    <!-- Tiered Strategy -->
+    <string name="term_res_tiered_title">Топтоо системасы</string>
+    <string name="term_res_amount_label">Чектин суммасы</string>
+    <string name="term_res_amount_hint">Жыйынтык баа жана эсептөө эрежелер боюнча кийинки кадамда көрсөтүлөт.</string>
+    <string name="term_res_calc_prefix">Топтолот:</string>
+    <string name="term_res_points_suffix">Б</string>
+    <string name="term_res_balance_prefix">Учурдагы баланс:</string>
+    <string name="term_res_btn_add_points">Бонус кошуу</string>
+
+    <!-- Terminal New UI -->
+    <string name="term_res_spend_title">Баллдарды кетирүү</string>
+    <string name="term_res_spend_available">Жеткиликтүү:</string>
+    <string name="term_res_spend_will_spend">Кетирилет:</string>
+    <string name="term_res_award_will_earn">Топтолот:</string>
+    <string name="term_res_award_hint">Бонус колдонгондо да акчалай төлөм үчүн кешбэк берилет</string>
+    <string name="term_res_spend_explain">Эрежелер боюнча максималдуу кетирилет — кийинки кадамда</string>
+    <string name="term_res_total_pay">Төлөөгө:</string>
+    <string name="term_res_calculating">Эсептелүүдө...</string>
+    <string name="term_calc_msg_visit">Келүү эсепке алынат</string>
+    <string name="term_calc_msg_visit_reward">Белек берилди — цикл жаңыланды</string>
+    <string name="term_calc_msg_next_reward">Белекке чейин бир келүү калды</string>
+    <string name="term_calc_msg_spend_limit_balance">Бардык жеткиликтүү баллдар кетирилди, калганы — акчалай</string>
+    <string name="term_calc_msg_spend">Эрежелер боюнча максималдуу кетирилди</string>
+    <string name="term_calc_msg_charge">Учурдагы деңгээл боюнча бонус берилет</string>
+    <string name="term_calc_msg_charge_upgrade">Деңгээл жогорулады! Кардар көбүрөөк бонус алат</string>
+    <string name="term_calc_msg_error">Туура эмес сумма</string>
+
+    <!-- Confirmation Screen -->
+    <string name="term_confirm_title">Тастыктоо</string>
+    <string name="term_confirm_total_pay">Төлөөгө</string>
+    <string name="term_confirm_purchase">Чектин суммасы</string>
+    <string name="term_confirm_spent">Баллдарды кетирүү</string>
+    <string name="term_confirm_earned">Баллдарды топтоо</string>
+    <string name="term_confirm_balance">Кийинки баланс</string>
+    <string name="term_confirm_visits">Кийинки келүүлөр</string>
+    <string name="term_confirm_status">Макам</string>
+    <string name="term_btn_confirm">Тастыктоо</string>
+
+    <!-- Messages -->
+    <string name="term_msg_success">Транзакция ийгиликтүү!</string>
+    <string name="term_err_no_workspace">Ката: Жумушчу смена жок</string>
+    <string name="term_err_scan_generic">Сканерлөө катасы</string>
+
+    <!-- QR Sheet -->
+    <string name="qr_sheet_title">Кассирге көрсөтүңүз</string>
+    <string name="qr_timer_update">Жаңыланат</string>
+    <string name="qr_sec">сек</string>
+
+    <!-- Hybrid Dialog -->
+    <string name="hybrid_dialog_title">Операция түрүн тандаңыз</string>
+    <string name="hybrid_dialog_text">Кардар келүү топтой алат же бонустарды колдоно алат. Аракетти тандаңыз:</string>
+    <string name="hybrid_action_bonus">Бонустар / Кешбэк</string>
+    <string name="hybrid_action_visit">Келүү кошуу</string>
+    <string name="term_btn_next">Кийинки</string>
+
+    <!-- Celebration Overlay -->
+    <string name="celebration_new_balance_prefix">Жаңы баланс: </string>
+    <string name="celebration_rules_hint">Акция эрежелерин жеринен тактаңыз. Жакында бул жерде рейтинг жана келүү чоо-жайы чыгат.</string>
+    <string name="celebration_visit_logged">Келүү катталды</string>
+    <string name="celebration_visit_reward_ready">Белек күтүп жатат!</string>
+    <string name="celebration_visit_remaining_prefix">Белекке чейин </string>
+    <string name="celebration_visit_increment_prefix">+</string>
+    <string name="celebration_visit_increment_suffix"> келүү</string>
+    <string name="celebration_reward_text">Белекти азыр алууга болот!</string>
+    <string name="celebration_close">Жабуу</string>
+    <string name="celebration_title_earn">Бонус топтоо</string>
+    <string name="celebration_title_spend">Бонус кетирүү</string>
+    <string name="celebration_title_visit">Келүү эсептелди</string>
+    <string name="celebration_title_reward">Белек даяр!</string>
+    <string name="celebration_title_tier_prefix">Жаңы деңгээл: </string>
+    <string name="celebration_title_created">Жаңы карта</string>
+
+    <!-- MAP SCREEN & PERMISSIONS -->
+    <string name="map_search_hint">Издөө...</string>
+    <string name="map_filter_mine">Менин филиалдарым</string>
+    <string name="map_filter_all_types">Бардык түрлөр</string>
+
+    <string name="map_locate_content_desc">Менин жайгашкан жерим</string>
+    <string name="map_back_content_desc">Артка</string>
+    <string name="map_clear_content_desc">Тазалоо</string>
+
+    <string name="permission_location_rationale_title">Геолокация керек</string>
+    <string name="permission_location_rationale_text">Жакынкы соода түйүндөрүн көрсөтүү үчүн тиркемеге сиздин жайгашкан жериңизге жеткилик керек.</string>
+    <string name="permission_allow">Уруксат берүү</string>
+
+    <string name="permission_location_denied_title">Жеткилик жок</string>
+    <string name="permission_location_denied_text">Сиз геолокацияга жеткилик берген жоксуз. Картадан өзүңүздү көрүү үчүн жөндөөлөрдөн күйгүзүңүз.</string>
+    <string name="permission_settings">Жөндөөлөргө</string>
+
+    <string name="common_cancel">Жокко чыгаруу</string>
+
+    <string name="map_filter_open">Ачык</string>
+    <string name="map_type_coffee_shop">Кофейня</string>
+    <string name="map_type_restaurant">Ресторан</string>
+    <string name="map_type_retail">Дүкөн</string>
+    <string name="map_type_service">Кызматтар</string>
+    <string name="map_type_flowers">Гүлдөр</string>
+    <string name="map_type_gifts">Белектер</string>
+    <string name="map_type_cakes">Торттор</string>
+    <string name="map_type_barbershop">Чачтарач</string>
+    <string name="map_type_clothing">Кийим</string>
+    <string name="map_type_toys">Оюнчуктар</string>
+    <string name="map_type_car_rental">Унаа ижарасы</string>
+    <string name="map_type_scooter_rental">Скутер ижарасы</string>
+    <string name="map_type_auto_service">СТО</string>
+    <string name="map_type_tire_service">Вулканизация</string>
+    <string name="map_type_auto_parts">Автотетиктер</string>
+    <string name="map_type_bank">Банк</string>
+    <string name="map_type_grocery_store">Азык-түлүк</string>
+    <string name="map_type_beauty_salon">Сулуулук салону</string>
+    <string name="map_type_other">Башка</string>
+    <string name="map_locate_me">Мен бул жердемин</string>
+    <string name="point_no_address">Дарек көрсөтүлгөн эмес</string>
+    <string name="common_open">Ачык</string>
+    <string name="common_closed">Жабык</string>
+    <string name="status_temporarily_closed">Убактылуу жабык</string>
+    <string name="common_apply">Колдонуу</string>
+    <string name="empty"> </string>
+
+    <!-- Point Details -->
+    <string name="point_details_btn">Толугураак</string>
+    <string name="point_details_title">Түйүн маалыматы</string>
+    <string name="point_details_address">Дарек</string>
+    <string name="point_details_schedule">Иш тартиби</string>
+    <string name="point_details_contacts">Байланыштар</string>
+    <string name="point_details_info">Кошумча</string>
+    <string name="point_details_social_telegram">Telegram</string>
+    <string name="point_details_social_whatsapp">WhatsApp</string>
+    <string name="point_details_social_instagram">Instagram</string>
+    <string name="point_details_day_mon">Дш</string>
+    <string name="point_details_day_tue">Ше</string>
+    <string name="point_details_day_wed">Ша</string>
+    <string name="point_details_day_thu">Бе</string>
+    <string name="point_details_day_fri">Жу</string>
+    <string name="point_details_day_sat">Иш</string>
+    <string name="point_details_day_sun">Жк</string>
+    <string name="point_details_closed">Дем алыш</string>
+
+    <!-- Support Screen -->
+    <string name="support_screen_title">Колдоо</string>
+    <string name="support_write_email">Email жазуу</string>
+    <string name="support_write_telegram">Telegram жазуу</string>
+    <string name="support_description">Суроолоруңуз же сунуштарыңыз болсо, каалаган ыкма менен байланышсаңыз болот.</string>
+
+    <!-- Delete Account -->
+    <string name="delete_account_btn">Аккаунтту өчүрүү</string>
+    <string name="delete_account_title">Аккаунтту өчүрүү</string>
+    <string name="delete_account_reason_hint">Өчүрүү себеби</string>
+    <string name="delete_account_reason_description">Биз жакшыраак болушубуз үчүн себебин көрсөтүңүз</string>
+    <string name="delete_account_confirm_btn">Түбөлүккө өчүрүү</string>
+    <string name="delete_account_code_sent">Тастыктоо коду жөнөтүлдү</string>
+    <string name="delete_account_enter_code">Сиздин номериңизге тастыктоо коду жөнөтүлдү.</string>
+    <string name="account_deleted_success">Аккаунт ийгиликтүү өчүрүлдү</string>
+
+    <!-- Report User -->
+    <string name="term_report_title">Колдонуучуга даттануу</string>
+    <string name="term_report_message">Даттануу себебин көрсөтүңүз. Бул колдонуучуну бөгөттөө сурамын түзөт.</string>
+    <string name="term_report_hint">Себеп</string>
+    <string name="term_report_btn">Даттануу жөнөтүү</string>
+    <string name="term_report_success">Даттануу ийгиликтүү жөнөтүлдү</string>
+    <string name="term_report_action">Даттануу</string>
+    
+    <string name="error_user_banned">Колдонуучу бөгөттөлгөн</string>
+    <string name="error_block_request_exists">Даттануу каралууда</string>
+
+    <!-- Stats Screen -->
+    <string name="stats_title">Бүгүнкү статистика</string>
+    <string name="stats_transactions">Транзакциялар</string>
+    <string name="stats_revenue">Киреше</string>
+    <string name="stats_points_awarded">Берилген баллдар</string>
+    <string name="stats_points_spent">Кетирилген баллдар</string>
+    <string name="stats_visits">Келүүлөр</string>
+
+    <!-- Terminal Tabs -->
+    <string name="terminal_tab_scanner">Терминал</string>
+    <string name="terminal_tab_stats">Статистика</string>
+
+    <!-- Risk Level Descriptions for Cashier -->
+    <string name="risk_level_green">Ишенимдүү кардар</string>
+    <string name="risk_desc_green">Саламдашуу, жаңылык сунуштоо</string>
+    
+    <string name="risk_level_yellow">Кадимки кардар</string>
+    <string name="risk_desc_yellow">Стандарттык тейлөө</string>
+    
+    <string name="risk_level_orange">Татаал кардар</string>
+    <string name="risk_desc_orange">Кылдат болуу, буйрутманы тактоо, талашпоо</string>
+    
+    <string name="risk_level_red">Зыяндуу кардар</string>
+    <string name="risk_desc_red">Максималдуу этияттык</string>
+    
+
+    <!-- Rate Client Screen -->
+    <string name="rate_client_title">Кардарды баалоо</string>
+    <string name="rate_client_skip">Өткөрүп жиберүү</string>
+    <string name="rate_client_submit">Баалоо</string>
+    <string name="rate_client_tag_rude">Оройлук</string>
+    <string name="rate_client_tag_no_payment">Төлөбөө</string>
+    <string name="rate_client_tag_fraud">Алдоо аракети</string>
+    <string name="rate_client_tag_tip">Чай пул калтырды</string>
+    <string name="rate_client_tag_polite">Сыпайы</string>
+    <string name="rate_client_tag_friendly">Достук маанай</string>
+    <string name="rate_client_tag_late">Кечигүү</string>
+    <string name="rate_client_tag_no_show">Келген жок</string>
+    <string name="rate_client_tag_abuse">Акарат</string>
+    <string name="rate_client_success">Баа сакталды</string>
+    <string name="rate_client_how_was">Кардар менен жолугушуу кандай өттү?</string>
+    <string name="rate_client_select_tags">Тегдерди тандаңыз (милдеттүү эмес):</string>
+    <string name="error_rate_limit_exceeded">Бүгүн баа койгонсуз</string>
+
+    <!-- Rate Service Screen -->
+    <string name="rate_service_title">Сервисти баалоо</string>
+    <string name="rate_service_submit">Жөнөтүү</string>
+    <string name="rate_service_skip">Өткөрүп жиберүү</string>
+    <string name="rate_service_comment_hint">Комментарий (милдеттүү эмес)</string>
+    <string name="rate_service_tag_slow">Жай</string>
+    <string name="rate_service_tag_dirty">Кир</string>
+    <string name="rate_service_tag_rude_staff">Орой</string>
+    <string name="rate_service_tag_tasty">Даамдуу</string>
+    <string name="rate_service_tag_fast">Тез</string>
+    <string name="rate_service_tag_friendly">Мээримдүү</string>
+    <string name="rate_service_success">Пикир жөнөтүлдү</string>
+    <string name="rate_service_tag_clean">Таза</string>
+    <string name="rate_service_tag_comfort">Ыңгайлуу</string>
+    <string name="rate_service_tag_pricey">Кымбат</string>
+    <string name="rate_service_tag_attentive">Кунт коюу</string>
+    <string name="rate_service_tag_wait_time">Узак</string>
+
+    <!-- Scanner permissions -->
+    <string name="scanner_permission_rationale">QR-коддорду сканерлөө үчүн камерага жеткилик керек</string>
+    <string name="scanner_permission_open_settings">Жөндөөлөрдү ачуу</string>
+
+    <!-- Force Update -->
+    <string name="force_update_title">Маанилүү жаңыртуу бар</string>
+    <string name="force_update_message">Биз жаңы функцияларды коштук жана каталарды оңдодук. Сураныч, колдонууну улантуу үчүн тиркемени жаңыртыңыз.</string>
+    <string name="force_update_btn">Жаңыртуу</string>
+
+    <!-- What's New -->
+    <string name="whats_new_title">Жаңылыктар</string>
+    <string name="whats_new_btn_awesome">Сонун!</string>
+    <!-- Change these for every release -->
+    <string name="whats_new_features_list">
+        • Эми сервисти баалоого болот
+        • Кардарды баалоо экраны жаңыртылды
+        • Android'деги сканер каталары оңдолду
+        • Жаңыртуу билдирмелери кошулду
+    </string>
+
+    <!-- Coming Soon Placeholder -->
+    <string name="coming_soon_title">Жакында чыгат</string>
+    <string name="coming_soon_description">Биз кассирлер үчүн толук статистика жана отчеттордун үстүндө иштеп жатабыз. Жаңылыктарды күтүңүз!</string>
 </resources>

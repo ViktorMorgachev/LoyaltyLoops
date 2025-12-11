@@ -56,9 +56,11 @@ class TerminalResultScreenModel(
             val calculation: TransactionCalculationDto,
             val tradingPointId: String,
             val cardId: String,
+            val userId: String,
             val strategy: TransactionStrategy,
             val currency: String
         ) : Event
+        data class NavigateToRating(val userId: String, val tradingPointId: String) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -102,14 +104,14 @@ class TerminalResultScreenModel(
                     log.write("Visit processed successfully")
                     _events.send(Event.ShowMessage(TransactionResultMapper.getMessage(result), SnackbarType.Success))
                     delay(1000)
-                    _events.send(Event.NavigateBack)
+                    _events.send(Event.NavigateToRating(scanData.userId, tradingPointId))
                 }
                 .onFailure { exception ->
                     log.write("Visit failed", LogType.Error, exception)
                     handleError(UiText.Resource(Res.string.error_network))
                 }
-                .onError { code, _ ->
-                    handleError(UiText.Resource(code.toResource()))
+                .onError { code, msg ->
+                    handleError(UiText.Resource(code.toResource(msg)))
                 }
         }
     }
@@ -136,6 +138,7 @@ class TerminalResultScreenModel(
                             calculation = calculation,
                             tradingPointId = tradingPointId,
                             cardId = scanData.cardId,
+                            userId = scanData.userId,
                             strategy = _state.value.strategy,
                             currency = scanData.currency
                         )
@@ -145,8 +148,8 @@ class TerminalResultScreenModel(
                     log.write("Calc failed", LogType.Error, exception)
                     handleError(UiText.Resource(Res.string.error_network))
                 }
-                .onError { code, _ ->
-                    handleError(UiText.Resource(code.toResource()))
+                .onError { code, msg ->
+                    handleError(UiText.Resource(code.toResource(msg)))
                 }
         }
     }

@@ -23,6 +23,19 @@ data class MapSettingsDto(
 @Serializable
 data class PublicConfigResponse(
     val features: FeatureToggleDto,
-    val map: MapSettingsDto
+    val map: MapSettingsDto,
+    val ratingTags: RatingTagsDto? = null
+)
+
+@Serializable
+data class RatingTagDto(
+    val code: String,
+    val weight: Double
+)
+
+@Serializable
+data class RatingTagsDto(
+    val client: List<RatingTagDto> = emptyList(),
+    val service: List<RatingTagDto> = emptyList()
 )
 

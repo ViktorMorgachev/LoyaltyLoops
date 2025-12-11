@@ -98,6 +98,7 @@ lsof -i :8080 -t | xargs kill -9
 Откройте проект в Android Studio и запустите конфигурацию `composeApp`. Или через терминал:
 ```bash
 ./gradlew :composeApp:installDebug
+adb shell monkey -p io.loyaltyloop.app 1
 ```
 
 **iOS:**
