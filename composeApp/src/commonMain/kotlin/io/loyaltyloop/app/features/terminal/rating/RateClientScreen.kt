@@ -310,7 +310,7 @@ class RateClientScreenModel(
                 _events.send(Event.ShowMessage(UiText.Resource(Res.string.rate_client_success), SnackbarType.Success))
                 _events.send(Event.NavigateHome)
             }.onError { code, message ->
-                if (code == AppErrorCode.TOO_MANY_REQUESTS) {
+                if (code == AppErrorCode.RATE_LIMIT_EXCEEDEG) {
                 _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_rate_limit_exceeded), SnackbarType.Info))
                     _events.send(Event.NavigateHome)
                 } else {

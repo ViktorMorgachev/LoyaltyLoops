@@ -48,7 +48,7 @@
     <string name="error_token_invalid">Sessiya xatosi (Token yaroqsiz)</string>
     <string name="error_invalid_pin">PIN-kod noto‘g‘ri</string>
     <string name="error_user_creation_failed">Foydalanuvchini yaratish xatosi</string>
-    <string name="error_to_many_requests">Bugun baholadingiz</string>
+    <string name="rate_limit_requests">Bugun baholadingiz</string>
     <string name="error_otp_attempts_exceeded">Urinishlar chegarasi oshdi. Bir soatdan keyin qayta urinib ko‘ring.</string>
     <string name="error_account_deleted">Bu raqam o‘chirilgan hisobga bog‘langan. Iltimos, boshqa raqam ishlating.</string>
     <string name="error_partner_blocked">Bu hamkor bloklangan.</string>
@@ -457,6 +457,8 @@
     <string name="rate_service_tag_fast">Tez</string>
     <string name="rate_service_tag_friendly">Mehribon</string>
     <string name="rate_service_success">Sharh yuborildi</string>
+
+    <string name="error_to_many_requests">Juda ko‘p urinishlar, keyinroq qayta urinib ko‘ring</string>
     <string name="rate_service_tag_clean">Toza</string>
     <string name="rate_service_tag_comfort">Qulay</string>
     <string name="rate_service_tag_pricey">Qimmat</string>

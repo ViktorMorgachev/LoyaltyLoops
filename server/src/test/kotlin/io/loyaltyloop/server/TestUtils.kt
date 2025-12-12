@@ -18,6 +18,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.PlatformRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.ChangePointStatusRequest
@@ -88,7 +89,7 @@ suspend fun HttpClient.createCashierEcosystem(
     // Упростим: Создадим точку через API, потом найдем её в БД
     createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", currency = Currency.KGS, type =  TradingPointType.COFFEE_SHOP)
 
-    val partnerId = partnerRepo.getPartnersByOwner(ownerId).first().id
+    val partnerId = partnerRepo.getPartnerById(ownerId).id
     val point = partnerRepo.getPointsByPartnerId(partnerId).first()
     val inviteCode = point.inviteCode ?: throw IllegalStateException("No invite code generated")
 
@@ -116,7 +117,7 @@ suspend fun HttpClient.createCashierEcosystem(
 * Возвращает токены уже привилегированного пользователя.
 */
 suspend fun HttpClient.registerAsAdmin(
-    userRepo: UserRepository,
+    platformRepository: PlatformRepository,
     phone: String = "+996554190030", // Номер из конфига (для красоты)
     testDescr: String = "registerAsAdmin"
 ): AuthResponse {
@@ -124,8 +125,7 @@ suspend fun HttpClient.registerAsAdmin(
     val auth = this.registerAndLogin(phone = phone, testDescr = testDescr, withLogs = false)
 
     // 2. ХАК: Лезем в базу и выдаем права (симуляция Seeding)
-    userRepo.setSuperAdmin(auth.userId, true)
-    userRepo.createSystemStaff(auth.userId, UserRole.PLATFORM_SUPER_ADMIN, "0000")
+    platformRepository.createSystemStaff(auth.userId, UserRole.PLATFORM_SUPER_ADMIN, "0000")
 
     // Возвращаем те же токены (права проверяются на лету при запросе, так что токены валидны)
     return auth
@@ -135,12 +135,12 @@ suspend fun HttpClient.registerAsAdmin(
  * Хелпер: Владельцем включаем или выключаем точку
  */
 suspend fun HttpClient.changeTradingPointActivity(
-    userRepo: UserRepository,
+    platformRepository: PlatformRepository,
     pointID: String,
     enable: Boolean
 ) {
     // 1. Регистрируемся как обычно
-    val auth = this.registerAsAdmin(userRepo = userRepo)
+    val auth = this.registerAsAdmin(platformRepository = platformRepository)
     put("/admin/points/${pointID}/status") {
         header("Authorization", "Bearer ${auth.accessToken}")
         contentType(ContentType.Application.Json)
@@ -169,10 +169,8 @@ suspend fun HttpClient.createPartner(
 
     // Достаем ID из базы данных, так как API возвращает просто сообщение
     // (Это надежнее, чем парсить строку сообщения)
-    val partner = repo.getPartnersByOwner(ownerId).firstOrNull()
-        ?: throw IllegalStateException("Partner created via API but not found in DB for user $ownerId")
+    return repo.getPartnerByUserId(ownerId).id
 
-    return partner.id
 }
 
 

@@ -19,6 +19,7 @@ import io.loyaltyloop.shared.models.*
 import io.loyaltyloop.server.service.LoyaltyEngineService
 import org.slf4j.LoggerFactory
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.PlatformRepository
 import io.loyaltyloop.server.repository.RatingRepository
 import kotlinx.serialization.Serializable
 
@@ -26,11 +27,10 @@ import kotlinx.serialization.Serializable
 @Suppress("CyclomaticComplexMethod", "ThrowsCount")
 fun Route.testSupportRoutes(
     userRepository: UserRepository,
+    platformRepository: PlatformRepository,
     transactionRepository: TransactionRepository,
     cardRealtimeService: CardRealtimeService,
     loyaltyEngineService: LoyaltyEngineService,
-    partnerRepository: PartnerRepository, // Injected
-    ratingRepository: RatingRepository    // Injected
 ) {
     val logger = LoggerFactory.getLogger("TestSupportRoutes")
 
@@ -44,18 +44,15 @@ fun Route.testSupportRoutes(
              * Маршрут предназначен для интеграционных тестов и окружений QA.
              */
             post("/promote-super-admin") {
-                val currentUser = ensurePlatformUser(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val request = call.receive<PromoteSuperAdminRequest>()
 
                 val target = userRepository.getUserById(request.userId)
                     ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "User not found")
 
-                if (request.role == UserRole.PLATFORM_SUPER_ADMIN && !userRepository.isSuperAdmin(currentUser)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN, "Only platform super admin can grant this role")
-                }
 
-                if (!userRepository.hasPlatformRole(target.id, request.role)) {
-                    userRepository.createSystemStaff(
+                if (!platformRepository.hasPlatformRole(target.id, request.role)) {
+                    platformRepository.createSystemStaff(
                         userId = target.id,
                         role = request.role,
                         defaultPinHash = request.pin ?: "0000"
@@ -69,7 +66,7 @@ fun Route.testSupportRoutes(
             }
 
             delete("/users/{userId}") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val userId = call.parameters["userId"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "userId missing")
                 val deleted = userRepository.deleteUser(userId)
                 if (!deleted) {
@@ -79,7 +76,7 @@ fun Route.testSupportRoutes(
             }
 
             post("/cards/mutate") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val request = call.receive<CardMutationRequest>()
                 val sanitizedBlock = request.block?.let { block ->
                     block.copy(reason = block.reason?.takeIf { it.isNotBlank() })
@@ -116,7 +113,7 @@ fun Route.testSupportRoutes(
             }
 
             delete("/cards/{cardId}") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val cardId = call.parameters["cardId"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "cardId missing")
                 val existing = transactionRepository.getCardById(cardId)
                     ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
@@ -135,7 +132,7 @@ fun Route.testSupportRoutes(
             }
 
             post("/cards/animation") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val request = call.receive<CardAnimationRequest>()
                 val card = transactionRepository.getCardById(request.cardId)
                     ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
@@ -155,7 +152,7 @@ fun Route.testSupportRoutes(
             }
 
             post("/cards/social") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 val request = call.receive<UpdateCardSocialRequest>()
                 
                 transactionRepository.updateTrustScore(request.cardId, request.trustScore, request.fraudFlag)
@@ -163,7 +160,7 @@ fun Route.testSupportRoutes(
             }
 
             post("/subscription-check") {
-                ensureSuperAdmin(call, userRepository)
+                ensureSuperAdmin(call, platformRepository, userRepository)
                 loyaltyEngineService.runSubscriptionCheck()
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Subscription check triggered"))
             }
@@ -207,23 +204,23 @@ data class CardAnimationRequest(
     val newVisits: Int? = null
 )
 
-private suspend fun ensureSuperAdmin(call: io.ktor.server.application.ApplicationCall, userRepository: UserRepository): String {
-    val userId = ensurePlatformUser(call, userRepository)
-    if (!userRepository.hasPlatformRole(userId, UserRole.PLATFORM_SUPER_ADMIN)) {
+private suspend fun ensureSuperAdmin(call: io.ktor.server.application.ApplicationCall, platformRepository: PlatformRepository, userRepository: UserRepository): String {
+    val userId = ensurePlatformUser(call, platformRepository, userRepository)
+    if (!platformRepository.hasPlatformRole(userId, UserRole.PLATFORM_SUPER_ADMIN)) {
         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Test support endpoints require super admin role")
     }
     return userId
 }
 
 @Suppress("ThrowsCount")
-private suspend fun ensurePlatformUser(call: io.ktor.server.application.ApplicationCall, userRepository: UserRepository): String {
+private suspend fun ensurePlatformUser(call: io.ktor.server.application.ApplicationCall, platformRepository: PlatformRepository, userRepository: UserRepository): String {
     val principal = call.principal<JWTPrincipal>() ?: throw LoyaltyException(AppErrorCode.UNAUTHORIZED, "Missing auth")
     val userId = principal.payload.getClaim("id").asString()
     val userExists = userRepository.getUserById(userId) != null
     if (!userExists) {
         throw LoyaltyException(AppErrorCode.UNAUTHORIZED, "User not found")
     }
-    if (!userRepository.hasAnyPlatformRole(userId)) {
+    if (!platformRepository.hasAnyPlatformRole(userId)) {
         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Platform staff role required")
     }
     return userId

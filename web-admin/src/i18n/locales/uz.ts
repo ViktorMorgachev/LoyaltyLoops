@@ -452,6 +452,9 @@ export const uz = {
       invite_code: "Kassir kodi",
       save_settings: "Sozlamalarni saqlash",
       staff_empty: "Kassirlar yo'q",
+      staff_name: "Ism",
+      staff_phone: "Telefon",
+      staff_actions: "Amallar",
       levels_config: "Darajalar",
       lvl_name: "Nomi",
       lvl_threshold: "Ostona",
@@ -821,7 +824,22 @@ export const uz = {
         quick_start: "Tez boshlash 15 daq",
         no_hardware: "Uskuna kerak emas",
         trial: "14 kun sinov muddati"
+      },
+      waitlist: {
+        title: "Kutish ro'yxatiga qo'shilish",
+        desc: "Kutish ro'yxatiga qo'shiling, erta kirish va bepul sinov muddatini oling.",
+        email_placeholder: "Email kiriting",
+        join: "Qo'shilish",
+        success_title: "Siz ro'yxatdasiz!",
+        success_exists: "Siz kutish ro'yxatidasiz. Menejer siz bilan bog'lanadi.",
+        error_email: "To'g'ri email kiriting"
       }
+    },
+    download: {
+      title: "LoyaltyLoop yuklab olish",
+      desc: "Ballar to'plash, sovg'a olish va progressni kuzatish uchun ilovani o'rnating.",
+      btn_apk: "APK yuklash",
+      requirements: "Android 8.0 yoki undan yuqori talab qilinadi"
     }
   }
 };

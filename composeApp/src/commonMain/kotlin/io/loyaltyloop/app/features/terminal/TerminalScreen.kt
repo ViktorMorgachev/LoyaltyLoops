@@ -2,6 +2,7 @@ package io.loyaltyloop.app.features.terminal
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
@@ -187,111 +188,124 @@ fun TerminalContent(
             }
         }
     ) { padding ->
-        if (selectedTab == 0) {
-            // SCANNER TAB
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                // QR Scanner inline with overlay control
-                Card(
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            if (selectedTab == 0) {
+                // SCANNER TAB
+                Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Box(
+                    // QR Scanner inline with overlay control
+                    Card(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .padding(8.dp)
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        var localScannerActive by remember { mutableStateOf(false) }
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(8.dp)
+                        ) {
+                            var localScannerActive by remember { mutableStateOf(false) }
 
-                        LaunchedEffect(state.manualInput) {
-                            // no-op, keep composition aware
-                        }
+                            LaunchedEffect(state.manualInput) {
+                                // no-op, keep composition aware
+                            }
 
-                        if (localScannerActive) {
-                            CameraScannerView(
-                                modifier = Modifier.fillMaxSize(),
-                                onScan = { result ->
-                                    onAction(TerminalScreenModel.Action.OnQrScanned(result))
-                                    localScannerActive = false
-                                }
-                            )
-                        }
-
-                        if (!localScannerActive) {
-                            Column(
-                                modifier = Modifier
-                                    .align(Alignment.Center)
-                                    .background(
-                                        MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
-                                        shape = MaterialTheme.shapes.medium
-                                    )
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.terminal_camera_instruction),
-                                    color = MaterialTheme.colorScheme.onSurface,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    textAlign = TextAlign.Center
+                            if (localScannerActive) {
+                                CameraScannerView(
+                                    modifier = Modifier.fillMaxSize(),
+                                    onScan = { result ->
+                                        onAction(TerminalScreenModel.Action.OnQrScanned(result))
+                                        localScannerActive = false
+                                    }
                                 )
-                                Button(onClick = {
-                                    localScannerActive = true
-                                }) {
-                                    Text(stringResource(Res.string.terminal_btn_scan))
+                            }
+
+                            if (!localScannerActive) {
+                                Column(
+                                    modifier = Modifier
+                                        .align(Alignment.Center)
+                                        .background(
+                                            MaterialTheme.colorScheme.surface.copy(alpha = 0.8f),
+                                            shape = MaterialTheme.shapes.medium
+                                        )
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.terminal_camera_instruction),
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        textAlign = TextAlign.Center
+                                    )
+                                    Button(onClick = {
+                                        localScannerActive = true
+                                    }) {
+                                        Text(stringResource(Res.string.terminal_btn_scan))
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                // --- DOWNLOAD QR ---
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    // --- DOWNLOAD QR ---
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                     ) {
-                        Text(
-                            text = stringResource(Res.string.terminal_download_title),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = stringResource(Res.string.terminal_download_subtitle),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Button(
-                            onClick = { showDownloadSheet = true },
-                            modifier = Modifier.fillMaxWidth()
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            Text(stringResource(Res.string.terminal_download_show_qr))
+                            Text(
+                                text = stringResource(Res.string.terminal_download_title),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = stringResource(Res.string.terminal_download_subtitle),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Button(
+                                onClick = { showDownloadSheet = true },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(Res.string.terminal_download_show_qr))
+                            }
                         }
                     }
                 }
+            } else {
+                // STATS TAB
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    // CashierStatsScreen().Content() // Temporarily disabled
+                    ComingSoonPlaceholder()
+                }
             }
-        } else {
-            // STATS TAB
-            Box(
-                modifier = Modifier
-                    .padding(padding)
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                // CashierStatsScreen().Content() // Temporarily disabled
-                ComingSoonPlaceholder()
+
+            // LOADER OVERLAY
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = 0.5f))
+                        .clickable(enabled = false) {}, // Block clicks
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                }
             }
         }
     }

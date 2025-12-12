@@ -54,6 +54,7 @@ fun AppErrorCode.toResource(message: String? = null): StringResource {
         AppErrorCode.CARD_IS_BLOCKED -> Res.string.error_token_expired
         AppErrorCode.POINT_PAUSED -> Res.string.error_point_paused
         AppErrorCode.TOO_MANY_REQUESTS -> Res.string.error_to_many_requests
+        AppErrorCode.RATE_LIMIT_EXCEEDEG -> Res.string.error_rate_limit_exceeded
         AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> Res.string.error_otp_attempts_exceeded
         AppErrorCode.ACCOUNT_DELETED -> Res.string.error_account_deleted
         AppErrorCode.TRIAL_ALREADY_USED -> Res.string.ignore

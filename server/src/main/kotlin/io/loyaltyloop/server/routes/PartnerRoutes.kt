@@ -44,6 +44,7 @@ import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.repository.RatingRepository
+import okhttp3.internal.http2.ErrorCode
 import java.time.Instant
 private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
 private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
@@ -226,7 +227,7 @@ fun Route.partnerRoutes(
                 get("/thread") {
                     val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
                     val partner = partnerRepository.getPartnerByUserId(userId)
-                    ensureOwner(partner, userId)
+                    // Managers are allowed to read support threads
 
                     val response = supportChatService.getPartnerThread(partner.id)
                     call.respond(response)
@@ -241,7 +242,7 @@ fun Route.partnerRoutes(
                     }
 
                     val partner = partnerRepository.getPartnerByUserId(userId)
-                    ensureOwner(partner, userId)
+                    // Managers are allowed to send support messages
 
                     supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
                     call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Message sent"))
@@ -272,17 +273,17 @@ fun Route.partnerRoutes(
 
             get("/points") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-
-                val partners = partnerRepository.getPartnersByOwner(userId)
-                val myPartner = partners.firstOrNull()
-
-                if (myPartner == null) {
-                    call.respond(listOf<TradingPointDto>())
-                    return@get
+                try {
+                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    val points = partnerRepository.getPointsByPartnerId(partner.id)
+                    call.respond(points)
+                } catch (e: LoyaltyException){
+                    if (e.code == AppErrorCode.BUSINESS_NOT_FOUND){
+                        call.respond(listOf<TradingPointDto>())
+                    } else throw e
                 }
 
-                val points = partnerRepository.getPointsByPartnerId(myPartner.id)
-                call.respond(points)
+
             }
 
             // --- NEW: Point Management ---
@@ -342,12 +343,17 @@ fun Route.partnerRoutes(
             delete("/cashiers/{cashierId}") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
                 val cashierId = call.parameters["cashierId"]!!
+
+                val partner = partnerRepository.getPartnerByUserId(userId)
+                ensureOwner(partner, userId)
                 
                 // Найти точку или партнера, к которому относится кассир
-                val partnerId = partnerRepository.getPartnerIdByCashierId(cashierId) 
-                    ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "Cashier link not found")
+                if (!partnerRepository.isCassierRecordOfPartner(cashierId, partner.id)) {
+                    call.respond(HttpStatusCode.NotFound, ApiMessage(AppErrorCode.USER_NOT_FOUND, "Cashier not found in your business"))
+                    return@delete
+                }
                 
-                requirePartnerWriteAccess(partnerRepository, userId, partnerId)
+                requirePartnerWriteAccess(partnerRepository, userId, partner.id)
                 
                 partnerRepository.deleteCashier(cashierId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
@@ -441,10 +447,13 @@ fun Route.partnerRoutes(
                  val partner = partnerRepository.getPartnerByUserId(userId)
                  ensureOwner(partner, userId)
                  
-                 // Проверить, принадлежит ли менеджер этому партнеру
-                 if (!partnerRepository.isUserManager(managerId, partner.id)) {
-                     throw LoyaltyException(AppErrorCode.USER_NOT_FOUND, "Manager not found in your business")
-                 }
+                // Проверить, принадлежит ли менеджер этому партнеру (по записи менеджера)
+                if (!partnerRepository.isManagerRecordOfPartner(managerId, partner.id)) {
+                    call.respond(HttpStatusCode.NotFound, ApiMessage(AppErrorCode.USER_NOT_FOUND, "Manager not found in your business"))
+                    return@delete
+                }
+
+                requirePartnerWriteAccess(partnerRepository, userId, partner.id)
                  
                  partnerRepository.deleteManager(managerId)
                  call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))

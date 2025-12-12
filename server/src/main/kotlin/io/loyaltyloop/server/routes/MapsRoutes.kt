@@ -9,7 +9,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.server.repository.TradingPointSearchCriteria
+import io.loyaltyloop.server.models.TradingPointSearchCriteria
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.bool
 import io.loyaltyloop.server.utils.getUserIdOrRespond

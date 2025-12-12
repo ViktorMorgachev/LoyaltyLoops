@@ -61,8 +61,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.SMS_PROVIDER_ERROR -> HttpStatusCode.ServiceUnavailable
 
-                AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
-                AppErrorCode.OTP_ATTEMPTS_EXCEEDED -> HttpStatusCode.TooManyRequests // or Forbidden/429
+                AppErrorCode.OTP_ATTEMPTS_EXCEEDED ,  AppErrorCode.RATE_LIMIT_EXCEEDEG, AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
 
                 AppErrorCode.SECURITY_QR_SECRET_MISSING,
                 AppErrorCode.USER_CREATION_FAILED,
@@ -82,6 +81,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                     )
                     return
                 }
+
             }
 
             call.respond(

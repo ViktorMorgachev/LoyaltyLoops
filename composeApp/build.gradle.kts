@@ -14,148 +14,110 @@ plugins {
     alias(libs.plugins.buildConfig)
 }
 
-// Читаем свойство из командной строки (например: ./gradlew assemble -Penv=prod)
-// По умолчанию 'dev'
-val activeEnv = project.findProperty("env") as? String ?: "dev"
+// 1. Определение окружения
+val activeEnv = project.findProperty("env") as? String
+    ?: gradle.startParameter.taskNames.any { it.contains("stage", true) }.let { if (it) "stage" else null }
+    ?: "dev"
+
 val isServerBuild = project.hasProperty("serverBuild")
+val isProd = activeEnv == "prod"
 
 val currentVersionCode = 1
 val currentVersionName = "1.0"
+
+// 2. Extension для красивой записи строк в BuildConfig
+fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
+    buildConfigField("String", name, "\"$value\"")
 
 buildConfig {
     packageName("io.loyaltyloop.app.config")
     className("AppConfig")
 
-    buildConfigField("int", "VERSION_CODE", "$currentVersionCode")
-    buildConfigField("String", "VERSION_NAME", "\"$currentVersionName\"")
-
-    // Логика выбора URL
-    val serverUrl = when(activeEnv) {
-        "prod" -> "https://server-loyalityloop-prod.up.railway.app"
-        "stage" -> "https://server-loyalityloop-stage.up.railway.app"
-        // Локалхост для Android эмулятора.
-        // Для iOS эмулятора это должен быть localhost или 127.0.0.1, но 10.0.2.2 тоже иногда мапится, но надежнее localhost.
-        // Однако, 10.0.2.2 - стандарт Android.
-        // Для универсальности в локальной разработке часто используют IP машины в сети, но пока оставим так.
-        else -> "http://10.0.2.2:8080"
-    }
-
-    val webUrl = when(activeEnv) {
-        "prod" -> "https:/loyalityloop.up.railway.app"
-        "stage" -> "https://loyalityloop-beta.up.railway.app"
-        else -> "http://10.0.2.2:3000"
-    }
-
-    val isProd = activeEnv == "prod"
-
+    buildConfigField("int", "VERSION_CODE", "1")
+    stringField("VERSION_NAME", "1.0")
     buildConfigField("boolean", "IS_PROD", "$isProd")
-    buildConfigField("String", "WEB_URL", "\"$webUrl\"")
-    buildConfigField("String", "SERVER_URL", "\"$serverUrl\"")
-    buildConfigField("String", "MAP_API_KEY", "\"913bd734-3e88-42fd-ae0d-b5f16c05110c\"")
-    
-    // Добавляем инфо о текущем окружении
-    buildConfigField("String", "ENV_NAME", "\"$activeEnv\"")
+    stringField("ENV_NAME", activeEnv)
+    stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
+
+    val (serverUrl, webUrl) = when (activeEnv) {
+        "prod" -> "https://server-loyalityloop-prod.up.railway.app" to "https://loyalityloop.up.railway.app"
+        "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+        else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+    }
+    stringField("SERVER_URL", serverUrl)
+    stringField("WEB_URL", webUrl)
 }
 
 kotlin {
-    if (!isServerBuild){
+    if (!isServerBuild) {
         androidTarget {
-            compilerOptions {
-                jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8)
-            }
+            compilerOptions { jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_1_8) }
         }
-
-        iosX64()
-        iosArm64()
-        iosSimulatorArm64()
+        iosX64(); iosArm64(); iosSimulatorArm64()
 
         cocoapods {
             summary = "LoyaltyLoop Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
             version = "1.0.0"
-
             ios.deploymentTarget = "14.0"
-
             framework {
                 baseName = "LoyaltyLoop"
                 isStatic = true
                 export(compose.components.resources)
             }
-
             pod("YandexMapsMobile") {
-                version = "4.5.1-full"
+                version = "4.5.1-lite"
                 extraOpts += listOf("-compiler-option", "-fmodules")
             }
         }
     }
 
-
-
     sourceSets {
         commonMain.dependencies {
             implementation(project(":shared"))
 
+            // Compose (из плагина)
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.animation)
-
-            implementation(libs.kermit)
             implementation(compose.components.resources)
             implementation(compose.materialIconsExtended)
             implementation(compose.components.uiToolingPreview)
 
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.screenmodel)
-            implementation(libs.voyager.tab.navigator)
-            implementation(libs.voyager.koin)
-            implementation(libs.voyager.transitions)
-            implementation(libs.koin.compose)
-            implementation(libs.ktor.client.core)
-            implementation(libs.ktor.client.logging)
-            implementation(libs.ktor.client.content.negotiation)
-            implementation(libs.ktor.serialization.kotlinx.json)
-            implementation(libs.ktor.client.websocket)
+            // Используем Bundles (сокращает 15 строк кода)
+            implementation(libs.bundles.voyager)
+            implementation(libs.bundles.ktor.client)
 
-            implementation(libs.ktor.client.auth)
+            implementation(libs.koin.compose)
+            implementation(libs.kermit)
             implementation(libs.multiplatform.settings)
             implementation(libs.qrose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kamel.image)
-
             implementation(libs.moko.permissions.compose)
         }
-        if (!isServerBuild){
+
+        if (!isServerBuild) {
             androidMain.dependencies {
                 implementation(libs.ktor.client.okhttp)
                 implementation(libs.androidx.activity.compose)
                 implementation(libs.koin.android)
                 implementation(libs.androidx.core.ktx)
-                implementation(libs.kotlinx.coroutines.android)
+                implementation(libs.process.phoenix)
+                implementation(libs.yandex.maps.mobile)
+                implementation(libs.android.material)
+
+                // Firebase & Updates
                 implementation(project.dependencies.platform(libs.firebase.bom))
                 implementation(libs.firebase.messaging)
-                implementation("com.google.firebase:firebase-crashlytics-ktx")
-                implementation(libs.kotlinx.coroutines.play.services)
-                implementation(libs.process.phoenix)
-
-                implementation(compose.uiTooling)
-
-                implementation(libs.yandex.maps.mobile)
-
-                implementation(compose.components.resources)
-
-                implementation("androidx.camera:camera-core:${libs.versions.camerax.get()}")
-                implementation("androidx.camera:camera-camera2:${libs.versions.camerax.get()}")
-                implementation("androidx.camera:camera-lifecycle:${libs.versions.camerax.get()}")
-                implementation("androidx.camera:camera-view:${libs.versions.camerax.get()}")
-                implementation("com.google.mlkit:barcode-scanning:${libs.versions.mlkit.barcode.get()}")
-                implementation(libs.play.app.update)
+                implementation("com.google.firebase:firebase-crashlytics-ktx") // Лучше тоже вынести в toml
                 implementation(libs.play.app.update.ktx)
-                implementation(libs.android.material)
+
+                // CameraX Bundle
+                implementation(libs.bundles.camerax)
             }
-
-
 
             iosMain.dependencies {
                 implementation(libs.ktor.client.darwin)
@@ -174,6 +136,25 @@ android {
         targetSdk = 35
         versionCode = currentVersionCode
         versionName = currentVersionName
-        resConfigs("en", "ru", "be", "kk", "ky", "uz")
+        resourceConfigurations += setOf("en", "ru", "be", "kk", "ky", "uz")
+    }
+
+    flavorDimensions += "brand"
+    productFlavors {
+        create("loyaltyloop") { dimension = "brand" }
+    }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        create("stage") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".stage"
+            matchingFallbacks.add("release")
+            signingConfig = signingConfigs.getByName("debug")
+        }
     }
 }

@@ -4,17 +4,25 @@ import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.OtpService
-import io.loyaltyloop.server.service.sms.verification.VerificationSignals
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import org.slf4j.LoggerFactory
 
-class ConsoleSmsService(private val otpService: OtpService,
-                         private val eventLogger: EventLogger,
-                         private val systemEventRepository: SystemEventRepository) : SmsService {
+data class SmsRateLimits(
+    val maxPerMinute: Int,
+    val maxPerHour: Int,
+    val maxFailedAttempts: Int,
+    val blockDurationMs: Long
+)
 
-    private val MAX_OTP_ATTEMPTS = 3
-    private val OTP_BLOCK_DURATION_MS = 3600000L // 1 hour
+class ConsoleSmsService(
+    private val otpService: OtpService,
+    private val eventLogger: EventLogger,
+    private val systemEventRepository: SystemEventRepository,
+    private val limits: SmsRateLimits
+) : SmsService {
+
     private val logger = LoggerFactory.getLogger("SMS_CONSOLE")
 
     override suspend fun sendSms(phone: String, text: String): Boolean {
@@ -32,23 +40,23 @@ class ConsoleSmsService(private val otpService: OtpService,
         // Anti-fraud checks
         val now = System.currentTimeMillis()
 
-        // 1. Limit: Max 1 request per 60 seconds
+        // 1. Limit: Max N requests per 60 seconds
         val recentCount = systemEventRepository.countEvents(
             type = SystemEventType.SMS_REQUEST,
             userPhone = phone,
             since = now - 60_000 // last minute
         )
-        if (recentCount >= 1) {
+        if (recentCount >= limits.maxPerMinute) {
             throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "Wait before resending SMS")
         }
 
-        // 2. Limit: Max 5 requests per hour
+        // 2. Limit: Max N requests per hour
         val hourlyCount = systemEventRepository.countEvents(
             type = SystemEventType.SMS_REQUEST,
             userPhone = phone,
             since = now - 3_600_000 // last hour
         )
-        if (hourlyCount >= 5) {
+        if (hourlyCount >= limits.maxPerHour) {
             throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "Too many SMS attempts. Try again later.")
         }
 
@@ -91,9 +99,9 @@ class ConsoleSmsService(private val otpService: OtpService,
         val failures = systemEventRepository.countEvents(
             type = SystemEventType.OTP_VERIFICATION_FAILED,
             userPhone = phone,
-            since = now - OTP_BLOCK_DURATION_MS
+            since = now - limits.blockDurationMs
         )
-        if (failures >= MAX_OTP_ATTEMPTS) {
+        if (failures >= limits.maxFailedAttempts) {
             throw LoyaltyException(AppErrorCode.OTP_ATTEMPTS_EXCEEDED, "Too many failed attempts. Blocked for 1 hour.")
         }
     }

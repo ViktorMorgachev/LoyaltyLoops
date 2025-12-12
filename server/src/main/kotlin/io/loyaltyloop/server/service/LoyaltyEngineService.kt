@@ -31,18 +31,11 @@ import org.slf4j.LoggerFactory
 import java.util.UUID
 import kotlin.time.Duration.Companion.hours
 import io.loyaltyloop.server.i18n.ServerResources
+import io.loyaltyloop.server.models.SubscriptionWarningDto
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.sms.SmsService
 import kotlinx.coroutines.CoroutineScope
 
-
-data class SubscriptionWarningDto(
-    val partnerId: String,
-    val partnerName: String, // Added
-    val pointId: String,
-    val pointName: String,
-    val endDate: Long
-)
 
 class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailService,  val systemEventRepository: SystemEventRepository) {
 
@@ -80,13 +73,16 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
         rules.forEach { (partnerId, days) ->
             val threshold = now - (days * 24 * 60 * 60 * 1000L)
 
-            val cards = LoyaltyCardTable.select {
-                (LoyaltyCardTable.partnerId eq partnerId) and
-                (LoyaltyCardTable.lastActivityAt less threshold) and
-                (LoyaltyCardTable.balance greater 0.0)
-            }.map { 
-                Triple(it[LoyaltyCardTable.id], it[LoyaltyCardTable.balance], it[LoyaltyCardTable.userId])
-            }
+            val cards = LoyaltyCardTable
+                .selectAll()
+                .where {
+                    (LoyaltyCardTable.partnerId eq partnerId) and
+                    (LoyaltyCardTable.lastActivityAt less threshold) and
+                    (LoyaltyCardTable.balance greater 0.0)
+                }
+                .map { 
+                    Triple(it[LoyaltyCardTable.id], it[LoyaltyCardTable.balance], it[LoyaltyCardTable.userId])
+                }
 
             cards.forEach { (cardId, balance, cardUserId) ->
                 LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
@@ -121,13 +117,14 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
         // 1. Find EXPIRED subscriptions (FIXED_TERM)
         val expiredSubs = PlatformSubscriptionsTable
             .innerJoin(TradingPointsTable) // Join to get partnerId from Point
-            .select {
-            (PlatformSubscriptionsTable.isActive eq true) and 
-            (PlatformSubscriptionsTable.endDate.isNotNull()) and 
-            (PlatformSubscriptionsTable.endDate less now)
-        }.map { 
-            Triple(it[PlatformSubscriptionsTable.id], it[TradingPointsTable.partnerId], it[PlatformSubscriptionsTable.pointId])
-        }
+            .selectAll()
+            .where {
+                (PlatformSubscriptionsTable.isActive eq true) and 
+                (PlatformSubscriptionsTable.endDate.isNotNull()) and 
+                (PlatformSubscriptionsTable.endDate less now)
+            }.map { 
+                Triple(it[PlatformSubscriptionsTable.id], it[TradingPointsTable.partnerId], it[PlatformSubscriptionsTable.pointId])
+            }
 
         expiredSubs.forEach { (subId, partnerId, pointId) ->
             logger.warn("Subscription expired for Point $pointId (Partner $partnerId, Sub: $subId). Deactivating...")
@@ -146,7 +143,7 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
             systemEventRepository.logEvent(
                 type = SystemEventType.INFO,
                 userId = "SYSTEM",
-                userPhone = "SYSTEM",
+                userPhone = null,
                 partnerId = partnerId,
                 payload = "Subscription EXPIRED for Point $pointId. Deactivated."
             )
@@ -157,21 +154,22 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
         val allWarningSubs = PlatformSubscriptionsTable
             .innerJoin(TradingPointsTable)
             .innerJoin(PartnersTable) // Join Partners to get business name
-            .select {
-            (PlatformSubscriptionsTable.isActive eq true) and
-            (TradingPointsTable.isActive eq true) and // Check Point is Active
-            (PlatformSubscriptionsTable.endDate.isNotNull()) and
-            (PlatformSubscriptionsTable.endDate less warningThreshold) and
-            (PlatformSubscriptionsTable.endDate greater now)
-        }.map {
-            SubscriptionWarningDto(
-                partnerId = it[TradingPointsTable.partnerId],
-                partnerName = it[PartnersTable.businessName],
-                pointId = it[PlatformSubscriptionsTable.pointId],
-                pointName = it[TradingPointsTable.name],
-                endDate = it[PlatformSubscriptionsTable.endDate]!!
-            )
-        }
+            .selectAll()
+            .where {
+                (PlatformSubscriptionsTable.isActive eq true) and
+                (TradingPointsTable.isActive eq true) and // Check Point is Active
+                (PlatformSubscriptionsTable.endDate.isNotNull()) and
+                (PlatformSubscriptionsTable.endDate less warningThreshold) and
+                (PlatformSubscriptionsTable.endDate greater now)
+            }.map {
+                SubscriptionWarningDto(
+                    partnerId = it[TradingPointsTable.partnerId],
+                    partnerName = it[PartnersTable.businessName],
+                    pointId = it[PlatformSubscriptionsTable.pointId],
+                    pointName = it[TradingPointsTable.name],
+                    endDate = it[PlatformSubscriptionsTable.endDate]!!
+                )
+            }
 
         // Filter duplicates: Group by PointID, take the subscription with MAX endDate
         val warningSubs = allWarningSubs
@@ -227,7 +225,7 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
             systemEventRepository.logEvent(
                 type = SystemEventType.INFO,
                 userId = "SYSTEM",
-                userPhone = "SYSTEM",
+                userPhone = null,
                 partnerId = sub.partnerId,
                 payload = eventPayload
             )
@@ -235,7 +233,8 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
             // Notify Owner
             val ownerInfo = PartnersTable
                 .join(UsersTable, JoinType.INNER, PartnersTable.ownerId, UsersTable.id)
-                .select { PartnersTable.id eq sub.partnerId }
+                .selectAll()
+                .where { PartnersTable.id eq sub.partnerId }
                 .map { Triple(it[UsersTable.phoneNumber], it[UsersTable.email], it[UsersTable.language]) }
                 .singleOrNull()
 
@@ -272,7 +271,8 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
             // --- Notify Partner Managers ---
             val partnerManagers = PartnerManagersTable
                 .innerJoin(UsersTable)
-                .select { (PartnerManagersTable.partnerId eq sub.partnerId) and (PartnerManagersTable.isActive eq true) }
+                .selectAll()
+                .where { (PartnerManagersTable.partnerId eq sub.partnerId) and (PartnerManagersTable.isActive eq true) }
                 .map { Triple(it[UsersTable.email], it[UsersTable.phoneNumber], it[UsersTable.language]) }
 
             partnerManagers.forEach { (pmEmail, pmPhone, pmLang) ->
@@ -298,12 +298,13 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
 
             // --- Notify Manager (Requester) ---
             val requesterId = PlatformSubscriptionsTable
-                .select { (PlatformSubscriptionsTable.pointId eq sub.pointId) and (PlatformSubscriptionsTable.isActive eq true) }
+                .selectAll()
+                .where { (PlatformSubscriptionsTable.pointId eq sub.pointId) and (PlatformSubscriptionsTable.isActive eq true) }
                 .map { it[PlatformSubscriptionsTable.requesterId] }
                 .singleOrNull()
 
             if (!requesterId.isNullOrBlank()) {
-                val managerInfo = UsersTable.select { UsersTable.id eq requesterId }
+                val managerInfo = UsersTable.selectAll().where { UsersTable.id eq requesterId }
                     .map { it[UsersTable.email] to it[UsersTable.phoneNumber] }
                     .singleOrNull()
                 
@@ -344,7 +345,8 @@ class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailSe
     private suspend fun notifyPlatformAdmins(subs: List<SubscriptionWarningDto>) = dbQuery {
          val admins = UsersTable
              .join(SystemStaffTable, JoinType.LEFT, UsersTable.id, SystemStaffTable.userId)
-             .select {
+             .selectAll()
+             .where {
                  (UsersTable.isSuperAdmin eq true) or
                          (SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER)
              }.mapNotNull { it[UsersTable.email] }

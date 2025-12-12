@@ -51,11 +51,6 @@ class WalletScreen : Screen {
             }
         }
 
-
-        LaunchedEffect(Unit){
-            viewModel.loadCards()
-        }
-
         val pullRefreshState = rememberPullToRefreshState()
 
         val openQrSheet: () -> Unit = {

@@ -453,7 +453,7 @@ private fun LoyaltyCardBackContent(card: LoyaltyCardDto, cardColor: Color) {
 @Composable
 private fun StampIndicatorRow(totalSlots: Int, filled: Int) {
     val safeTotal = totalSlots.coerceAtLeast(1)
-    val needsScroll = safeTotal > 10
+    val needsScroll = safeTotal > 8 // Lower threshold for smaller screens
 
     val dot: @Composable (Boolean) -> Unit = { active ->
         Box(

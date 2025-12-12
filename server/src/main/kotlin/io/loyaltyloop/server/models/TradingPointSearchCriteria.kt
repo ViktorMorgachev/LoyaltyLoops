@@ -1,4 +1,4 @@
-package io.loyaltyloop.server.repository
+package io.loyaltyloop.server.models
 
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType

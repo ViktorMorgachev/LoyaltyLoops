@@ -25,12 +25,13 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
-import io.loyaltyloop.server.database.SystemEventsTable
+import io.loyaltyloop.server.database.tables.SystemEventsTable
 import io.loyaltyloop.server.database.tables.PlatformInvitesTable
 import io.loyaltyloop.server.database.tables.PlatformRequestsTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
 import io.loyaltyloop.server.database.tables.ClientRatingsTable
 import io.loyaltyloop.server.database.tables.ServiceReviewsTable
+import io.loyaltyloop.server.database.tables.WaitlistTable
 
 object DatabaseFactory {
 
@@ -81,7 +82,8 @@ object DatabaseFactory {
                 PlatformRequestsTable,
                 PlatformInvitesTable,
                 ClientRatingsTable,
-                ServiceReviewsTable
+                ServiceReviewsTable,
+                WaitlistTable
             )
         }
     }
@@ -124,7 +126,8 @@ object DatabaseFactory {
                 SupportThreadsTable,
                 SupportMessagesTable,
                 DeviceTokensTable,
-                SystemEventsTable
+                SystemEventsTable,
+                WaitlistTable
             )
         }
     }

@@ -124,11 +124,11 @@ export const PartnerStaffPage = () => {
                         <Table sx={{ minWidth: 650 }}>
                             <TableHead sx={{ bgcolor: 'action.hover' }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.name')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.phone')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_name')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_phone')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('staff.role')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('staff.active')}</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('common.actions')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('staff.staff_actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -165,12 +165,12 @@ export const PartnerStaffPage = () => {
                         <Table sx={{ minWidth: 650 }}>
                             <TableHead sx={{ bgcolor: 'action.hover' }}>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.name')}</TableCell>
-                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.phone')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_name')}</TableCell>
+                                <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_phone')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('staff.role')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('history.table_point')}</TableCell>
                                 <TableCell sx={{ fontWeight: 600 }}>{t('staff.active')}</TableCell>
-                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('common.actions')}</TableCell>
+                                <TableCell align="right" sx={{ fontWeight: 600 }}>{t('staff.staff_actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

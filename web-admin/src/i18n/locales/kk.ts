@@ -452,6 +452,9 @@ export const kk = {
       invite_code: "Кассир коды",
       save_settings: "Баптауларды сақтау",
       staff_empty: "Кассирлер жоқ",
+      staff_name: "Аты",
+      staff_phone: "Телефон",
+      staff_actions: "Әрекеттер",
       levels_config: "Деңгейлер",
       lvl_name: "Аты",
       lvl_threshold: "Табалдырық",
@@ -821,7 +824,22 @@ export const kk = {
         quick_start: "Тез бастау 15 мин",
         no_hardware: "Жабдық керек емес",
         trial: "14 күн сынақ мерзімі"
+      },
+      waitlist: {
+        title: "Күту парағына қосылу",
+        desc: "Күту парағына қосылып, ерте қолжетімділік пен тегін сынақ мерзімін алыңыз.",
+        email_placeholder: "Email енгізіңіз",
+        join: "Қосылу",
+        success_title: "Сіз тізімдесіз!",
+        success_exists: "Сіз күту парағындасыз. Менеджер сізбен хабарласады.",
+        error_email: "Жарамды email енгізіңіз"
       }
+    },
+    download: {
+      title: "LoyaltyLoop жүктеп алу",
+      desc: "Ұпай жинау, сыйлық алу және прогресті бақылау үшін қосымшаны орнатыңыз.",
+      btn_apk: "APK жүктеу",
+      requirements: "Android 8.0 немесе жоғары қажет"
     }
   }
 };

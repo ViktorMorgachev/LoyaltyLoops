@@ -8,7 +8,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.TokenService
-import io.loyaltyloop.server.service.sms.verification.VerificationSignals
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
@@ -44,13 +44,12 @@ fun Route.authRoutes(
             if (error != null) {
                 throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
             }
-
-            val deletedUser = repository.getDeletedUserByPhone(request.phone)
-            if (deletedUser != null) {
+            val existingUser = repository.getUserByPhone(request.phone)
+            if (existingUser != null && existingUser.isDeleted) {
                 throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
             }
 
-            val existingUser = repository.getUserByPhone(request.phone)
+
             val signals = call.extractSignals()
             val verificationId = smsService.startVerification(phone = request.phone, userId = existingUser?.id, signals = signals)
 
@@ -79,36 +78,31 @@ fun Route.authRoutes(
 
                 val isNew = user == null
                 if (user == null) {
-                    val deletedUser = repository.getDeletedUserByPhone(request.phone)
-                    if (deletedUser != null) {
-                        throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
-                    } else {
-                        user = UserDto(
-                            id = UUID.randomUUID().toString(),
-                            phoneNumber = request.phone,
-                            countryCode = request.countryCode.name,
-                            language = lang,
-                            qrSecret = tokenService.generateQrSecret(),
-                            firstName = null
-                        )
-                        repository.createUser(user)
-                        val savedUser = repository.getUserById(user.id)
-                        if (savedUser == null) {
-                            throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
-                        }
-                        eventLogger.log(
-                            type = SystemEventType.REGISTER,
-                            userId = user.id,
-                            userPhone = request.phone,
-                            payload = "User registered via phone"
-                        )
+                    user = UserDto(
+                        id = UUID.randomUUID().toString(),
+                        phoneNumber = request.phone,
+                        countryCode = request.countryCode.name,
+                        language = lang,
+                        qrSecret = tokenService.generateQrSecret(),
+                        firstName = null
+                    )
+                    if (repository.createUser(user).insertedCount == 0) {
+                        throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
                     }
+                    eventLogger.log(
+                        type = SystemEventType.REGISTER,
+                        userId = user.id,
+                        userPhone = request.phone,
+                        payload = "User registered via phone"
+                    )
                 } else {
+                    if (user.isDeleted) {
+                        throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
+                    }
                     if (user.language != lang) {
                         repository.updateUserLanguage(user.id, lang)
                         user = user.copy(language = lang)
                     }
-
                 }
 
 

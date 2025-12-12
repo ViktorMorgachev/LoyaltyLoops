@@ -1,4 +1,4 @@
-package io.loyaltyloop.server.service.sms.verification
+package io.loyaltyloop.server.models
 
 
 data class VerificationSignals(

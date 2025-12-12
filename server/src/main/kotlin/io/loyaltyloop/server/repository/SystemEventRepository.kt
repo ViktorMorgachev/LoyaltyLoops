@@ -1,6 +1,7 @@
 package io.loyaltyloop.server.repository
 
-import io.loyaltyloop.server.database.SystemEventsTable
+import io.loyaltyloop.server.database.tables.SystemEventsTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEvent
 import io.loyaltyloop.server.models.SystemEventFilter
 import io.loyaltyloop.server.models.SystemEventType
@@ -39,11 +40,14 @@ class SystemEventRepository {
         userPhone: String,
         since: Long
     ): Long = newSuspendedTransaction(Dispatchers.IO) {
-        SystemEventsTable.select {
-            (SystemEventsTable.type eq type.name) and
-            (SystemEventsTable.userPhone eq userPhone) and
-            (SystemEventsTable.timestamp greaterEq since)
-        }.count()
+        SystemEventsTable
+            .selectAll()
+            .where {
+                (SystemEventsTable.type eq type.name) and
+                (SystemEventsTable.userPhone eq userPhone) and
+                (SystemEventsTable.timestamp greaterEq since)
+            }
+            .count()
     }
 
     suspend fun getEvents(filter: SystemEventFilter): List<SystemEvent> = newSuspendedTransaction(Dispatchers.IO) {
