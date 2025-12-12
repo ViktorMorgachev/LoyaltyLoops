@@ -48,7 +48,7 @@
     <string name="error_token_invalid">Памылка сесіі (Токен несапраўдны)</string>
     <string name="error_invalid_pin">Няправільны PIN-код</string>
     <string name="error_user_creation_failed">Памылка стварэння карыстальніка</string>
-    <string name="error_to_many_requests">Ужо ацанілі сёння</string>
+    <string name="rate_limit_requests">Ужо ацанілі сёння</string>
     <string name="error_otp_attempts_exceeded">Перавышаны ліміт спробаў. Паспрабуйце праз гадзіну.</string>
     <string name="error_account_deleted">Гэты нумар тэлефона звязаны з выдаленым акаўнтам. Калі ласка, выкарыстоўвайце іншы нумар.</string>
     <string name="error_partner_blocked">Гэты партнёр заблакаваны.</string>
@@ -452,6 +452,8 @@
     <string name="rate_service_comment_hint">Каментарый (неабавязкова)</string>
     <string name="rate_service_tag_slow">Павольна</string>
     <string name="rate_service_tag_dirty">Брудна</string>
+
+    <string name="error_to_many_requests">Занадта шмат спроб, паспрабуйце пазней</string>
     <string name="rate_service_tag_rude_staff">Груба</string>
     <string name="rate_service_tag_tasty">Смачна</string>
     <string name="rate_service_tag_fast">Хутка</string>

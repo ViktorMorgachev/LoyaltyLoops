@@ -1,7 +1,7 @@
-import { Container, Typography, Box, Paper, Button, Stack, useTheme, Avatar } from '@mui/material';
+import { Container, Typography, Box, Paper, Button, Stack, useTheme, Avatar, TextField, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SecurityIcon from '@mui/icons-material/Security';
@@ -21,6 +21,9 @@ import ShieldIcon from '@mui/icons-material/Shield';
 import PublicIcon from '@mui/icons-material/Public';
 import AndroidIcon from '@mui/icons-material/Android';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { api } from '../api/axiosConfig';
+import { useNotification } from '../context/NotificationContext';
+import { getErrorMessage } from '../utils/errorHandler';
 
 export const AboutPage = () => {
     const navigate = useNavigate();
@@ -28,6 +31,35 @@ export const AboutPage = () => {
     const theme = useTheme();
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=io.loyaltyloop.app';
     const showPlayLinks = (import.meta as any)?.env?.VITE_SHOW_PLAY_LINKS === 'true';
+    const showStartFree = false; // Configurable: Hide 'Start Free' buttons by default
+
+    const { showSuccess, showError } = useNotification();
+    const [email, setEmail] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [joined, setJoined] = useState(false);
+
+    const handleJoinWaitlist = async () => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            showError(t('landing.waitlist.error_email', 'Please enter a valid email'));
+            return;
+        }
+        setLoading(true);
+        try {
+            await api.post('/public/waitlist', { email });
+            setJoined(true);
+        } catch (e: any) {
+            // Check if it is a "Conflict" (409) -> Already joined
+            if (e.response && e.response.status === 409) {
+                showSuccess(t('landing.waitlist.success_exists', 'You are already in the waitlist. A manager will contact you soon.'));
+                setEmail('');
+                return;
+            }
+            showError(getErrorMessage(e));
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Anti-copy & Anti-screenshot (best effort)
     useEffect(() => {
@@ -95,13 +127,13 @@ export const AboutPage = () => {
 
     const roadmapSteps = useMemo(() => ([
         {
-            status: 'done',
+            status: 'in_progress',
             label: t('landing.roadmap.steps.mvp_label'),
             desc: t('landing.roadmap.steps.mvp_desc'),
             date: 'Q4 2025'
         },
         {
-            status: 'done',
+            status: 'done', // Changed from 'done'
             label: t('landing.roadmap.steps.analytics_label'),
             desc: t('landing.roadmap.steps.analytics_desc'),
             date: 'Q4 2025'
@@ -187,9 +219,11 @@ export const AboutPage = () => {
                                 {t('landing.hero_subtitle')}
                             </Typography>
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-                                <Button variant="contained" size="large" onClick={() => navigate('/login', { replace: true })} sx={{ px: 6, py: 1.6, borderRadius: 8, fontSize: '1.15rem', fontWeight: 'bold', boxShadow: theme.shadows[10] }}>
-                                    {t('landing.start_free')}
-                                </Button>
+                                {showStartFree && (
+                                    <Button variant="contained" size="large" onClick={() => navigate('/login', { replace: true })} sx={{ px: 6, py: 1.6, borderRadius: 8, fontSize: '1.15rem', fontWeight: 'bold', boxShadow: theme.shadows[10] }}>
+                                        {t('landing.start_free')}
+                                    </Button>
+                                )}
                                 {showPlayLinks && (
                                     <Button
                                         variant="outlined"
@@ -429,6 +463,89 @@ export const AboutPage = () => {
                         </Paper>
                     </Box>
 
+                    {/* WAITLIST */}
+                    <Box mb={16} textAlign="center" maxWidth="800px" mx="auto">
+                        <Paper 
+                            elevation={4} 
+                            sx={{ 
+                                p: { xs: 4, md: 6 }, 
+                                borderRadius: 8, 
+                                border: '1px solid', 
+                                borderColor: 'divider', 
+                                bgcolor: 'background.paper',
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
+                        >
+                             <Box 
+                                sx={{ 
+                                    position: 'absolute', 
+                                    top: 0, left: 0, right: 0, height: 6, 
+                                    background: 'linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899)' 
+                                }} 
+                             />
+                             <Typography variant="h3" fontWeight="800" gutterBottom sx={{ mb: 2 }}>
+                                {t('landing.waitlist.title', 'Join the Waitlist')}
+                             </Typography>
+                             <Typography variant="h6" color="text.secondary" mb={5} sx={{ lineHeight: 1.6, maxWidth: 600, mx: 'auto' }}>
+                                {t('landing.waitlist.desc', 'Join the waitlist to get exclusive early access and a free trial period when we launch.')}
+                             </Typography>
+                             {joined ? (
+                                <Box textAlign="center" py={2} sx={{ animation: 'fadeIn 0.5s ease-out', '@keyframes fadeIn': { from: { opacity: 0, transform: 'translateY(10px)' }, to: { opacity: 1, transform: 'translateY(0)' } } }}>
+                                    <CheckCircleIcon sx={{ fontSize: 64, color: '#10b981', mb: 2 }} />
+                                    <Typography variant="h5" fontWeight="bold" gutterBottom>
+                                        {t('landing.waitlist.success_title')}
+                                    </Typography>
+                                    <Typography color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
+                                        {t('landing.waitlist.success_joined_body', 'Thank you! A manager will contact you soon.')}
+                                    </Typography>
+                                </Box>
+                             ) : (
+                                <Box 
+                                    component="form"
+                                    display="flex" 
+                                    gap={2} 
+                                    flexDirection={{ xs: 'column', sm: 'row' }}
+                                    alignItems="stretch"
+                                    justifyContent="center"
+                                    maxWidth="500px"
+                                    mx="auto"
+                                >
+                                    <TextField 
+                                        fullWidth 
+                                        placeholder={t('landing.waitlist.email_placeholder', 'Enter your email')}
+                                        variant="outlined"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={loading}
+                                        sx={{ 
+                                            '& .MuiOutlinedInput-root': {
+                                                borderRadius: 3,
+                                                bgcolor: '#f8fafc'
+                                            }
+                                        }}
+                                    />
+                                    <Button 
+                                        variant="contained" 
+                                        size="large" 
+                                        onClick={handleJoinWaitlist}
+                                        disabled={loading}
+                                        sx={{ 
+                                            px: 5, 
+                                            borderRadius: 3, 
+                                            minWidth: 160,
+                                            fontSize: '1.1rem',
+                                            fontWeight: 'bold',
+                                            boxShadow: theme.shadows[4]
+                                        }}
+                                    >
+                                        {loading ? <CircularProgress size={24} color="inherit" /> : t('landing.waitlist.join', 'Join')}
+                                    </Button>
+                                </Box>
+                             )}
+                        </Paper>
+                    </Box>
+
                     {/* CTA FINAL */}
                     <Box textAlign="center">
                         <Typography variant="h4" fontWeight="bold" gutterBottom>
@@ -437,21 +554,23 @@ export const AboutPage = () => {
                         <Typography variant="h6" color="text.secondary" mb={4}>
                             {t('landing.cta.subtitle')}
                         </Typography>
-                        <Button 
-                            variant="contained" 
-                            size="large" 
-                            onClick={() => navigate('/login', { replace: true })} 
-                            sx={{ 
-                                px: 8, 
-                                py: 2, 
-                                borderRadius: 4, 
-                                fontSize: '1.2rem', 
-                                fontWeight: 'bold',
-                                boxShadow: theme.shadows[10]
-                            }}
-                        >
-                            {t('landing.start_free')}
-                        </Button>
+                        {showStartFree && (
+                            <Button 
+                                variant="contained" 
+                                size="large" 
+                                onClick={() => navigate('/login', { replace: true })} 
+                                sx={{ 
+                                    px: 8, 
+                                    py: 2, 
+                                    borderRadius: 4, 
+                                    fontSize: '1.2rem', 
+                                    fontWeight: 'bold',
+                                    boxShadow: theme.shadows[10]
+                                }}
+                            >
+                                {t('landing.start_free')}
+                            </Button>
+                        )}
                         <Stack direction="row" spacing={2} justifyContent="center" mt={2}>
                             {showPlayLinks && (
                                 <Button
@@ -479,59 +598,58 @@ export const AboutPage = () => {
                                 <CheckCircleIcon color="success" />
                                 <Typography>{t('landing.cta.no_hardware')}</Typography>
                              </Box>
-                             <Box display="flex" alignItems="center" gap={1}>
-                                <CheckCircleIcon color="success" />
-                                <Typography>{t('landing.cta.trial')}</Typography>
-                             </Box>
+                             {/* Removed 14 days trial text as per request */}
                         </Stack>
                     </Box>
                 </Container>
             </Box>
 
             {/* Sticky CTA for mobile */}
-            <Box
-                sx={{
-                    position: 'fixed',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    zIndex: 120,
-                    display: { xs: 'block', md: 'none' },
-                    bgcolor: 'rgba(15,23,42,0.95)',
-                    boxShadow: theme.shadows[10],
-                    borderTop: '1px solid rgba(255,255,255,0.08)',
-                    backdropFilter: 'blur(8px)',
-                    py: 1.5,
-                    px: 2
-                }}
-            >
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        size="large"
-                        onClick={() => navigate('/login', { replace: true })}
-                        sx={{ borderRadius: 8, fontWeight: 'bold' }}
-                    >
-                        {t('landing.start_free')}
-                    </Button>
-                    {showPlayLinks && (
+            {showStartFree && (
+                <Box
+                    sx={{
+                        position: 'fixed',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        zIndex: 120,
+                        display: { xs: 'block', md: 'none' },
+                        bgcolor: 'rgba(15,23,42,0.95)',
+                        boxShadow: theme.shadows[10],
+                        borderTop: '1px solid rgba(255,255,255,0.08)',
+                        backdropFilter: 'blur(8px)',
+                        py: 1.5,
+                        px: 2
+                    }}
+                >
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
                         <Button
                             fullWidth
-                            variant="outlined"
+                            variant="contained"
                             size="large"
-                            component="a"
-                            href={playStoreUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            startIcon={<AndroidIcon />}
-                            sx={{ borderRadius: 8, color: 'white', borderColor: 'rgba(255,255,255,0.7)', '&:hover': { borderColor: 'white' } }}
+                            onClick={() => navigate('/login', { replace: true })}
+                            sx={{ borderRadius: 8, fontWeight: 'bold' }}
                         >
-                            {t('landing.download_play')}
+                            {t('landing.start_free')}
                         </Button>
-                    )}
-                </Stack>
-            </Box>
+                        {showPlayLinks && (
+                            <Button
+                                fullWidth
+                                variant="outlined"
+                                size="large"
+                                component="a"
+                                href={playStoreUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                startIcon={<AndroidIcon />}
+                                sx={{ borderRadius: 8, color: 'white', borderColor: 'rgba(255,255,255,0.7)', '&:hover': { borderColor: 'white' } }}
+                            >
+                                {t('landing.download_play')}
+                            </Button>
+                        )}
+                    </Stack>
+                </Box>
+            )}
         </Box>
     );
 };

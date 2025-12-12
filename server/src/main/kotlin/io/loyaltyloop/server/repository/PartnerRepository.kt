@@ -51,10 +51,14 @@ class PartnerRepository {
     }
 
     suspend fun getPartnerByUserId(userID: String): PartnerEntity = dbQuery {
-        val row = PartnersTable.selectAll()
+
+        var row = PartnersTable.selectAll()
             .where { PartnersTable.ownerId eq userID }
             .singleOrNull()
-            ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found for this user")
+
+        if (row == null) {
+            throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found for this user")
+        }
 
         val baseEntity = rowToPartnerEntity(row)
 
@@ -99,11 +103,6 @@ class PartnerRepository {
         PartnersTable.innerJoin(UsersTable)
             .selectAll()
             .map { rowToPartnerEntity(it).copy(ownerPhone = it[UsersTable.phoneNumber]) }
-    }
-
-    suspend fun getPartnersByOwner(userId: String): List<PartnerEntity> = dbQuery {
-        PartnersTable.selectAll().where { PartnersTable.ownerId eq userId }
-            .map { rowToPartnerEntity(it) }
     }
 
     suspend fun updateStatus(partnerId: String, newStatus: PartnerStatus) = dbQuery {

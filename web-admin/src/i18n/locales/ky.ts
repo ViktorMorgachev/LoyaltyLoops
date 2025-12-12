@@ -452,6 +452,9 @@ export const ky = {
       invite_code: "Кассир коду",
       save_settings: "Жөндөөлөрдү сактоо",
       staff_empty: "Кассирлер жок",
+      staff_name: "Аты",
+      staff_phone: "Телефон",
+      staff_actions: "Аракеттер",
       levels_config: "Деңгээлдер",
       lvl_name: "Аты",
       lvl_threshold: "Босого",
@@ -821,7 +824,22 @@ export const ky = {
         quick_start: "Тез баштоо 15 мин",
         no_hardware: "Жабдуу керек эмес",
         trial: "14 күн сыноо мөөнөтү"
+      },
+      waitlist: {
+        title: "Күтүү тизмесине кошулуу",
+        desc: "Күтүү тизмесине кошулуп, эрте мүмкүнчүлүк жана акысыз сыноо мөөнөтүн алыңыз.",
+        email_placeholder: "Email жазыңыз",
+        join: "Кошулуу",
+        success_title: "Сиз тизмедесиз!",
+        success_exists: "Сиз күтүү тизмесиндесиз. Менеджер сиз менен байланышат.",
+        error_email: "Туура email жазыңыз"
       }
+    },
+    download: {
+      title: "LoyaltyLoop жүктөп алуу",
+      desc: "Упай топтоо, белек алуу жана прогрессти көзөмөлдөө үчүн тиркемени орнотуңуз.",
+      btn_apk: "APK жүктөө",
+      requirements: "Android 8.0 же андан жогору талап кылынат"
     }
   }
 };

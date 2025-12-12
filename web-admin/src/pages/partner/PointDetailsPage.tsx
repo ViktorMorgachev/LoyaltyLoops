@@ -954,13 +954,13 @@ export const PointDetailsPage = () => {
          <Paper elevation={0} sx={{ borderRadius: 4, border: '1px solid', borderColor: 'divider', overflow: 'hidden' }}>
              <Box sx={{ overflowX: 'auto' }}>
                  <Table sx={{ minWidth: 600 }}>
-                     <TableHead sx={{ bgcolor: 'action.hover' }}>
-                     <TableRow>
-                         <TableCell sx={{ fontWeight: 600 }}>Name</TableCell>
-                         <TableCell sx={{ fontWeight: 600 }}>Phone</TableCell>
-                         <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
-                     </TableRow>
-                 </TableHead>
+                    <TableHead sx={{ bgcolor: 'action.hover' }}>
+                    <TableRow>
+                        <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_name')}</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{t('staff.staff_phone')}</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>{t('staff.staff_actions')}</TableCell>
+                    </TableRow>
+                </TableHead>
                  <TableBody>
                      {cashiers.length === 0 ? (
                          <TableRow><TableCell colSpan={3} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('point_details.staff_empty')}</TableCell></TableRow>

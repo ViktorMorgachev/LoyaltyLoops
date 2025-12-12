@@ -178,24 +178,6 @@ class UserRepository {
 
     // --- WORKSPACES & JOBS ---
 
-    // DRY/KISS VIOLATION:
-    // Логика этого метода (поиск точек кассира) полностью дублируется внутри метода getUserWorkspaces (блок 3).
-    // Решение: Метод getUserWorkspaces может вызывать getCashierJobs и мапить результат в Workspace,
-    // чтобы не писать один и тот же SQL Join дважды.
-    suspend fun getCashierJobs(userId: String): List<CashierJobEntity> = dbQuery {
-        PartnerCashiersTable
-            .innerJoin(TradingPointsTable)
-            .innerJoin(PartnersTable)
-            .selectAll().where { PartnerCashiersTable.userId eq userId }
-            .map {
-                CashierJobEntity(
-                    tradingPointId = it[TradingPointsTable.id],
-                    pointName = it[TradingPointsTable.name],
-                    businessName = it[PartnersTable.businessName]
-                )
-            }
-    }
-
     suspend fun getUserWorkspaces(userId: String): List<UserWorkspace> = dbQuery {
         val workspaces = mutableListOf<UserWorkspace>()
 
