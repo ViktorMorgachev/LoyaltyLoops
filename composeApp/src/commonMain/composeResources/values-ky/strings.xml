@@ -48,7 +48,7 @@
     <string name="error_token_invalid">Сессия катасы (Токен жараксыз)</string>
     <string name="error_invalid_pin">PIN-код туура эмес</string>
     <string name="error_user_creation_failed">Колдонуучуну түзүү катасы</string>
-    <string name="error_to_many_requests">Бүгүн баа койгонсуз</string>
+    <string name="rate_limit_requests">Бүгүн баа койгонсуз</string>
     <string name="error_otp_attempts_exceeded">Аракеттердин чеги ашты. Бир сааттан кийин кайталап көрүңүз.</string>
     <string name="error_account_deleted">Бул номер өчүрүлгөн аккаунтка байланган. Сураныч, башка номер колдонуңуз.</string>
     <string name="error_partner_blocked">Бул өнөктөш бөгөттөлгөн.</string>
@@ -457,6 +457,8 @@
     <string name="rate_service_tag_fast">Тез</string>
     <string name="rate_service_tag_friendly">Мээримдүү</string>
     <string name="rate_service_success">Пикир жөнөтүлдү</string>
+
+    <string name="error_to_many_requests">Аракеттер өтө көп, кийинчерээк кайталап көрүңүз</string>
     <string name="rate_service_tag_clean">Таза</string>
     <string name="rate_service_tag_comfort">Ыңгайлуу</string>
     <string name="rate_service_tag_pricey">Кымбат</string>

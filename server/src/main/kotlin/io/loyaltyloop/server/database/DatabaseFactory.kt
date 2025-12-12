@@ -31,6 +31,7 @@ import io.loyaltyloop.server.database.tables.PlatformRequestsTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
 import io.loyaltyloop.server.database.tables.ClientRatingsTable
 import io.loyaltyloop.server.database.tables.ServiceReviewsTable
+import io.loyaltyloop.server.database.tables.WaitlistTable
 
 object DatabaseFactory {
 
@@ -81,7 +82,8 @@ object DatabaseFactory {
                 PlatformRequestsTable,
                 PlatformInvitesTable,
                 ClientRatingsTable,
-                ServiceReviewsTable
+                ServiceReviewsTable,
+                WaitlistTable
             )
         }
     }
@@ -124,7 +126,8 @@ object DatabaseFactory {
                 SupportThreadsTable,
                 SupportMessagesTable,
                 DeviceTokensTable,
-                SystemEventsTable
+                SystemEventsTable,
+                WaitlistTable
             )
         }
     }

@@ -86,8 +86,7 @@ fun Route.authRoutes(
                         qrSecret = tokenService.generateQrSecret(),
                         firstName = null
                     )
-                  val count =  repository.createUser(user).insertedCount
-                    if (count == 0) {
+                    if (repository.createUser(user).insertedCount == 0) {
                         throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
                     }
                     eventLogger.log(

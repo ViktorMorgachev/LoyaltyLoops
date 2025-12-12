@@ -48,7 +48,7 @@
     <string name="error_token_invalid">Session error (Invalid token)</string>
     <string name="error_invalid_pin">Invalid PIN</string>
     <string name="error_user_creation_failed">User creation failed</string>
-    <string name="error_to_many_requests">Already rated today</string>
+    <string name="rate_limit_requests">Already rated today</string>
     <string name="error_otp_attempts_exceeded">Too many attempts. Try again in an hour.</string>
     <string name="error_account_deleted">This phone number is linked to a deleted account. Please use another number.</string>
     <string name="error_partner_blocked">This partner is blocked.</string>
@@ -457,6 +457,8 @@
     <string name="rate_service_tag_fast">Fast</string>
     <string name="rate_service_tag_friendly">Friendly</string>
     <string name="rate_service_success">Review submitted</string>
+
+    <string name="error_to_many_requests">Too many attempts, please try again later</string>
     <string name="rate_service_tag_clean">Clean</string>
     <string name="rate_service_tag_comfort">Cozy</string>
     <string name="rate_service_tag_pricey">Expensive</string>

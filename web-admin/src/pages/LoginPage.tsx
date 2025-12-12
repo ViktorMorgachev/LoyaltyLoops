@@ -39,6 +39,14 @@ export const LoginPage = () => {
 
   // AUTO-REDIRECT if already logged in
   useEffect(() => {
+      // Check first launch
+      const hasVisited = localStorage.getItem('hasVisited');
+      if (!hasVisited) {
+          localStorage.setItem('hasVisited', 'true');
+          navigate('/about');
+          return;
+      }
+
       const token = localStorage.getItem('accessToken');
       if (token) {
           refreshUser().then(() => {
@@ -53,7 +61,7 @@ export const LoginPage = () => {
   const handleSendCode = async () => {
     const { rawDigits, country } = parsePhoneNumber(fullPhone);
     if (!isValidPhone(rawDigits, country)) {
-        showError(t('auth.phone_invalid', 'Invalid phone number format'));
+        showError(t('errors.INVALID_PHONE_NUMBER', 'Invalid phone number format'));
         return;
     }
     setLoading(true);
@@ -147,9 +155,12 @@ export const LoginPage = () => {
 
             <Button 
                 fullWidth
+                variant="outlined"
+                color="primary"
+                size="large"
                 startIcon={<InfoOutlinedIcon />} 
                 onClick={() => navigate('/about')} 
-                sx={{ mt: 2, color: 'text.secondary', textTransform: 'none' }}
+                sx={{ mt: 3, borderRadius: 2, height: 48, textTransform: 'none', fontWeight: 600 }}
             >
                 {t('menu.about_project', 'О проекте')}
             </Button>

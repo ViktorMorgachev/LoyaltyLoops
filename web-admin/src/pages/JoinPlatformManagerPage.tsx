@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Avatar } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/axiosConfig';
 import { useNotification } from '../context/NotificationContext';
+import { useUser } from '../context/UserContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 
 export const JoinPlatformManagerPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
+  const { refreshUser } = useUser();
   const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,9 +24,8 @@ export const JoinPlatformManagerPage = () => {
       await api.post('/platform/join', { inviteCode: inviteCode.trim() });
       showSuccess(t('join_platform_manager.success'));
       setInviteCode('');
-      // Redirect to role selection after successful join
-      // Use window.location.reload() or navigate to update workspace list
-      window.location.replace('/select-role');
+      await refreshUser();
+      navigate('/select-role');
     } catch (error: any) {
       showError(getErrorMessage(error));
     } finally {

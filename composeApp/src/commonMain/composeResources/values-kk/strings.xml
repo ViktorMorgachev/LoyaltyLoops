@@ -48,7 +48,7 @@
     <string name="error_token_invalid">Сессия қатесі (Токен жарамсыз)</string>
     <string name="error_invalid_pin">PIN-код дұрыс емес</string>
     <string name="error_user_creation_failed">Пайдаланушыны құру қатесі</string>
-    <string name="error_to_many_requests">Бүгін бағаладыңыз</string>
+    <string name="rate_limit_requests">Бүгін бағаладыңыз</string>
     <string name="error_otp_attempts_exceeded">Әрекет шегі асып кетті. Бір сағаттан кейін қайталап көріңіз.</string>
     <string name="error_account_deleted">Бұл нөмір жойылған аккаунтқа тіркелген. Басқа нөмірді қолданыңыз.</string>
     <string name="error_partner_blocked">Бұл серіктес бұғатталған.</string>
@@ -457,6 +457,8 @@
     <string name="rate_service_tag_fast">Жылдам</string>
     <string name="rate_service_tag_friendly">Мейірімді</string>
     <string name="rate_service_success">Пікір жіберілді</string>
+
+    <string name="error_to_many_requests">Тым көп әрекет, кейінірек қайталап көріңіз</string>
     <string name="rate_service_tag_clean">Таза</string>
     <string name="rate_service_tag_comfort">Ыңғайлы</string>
     <string name="rate_service_tag_pricey">Қымбат</string>

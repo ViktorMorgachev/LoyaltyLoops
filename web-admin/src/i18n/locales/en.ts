@@ -221,7 +221,10 @@ export const en = {
       confirm_fire: "Are you sure you want to fire this employee?",
       multi_points: "{{count}} Points",
       role_manager: "Manager",
-      role_cashier: "Cashier"
+      role_cashier: "Cashier",
+      staff_name: "Name",
+      staff_phone: "Phone",
+      staff_actions: "Actions"
     },
     settings: {
       title: "Business Settings",
@@ -463,6 +466,9 @@ export const en = {
       invite_code: "Cashier Code",
       save_settings: "Save Settings",
       staff_empty: "No cashiers yet",
+      staff_name: "Name",
+      staff_phone: "Phone",
+      staff_actions: "Actions",
       levels_config: "Levels Config",
       lvl_name: "Name",
       lvl_threshold: "Threshold",
@@ -894,7 +900,23 @@ export const en = {
         quick_start: "Quick Start 15 min",
         no_hardware: "No Hardware",
         trial: "14 Days Trial"
+      },
+      waitlist: {
+        title: "Join the Waitlist",
+        desc: "Join the waitlist to get exclusive early access and a free trial period when we launch.",
+        email_placeholder: "Enter your email",
+        join: "Join",
+        success_title: "You are on the list!",
+        success_exists: "You are already in the waitlist. A manager will contact you soon.",
+        success_joined_body: "Thank you! A manager will contact you soon.",
+        error_email: "Please enter a valid email"
       }
+    },
+    download: {
+      title: "Download LoyaltyLoop",
+      desc: "Get the app to collect points, get rewards, and track your progress.",
+      btn_apk: "Download APK",
+      requirements: "Requires Android 8.0 or later"
     }
   }
 };

@@ -1,14 +1,18 @@
 import React, { useState } from 'react';
 import { Box, Paper, Typography, TextField, Button, Alert, Avatar } from '@mui/material';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../api/axiosConfig';
 import { useNotification } from '../context/NotificationContext';
+import { useUser } from '../context/UserContext';
 import { getErrorMessage } from '../utils/errorHandler';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
 export const JoinPartnerManagerPage = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
+  const { refreshUser } = useUser();
   const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,6 +24,8 @@ export const JoinPartnerManagerPage = () => {
       await api.post('/partners/managers/join', { inviteCode: inviteCode.trim() });
       showSuccess(t('join_partner.success'));
       setInviteCode('');
+      await refreshUser();
+      navigate('/select-role');
     } catch (error: any) {
       showError(getErrorMessage(error));
     } finally {
@@ -48,16 +54,16 @@ export const JoinPartnerManagerPage = () => {
           value={inviteCode}
           onChange={(e) => setInviteCode(e.target.value)}
           margin="normal"
-              variant="outlined"
-              placeholder="INV-..."
+          variant="outlined"
+          placeholder="M-..."
         />
         <Button
           variant="contained"
           type="submit"
-              fullWidth
-              size="large"
+          fullWidth
+          size="large"
           disabled={loading || !inviteCode.trim()}
-              sx={{ mt: 3, py: 1.5, borderRadius: 2, fontSize: '1.1rem', fontWeight: 'bold' }}
+          sx={{ mt: 3, py: 1.5, borderRadius: 2, fontSize: '1.1rem', fontWeight: 'bold' }}
         >
               {loading ? t('common.loading') : t('join_partner.submit')}
         </Button>
@@ -70,4 +76,3 @@ export const JoinPartnerManagerPage = () => {
     </Box>
   );
 };
-

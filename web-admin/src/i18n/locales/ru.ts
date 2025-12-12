@@ -221,7 +221,10 @@ export const ru = {
       confirm_fire: "Вы уверены, что хотите уволить этого сотрудника?",
       multi_points: "{{count}} Точки",
       role_manager: "Менеджер",
-      role_cashier: "Кассир"
+      role_cashier: "Кассир",
+      staff_name: "Имя",
+      staff_phone: "Телефон",
+      staff_actions: "Действия"
     },
     settings: {
       title: "Настройки Бизнеса",
@@ -463,6 +466,9 @@ export const ru = {
       invite_code: "Код для кассира",
       save_settings: "Сохранить настройки",
       staff_empty: "Кассиров пока нет",
+      staff_name: "Имя",
+      staff_phone: "Телефон",
+      staff_actions: "Действия",
       levels_config: "Настройка Уровней",
       lvl_name: "Название",
       lvl_threshold: "Порог (сумма)",
@@ -891,7 +897,23 @@ export const ru = {
         quick_start: "Быстрый старт за 15 минут",
         no_hardware: "Никакого сложного оборудования",
         trial: "14 дней пробный период"
+      },
+      waitlist: {
+        title: "Лист ожидания",
+        desc: "Присоединяйтесь к листу ожидания, чтобы получить ранний доступ и бесплатный пробный период при запуске.",
+        email_placeholder: "Введите ваш email",
+        join: "Вступить",
+        success_title: "Вы в списке!",
+        success_exists: "Вы уже в списке ожидания. Менеджер свяжется с вами.",
+        success_joined_body: "Спасибо! Менеджер свяжется с вами в ближайшее время.",
+        error_email: "Пожалуйста, введите корректный email"
       }
+    },
+    download: {
+      title: "Скачать LoyaltyLoop",
+      desc: "Установите приложение, чтобы копить баллы, получать награды и отслеживать свой прогресс.",
+      btn_apk: "Скачать APK",
+      requirements: "Требуется Android 8.0 или выше"
     }
   }
 };

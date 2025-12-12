@@ -40,6 +40,8 @@ import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
 import { AuthSync } from './components/AuthSync';
 
+import { DownloadPage } from './pages/DownloadPage';
+
 function App() {
   // --- Site Protection (No Download) ---
   useEffect(() => {
@@ -91,6 +93,7 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/roadmap" element={<RoadmapPage />} />
           <Route path="/privacy" element={<PrivacyPolicyPage />} />
+          <Route path="/download" element={<DownloadPage />} />
           <Route path="/" element={<Navigate to="/profile" />} />
 
           {/* Внутри Лейаута */}

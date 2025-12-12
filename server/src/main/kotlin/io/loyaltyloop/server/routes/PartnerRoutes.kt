@@ -227,7 +227,7 @@ fun Route.partnerRoutes(
                 get("/thread") {
                     val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
                     val partner = partnerRepository.getPartnerByUserId(userId)
-                    ensureOwner(partner, userId)
+                    // Managers are allowed to read support threads
 
                     val response = supportChatService.getPartnerThread(partner.id)
                     call.respond(response)
@@ -242,7 +242,7 @@ fun Route.partnerRoutes(
                     }
 
                     val partner = partnerRepository.getPartnerByUserId(userId)
-                    ensureOwner(partner, userId)
+                    // Managers are allowed to send support messages
 
                     supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
                     call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Message sent"))
@@ -273,7 +273,6 @@ fun Route.partnerRoutes(
 
             get("/points") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-
                 try {
                     val partner = partnerRepository.getPartnerByUserId(userId)
                     val points = partnerRepository.getPointsByPartnerId(partner.id)

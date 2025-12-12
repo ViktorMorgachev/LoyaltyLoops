@@ -452,6 +452,9 @@ export const be = {
       invite_code: "Код для касіра",
       save_settings: "Захаваць налады",
       staff_empty: "Касіраў пакуль няма",
+      staff_name: "Імя",
+      staff_phone: "Тэлефон",
+      staff_actions: "Дзеянні",
       levels_config: "Налада Узроўняў",
       lvl_name: "Назва",
       lvl_threshold: "Парог (сума)",
@@ -821,7 +824,22 @@ export const be = {
         quick_start: "Хуткі старт за 15 хвілін",
         no_hardware: "Ніякага складанага абсталявання",
         trial: "14 дзён пробны перыяд"
+      },
+      waitlist: {
+        title: "Ліст чакання",
+        desc: "Далучайцеся да ліста чакання, каб атрымаць ранні доступ і бясплатны пробны перыяд пры запуску.",
+        email_placeholder: "Увядзіце ваш email",
+        join: "Уступіць",
+        success_title: "Вы ў спісе!",
+        success_exists: "Вы ўжо ў спісе чакання. Мэнэджар звяжацца з вамі.",
+        error_email: "Калі ласка, увядзіце карэктны email"
       }
+    },
+    download: {
+      title: "Спампаваць LoyaltyLoop",
+      desc: "Усталюйце дадатак, каб збіраць балы, атрымліваць узнагароды і адсочваць свой прагрэс.",
+      btn_apk: "Спампаваць APK",
+      requirements: "Патрабуецца Android 8.0 або вышэй"
     }
   }
 };

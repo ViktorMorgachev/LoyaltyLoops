@@ -56,7 +56,9 @@ import io.loyaltyloop.shared.models.AppErrorCode
 import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
+import io.loyaltyloop.server.routes.publicRoutes
 import io.loyaltyloop.server.service.sms.ConsoleSmsService
+import io.loyaltyloop.server.repository.WaitlistRepository
 import io.loyaltyloop.server.service.sms.SmsRateLimits
 import java.time.Duration
 import io.loyaltyloop.server.repository.SystemEventRepository
@@ -172,6 +174,7 @@ fun Application.module() {
     val deviceTokenRepository = DeviceTokenRepository()
     val ratingRepository = RatingRepository()
     val systemEventRepository = SystemEventRepository()
+    val waitlistRepository = WaitlistRepository()
     val eventLogger = EventLogger(systemEventRepository)
 
     val tokenService = TokenService(environment.config)
@@ -346,6 +349,7 @@ fun Application.module() {
                 partnerRepository = partnerRepository,
                 userRepository = userRepository
             )
+            publicRoutes(waitlistRepository)
             clientRoutes(userRepository,
                 deviceTokenRepository,
                 ratingService)

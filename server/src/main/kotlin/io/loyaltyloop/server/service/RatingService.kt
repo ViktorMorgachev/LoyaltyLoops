@@ -54,7 +54,7 @@ class RatingService(
 
         // 1. Anti-Abuse: Check frequency (1 per day per cashier->user)
         if (enableCooldown && ratingRepository.hasCashierRatedUserRecently(cashierId, dto.userId)) {
-             throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "You have already rated this client today")
+             throw LoyaltyException(AppErrorCode.RATE_LIMIT_EXCEEDEG, "You have already rated this client today")
         }
         
         // 2. Anti-Abuse: Outlier Detection
