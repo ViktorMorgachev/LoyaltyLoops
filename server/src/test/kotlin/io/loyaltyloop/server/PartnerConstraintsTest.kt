@@ -9,17 +9,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import io.loyaltyloop.server.service.EmailDebugStore
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
-import io.loyaltyloop.shared.models.PinResetConfirmRequest
 import io.loyaltyloop.shared.models.ResetPinRequest
 import io.loyaltyloop.shared.models.UpdatePinRequest
-import io.loyaltyloop.shared.models.UpdateProfileRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
 
 class PartnerConstraintsTest {
 

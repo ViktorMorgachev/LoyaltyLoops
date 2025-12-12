@@ -25,7 +25,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
-import io.loyaltyloop.server.database.SystemEventsTable
+import io.loyaltyloop.server.database.tables.SystemEventsTable
 import io.loyaltyloop.server.database.tables.PlatformInvitesTable
 import io.loyaltyloop.server.database.tables.PlatformRequestsTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable

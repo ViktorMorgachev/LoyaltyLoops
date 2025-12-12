@@ -93,6 +93,10 @@ class WalletScreenModel(
         }
     }
 
+    init {
+        loadCards()
+    }
+
     fun loadCards() {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }

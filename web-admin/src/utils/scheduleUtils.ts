@@ -48,3 +48,4 @@ export const formatIntervals = (intervals: WorkingIntervalDto[]): string => {
         .join(', ');
 };
 
+

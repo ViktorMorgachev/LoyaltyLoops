@@ -1,19 +1,18 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.ClientRatingsTable
-import io.loyaltyloop.server.database.tables.ServiceReviewsTable
-import io.loyaltyloop.server.database.tables.TradingPointsTable
-import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.utils.splitCsv
 import io.loyaltyloop.shared.models.*
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.Instant
-import java.time.temporal.ChronoUnit
-import java.util.UUID
-import java.time.ZoneId
 import java.time.ZoneOffset
+import java.util.UUID
 
 class RatingRepository {
+
+    // --- WRITE OPERATIONS ---
 
     suspend fun createClientRating(
         partnerId: String,
@@ -30,6 +29,7 @@ class RatingRepository {
             it[rating] = dto.rating
             it[tags] = dto.tags.joinToString(",") { tag -> tag.name }
             it[this.isIgnored] = isIgnored
+            it[createdAt] = System.currentTimeMillis()
         }
     }
 
@@ -46,55 +46,114 @@ class RatingRepository {
             it[rating] = dto.rating
             it[tags] = dto.tags.joinToString(",") { tag -> tag.name }
             it[comment] = dto.comment
+            it[createdAt] = System.currentTimeMillis()
         }
     }
 
+    // --- READ OPERATIONS (CLIENT RATINGS) ---
+
     suspend fun getLastRatingsForUser(
-        userId: String, 
-        partnerId: String, 
+        userId: String,
+        partnerId: String,
         limit: Int = 20
     ): List<ClientRatingEntity> = dbQuery {
         ClientRatingsTable
-            .select { (ClientRatingsTable.userId eq userId) and (ClientRatingsTable.partnerId eq partnerId) and (ClientRatingsTable.isIgnored eq false) }
+            .selectAll()
+            .where {
+                (ClientRatingsTable.userId eq userId) and
+                        (ClientRatingsTable.partnerId eq partnerId) and
+                        (ClientRatingsTable.isIgnored eq false)
+            }
             .orderBy(ClientRatingsTable.createdAt, SortOrder.DESC)
             .limit(limit)
-            .map { rowToClientRating(it) }
+            .map { row -> row.toClientRatingEntity() }
     }
 
     suspend fun hasCashierRatedUserRecently(
-        cashierId: String, 
+        cashierId: String,
         userId: String,
         hours: Long = 24
     ): Boolean = dbQuery {
         val cutoff = System.currentTimeMillis() - (hours * 3600 * 1000)
-        
+
         !ClientRatingsTable
-            .select { 
-                (ClientRatingsTable.cashierId eq cashierId) and 
-                (ClientRatingsTable.userId eq userId) and
-                (ClientRatingsTable.createdAt greater cutoff)
+            .select {
+                (ClientRatingsTable.cashierId eq cashierId) and
+                        (ClientRatingsTable.userId eq userId) and
+                        (ClientRatingsTable.createdAt greater cutoff)
             }
             .empty()
     }
 
-    // --- Analytics ---
+    suspend fun getClientRatings(
+        partnerId: String,
+        limit: Int,
+        offset: Long
+    ): List<ReviewDto> = dbQuery {
+        // Явные джойны, так как нет References
+        ClientRatingsTable
+            .join(
+                otherTable = UsersTable,
+                joinType = JoinType.LEFT,
+                onColumn = ClientRatingsTable.userId,
+                otherColumn = UsersTable.id
+            )
+            .join(
+                otherTable = TradingPointsTable,
+                joinType = JoinType.LEFT,
+                onColumn = ClientRatingsTable.tradingPointId,
+                otherColumn = TradingPointsTable.id
+            )
+            .selectAll()
+            .where { ClientRatingsTable.partnerId eq partnerId }
+            .orderBy(ClientRatingsTable.createdAt, SortOrder.DESC)
+            .limit(limit, offset)
+            .map { row ->
+                ReviewDto(
+                    id = row[ClientRatingsTable.id],
+                    rating = row[ClientRatingsTable.rating],
+                    tags = try { row[ClientRatingsTable.tags]?.splitCsv() ?: emptyList() } catch (e: Exception) { emptyList() },
+                    comment = null,
+                    createdAt = row[ClientRatingsTable.createdAt],
+                    authorName = "Cashier", // Имя кассира можно достать, но это +2 джойна. Пока оставляем так для KISS.
+                    targetName = row[UsersTable.firstName] ?: "Client",
+                    targetPhone = row[UsersTable.phoneNumber],
+                    pointName = row[TradingPointsTable.name],
+                    type = ReviewTypes.CASHIER_TO_CLIENT
+                )
+            }
+    }
+
+    // --- READ OPERATIONS (SERVICE REVIEWS) ---
 
     suspend fun getServiceReviews(
         partnerId: String,
         limit: Int,
         offset: Long
     ): List<ReviewDto> = dbQuery {
+        // Явные джойны
         ServiceReviewsTable
-            .join(UsersTable, JoinType.LEFT, ServiceReviewsTable.userId, UsersTable.id)
-            .join(TradingPointsTable, JoinType.LEFT, ServiceReviewsTable.tradingPointId, TradingPointsTable.id)
-            .select { ServiceReviewsTable.partnerId eq partnerId }
+            .join(
+                otherTable = UsersTable,
+                joinType = JoinType.LEFT,
+                onColumn = ServiceReviewsTable.userId,
+                otherColumn = UsersTable.id
+            )
+            .join(
+                otherTable = TradingPointsTable,
+                joinType = JoinType.LEFT,
+                onColumn = ServiceReviewsTable.tradingPointId,
+                otherColumn = TradingPointsTable.id
+            )
+            .selectAll()
+            .where { ServiceReviewsTable.partnerId eq partnerId }
             .orderBy(ServiceReviewsTable.createdAt, SortOrder.DESC)
             .limit(limit, offset)
             .map { row ->
                 ReviewDto(
                     id = row[ServiceReviewsTable.id],
                     rating = row[ServiceReviewsTable.rating],
-                    tags = row[ServiceReviewsTable.tags]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
+                    tags = try { row[ServiceReviewsTable.tags]?.splitCsv() ?: emptyList() } catch (e: Exception) { emptyList() },
                     comment = row[ServiceReviewsTable.comment],
                     createdAt = row[ServiceReviewsTable.createdAt],
                     authorName = row[UsersTable.firstName] ?: "Client",
@@ -105,61 +164,33 @@ class RatingRepository {
             }
     }
 
-    suspend fun getClientRatings(
-        partnerId: String,
-        limit: Int,
-        offset: Long
-    ): List<ReviewDto> = dbQuery {
-        ClientRatingsTable
-            .join(UsersTable, JoinType.LEFT, ClientRatingsTable.userId, UsersTable.id) // Rated User
-            .join(TradingPointsTable, JoinType.LEFT, ClientRatingsTable.tradingPointId, TradingPointsTable.id)
-            .select { ClientRatingsTable.partnerId eq partnerId }
-            .orderBy(ClientRatingsTable.createdAt, SortOrder.DESC)
-            .limit(limit, offset)
-            .map { row ->
-                ReviewDto(
-                    id = row[ClientRatingsTable.id],
-                    rating = row[ClientRatingsTable.rating],
-                    tags = row[ClientRatingsTable.tags]?.split(",")?.filter { it.isNotBlank() } ?: emptyList(),
-                    comment = null,
-                    createdAt = row[ClientRatingsTable.createdAt],
-                    authorName = "Cashier", // Ideally join Cashier -> User to get name, but for now simple
-                    targetName = row[UsersTable.firstName] ?: "Client",
-                    targetPhone = row[UsersTable.phoneNumber],
-                    pointName = row[TradingPointsTable.name],
-                    type = ReviewTypes.CASHIER_TO_CLIENT
-                )
-            }
-    }
+    // --- ANALYTICS ---
 
     suspend fun getAnalyticsData(partnerId: String, from: Long? = null, to: Long? = null, pointId: String? = null): AnalyticsDataDto = dbQuery {
-        // 1. NPS / Average Rating
-        val baseQuery = ServiceReviewsTable
-            .slice(ServiceReviewsTable.rating, ServiceReviewsTable.createdAt, ServiceReviewsTable.tradingPointId)
-            .select { ServiceReviewsTable.partnerId eq partnerId }
-            .let { query ->
-                var q = query
-                from?.let { q = q.andWhere { ServiceReviewsTable.createdAt greaterEq it } }
-                to?.let { q = q.andWhere { ServiceReviewsTable.createdAt lessEq it } }
-                pointId?.let { q = q.andWhere { ServiceReviewsTable.tradingPointId eq it } }
-                q
-            }
-            .toList()
+        // 1. Фильтрация
+        val query = ServiceReviewsTable.selectAll()
+            .where { ServiceReviewsTable.partnerId eq partnerId }
 
-        val ratings = baseQuery.map { it[ServiceReviewsTable.rating] }
+        from?.let { query.andWhere { ServiceReviewsTable.createdAt greaterEq it } }
+        to?.let { query.andWhere { ServiceReviewsTable.createdAt lessEq it } }
+        pointId?.let { query.andWhere { ServiceReviewsTable.tradingPointId eq it } }
 
+        // Выгружаем в память (приемлемо для < 10-20k записей)
+        val allRows = query.toList()
+
+        val ratings = allRows.map { it[ServiceReviewsTable.rating] }
         val total = ratings.size
         val avgRating = if (total > 0) ratings.average() else 0.0
-        
-        // NPS-like: Promoters (5), Passives (4), Detractors (1-3)
+
+        // NPS Calculation (5 = Promoter, 4 = Passive, 1-3 = Detractor)
         val promoters = ratings.count { it == 5 }
         val detractors = ratings.count { it <= 3 }
         val nps = if (total > 0) ((promoters - detractors).toDouble() / total * 100).toInt() else 0
 
-        // Series by day
-        val series = baseQuery
-            .groupBy { 
-                Instant.ofEpochMilli(it[ServiceReviewsTable.createdAt]).atZone(ZoneOffset.UTC).toLocalDate() 
+        // 2. График по дням
+        val series = allRows
+            .groupBy {
+                Instant.ofEpochMilli(it[ServiceReviewsTable.createdAt]).atZone(ZoneOffset.UTC).toLocalDate()
             }
             .map { (date, rows) ->
                 val rts = rows.map { it[ServiceReviewsTable.rating] }
@@ -167,6 +198,7 @@ class RatingRepository {
                 val prom = rts.count { it == 5 }
                 val det = rts.count { it <= 3 }
                 val npsDay = if (cnt > 0) ((prom - det).toDouble() / cnt * 100).toInt() else 0
+
                 AnalyticsSeriesPointDto(
                     date = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
                     nps = npsDay,
@@ -176,37 +208,33 @@ class RatingRepository {
             }
             .sortedBy { it.date }
 
-        // 2. Heatmap (Tags count per Point)
-        val rows = ServiceReviewsTable
-            .slice(ServiceReviewsTable.tradingPointId, ServiceReviewsTable.tags)
-            .select { (ServiceReviewsTable.partnerId eq partnerId) and (ServiceReviewsTable.tags.isNotNull()) }
-            .let { query ->
-                var q = query
-                from?.let { q = q.andWhere { ServiceReviewsTable.createdAt greaterEq it } }
-                to?.let { q = q.andWhere { ServiceReviewsTable.createdAt lessEq it } }
-                pointId?.let { q = q.andWhere { ServiceReviewsTable.tradingPointId eq it } }
-                q
-            }
-            .map { it[ServiceReviewsTable.tradingPointId] to (it[ServiceReviewsTable.tags] ?: "") }
+        // 3. Тепловая карта тегов
+        // Берем только отзывы с тегами
+        val heatmapRows = allRows.filter { it[ServiceReviewsTable.tags] != null }
 
-        val pointNames = TradingPointsTable
-            .slice(TradingPointsTable.id, TradingPointsTable.name)
+        // Получаем имена точек одним легким запросом (кэшируем)
+        val pointNames = TradingPointsTable.slice(TradingPointsTable.id, TradingPointsTable.name)
             .select { TradingPointsTable.partnerId eq partnerId }
             .associate { it[TradingPointsTable.id] to it[TradingPointsTable.name] }
 
-        val heatmap = rows.flatMap { (pointId, tagsStr) ->
-            tagsStr.split(",").filter { it.isNotBlank() }.map { tag -> pointId to tag }
-        }.groupBy { it.first } // Group by PointID
-         .map { (pointId, list) ->
-             val pointName = pointNames[pointId] ?: "Unknown"
-             val tagCounts = list.groupingBy { it.second }.eachCount()
-             
-             HeatmapPointDto(
-                 pointId = pointId,
-                 pointName = pointName,
-                 tagStats = tagCounts.map { (tag, count) -> TagStatDto(tag, count) }
-             )
-         }
+        val heatmap = heatmapRows
+            .flatMap { row ->
+                val pId = row[ServiceReviewsTable.tradingPointId]
+                val tagsStr = row[ServiceReviewsTable.tags] ?: ""
+                val tags = try { tagsStr.splitCsv() } catch (e: Exception) { emptyList() }
+                tags.map { tag -> pId to tag }
+            }
+            .groupBy { it.first } // Группируем по ID точки
+            .map { (pId, list) ->
+                val pointName = pointNames[pId] ?: "Unknown"
+                val tagCounts = list.groupingBy { it.second }.eachCount()
+
+                HeatmapPointDto(
+                    pointId = pId,
+                    pointName = pointName,
+                    tagStats = tagCounts.map { (tag, count) -> TagStatDto(tag, count) }
+                )
+            }
 
         AnalyticsDataDto(
             nps = nps,
@@ -217,22 +245,26 @@ class RatingRepository {
         )
     }
 
-    private fun rowToClientRating(row: ResultRow): ClientRatingEntity {
-        return ClientRatingEntity(
-            rating = row[ClientRatingsTable.rating],
-            tags = row[ClientRatingsTable.tags]?.split(",")?.filter { it.isNotBlank() }?.map { ClientRatingTag.valueOf(it) } ?: emptyList()
-        )
-    }
+    // --- MAPPERS ---
 
     data class ClientRatingEntity(
         val rating: Int,
         val tags: List<ClientRatingTag>
     )
 
+    private fun ResultRow.toClientRatingEntity(): ClientRatingEntity =
+        ClientRatingEntity(
+            rating = this[ClientRatingsTable.rating],
+            tags = try {
+                val tagStr = this[ClientRatingsTable.tags]
+                if (tagStr.isNullOrBlank()) emptyList()
+                else tagStr.splitCsv().map { ClientRatingTag.valueOf(it) }
+            } catch (e: Exception) { emptyList() }
+        )
+
     suspend fun getPartnerIdByPointId(pointId: String): String? = dbQuery {
-        TradingPointsTable
+        TradingPointsTable.slice(TradingPointsTable.partnerId)
             .select { TradingPointsTable.id eq pointId }
-            .map { it[TradingPointsTable.partnerId] }
-            .singleOrNull()
+            .singleOrNull()?.get(TradingPointsTable.partnerId)
     }
 }

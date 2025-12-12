@@ -5,11 +5,12 @@ import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
+import io.loyaltyloop.server.utils.toBaseCardDto
 import io.loyaltyloop.shared.models.CardBlockStatus
 import io.loyaltyloop.shared.models.CardPauseStatus
 import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.LoyaltyTierDto
 import io.loyaltyloop.shared.models.TransactionHistoryDto
+import io.loyaltyloop.shared.models.CashierDailyStatsDto
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
@@ -19,59 +20,91 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.sum
+import org.jetbrains.exposed.sql.count
 import java.util.UUID
-import io.loyaltyloop.shared.models.CashierDailyStatsDto
 
 @Suppress("TooManyFunctions")
 class TransactionRepository {
 
+    // ОПТИМИЗИРОВАННАЯ ВЕРСИЯ (SQL Aggregation)
     suspend fun getCashierStats(cashierId: String, from: Long, to: Long): CashierDailyStatsDto = dbQuery {
-        val rows = TransactionsHistoryTable.join(
-            TradingPointsTable,
-            JoinType.INNER,
-            onColumn = TransactionsHistoryTable.tradingPointId,
-            otherColumn = TradingPointsTable.id
-        )
+        // 1. Быстро получаем валюту точки (Limit 1)
+        val currency = TradingPointsTable
+            .join(TransactionsHistoryTable, JoinType.INNER, TradingPointsTable.id, TransactionsHistoryTable.tradingPointId)
+            .slice(TradingPointsTable.currency)
+            .select { TransactionsHistoryTable.cashierId eq cashierId }
+            .limit(1)
+            .map { it[TradingPointsTable.currency] }
+            .singleOrNull() ?: ""
+
+        // 2. Основная агрегация (Count, Revenue, Visits)
+        val statsRow = TransactionsHistoryTable
+            .slice(
+                TransactionsHistoryTable.id.count(),
+                TransactionsHistoryTable.amount.sum(),
+                TransactionsHistoryTable.visitsDelta.sum()
+            )
             .select {
                 (TransactionsHistoryTable.cashierId eq cashierId) and
-                (TransactionsHistoryTable.timestamp greaterEq from) and
-                (TransactionsHistoryTable.timestamp lessEq to)
+                        (TransactionsHistoryTable.timestamp greaterEq from) and
+                        (TransactionsHistoryTable.timestamp lessEq to)
             }
-            .toList()
+            .firstOrNull()
 
-        val currency = rows.firstOrNull()?.get(TradingPointsTable.currency) ?: ""
-        
-        val count = rows.size
-        val revenue = rows.sumOf { it[TransactionsHistoryTable.amount] }
-        val pointsDeltaList = rows.map { it[TransactionsHistoryTable.pointsDelta] }
-        val pointsAwarded = pointsDeltaList.filter { it > 0 }.sum()
-        val pointsSpent = pointsDeltaList.filter { it < 0 }.sumOf { -it }
-        val visits = rows.sumOf { it[TransactionsHistoryTable.visitsDelta] }
+        // 3. Агрегация баллов (Awarded / Spent) отдельными запросами
+        // (Это эффективнее, чем грузить List, и проще, чем сложные Case When в Exposed)
+
+        val basePointsQuery = TransactionsHistoryTable.slice(TransactionsHistoryTable.pointsDelta.sum())
+
+        val awarded = basePointsQuery.select {
+            (TransactionsHistoryTable.cashierId eq cashierId) and
+                    (TransactionsHistoryTable.timestamp greaterEq from) and
+                    (TransactionsHistoryTable.timestamp lessEq to) and
+                    (TransactionsHistoryTable.pointsDelta greater 0.0)
+        }.singleOrNull()?.getOrNull(TransactionsHistoryTable.pointsDelta.sum()) ?: 0.0
+
+        val spent = basePointsQuery.select {
+            (TransactionsHistoryTable.cashierId eq cashierId) and
+                    (TransactionsHistoryTable.timestamp greaterEq from) and
+                    (TransactionsHistoryTable.timestamp lessEq to) and
+                    (TransactionsHistoryTable.pointsDelta less 0.0)
+        }.singleOrNull()?.getOrNull(TransactionsHistoryTable.pointsDelta.sum()) ?: 0.0
 
         CashierDailyStatsDto(
-            transactionsCount = count,
-            totalRevenue = revenue,
-            pointsAwarded = pointsAwarded,
-            pointsSpent = pointsSpent,
-            visitsRecorded = visits,
+            transactionsCount = statsRow?.getOrNull(TransactionsHistoryTable.id.count())?.toInt() ?: 0,
+            totalRevenue = statsRow?.getOrNull(TransactionsHistoryTable.amount.sum()) ?: 0.0,
+            pointsAwarded = awarded,
+            pointsSpent = -spent, // Инвертируем, так как в базе они хранятся с минусом
+            visitsRecorded = statsRow?.getOrNull(TransactionsHistoryTable.visitsDelta.sum()) ?: 0,
             currency = currency
         )
     }
 
-    // Получить карту по ID (для транзакций)
+    // --- ПОЛУЧЕНИЕ КАРТ (ИСПРАВЛЕНО ПОД ВАШУ ТАБЛИЦУ) ---
+
+    // Получить карту по ID
     suspend fun getCardById(cardId: String): LoyaltyCardDto? = dbQuery {
+        // Используем явный join, т.к. в LoyaltyCardTable поля id/partnerId это просто varchar
         LoyaltyCardTable.join(
             otherTable = PartnersTable,
             joinType = JoinType.INNER,
             onColumn = LoyaltyCardTable.partnerId,
             otherColumn = PartnersTable.id
         )
-            .select { LoyaltyCardTable.id eq cardId }
-            .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
+            .selectAll()
+            .where { LoyaltyCardTable.id eq cardId }
+            .map { row ->
+                rowToCardDto(row).copy(
+                    visitsTarget = row[PartnersTable.defaultVisitsTarget]
+                )
+            }
             .singleOrNull()
     }
 
+    // Получить карту по UserID и PartnerID
     suspend fun getCardByUserAndPartner(userId: String, partnerId: String): LoyaltyCardDto? = dbQuery {
         LoyaltyCardTable.join(
             otherTable = PartnersTable,
@@ -79,22 +112,30 @@ class TransactionRepository {
             onColumn = LoyaltyCardTable.partnerId,
             otherColumn = PartnersTable.id
         )
-            .select { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
-            .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
+            .selectAll()
+            .where {
+                (LoyaltyCardTable.userId eq userId) and
+                        (LoyaltyCardTable.partnerId eq partnerId)
+            }
+            .map { row ->
+                rowToCardDto(row).copy(
+                    visitsTarget = row[PartnersTable.defaultVisitsTarget]
+                )
+            }
             .singleOrNull()
     }
 
-    // Увеличить счетчик визитов (Legacy, лучше использовать updateVisits)
+    // --- ОСТАЛЬНЫЕ МЕТОДЫ (Без изменений логики, только синтаксис) ---
+
     suspend fun incrementVisits(cardId: String, amount: Int = 1) = dbQuery {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             with(SqlExpressionBuilder) {
-                it.update(visitsCount, visitsCount + amount)
+                it[visitsCount] = visitsCount + amount
             }
             it[lastActivityAt] = System.currentTimeMillis()
         }
     }
 
-    // Обновить счетчик визитов (установить конкретное значение)
     suspend fun updateVisits(cardId: String, newCount: Int) = dbQuery {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             it[visitsCount] = newCount
@@ -102,18 +143,16 @@ class TransactionRepository {
         }
     }
 
-    // Начислить кешбэк и обновить LTV
     suspend fun addCashback(cardId: String, cashback: Double, spentAmount: Double) = dbQuery {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             with(SqlExpressionBuilder) {
-                it.update(balance, balance + cashback)
-                it.update(totalSpent, totalSpent + spentAmount)
+                it[balance] = balance + cashback
+                it[totalSpent] = totalSpent + spentAmount
             }
             it[lastActivityAt] = System.currentTimeMillis()
         }
     }
 
-    // Обновить уровень
     suspend fun updateTier(cardId: String, level: Int) = dbQuery {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             it[tierLevel] = level
@@ -123,12 +162,11 @@ class TransactionRepository {
 
     suspend fun deleteCard(cardId: String): LoyaltyCardDto? = dbQuery {
         val snapshot = LoyaltyCardTable.join(
-            otherTable = PartnersTable,
-            joinType = JoinType.INNER,
-            onColumn = LoyaltyCardTable.partnerId,
-            otherColumn = PartnersTable.id
-        ).select { LoyaltyCardTable.id eq cardId }.singleOrNull() ?: return@dbQuery null
+            PartnersTable, JoinType.INNER, LoyaltyCardTable.partnerId, PartnersTable.id
+        ).selectAll().where { LoyaltyCardTable.id eq cardId }.singleOrNull() ?: return@dbQuery null
+
         LoyaltyCardTable.deleteWhere { LoyaltyCardTable.id eq cardId }
+
         rowToCardDto(snapshot).copy(visitsTarget = snapshot[PartnersTable.defaultVisitsTarget])
     }
 
@@ -144,59 +182,39 @@ class TransactionRepository {
         pauseUpdate: Boolean = false
     ): LoyaltyCardDto? = dbQuery {
         val hasChanges = listOf(balance, visits, tierLevel, totalSpent).any { it != null } || blockUpdate || pauseUpdate
+
+        // Если изменений нет, просто возвращаем карту
         if (!hasChanges) {
-            return@dbQuery LoyaltyCardTable.join(
-                otherTable = PartnersTable,
-                joinType = JoinType.INNER,
-                onColumn = LoyaltyCardTable.partnerId,
-                otherColumn = PartnersTable.id
-            )
-                .select { LoyaltyCardTable.id eq cardId }
-                .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
-                .singleOrNull()
+            return@dbQuery getCardById(cardId)
         }
 
-        val updated = LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
+        val updatedCount = LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             balance?.let { value -> it[LoyaltyCardTable.balance] = value }
             visits?.let { value -> it[LoyaltyCardTable.visitsCount] = value }
             tierLevel?.let { value -> it[LoyaltyCardTable.tierLevel] = value }
             totalSpent?.let { value -> it[LoyaltyCardTable.totalSpent] = value }
             if (blockUpdate) {
                 it[LoyaltyCardTable.blockedUntil] = block?.until
-                it[LoyaltyCardTable.blockedReason] = block?.reason?.takeIf { reason -> reason.isNotBlank() }
+                it[LoyaltyCardTable.blockedReason] = block?.reason?.takeIf { r -> r.isNotBlank() }
             }
             if (pauseUpdate) {
-                val paused = pause != null
-                it[LoyaltyCardTable.isPaused] = paused
-                it[LoyaltyCardTable.pauseReason] = pause?.reason?.takeIf { reason -> reason.isNotBlank() }
+                it[LoyaltyCardTable.isPaused] = (pause != null)
+                it[LoyaltyCardTable.pauseReason] = pause?.reason?.takeIf { r -> r.isNotBlank() }
             }
             it[lastActivityAt] = System.currentTimeMillis()
         }
 
-        if (updated == 0) {
-            null
-        } else {
-            LoyaltyCardTable.join(
-                otherTable = PartnersTable,
-                joinType = JoinType.INNER,
-                onColumn = LoyaltyCardTable.partnerId,
-                otherColumn = PartnersTable.id
-            )
-                .select { LoyaltyCardTable.id eq cardId }
-                .map { rowToCardDto(it).copy(visitsTarget = it[PartnersTable.defaultVisitsTarget]) }
-                .singleOrNull()
-        }
+        if (updatedCount > 0) getCardById(cardId) else null
     }
 
-    // Записать историю транзакции
     suspend fun recordTransaction(
         userId: String,
         pointId: String,
         cashierId: String,
         type: String,
         amount: Double,
-        pointsDelta: Double = 0.0,
-        visitsDelta: Int = 0
+        pointsDelta: Double,
+        visitsDelta: Int
     ) = dbQuery {
         TransactionsHistoryTable.insert {
             it[id] = UUID.randomUUID().toString()
@@ -211,7 +229,6 @@ class TransactionRepository {
         }
     }
 
-    // Получить историю для партнера (Владельца бизнеса)
     suspend fun getHistoryForPartner(partnerId: String): List<TransactionHistoryDto> = dbQuery {
         TransactionsHistoryTable.join(
             TradingPointsTable,
@@ -219,7 +236,8 @@ class TransactionRepository {
             onColumn = TransactionsHistoryTable.tradingPointId,
             otherColumn = TradingPointsTable.id
         )
-            .select { TradingPointsTable.partnerId eq partnerId }
+            .selectAll()
+            .where { TradingPointsTable.partnerId eq partnerId }
             .orderBy(TransactionsHistoryTable.timestamp, SortOrder.DESC)
             .map { row ->
                 TransactionHistoryDto(
@@ -234,7 +252,6 @@ class TransactionRepository {
             }
     }
 
-    // Получить транзакции для аналитики за период
     suspend fun getTransactionsForAnalytics(partnerId: String, from: Long, to: Long): List<TransactionHistoryDto> = dbQuery {
         TransactionsHistoryTable.join(
             TradingPointsTable,
@@ -242,10 +259,11 @@ class TransactionRepository {
             onColumn = TransactionsHistoryTable.tradingPointId,
             otherColumn = TradingPointsTable.id
         )
-            .select {
+            .selectAll()
+            .where {
                 (TradingPointsTable.partnerId eq partnerId) and
-                (TransactionsHistoryTable.timestamp greaterEq from) and
-                (TransactionsHistoryTable.timestamp lessEq to)
+                        (TransactionsHistoryTable.timestamp greaterEq from) and
+                        (TransactionsHistoryTable.timestamp lessEq to)
             }
             .map { row ->
                 TransactionHistoryDto(
@@ -267,45 +285,10 @@ class TransactionRepository {
         }
     }
 
-    private fun rowToCardDto(row: ResultRow): LoyaltyCardDto {
-        val block = row[LoyaltyCardTable.blockedUntil]?.let {
-            CardBlockStatus(
-                until = it,
-                reason = row[LoyaltyCardTable.blockedReason]
-            )
-        }
-        val pause = if (row[LoyaltyCardTable.isPaused]) {
-            CardPauseStatus(reason = row[LoyaltyCardTable.pauseReason])
-        } else {
-            null
-        }
-
-        val score = row[LoyaltyCardTable.trustScore]
-        val fraud = row[LoyaltyCardTable.fraudFlag]
-        val risk = when {
-            fraud -> io.loyaltyloop.shared.models.RiskLevel.BLACK
-            score >= 4.5 -> io.loyaltyloop.shared.models.RiskLevel.GREEN
-            score >= 3.5 -> io.loyaltyloop.shared.models.RiskLevel.YELLOW
-            score >= 2.0 -> io.loyaltyloop.shared.models.RiskLevel.ORANGE
-            else -> io.loyaltyloop.shared.models.RiskLevel.RED
-        }
-
-        return LoyaltyCardDto(
-            id = row[LoyaltyCardTable.id],
-            userId = row[LoyaltyCardTable.userId],
-            partnerId = row[LoyaltyCardTable.partnerId],
-            balance = row[LoyaltyCardTable.balance],
-            totalSpent = row[LoyaltyCardTable.totalSpent],
-            tierLevel = row[LoyaltyCardTable.tierLevel],
-            block = block,
-            pause = pause,
-            partnerName = "",
-            cardColor = "#000000",
-            logoUrl = null,
-            visitsCount = row[LoyaltyCardTable.visitsCount],
-            trustScore = score,
-            fraudFlag = fraud,
-            riskLevel = risk
+    private fun rowToCardDto(row: ResultRow): LoyaltyCardDto =
+        row.toBaseCardDto().copy(
+            partnerName = row[PartnersTable.businessName],
+            cardColor = row[PartnersTable.color],
+            logoUrl = row[PartnersTable.logoUrl]
         )
-    }
 }

@@ -31,6 +31,8 @@ import com.google.mlkit.vision.common.InputImage
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.Executors
 import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.scanner_permission_open_settings
+import loyaltyloop.composeapp.generated.resources.scanner_permission_rationale
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

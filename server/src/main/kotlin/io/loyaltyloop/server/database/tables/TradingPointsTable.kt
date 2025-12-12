@@ -11,7 +11,7 @@ object TradingPointsTable : Table("trading_points") {
     val name = varchar("name", 100)
     val address = varchar("address", 200).nullable()
     // ДЛЯ СОТРУДНИКОВ: Код для присоединения (например "JOIN-123")
-    val inviteCode = varchar("invite_code", 20).nullable().uniqueIndex()
+    val inviteCode = varchar("invite_code", 20).uniqueIndex()
 
     val isActive = bool("is_active").default(false) // Оплачено?
     val isTemporarilyPaused = bool("is_temporarily_paused").default(false)
@@ -28,7 +28,7 @@ object TradingPointsTable : Table("trading_points") {
 
     val contactPhone = varchar("contact_phone", 30).nullable()
     val contactLink = varchar("contact_link", 50).nullable()
-    val additionalInfo = varchar("additional_info", 20).nullable()
+    val additionalInfo = varchar("additional_info", 40).nullable()
 
     override val primaryKey = PrimaryKey(id)
 }
