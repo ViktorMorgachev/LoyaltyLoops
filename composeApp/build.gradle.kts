@@ -151,8 +151,8 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         create("stage") {
-            initWith(getByName("release"))
-            applicationIdSuffix = ".stage"
+            //initWith(getByName("release"))
+           // applicationIdSuffix = ".stage"
             matchingFallbacks.add("release")
             signingConfig = signingConfigs.getByName("debug")
         }

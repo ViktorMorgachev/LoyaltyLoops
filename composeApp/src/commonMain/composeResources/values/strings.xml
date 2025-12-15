@@ -50,7 +50,6 @@
     <string name="error_invalid_pin">Неверный PIN-код</string>
     <string name="error_user_creation_failed">Ошибка создания пользователя</string>
     <string name="rate_limit_requests">Уже оценили сегодня</string>
-    <string name="error_to_many_requests">Слишком много попыток, попробуйте позже</string>
     <string name="error_otp_attempts_exceeded">Превышен лимит попыток. Попробуйте через час.</string>
     <string name="error_account_deleted">Этот номер телефона связан с удаленным аккаунтом. Пожалуйста, используйте другой номер.</string>
     <string name="error_partner_blocked">Этот партнер заблокирован.</string>

@@ -30,8 +30,8 @@ FROM nginx:alpine
 # Удаляем дефолтный конфиг
 RUN rm /etc/nginx/conf.d/default.conf
 
-# [ИЗМЕНЕНИЕ 3] Копируем nginx.conf, указывая путь от корня
-COPY web-admin/nginx.conf /etc/nginx/conf.d/
+# Копируем ваш конфиг и СРАЗУ переименовываем его в default.conf
+COPY web-admin/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Копируем билд
 COPY --from=build /app/dist /usr/share/nginx/html
