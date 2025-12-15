@@ -65,6 +65,8 @@ class LoginScreenModel(
         object OnBackClicked : Action
         object OnResendClicked : Action
         object OnTelegramClicked : Action
+
+        data class OnAutoStartTelegram(val uuid: String) : Action
         object OnBackToPhoneClicked : Action
     }
 
@@ -131,6 +133,10 @@ class LoginScreenModel(
             is Action.OnBackToPhoneClicked -> {
                 _state.value = _state.value.copy(telegramMode = false)
                 telegramJob?.cancel()
+            }
+           is  Action.OnAutoStartTelegram ->  {
+              _state.value = _state.value.copy(telegramUuid = action.uuid, telegramMode = true)
+               checkTelegramStatus(action.uuid)
             }
         }
     }
@@ -284,27 +290,7 @@ class LoginScreenModel(
                 delay(2000)
                 attempts++
 
-                repository.checkTelegramStatus(uuid)
-                    .onSuccess { statusResponse ->
-                        if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
-                            handleAuthSuccess(statusResponse.auth!!)
-                            telegramJob?.cancel()
-                        } else if (statusResponse.status == "EXPIRED") {
-                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
-                             _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
-                             telegramJob?.cancel()
-                        }
-                    }
-                    .onError { code, _ ->
-                        if (code == AppErrorCode.NOT_FOUND || code == AppErrorCode.TOKEN_EXPIRED) {
-                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
-                             _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
-                             telegramJob?.cancel()
-                        }
-                    }
-                    .onFailure {
-                        // Ignore transient network errors and keep polling
-                    }
+                checkTelegramStatus(uuid)
             }
 
             if (isActive && attempts >= maxAttempts) {
@@ -312,6 +298,49 @@ class LoginScreenModel(
                  _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
             }
         }
+    }
+
+    fun checkTelegramStatus(uuid: String) {
+        screenModelScope.launch {
+            repository.checkTelegramStatus(uuid)
+                .onSuccess { statusResponse ->
+                    if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
+                        handleAuthSuccess(statusResponse.auth!!)
+                        telegramJob?.cancel()
+                    } else if (statusResponse.status == "EXPIRED") {
+                        _events.send(
+                            Event.ShowMessage(
+                                UiText.Resource(Res.string.error_session_expired),
+                                SnackbarType.Error
+                            )
+                        )
+                        _state.value = _state.value.copy(
+                            telegramStatus = "EXPIRED",
+                            telegramMode = false
+                        )
+                        telegramJob?.cancel()
+                    }
+                }
+                .onError { code, _ ->
+                    if (code == AppErrorCode.NOT_FOUND || code == AppErrorCode.TOKEN_EXPIRED) {
+                        _events.send(
+                            Event.ShowMessage(
+                                UiText.Resource(Res.string.error_session_expired),
+                                SnackbarType.Error
+                            )
+                        )
+                        _state.value = _state.value.copy(
+                            telegramStatus = "EXPIRED",
+                            telegramMode = false
+                        )
+                        telegramJob?.cancel()
+                    }
+                }
+                .onFailure {
+                    // Ignore transient network errors and keep polling
+                }
+        }
+
     }
 
     private fun startTimer() {

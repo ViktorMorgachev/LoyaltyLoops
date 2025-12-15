@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "io.loyaltyloop.app",
+      "sha256_cert_fingerprints": [
+        "89:8F:BA:B0:CE:A2:23:3D:37:24:44:03:91:6F:9D:15:66:83:43:79:A4:A7:D2:D5:6D:4B:33:BE:D8:32:B3:6F"
+      ]
+    }
+  }
+]

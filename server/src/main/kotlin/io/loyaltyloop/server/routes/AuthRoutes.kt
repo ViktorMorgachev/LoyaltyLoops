@@ -63,11 +63,9 @@ fun Route.authRoutes(
                 }
 
                 if (session.status == "CONFIRMED") {
-                    if (session.userId == null) {
-                        call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
-                        return@get
-                    }
-                    val user = repository.getUserById(session.userId!!)
+                    val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
+                    
+                    val user = repository.getUserById(userId)
                     if (user == null) {
                         call.respond(HttpStatusCode.NotFound, "User not found")
                         return@get

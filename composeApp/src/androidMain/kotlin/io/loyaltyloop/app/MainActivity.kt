@@ -4,14 +4,13 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.res.stringResource
 import androidx.core.content.ContextCompat
-import cafe.adriel.voyager.navigator.currentOrThrow
 import co.touchlab.kermit.Logger
 import io.loyaltyloop.app.navigation.NavigatorHolder
 import io.loyaltyloop.app.features.wallet.LoyaltyCardDetailsScreen
@@ -25,6 +24,7 @@ import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.FirebaseApp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
+import io.loyaltyloop.app.features.auth.LoginScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -40,6 +40,7 @@ class MainActivity : ComponentActivity() {
         FirebaseApp.initializeApp(this)
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = AppConfig.isProd
         handleNotificationIntent(intent)
+        handleDeepLink(intent)
         checkForFlexibleUpdate()
 
         setContent {
@@ -97,7 +98,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleNotificationIntent(intent)
+        setIntent(intent) // Обновляем текущий интент
+        handleDeepLink(intent)
     }
 
     private fun requestNotificationPermissionIfNeeded() {
@@ -116,5 +118,26 @@ class MainActivity : ComponentActivity() {
         intent.removeExtra(LoyaltyFirebaseMessagingService.EXTRA_CARD_ID)
         Logger.d { "Notification tapped for cardId=$cardId" }
         NavigatorHolder.lastNavigator?.push(LoyaltyCardDetailsScreen(cardId))
+    }
+
+    private fun handleDeepLink(intent: Intent?) {
+        val action = intent?.action
+        val data: Uri? = intent?.data
+
+        if (Intent.ACTION_VIEW == action && data != null) {
+            // Разбираем ссылку: loyaltyloop://app/auth?uuid=3423423 или "https://loyalityloop.up.railway.app/auth?uuid=12665"
+
+            val path = data.path // вернет "/auth"
+
+
+            // Логика навигации
+            when (path) {
+                "/auth" -> {
+                    val uuid = data.getQueryParameter("uuid")
+                    Logger.d { "Deep link for auth with uuid=$uuid" }
+                    NavigatorHolder.lastNavigator?.push(LoginScreen(uuid))
+                }
+            }
+        }
     }
 }

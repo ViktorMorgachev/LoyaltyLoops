@@ -35,6 +35,7 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
 
         get("/open-app") {
             val lang = call.request.queryParameters["lang"] ?: "en"
+            val uuid = call.request.queryParameters["uuid"]
             
             val titleMap = mapOf(
                 "en" to "Opening App...",
@@ -55,6 +56,8 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
 
             val title = titleMap[lang] ?: titleMap["en"]!!
             val btn = btnMap[lang] ?: btnMap["en"]!!
+            
+            val appLink = if (uuid != null) "loyaltyloop://auth?uuid=$uuid" else "loyaltyloop://auth"
 
             val html = """
                 <!DOCTYPE html>
@@ -62,7 +65,7 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
                 <head>
                     <meta charset="UTF-8">
                     <title>$title</title>
-                    <meta http-equiv="refresh" content="0;url=loyaltyloop://auth">
+                    <meta http-equiv="refresh" content="0;url=$appLink">
                     <meta name="viewport" content="width=device-width, initial-scale=1.0">
                     <style>
                         body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; }
@@ -75,9 +78,9 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
                 <body>
                     <div class="card">
                         <p>$title</p>
-                        <a href="loyaltyloop://auth" class="btn">$btn</a>
+                        <a href="$appLink" class="btn">$btn</a>
                         <script>
-                            setTimeout(function() { window.location.href = 'loyaltyloop://auth'; }, 100);
+                            setTimeout(function() { window.location.href = '$appLink'; }, 100);
                         </script>
                     </div>
                 </body>

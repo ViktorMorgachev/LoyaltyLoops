@@ -22,6 +22,7 @@ class TelegramAuthService(
     private val userRepository: UserRepository,
     private val botToken: String,
     val botUsername: String,
+    val webBaseUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(TelegramAuthService::class.java)
     private val client = OkHttpClient.Builder()
@@ -175,7 +176,7 @@ class TelegramAuthService(
         if (user != null) {
             // Instant login
             authSessionRepository.confirmSession(uuid, chatId, user.phoneNumber, user.id)
-            sendSuccessMessage(chatId, languageCode)
+            sendSuccessMessage(chatId, languageCode, uuid)
         } else {
             // Need phone. Link session to chat_id for now.
             dbQuery {
@@ -235,23 +236,23 @@ class TelegramAuthService(
         }
         
         authSessionRepository.confirmSession(session, chatId, phone, user.id)
-        sendSuccessMessage(chatId, languageCode)
+        sendSuccessMessage(chatId, languageCode, session)
     }
 
-    private fun sendSuccessMessage(chatId: Long, languageCode: String) {
+    private fun sendSuccessMessage(chatId: Long, languageCode: String, uuid: String) {
         val url = "https://api.telegram.org/bot$botToken/sendMessage"
         val keyboard = JsonObject(mapOf(
             "inline_keyboard" to JsonArray(listOf(
                 JsonArray(listOf(
                     JsonObject(mapOf(
                         "text" to JsonPrimitive(getMsg(BTN_WEB, languageCode)),
-                        "url" to JsonPrimitive("https://loyaltyloop.up.railway.app")
+                        "url" to JsonPrimitive(webBaseUrl)
                     ))
                 )),
                  JsonArray(listOf(
                     JsonObject(mapOf(
                         "text" to JsonPrimitive(getMsg(BTN_APP, languageCode)),
-                        "url" to JsonPrimitive("https://loyaltyloop.up.railway.app/public/open-app?lang=$languageCode")
+                        "url" to JsonPrimitive("${webBaseUrl}/auth?uuid=$uuid")
                     ))
                 ))
             ))

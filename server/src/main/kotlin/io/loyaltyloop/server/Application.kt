@@ -235,7 +235,8 @@ fun Application.module() {
     val botToken = envConfig.string("telegram.botToken", "")
     val botUsername = envConfig.string("telegram.botUsername", "")
     val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
-    val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername)
+    val web = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
+    val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername, webBaseUrl)
     telegramAuthService.start(autoCleanupSession)
 
     // Start Background Jobs
