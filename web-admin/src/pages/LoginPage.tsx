@@ -13,6 +13,8 @@ import { BrandLogo } from '../components/BrandLogo';
 import { PhoneInput } from '../components/inputs/PhoneInput';
 import { parsePhoneNumber, isValidPhone } from '../utils/phone';
 import { Analytics } from '../utils/analytics';
+import { QRCodeSVG } from 'qrcode.react';
+import TelegramIcon from '@mui/icons-material/Telegram';
 
 export const LoginPage = () => {
   const { t } = useTranslation(); 
@@ -26,6 +28,12 @@ export const LoginPage = () => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [timer, setTimer] = useState(0);
+
+  // Telegram Auth
+  const [telegramAuthMode, setTelegramAuthMode] = useState(false);
+  const [telegramUuid, setTelegramUuid] = useState('');
+  const [telegramBot, setTelegramBot] = useState('');
+  const [telegramStatus, setTelegramStatus] = useState<'PENDING' | 'CONFIRMED' | 'EXPIRED'>('PENDING');
 
   // TIMER LOGIC
   useEffect(() => {
@@ -59,6 +67,25 @@ export const LoginPage = () => {
       }
   }, []);
 
+  // Telegram Polling
+  useEffect(() => {
+    let interval: any;
+    if (telegramAuthMode && telegramUuid && telegramStatus === 'PENDING') {
+      interval = setInterval(async () => {
+         try {
+             const res = await api.get(`/auth/telegram/status/${telegramUuid}`);
+             if (res.data.status === 'CONFIRMED' && res.data.auth) {
+                 setTelegramStatus('CONFIRMED');
+                 await onLoginSuccess(res.data.auth);
+             }
+         } catch(e) {
+             console.error(e);
+         }
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [telegramAuthMode, telegramUuid, telegramStatus]);
+
   const handleSendCode = async () => {
     const { rawDigits, country } = parsePhoneNumber(fullPhone);
     if (!isValidPhone(rawDigits, country)) {
@@ -80,11 +107,24 @@ export const LoginPage = () => {
     }
   };
 
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      const res = await api.post('/auth/login', { phone: fullPhone, code });
-      const { accessToken, refreshToken, workspaces } = res.data;
+  const handleStartTelegram = async () => {
+      setLoading(true);
+      try {
+          const res = await api.post('/auth/telegram/start');
+          setTelegramUuid(res.data.uuid);
+          setTelegramBot(res.data.bot);
+          setTelegramAuthMode(true);
+          setTelegramStatus('PENDING');
+          Analytics.track('login_telegram_start');
+      } catch (e: any) {
+          showError(getErrorMessage(e));
+      } finally {
+          setLoading(false);
+      }
+  };
+
+  async function onLoginSuccess(data: any) {
+      const { accessToken, refreshToken, workspaces } = data;
       localStorage.setItem('accessToken', accessToken);
       localStorage.setItem('refreshToken', refreshToken);
       localStorage.setItem('workspaces', JSON.stringify(workspaces));
@@ -115,6 +155,13 @@ export const LoginPage = () => {
           await refreshUser();
           navigate('/partner/onboarding');
       }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/login', { phone: fullPhone, code });
+      await onLoginSuccess(res.data);
     } catch (e: any) {
       showError(getErrorMessage(e));
        Analytics.track('login_failed', { error: getErrorMessage(e) });
@@ -140,14 +187,40 @@ export const LoginPage = () => {
           {t('auth.title')}
         </Typography>
 
-        {step === 1 ? (
+        {telegramAuthMode ? (
+            <Box width="100%" textAlign="center">
+                <Typography variant="body1" gutterBottom sx={{ mb: 2 }}>
+                    {t('auth.telegram_scan', 'Scan this code with your phone or click the button below')}
+                </Typography>
+                
+                <Box mb={3} sx={{ p: 2, bgcolor: 'white', display: 'inline-block', borderRadius: 2, border: '1px solid #ddd' }}>
+                    <QRCodeSVG value={`https://t.me/${telegramBot}?start=login_${telegramUuid}`} size={200} />
+                </Box>
+                
+                <Button 
+                    href={`https://t.me/${telegramBot}?start=login_${telegramUuid}`} 
+                    target="_blank"
+                    startIcon={<TelegramIcon />}
+                    variant="contained" 
+                    fullWidth 
+                    size="large"
+                    sx={{ mb: 2, borderRadius: 2, bgcolor: '#0088cc', '&:hover': { bgcolor: '#0077b5' } }}
+                >
+                    {t('auth.telegram_open', 'Open Telegram')}
+                </Button>
+                
+                <Button onClick={() => setTelegramAuthMode(false)} fullWidth sx={{ borderRadius: 2 }}>
+                    {t('auth.back_phone', 'Back to Phone')}
+                </Button>
+            </Box>
+        ) : step === 1 ? (
           <Box width="100%">
             <Box mb={2}>
                 <PhoneInput 
                     value={fullPhone}
                     onChange={setFullPhone}
                     label={t('auth.phone_label')}
-                    size="medium" // Larger for login page
+                    size="medium"
                 />
             </Box>
             
@@ -158,14 +231,25 @@ export const LoginPage = () => {
               {loading ? <CircularProgress size={24} color="inherit" /> : t('auth.get_code')}
             </Button>
 
-            <Button 
+            <Button
                 fullWidth
                 variant="outlined"
-                color="primary"
                 size="large"
+                startIcon={<TelegramIcon />}
+                onClick={handleStartTelegram}
+                disabled={loading}
+                sx={{ mt: 2, borderRadius: 2, height: 48, textTransform: 'none', fontWeight: 600, borderColor: '#0088cc', color: '#0088cc' }}
+            >
+                {t('auth.telegram_login', 'Log in with Telegram')}
+            </Button>
+
+            <Button 
+                fullWidth
+                variant="text"
+                color="primary"
                 startIcon={<InfoOutlinedIcon />} 
                 onClick={() => navigate('/about')} 
-                sx={{ mt: 3, borderRadius: 2, height: 48, textTransform: 'none', fontWeight: 600 }}
+                sx={{ mt: 2, borderRadius: 2, textTransform: 'none', color: 'text.secondary' }}
             >
                 {t('menu.about_project', 'О проекте')}
             </Button>
