@@ -13,6 +13,11 @@
     <string name="profile_loading">Yuklanmoqda...</string>
     <string name="profile_error_load">Yuklash xatosi</string>
     <string name="auth_success">Muvaffaqiyatli kirish</string>
+    <string name="auth_telegram_btn">Telegram orqali kirish</string>
+    <string name="auth_telegram_hint">Kirishni tasdiqlash uchun quyidagi tugmani bosing va Telegram-ni oching.</string>
+    <string name="auth_telegram_open">Telegram-ni ochish</string>
+    <string name="auth_telegram_back">Telefonga qaytish</string>
+    <string name="auth_telegram_pending">Telegram-da tasdiqlash kutilmoqda...</string>
     <string name="ignore" />
 
     <!-- Errors -->

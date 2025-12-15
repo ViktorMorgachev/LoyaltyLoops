@@ -4,6 +4,7 @@ import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
 import io.loyaltyloop.shared.models.AuthSession
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import java.util.UUID
 
 
@@ -41,6 +42,13 @@ class AuthSessionRepository {
             it[this.telegramId] = telegramId
             it[this.phone] = phone
             it[this.userId] = userId
+        }
+    }
+
+    suspend fun cleanupExpiredSessions() = dbQuery {
+        val now = System.currentTimeMillis()
+        AuthSessionsTable.deleteWhere {
+            AuthSessionsTable.expiresAt less now
         }
     }
 }

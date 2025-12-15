@@ -7,12 +7,15 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
@@ -98,10 +101,26 @@ fun LoginScreenContent(
             Spacer(modifier = Modifier.height(48.dp))
 
             if (state.step == LoginScreenModel.Step.EnterPhone) {
-                PhoneInputCard(
-                    state = state,
-                    onAction = onAction
-                )
+                if (state.telegramMode) {
+                    TelegramAuthCard(state, onAction)
+                } else {
+                    PhoneInputCard(
+                        state = state,
+                        onAction = onAction
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedButton(
+                        onClick = { onAction(LoginScreenModel.Action.OnTelegramClicked) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(Res.string.auth_telegram_btn))
+                    }
+                }
             } else {
                 Text(stringResource(Res.string.auth_enter_code), style = MaterialTheme.typography.bodyLarge)
                 Spacer(modifier = Modifier.height(32.dp))
@@ -137,6 +156,67 @@ fun LoginScreenContent(
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+fun TelegramAuthCard(
+    state: LoginScreenModel.State,
+    onAction: (LoginScreenModel.Action) -> Unit
+) {
+    val uriHandler = LocalUriHandler.current
+    
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(2.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = stringResource(Res.string.auth_telegram_hint),
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            if (state.isLoading) {
+                CircularProgressIndicator()
+            } else {
+                Button(
+                    onClick = {
+                        state.telegramBot?.let { bot ->
+                            state.telegramUuid?.let { uuid ->
+                                uriHandler.openUri("https://t.me/$bot?start=login_$uuid")
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(Res.string.auth_telegram_open))
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (state.telegramStatus == "PENDING" && !state.isLoading) {
+                 Text(
+                    text = stringResource(Res.string.auth_telegram_pending),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.secondary
+                )
+                 Spacer(modifier = Modifier.height(16.dp))
+            }
+
+            TextButton(
+                onClick = { onAction(LoginScreenModel.Action.OnBackToPhoneClicked) }
+            ) {
+                Text(stringResource(Res.string.auth_telegram_back))
             }
         }
     }

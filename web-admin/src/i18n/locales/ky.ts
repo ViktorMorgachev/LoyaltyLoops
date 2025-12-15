@@ -96,7 +96,11 @@ export const ky = {
       change_number: "Номерди өзгөртүү",
       code_sent: "Код жөнөтүлдү",
       resend_code: "Кайра жөнөтүү",
-      success: "Кирүү ийгиликтүү!"
+      success: "Кирүү ийгиликтүү!",
+      telegram_scan: "Кодду телефон менен скандоолоңуз же төмөнкү баскычты басыңыз",
+      telegram_open: "Telegram ачуу",
+      back_phone: "Телефонго кайтуу",
+      telegram_login: "Telegram аркылуу кирүү"
     },
     menu: {
       title: "Консоль",

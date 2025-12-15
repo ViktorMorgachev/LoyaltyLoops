@@ -149,6 +149,7 @@ fun Application.module() {
         masking = false
     }
 
+
     install(RateLimit) {
         register {
             rateLimiter(limit = 300, refillPeriod = 60.seconds)
@@ -157,6 +158,8 @@ fun Application.module() {
             rateLimiter(limit = 200, refillPeriod = 60.seconds)
         }
     }
+
+
 
     val envConfig = environment.config
 
@@ -231,8 +234,9 @@ fun Application.module() {
     val authSessionRepository = AuthSessionRepository()
     val botToken = envConfig.string("telegram.botToken", "")
     val botUsername = envConfig.string("telegram.botUsername", "")
+    val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
     val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername)
-    telegramAuthService.start()
+    telegramAuthService.start(autoCleanupSession)
 
     // Start Background Jobs
     val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService(smsService, emailService, systemEventRepository)
@@ -331,7 +335,6 @@ fun Application.module() {
     }
 
     routing {
-
         val enableSwagger =  envConfig.bool("features.enableSwagger", false)
         if (enableSwagger) {
             swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")

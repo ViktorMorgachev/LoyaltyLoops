@@ -96,7 +96,11 @@ export const be = {
       change_number: "Змяніць нумар",
       code_sent: "Код адпраўлены",
       resend_code: "Адправіць паўторна",
-      success: "Паспяховы ўваход!"
+      success: "Паспяховы ўваход!",
+      telegram_scan: "Адскануйце код тэлефонам або націсніце кнопку ніжэй",
+      telegram_open: "Адкрыць Telegram",
+      back_phone: "Вярнуцца да тэлефона",
+      telegram_login: "Увайсці праз Telegram"
     },
     menu: {
       title: "Кансоль",

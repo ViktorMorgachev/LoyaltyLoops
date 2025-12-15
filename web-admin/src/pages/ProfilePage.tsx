@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress, Stack } from '@mui/material';
-import { ContentCopy as ContentCopyIcon, Store as StoreIcon, AdminPanelSettings as AdminIcon, CheckCircle as CheckIcon } from '@mui/icons-material';
+import { ContentCopy as ContentCopyIcon, Store as StoreIcon, AdminPanelSettings as AdminIcon, CheckCircle as CheckIcon, InfoOutlined as InfoOutlinedIcon } from '@mui/icons-material';
 import { api } from '../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../context/NotificationContext';
@@ -391,7 +391,26 @@ export const ProfilePage = () => {
                             {t('menu.join_partner_manager')}
                         </Button>
                     )}
-                    <Button variant="text" onClick={() => navigate('/about')}>
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        size="medium"
+                        startIcon={<InfoOutlinedIcon />}
+                        onClick={() => navigate('/about')}
+                        sx={{
+                            borderRadius: 2.5,
+                            px: 3,
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            boxShadow: 4,
+                            bgcolor: 'primary.main',
+                            color: 'primary.contrastText',
+                            '&:hover': {
+                                bgcolor: 'primary.dark',
+                                boxShadow: 6
+                            }
+                        }}
+                    >
                         {t('menu.about_project')}
                     </Button>
                 </Box>

@@ -70,3 +70,9 @@ data class ConfirmAccountDeletionRequest(
     val reason: String,
     val verificationId: String? = null
 )
+
+@Serializable
+data class TelegramStatusResponse(
+    val status: String,
+    val auth: AuthResponse? = null
+)

@@ -32,15 +32,22 @@ class TelegramAuthService(
     private var lastUpdateId = 0L
     private var job: Job? = null
 
-    fun start() {
+    fun start(autoCleanupSessionInMillis: Long = 60_000) {
         if (botToken.isBlank()) {
             logger.warn("⚠️ Telegram Bot Token is missing. Telegram Auth skipped.")
             return
         }
         job = CoroutineScope(Dispatchers.IO).launch {
             logger.info("🚀 Telegram Auth Service started.")
+            var lastCleanupTime = System.currentTimeMillis()
             while (isActive) {
                 try {
+                    // Cleanup expired sessions every minute
+                    if (System.currentTimeMillis() - lastCleanupTime > autoCleanupSessionInMillis) {
+                        authSessionRepository.cleanupExpiredSessions()
+                        lastCleanupTime = System.currentTimeMillis()
+                    }
+
                     val updates = getUpdates(lastUpdateId + 1)
                     updates.forEach { update ->
                         val updateId = update["update_id"]?.jsonPrimitive?.long ?: 0L
