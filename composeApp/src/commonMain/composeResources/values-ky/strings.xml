@@ -13,6 +13,11 @@
     <string name="profile_loading">Жүктөлүүдө...</string>
     <string name="profile_error_load">Жүктөө катасы</string>
     <string name="auth_success">Ийгиликтүү кирдиңиз</string>
+    <string name="auth_telegram_btn">Telegram аркылуу кирүү</string>
+    <string name="auth_telegram_hint">Кирүү үчүн төмөнкү баскычты басып, Telegram\'ды ачыңыз.</string>
+    <string name="auth_telegram_open">Telegram ачуу</string>
+    <string name="auth_telegram_back">Телефонго кайтуу</string>
+    <string name="auth_telegram_pending">Telegram\'да ырастоону күтүп жатабыз...</string>
     <string name="ignore" />
 
     <!-- Errors -->

@@ -9,6 +9,7 @@ import io.loyaltyloop.app.services.PushService
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.*
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.Country
 import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
@@ -24,6 +25,7 @@ import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.auth_success
 import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
+import loyaltyloop.composeapp.generated.resources.error_session_expired
 
 class LoginScreenModel(
     private val repository: AuthRepository,
@@ -43,6 +45,11 @@ class LoginScreenModel(
         val phoneError: UiText? = null,
         val isLoading: Boolean = false,
         val timerSeconds: Int = 0,
+        // Telegram
+        val telegramMode: Boolean = false,
+        val telegramUuid: String? = null,
+        val telegramBot: String? = null,
+        val telegramStatus: String = "PENDING"
     )
 
     enum class Step {
@@ -56,6 +63,8 @@ class LoginScreenModel(
         object OnSubmitClicked : Action
         object OnBackClicked : Action
         object OnResendClicked : Action
+        object OnTelegramClicked : Action
+        object OnBackToPhoneClicked : Action
     }
 
     sealed interface Event {
@@ -74,6 +83,7 @@ class LoginScreenModel(
     val events = _events.receiveAsFlow()
 
     private var timerJob: Job? = null
+    private var telegramJob: Job? = null
 
     fun onAction(action: Action) {
         when (action) {
@@ -111,6 +121,15 @@ class LoginScreenModel(
 
             is Action.OnResendClicked -> {
                 onSendCodeClicked(isResend = true)
+            }
+
+            is Action.OnTelegramClicked -> {
+                startTelegramAuth()
+            }
+
+            is Action.OnBackToPhoneClicked -> {
+                _state.value = _state.value.copy(telegramMode = false)
+                telegramJob?.cancel()
             }
         }
     }
@@ -186,31 +205,7 @@ class LoginScreenModel(
 
             repository.login(fullNumber, code)
                 .onSuccess { authResponse ->
-                    tokenStorage.saveAuthData(
-                        accessToken = authResponse.accessToken,
-                        refreshToken = authResponse.refreshToken,
-                        userId = authResponse.userId,
-                        qrSecret = authResponse.qrSecret
-                    )
-                    repository.getProfile()
-                        .onSuccess { userProfile ->
-                            _events.send(Event.ShowMessage(UiText.Resource(Res.string.auth_success), SnackbarType.Success))
-                            sessionManager.updateWorkspaces(userProfile.workspaces)
-                            pushService.register()
-                            if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
-                                _events.send(Event.NavigateToOnboarding)
-                            } else {
-                                _events.send(Event.NavigateToHome)
-                            }
-                            _state.value = _state.value.copy(isLoading = false)
-                        }
-                        .onFailure { exception ->
-                            log.write("Get profile failed: ${exception.message}", LogType.Error)
-                            _events.send(Event.NavigateToHome)
-                        }
-                        .onError { _, _ ->
-                            _events.send(Event.NavigateToHome)
-                        }
+                    handleAuthSuccess(authResponse)
                 }
                 .onError { apiCode, msg ->
                     _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(msg)), SnackbarType.Error))
@@ -220,6 +215,84 @@ class LoginScreenModel(
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
                     _state.value = _state.value.copy(isLoading = false, otpInput = "")
                 }
+        }
+    }
+
+    private fun handleAuthSuccess(authResponse: AuthResponse) {
+        tokenStorage.saveAuthData(
+            accessToken = authResponse.accessToken,
+            refreshToken = authResponse.refreshToken,
+            userId = authResponse.userId,
+            qrSecret = authResponse.qrSecret
+        )
+        screenModelScope.launch {
+            repository.getProfile()
+                .onSuccess { userProfile ->
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.auth_success), SnackbarType.Success))
+                    sessionManager.updateWorkspaces(userProfile.workspaces)
+                    pushService.register()
+                    if (authResponse.isNewUser || userProfile.firstName.isNullOrBlank()) {
+                        _events.send(Event.NavigateToOnboarding)
+                    } else {
+                        _events.send(Event.NavigateToHome)
+                    }
+                    _state.value = _state.value.copy(isLoading = false)
+                }
+                .onFailure { exception ->
+                    log.write("Get profile failed: ${exception.message}", LogType.Error)
+                    _events.send(Event.NavigateToHome)
+                }
+                .onError { _, _ ->
+                    _events.send(Event.NavigateToHome)
+                }
+        }
+    }
+
+    private fun startTelegramAuth() {
+        screenModelScope.launch {
+            _state.value = _state.value.copy(isLoading = true)
+            repository.startTelegramAuth()
+                .onSuccess { data ->
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        telegramMode = true,
+                        telegramUuid = data.uuid,
+                        telegramBot = data.bot,
+                        telegramStatus = "PENDING"
+                    )
+                    startTelegramPolling(data.uuid)
+                }
+                .onFailure {
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false)
+                }
+                .onError { _, _ ->
+                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                     _state.value = _state.value.copy(isLoading = false)
+                }
+        }
+    }
+
+    private fun startTelegramPolling(uuid: String) {
+        telegramJob?.cancel()
+        telegramJob = screenModelScope.launch {
+            while (true) {
+                delay(2000)
+                repository.checkTelegramStatus(uuid)
+                    .onSuccess { statusResponse ->
+                        if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
+                            handleAuthSuccess(statusResponse.auth!!)
+                            telegramJob?.cancel()
+                        }
+                    }
+                    .onError { code, _ ->
+                        if (code == AppErrorCode.NOT_FOUND || code == AppErrorCode.TOKEN_EXPIRED) {
+                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                             _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
+                             telegramJob?.cancel()
+                        }
+                    }
+            }
         }
     }
 

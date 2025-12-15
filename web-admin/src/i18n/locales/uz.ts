@@ -96,7 +96,12 @@ export const uz = {
       change_number: "Raqamni o'zgartirish",
       code_sent: "Kod yuborildi",
       resend_code: "Qayta yuborish",
-      success: "Kirish muvaffaqiyatli!"
+      success: "Kirish muvaffaqiyatli!",
+      telegram_scan: "Kodni telefon orqali skanerlang yoki quyidagi tugmani bosing",
+      telegram_open: "Telegram-ni ochish",
+      back_phone: "Telefonga qaytish",
+      telegram_login: "Telegram orqali kirish",
+      telegram_expires_in: "Kod muddati {{time}} ichida tugaydi"
     },
     menu: {
       title: "Konsol",
