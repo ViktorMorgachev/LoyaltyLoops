@@ -697,7 +697,9 @@ export const ky = {
           PIN_CHANGE_SUCCESS: "PIN өзгөртүү",
           PIN_RESET_REQUEST: "PIN сброс суроо",
           PIN_RESET_SUCCESS: "PIN сброс аяктады",
-          PIN_VERIFICATION_FAILED: "PIN ката"
+          PIN_VERIFICATION_FAILED: "PIN ката",
+          WARNING: "Эскертүү",
+          USER_BANNED: "Колдонуучу блоктолду"
       }
     },
     landing: {

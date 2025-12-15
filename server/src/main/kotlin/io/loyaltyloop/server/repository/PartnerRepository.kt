@@ -68,6 +68,27 @@ class PartnerRepository {
         baseEntity.copy(subscriptionWarnings = warnings)
     }
 
+    suspend fun getPartnerForUser(userId: String): PartnerEntity = dbQuery {
+        // 1. Try Owner
+        var row = PartnersTable.selectAll()
+            .where { PartnersTable.ownerId eq userId }
+            .singleOrNull()
+
+        // 2. Try Manager
+        if (row == null) {
+            row = PartnersTable.innerJoin(PartnerManagersTable)
+                .selectAll()
+                .where { (PartnerManagersTable.userId eq userId) and (PartnerManagersTable.isActive eq true) }
+                .singleOrNull()
+        }
+
+        if (row == null) {
+            throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner or Manager not found for this user")
+        }
+
+        rowToPartnerEntity(row)
+    }
+
     suspend fun getPartnerById(partnerID: String): PartnerEntity = dbQuery {
         val row = PartnersTable.selectAll()
             .where { PartnersTable.id eq partnerID }

@@ -711,7 +711,9 @@ export const ru = {
           PIN_CHANGE_SUCCESS: "Смена PIN",
           PIN_RESET_REQUEST: "Запрос сброса PIN",
           PIN_RESET_SUCCESS: "Сброс PIN выполнен",
-          PIN_VERIFICATION_FAILED: "Ошибка PIN"
+          PIN_VERIFICATION_FAILED: "Ошибка PIN",
+          WARNING: "Предупреждение",
+          USER_BANNED: "Пользователь заблокирован"
       }
     },
     analytics: {

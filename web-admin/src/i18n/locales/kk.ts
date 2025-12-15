@@ -697,7 +697,9 @@ export const kk = {
           PIN_CHANGE_SUCCESS: "PIN өзгерту",
           PIN_RESET_REQUEST: "PIN сброс сұрау",
           PIN_RESET_SUCCESS: "PIN сброс аяқталды",
-          PIN_VERIFICATION_FAILED: "PIN қате"
+          PIN_VERIFICATION_FAILED: "PIN қате",
+          WARNING: "Ескерту",
+          USER_BANNED: "Пайдаланушы бұғатталды"
       }
     },
     landing: {

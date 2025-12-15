@@ -226,7 +226,7 @@ fun Route.partnerRoutes(
             route("/support") {
                 get("/thread") {
                     val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
-                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    val partner = partnerRepository.getPartnerForUser(userId)
                     // Managers are allowed to read support threads
 
                     val response = supportChatService.getPartnerThread(partner.id)
@@ -241,7 +241,7 @@ fun Route.partnerRoutes(
                         throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Message cannot be empty")
                     }
 
-                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    val partner = partnerRepository.getPartnerForUser(userId)
                     // Managers are allowed to send support messages
 
                     supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
@@ -274,7 +274,7 @@ fun Route.partnerRoutes(
             get("/points") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
                 try {
-                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    val partner = partnerRepository.getPartnerForUser(userId)
                     val points = partnerRepository.getPointsByPartnerId(partner.id)
                     call.respond(points)
                 } catch (e: LoyaltyException){

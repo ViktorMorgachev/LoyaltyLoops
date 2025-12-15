@@ -25,22 +25,30 @@ import { api } from '../api/axiosConfig';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
 
+import { Analytics } from '../utils/analytics';
+
 export const AboutPage = () => {
     const navigate = useNavigate();
     const { t } = useTranslation();
     const theme = useTheme();
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=io.loyaltyloop.app';
     const showPlayLinks = (import.meta as any)?.env?.VITE_SHOW_PLAY_LINKS === 'true';
-    const showStartFree = false; // Configurable: Hide 'Start Free' buttons by default
+    const showStartFree = (import.meta as any)?.env?.VITE_SHOW_PLAY_LINKS === 'true';
 
     const { showSuccess, showError } = useNotification();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [joined, setJoined] = useState(false);
 
+    const handleStoreClick = (store: string) => {
+        Analytics.track('download_click', { store });
+    };
+
     const handleJoinWaitlist = async () => {
+        Analytics.track('waitlist_click_join');
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || !emailRegex.test(email)) {
+             Analytics.track('waitlist_validation_error', { email_length: email.length });
             showError(t('landing.waitlist.error_email', 'Please enter a valid email'));
             return;
         }
@@ -48,13 +56,18 @@ export const AboutPage = () => {
         try {
             await api.post('/public/waitlist', { email });
             setJoined(true);
+             Analytics.track('waitlist_join_success', {
+                            email_domain: email.split('@')[1] // Полезно знать, corporate это или gmail
+                        });
         } catch (e: any) {
             // Check if it is a "Conflict" (409) -> Already joined
             if (e.response && e.response.status === 409) {
+                 Analytics.track('waitlist_join_duplicate');
                 showSuccess(t('landing.waitlist.success_exists', 'You are already in the waitlist. A manager will contact you soon.'));
                 setEmail('');
                 return;
             }
+        Analytics.track('waitlist_join_server_error', { status: e.response?.status });
             showError(getErrorMessage(e));
         } finally {
             setLoading(false);
@@ -63,6 +76,9 @@ export const AboutPage = () => {
 
     // Anti-copy & Anti-screenshot (best effort)
     useEffect(() => {
+
+          Analytics.track('page_view', { page: 'landing' });
+           const startTime = Date.now();
         const preventDefault = (e: Event) => e.preventDefault();
 
         // Disable context menu (Right click)
@@ -90,6 +106,8 @@ export const AboutPage = () => {
             document.removeEventListener('cut', preventDefault);
             document.removeEventListener('paste', preventDefault);
             document.removeEventListener('keydown', handleKeyDown);
+              const timeSpent = (Date.now() - startTime) / 1000;
+              Analytics.track('page_leave', { page: 'landing', duration_seconds: timeSpent });
         };
     }, []);
 
@@ -220,7 +238,10 @@ export const AboutPage = () => {
                             </Typography>
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
                                 {showStartFree && (
-                                    <Button variant="contained" size="large" onClick={() => navigate('/login', { replace: true })} sx={{ px: 6, py: 1.6, borderRadius: 8, fontSize: '1.15rem', fontWeight: 'bold', boxShadow: theme.shadows[10] }}>
+                                    <Button variant="contained" size="large" onClick={() => {
+                                         Analytics.track('start_free_click');
+                                          navigate('/login', { replace: true })
+                                        }} sx={{ px: 6, py: 1.6, borderRadius: 8, fontSize: '1.15rem', fontWeight: 'bold', boxShadow: theme.shadows[10] }}>
                                         {t('landing.start_free')}
                                     </Button>
                                 )}
@@ -230,6 +251,7 @@ export const AboutPage = () => {
                                         size="large"
                                         component="a"
                                         href={playStoreUrl}
+                                        onClick={() => handleStoreClick('google_play_store')}
                                         target="_blank"
                                         rel="noreferrer"
                                         startIcon={<AndroidIcon />}
@@ -516,6 +538,7 @@ export const AboutPage = () => {
                                         placeholder={t('landing.waitlist.email_placeholder', 'Enter your email')}
                                         variant="outlined"
                                         value={email}
+                                        onFocus={() => Analytics.track('waitlist_input_focus')}
                                         onChange={(e) => setEmail(e.target.value)}
                                         disabled={loading}
                                         sx={{ 
@@ -558,7 +581,10 @@ export const AboutPage = () => {
                             <Button 
                                 variant="contained" 
                                 size="large" 
-                                onClick={() => navigate('/login', { replace: true })} 
+                                onClick={() => {
+                                    Analytics.track('start_free_click');
+                                    navigate('/login', { replace: true })
+                                   }}
                                 sx={{ 
                                     px: 8, 
                                     py: 2, 

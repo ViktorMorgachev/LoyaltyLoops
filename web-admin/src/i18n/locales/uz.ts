@@ -697,7 +697,9 @@ export const uz = {
           PIN_CHANGE_SUCCESS: "PIN o'zgartirish",
           PIN_RESET_REQUEST: "PIN tiklash so'rovi",
           PIN_RESET_SUCCESS: "PIN tiklash tugadi",
-          PIN_VERIFICATION_FAILED: "PIN xato"
+          PIN_VERIFICATION_FAILED: "PIN xato",
+          WARNING: "Ogohlantirish",
+          USER_BANNED: "Foydalanuvchi bloklandi"
       }
     },
     landing: {
