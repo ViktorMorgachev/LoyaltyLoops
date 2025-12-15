@@ -25,6 +25,7 @@ class UserRepository {
             it[qrSecret] = dto.qrSecret
             it[frozenUntil] = dto.isFrozenUntil
             it[isDeleted] = false
+            it[telegramId] = dto.telegramId
         }
     }
 
@@ -43,6 +44,19 @@ class UserRepository {
     }
 
     // --- GETTERS ---
+
+    suspend fun getUserByTelegramId(tgId: Long): UserDto? = dbQuery {
+        UsersTable.selectAll()
+            .where { (UsersTable.telegramId eq tgId) and (UsersTable.isDeleted eq false) }
+            .map { it.toUserDto() }
+            .singleOrNull()
+    }
+
+    suspend fun linkTelegram(userId: String, tgId: Long) = dbQuery {
+        UsersTable.update({ UsersTable.id eq userId }) {
+            it[telegramId] = tgId
+        }
+    }
 
     suspend fun getUserByPhone(phone: String): UserDto? = dbQuery {
         // Фильтруем удаленных

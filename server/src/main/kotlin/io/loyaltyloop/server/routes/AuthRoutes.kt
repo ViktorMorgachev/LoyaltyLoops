@@ -3,6 +3,7 @@ package io.loyaltyloop.server.routes
 import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -24,18 +25,65 @@ import io.loyaltyloop.shared.models.ConfirmAccountDeletionRequest
 import io.loyaltyloop.shared.models.RequestAccountDeletionResponse
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
-import io.loyaltyloop.server.service.sms.PreludeSmsService
 import io.loyaltyloop.server.service.sms.SmsService
+
+import io.loyaltyloop.server.service.TelegramAuthService
+import io.loyaltyloop.server.repository.AuthSessionRepository
+import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.utils.long
 
 fun Route.authRoutes(
     repository: UserRepository,
-    partnerRepository: io.loyaltyloop.server.repository.PartnerRepository,
+    partnerRepository: PartnerRepository,
     tokenService: TokenService,
     smsService: SmsService,
-    eventLogger: EventLogger
+    eventLogger: EventLogger,
+    applicationConfig: ApplicationConfig,
+    telegramAuthService: TelegramAuthService,
+    authSessionRepository: AuthSessionRepository
 ) {
 
     route("/auth") {
+
+        route("/telegram") {
+            post("/start") {
+                val uuid = authSessionRepository.createSession(applicationConfig.long("telegram.ttl", default = 120_000L))
+                call.respond(mapOf("uuid" to uuid, "bot" to telegramAuthService.botUsername))
+            }
+
+            get("/status/{uuid}") {
+                val uuid = call.parameters["uuid"]!!
+                val session = authSessionRepository.getSession(uuid)
+                if (session == null) {
+                    call.respond(HttpStatusCode.NotFound, "Session not found")
+                    return@get
+                }
+
+                if (session.userId == null) {
+                    call.respond(HttpStatusCode.NotFound, "Session userID not found")
+                    return@get
+                }
+
+                if (session.status == "CONFIRMED") {
+                    val user = repository.getUserById(session.userId!!)
+                    if (user == null) {
+                        call.respond(HttpStatusCode.NotFound, "User not found")
+                        return@get
+                    }
+                    val (access, refresh) = tokenService.generateTokens(user)
+                    val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
+                    repository.saveRefreshToken(refresh, user.id, expiresAt)
+                    val workspaces = repository.getUserWorkspaces(user.id)
+
+                    call.respond(mapOf(
+                        "status" to "CONFIRMED",
+                        "auth" to AuthResponse(access, refresh, user.id, false, workspaces, qrSecret = user.qrSecret)
+                    ))
+                } else {
+                    call.respond(mapOf("status" to session.status))
+                }
+            }
+        }
 
         post("/send-code") {
             val request = call.receive<SendCodeRequest>()

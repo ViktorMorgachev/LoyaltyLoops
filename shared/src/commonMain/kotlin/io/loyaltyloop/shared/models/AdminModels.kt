@@ -14,6 +14,15 @@ data class PartnerStatsDto(
 data class ChangePointStatusRequest(
     val isActive: Boolean
 )
+@Serializable
+data class AuthSession(
+    val id: String,
+    val status: String,
+    val telegramId: Long?,
+    val phone: String?,
+    val userId: String?,
+    val expiresAt: Long
+)
 
 @Serializable
 data class CreateManagerInviteRequest(
