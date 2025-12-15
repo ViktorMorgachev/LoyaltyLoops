@@ -275,11 +275,18 @@ export const LoginPage = () => {
 
             <Button 
                 fullWidth
-                variant="text"
-                color="primary"
+                variant="outlined"
+                size="large"
                 startIcon={<InfoOutlinedIcon />} 
                 onClick={() => navigate('/about')} 
-                sx={{ mt: 2, borderRadius: 2, textTransform: 'none', color: 'text.secondary' }}
+                sx={{ 
+                    mt: 2, 
+                    borderRadius: 2, 
+                    textTransform: 'none', 
+                    borderWidth: 2,
+                    fontWeight: 'bold',
+                    '&:hover': { borderWidth: 2 }
+                }}
             >
                 {t('menu.about_project', 'О проекте')}
             </Button>

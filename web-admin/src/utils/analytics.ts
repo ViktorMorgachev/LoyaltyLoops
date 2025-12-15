@@ -12,9 +12,10 @@ export const Analytics = {
     init: () => {
         // A. Запускаем Clarity (Тепловые карты + Запись)
         if (CLARITY_ID) {
+            console.log(`📊 Analytics: Init Clarity with ID: ${CLARITY_ID}`);
             clarity.init(CLARITY_ID);
-        } else if (import.meta.env.PROD) {
-            console.warn('⚠️ Analytics: VITE_CLARITY_ID не задан в .env файле!');
+        } else {
+            console.warn('⚠️ Analytics: VITE_CLARITY_ID не задан в .env файле! (Check build env variables)');
         }
     },
 
@@ -28,7 +29,10 @@ export const Analytics = {
 
         // Отправка в Clarity
         if (clarity.hasStarted()) {
-            (clarity as any).event(eventName);
+            // Используем глобальный объект window.clarity, так как библиотека не экспортирует метод event
+            if (typeof window !== 'undefined' && (window as any).clarity) {
+                (window as any).clarity('event', eventName);
+            }
         }
     },
 
