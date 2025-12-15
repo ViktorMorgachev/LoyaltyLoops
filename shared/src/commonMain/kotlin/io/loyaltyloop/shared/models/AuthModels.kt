@@ -72,7 +72,14 @@ data class ConfirmAccountDeletionRequest(
 )
 
 @Serializable
-data class TelegramStatusResponse(
+data class TelegramAuthStartResponse(
+    val uuid: String,
+    val bot: String,
+    val expiresIn: Int
+)
+
+@Serializable
+data class AuthSessionStatusResponse(
     val status: String,
     val auth: AuthResponse? = null
 )

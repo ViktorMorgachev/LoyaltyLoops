@@ -100,7 +100,8 @@ export const uz = {
       telegram_scan: "Kodni telefon orqali skanerlang yoki quyidagi tugmani bosing",
       telegram_open: "Telegram-ni ochish",
       back_phone: "Telefonga qaytish",
-      telegram_login: "Telegram orqali kirish"
+      telegram_login: "Telegram orqali kirish",
+      telegram_expires_in: "Kod muddati {{time}} ichida tugaydi"
     },
     menu: {
       title: "Konsol",

@@ -100,7 +100,8 @@ export const ky = {
       telegram_scan: "Кодду телефон менен скандоолоңуз же төмөнкү баскычты басыңыз",
       telegram_open: "Telegram ачуу",
       back_phone: "Телефонго кайтуу",
-      telegram_login: "Telegram аркылуу кирүү"
+      telegram_login: "Telegram аркылуу кирүү",
+      telegram_expires_in: "Коддун мөөнөтү {{time}} ичинде бүтөт"
     },
     menu: {
       title: "Консоль",

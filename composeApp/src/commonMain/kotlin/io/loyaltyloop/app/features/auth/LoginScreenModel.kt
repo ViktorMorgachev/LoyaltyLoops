@@ -25,6 +25,7 @@ import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.auth_success
 import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
+import loyaltyloop.composeapp.generated.resources.error_session_expired
 
 class LoginScreenModel(
     private val repository: AuthRepository,
@@ -252,21 +253,14 @@ class LoginScreenModel(
             _state.value = _state.value.copy(isLoading = true)
             repository.startTelegramAuth()
                 .onSuccess { data ->
-                    val uuid = data["uuid"]
-                    val bot = data["bot"]
-                    if (uuid != null && bot != null) {
-                        _state.value = _state.value.copy(
-                            isLoading = false,
-                            telegramMode = true,
-                            telegramUuid = uuid,
-                            telegramBot = bot,
-                            telegramStatus = "PENDING"
-                        )
-                        startTelegramPolling(uuid)
-                    } else {
-                        _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
-                        _state.value = _state.value.copy(isLoading = false)
-                    }
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        telegramMode = true,
+                        telegramUuid = data.uuid,
+                        telegramBot = data.bot,
+                        telegramStatus = "PENDING"
+                    )
+                    startTelegramPolling(data.uuid)
                 }
                 .onFailure {
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
@@ -289,6 +283,13 @@ class LoginScreenModel(
                         if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
                             handleAuthSuccess(statusResponse.auth!!)
                             telegramJob?.cancel()
+                        }
+                    }
+                    .onError { code, _ ->
+                        if (code == AppErrorCode.NOT_FOUND || code == AppErrorCode.TOKEN_EXPIRED) {
+                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                             _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
+                             telegramJob?.cancel()
                         }
                     }
             }

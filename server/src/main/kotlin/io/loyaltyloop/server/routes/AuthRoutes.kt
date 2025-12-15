@@ -27,6 +27,8 @@ import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.sms.SmsService
 
+import io.loyaltyloop.shared.models.TelegramAuthStartResponse
+import io.loyaltyloop.shared.models.AuthSessionStatusResponse
 import io.loyaltyloop.server.service.TelegramAuthService
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.PartnerRepository
@@ -47,8 +49,9 @@ fun Route.authRoutes(
 
         route("/telegram") {
             post("/start") {
-                val uuid = authSessionRepository.createSession(applicationConfig.long("telegram.ttl", default = 120_000L))
-                call.respond(mapOf("uuid" to uuid, "bot" to telegramAuthService.botUsername))
+                val ttl = applicationConfig.long("telegram.ttl", default = 120_000L)
+                val uuid = authSessionRepository.createSession(ttl)
+                call.respond(TelegramAuthStartResponse(uuid, telegramAuthService.botUsername, (ttl / 1000).toInt()))
             }
 
             get("/status/{uuid}") {
@@ -59,12 +62,11 @@ fun Route.authRoutes(
                     return@get
                 }
 
-                if (session.userId == null) {
-                    call.respond(HttpStatusCode.NotFound, "Session userID not found")
-                    return@get
-                }
-
                 if (session.status == "CONFIRMED") {
+                    if (session.userId == null) {
+                        call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
+                        return@get
+                    }
                     val user = repository.getUserById(session.userId!!)
                     if (user == null) {
                         call.respond(HttpStatusCode.NotFound, "User not found")
@@ -75,12 +77,12 @@ fun Route.authRoutes(
                     repository.saveRefreshToken(refresh, user.id, expiresAt)
                     val workspaces = repository.getUserWorkspaces(user.id)
 
-                    call.respond(mapOf(
-                        "status" to "CONFIRMED",
-                        "auth" to AuthResponse(access, refresh, user.id, false, workspaces, qrSecret = user.qrSecret)
+                    call.respond(AuthSessionStatusResponse(
+                        status = "CONFIRMED",
+                        auth = AuthResponse(access, refresh, user.id, false, workspaces, qrSecret = user.qrSecret)
                     ))
                 } else {
-                    call.respond(mapOf("status" to session.status))
+                    call.respond(AuthSessionStatusResponse(status = session.status))
                 }
             }
         }

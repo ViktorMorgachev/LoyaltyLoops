@@ -111,7 +111,8 @@ export const en = {
       telegram_scan: "Scan this code with your phone or click the button below",
       telegram_open: "Open Telegram",
       back_phone: "Back to Phone",
-      telegram_login: "Log in with Telegram"
+      telegram_login: "Log in with Telegram",
+      telegram_expires_in: "Code expires in {{time}}"
     },
     menu: {
       title: "Console",

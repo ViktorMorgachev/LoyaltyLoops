@@ -111,7 +111,8 @@ export const ru = {
       telegram_scan: "Отсканируйте код телефоном или нажмите кнопку ниже",
       telegram_open: "Открыть Telegram",
       back_phone: "Вернуться к телефону",
-      telegram_login: "Войти через Telegram"
+      telegram_login: "Войти через Telegram",
+      telegram_expires_in: "Код истекает через {{time}}"
     },
     menu: {
       title: "Консоль",

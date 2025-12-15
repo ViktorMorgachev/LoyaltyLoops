@@ -19,18 +19,19 @@ import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
 import io.loyaltyloop.shared.models.VerifyCodeRequest
-import io.loyaltyloop.shared.models.TelegramStatusResponse
+import io.loyaltyloop.shared.models.TelegramAuthStartResponse
+import io.loyaltyloop.shared.models.AuthSessionStatusResponse
 
 class AuthRepository(private val client: HttpClient) {
 
     // Telegram Auth
-    suspend fun startTelegramAuth(): NetworkResult<Map<String, String>> {
+    suspend fun startTelegramAuth(): NetworkResult<TelegramAuthStartResponse> {
         return safeNetworkCall {
             client.post("/auth/telegram/start")
         }
     }
 
-    suspend fun checkTelegramStatus(uuid: String): NetworkResult<TelegramStatusResponse> {
+    suspend fun checkTelegramStatus(uuid: String): NetworkResult<AuthSessionStatusResponse> {
         return safeNetworkCall {
             client.get("/auth/telegram/status/$uuid")
         }

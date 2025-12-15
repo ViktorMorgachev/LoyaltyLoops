@@ -35,7 +35,15 @@ export const LoginPage = () => {
   const [telegramBot, setTelegramBot] = useState('');
   const [telegramStatus, setTelegramStatus] = useState<'PENDING' | 'CONFIRMED' | 'EXPIRED'>('PENDING');
 
-  // TIMER LOGIC
+  const [telegramTimer, setTelegramTimer] = useState(0);
+
+  const formatTime = (seconds: number) => {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // TIMER LOGIC (SMS)
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>;
     if (timer > 0) {
@@ -45,6 +53,19 @@ export const LoginPage = () => {
     }
     return () => clearInterval(interval);
   }, [timer]);
+
+  // TELEGRAM TIMER LOGIC
+  useEffect(() => {
+      let interval: any;
+      if (telegramAuthMode && telegramTimer > 0) {
+          interval = setInterval(() => {
+              setTelegramTimer((prev) => prev - 1);
+          }, 1000);
+      } else if (telegramAuthMode && telegramTimer === 0 && telegramStatus !== 'CONFIRMED') {
+          handleStartTelegram();
+      }
+      return () => clearInterval(interval);
+  }, [telegramAuthMode, telegramTimer, telegramStatus]);
 
   // AUTO-REDIRECT if already logged in
   useEffect(() => {
@@ -78,8 +99,13 @@ export const LoginPage = () => {
                  setTelegramStatus('CONFIRMED');
                  await onLoginSuccess(res.data.auth);
              }
-         } catch(e) {
-             console.error(e);
+         } catch(e: any) {
+             if (e.response && e.response.status === 404) {
+                 // Session expired - refresh
+                 handleStartTelegram();
+             } else {
+                 console.error(e); // Log other errors but don't stop polling
+             }
          }
       }, 2000);
     }
@@ -108,18 +134,18 @@ export const LoginPage = () => {
   };
 
   const handleStartTelegram = async () => {
-      setLoading(true);
+      // Don't show full screen loader for background refresh, maybe local loader?
+      // But setTelegramUuid will trigger re-render anyway.
       try {
           const res = await api.post('/auth/telegram/start');
           setTelegramUuid(res.data.uuid);
           setTelegramBot(res.data.bot);
           setTelegramAuthMode(true);
           setTelegramStatus('PENDING');
+          setTelegramTimer(res.data.expiresIn || 120);
           Analytics.track('login_telegram_start');
       } catch (e: any) {
           showError(getErrorMessage(e));
-      } finally {
-          setLoading(false);
       }
   };
 
@@ -197,6 +223,10 @@ export const LoginPage = () => {
                     <QRCodeSVG value={`https://t.me/${telegramBot}?start=login_${telegramUuid}`} size={200} />
                 </Box>
                 
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {t('auth.telegram_expires_in', 'Code expires in {{time}}', { time: formatTime(telegramTimer) })}
+                </Typography>
+
                 <Button 
                     href={`https://t.me/${telegramBot}?start=login_${telegramUuid}`} 
                     target="_blank"

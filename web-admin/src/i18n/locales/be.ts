@@ -100,7 +100,8 @@ export const be = {
       telegram_scan: "Адскануйце код тэлефонам або націсніце кнопку ніжэй",
       telegram_open: "Адкрыць Telegram",
       back_phone: "Вярнуцца да тэлефона",
-      telegram_login: "Увайсці праз Telegram"
+      telegram_login: "Увайсці праз Telegram",
+      telegram_expires_in: "Код дзейнічае яшчэ {{time}}"
     },
     menu: {
       title: "Кансоль",
