@@ -65,7 +65,7 @@ class TelegramAuthService(
                     }
                 } catch (e: Exception) {
                     logger.error("Telegram Polling Error: ${e.message}")
-                    delay(5000)
+                    delay(4000)
                 }
                 delay(1000)
             }
