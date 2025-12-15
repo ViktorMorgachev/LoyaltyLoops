@@ -697,7 +697,9 @@ export const be = {
           PIN_CHANGE_SUCCESS: "Змена PIN",
           PIN_RESET_REQUEST: "Запыт скіду PIN",
           PIN_RESET_SUCCESS: "Скід PIN выкананы",
-          PIN_VERIFICATION_FAILED: "Памылка PIN"
+          PIN_VERIFICATION_FAILED: "Памылка PIN",
+          WARNING: "Папярэджанне",
+          USER_BANNED: "Карыстальнік заблакаваны"
       }
     },
     landing: {

@@ -711,7 +711,9 @@ export const en = {
           PIN_CHANGE_SUCCESS: "PIN Change",
           PIN_RESET_REQUEST: "PIN Reset Req",
           PIN_RESET_SUCCESS: "PIN Reset Done",
-          PIN_VERIFICATION_FAILED: "PIN Failed"
+          PIN_VERIFICATION_FAILED: "PIN Failed",
+          WARNING: "Warning",
+          USER_BANNED: "User Banned"
       }
     },
     analytics: {

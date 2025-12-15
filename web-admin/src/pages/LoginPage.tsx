@@ -12,6 +12,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { BrandLogo } from '../components/BrandLogo';
 import { PhoneInput } from '../components/inputs/PhoneInput';
 import { parsePhoneNumber, isValidPhone } from '../utils/phone';
+import { Analytics } from '../utils/analytics';
 
 export const LoginPage = () => {
   const { t } = useTranslation(); 
@@ -66,11 +67,13 @@ export const LoginPage = () => {
     }
     setLoading(true);
     try {
+        Analytics.track('login_send_code');
       await api.post('/auth/send-code', { phone: fullPhone });
       showSuccess(t('auth.code_sent'));
       setStep(2);
       setTimer(60); // Start 60s cooldown
     } catch (e: any) {
+        Analytics.track('login_send_code_error', { status: getErrorMessage(e)});
       showError(getErrorMessage(e));
     } finally {
       setLoading(false);
@@ -87,6 +90,7 @@ export const LoginPage = () => {
       localStorage.setItem('workspaces', JSON.stringify(workspaces));
 
       showSuccess(t('auth.success'));
+      Analytics.track('login_success');
       
       // Умный редирект
       if (workspaces.length > 1) {
@@ -113,6 +117,7 @@ export const LoginPage = () => {
       }
     } catch (e: any) {
       showError(getErrorMessage(e));
+       Analytics.track('login_failed', { error: getErrorMessage(e) });
     } finally {
       setLoading(false);
     }

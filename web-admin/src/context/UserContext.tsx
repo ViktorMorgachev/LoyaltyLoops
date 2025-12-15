@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { api } from '../api/axiosConfig';
 import i18n from '../i18n';
+import { Analytics } from '../utils/analytics';
 
 export interface Workspace {
     id: string;
@@ -55,6 +56,15 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       const res = await api.get('/client/me');
       const profile = res.data;
       setUser(profile);
+
+      // --- ANALYTICS IDENTIFY ---
+      if (profile?.id) {
+          Analytics.identify(profile.id, {
+              phone: profile.phoneNumber,
+              email: profile.email,
+              roles: profile.workspaces?.map((w: any) => w.role).join(',')
+          });
+      }
 
       if (profile.language) {
           if (profile.language !== i18n.language) {

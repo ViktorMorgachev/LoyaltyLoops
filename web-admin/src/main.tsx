@@ -1,10 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
-import './i18n'; // Конфигурация языков
+import './i18n';
 import { NotificationProvider } from './context/NotificationContext';
-import { UserProvider } from './context/UserContext'; // <-- ВАЖНЫЙ ИМПОРТ
+import { UserProvider } from './context/UserContext';
 import { ConfigProvider } from './context/ConfigContext';
+import { Analytics } from './utils/analytics';
+
+Analytics.init();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
