@@ -103,7 +103,7 @@ class TelegramAuthService(
         if (user != null) {
             // Instant login
             authSessionRepository.confirmSession(uuid, chatId, user.phoneNumber, user.id)
-            sendMessage(chatId, "✅ Success! You are logged in.")
+            sendSuccessMessage(chatId)
         } else {
             // Need phone. Link session to chat_id for now.
             dbQuery {
@@ -163,7 +163,44 @@ class TelegramAuthService(
         }
         
         authSessionRepository.confirmSession(session, chatId, phone, user.id)
-        sendMessage(chatId, "✅ Phone verified! You are logged in.")
+        sendSuccessMessage(chatId)
+    }
+
+    private fun sendSuccessMessage(chatId: Long) {
+        val url = "https://api.telegram.org/bot$botToken/sendMessage"
+        val keyboard = JsonObject(mapOf(
+            "inline_keyboard" to JsonArray(listOf(
+                JsonArray(listOf(
+                    JsonObject(mapOf(
+                        "text" to JsonPrimitive("🌐 Web Dashboard"),
+                        "url" to JsonPrimitive("https://loyaltyloop.up.railway.app")
+                    ))
+                )),
+                 JsonArray(listOf(
+                    JsonObject(mapOf(
+                        "text" to JsonPrimitive("📱 Mobile App"),
+                        "url" to JsonPrimitive("loyaltyloop://auth")
+                    ))
+                ))
+            ))
+        ))
+
+        val jsonBody = JsonObject(mapOf(
+            "chat_id" to JsonPrimitive(chatId),
+            "text" to JsonPrimitive("✅ Login successful! Return to the app to continue."),
+            "reply_markup" to keyboard
+        )).toString()
+
+        val request = Request.Builder()
+            .url(url)
+            .post(jsonBody.toRequestBody("application/json".toMediaType()))
+            .build()
+            
+        try {
+            client.newCall(request).execute().close()
+        } catch (e: Exception) {
+            logger.error("Failed to send success message: ${e.message}")
+        }
     }
 
     private fun sendMessage(chatId: Long, text: String) {
