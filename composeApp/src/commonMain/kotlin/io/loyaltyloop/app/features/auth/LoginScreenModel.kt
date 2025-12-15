@@ -20,6 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.auth_success
@@ -178,7 +179,7 @@ class LoginScreenModel(
                     _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(msg)), SnackbarType.Error))
                     val newTimer = if (apiCode == AppErrorCode.TOO_MANY_REQUESTS) 20 else _state.value.timerSeconds
                     _state.value = _state.value.copy(
-                        isLoading = false, 
+                        isLoading = false,
                         otpInput = "",
                         timerSeconds = newTimer
                     )
@@ -260,7 +261,7 @@ class LoginScreenModel(
                         telegramBot = data.bot,
                         telegramStatus = "PENDING"
                     )
-                    startTelegramPolling(data.uuid)
+                    startTelegramPolling(data.uuid, data.expiresIn)
                 }
                 .onFailure {
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
@@ -273,16 +274,25 @@ class LoginScreenModel(
         }
     }
 
-    private fun startTelegramPolling(uuid: String) {
+    private fun startTelegramPolling(uuid: String, expiredIn: Int) {
         telegramJob?.cancel()
         telegramJob = screenModelScope.launch {
-            while (true) {
+            var attempts = 0
+            val maxAttempts = expiredIn / 2
+
+            while (attempts < maxAttempts) {
                 delay(2000)
+                attempts++
+
                 repository.checkTelegramStatus(uuid)
                     .onSuccess { statusResponse ->
                         if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
                             handleAuthSuccess(statusResponse.auth!!)
                             telegramJob?.cancel()
+                        } else if (statusResponse.status == "EXPIRED") {
+                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                             _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
+                             telegramJob?.cancel()
                         }
                     }
                     .onError { code, _ ->
@@ -292,6 +302,14 @@ class LoginScreenModel(
                              telegramJob?.cancel()
                         }
                     }
+                    .onFailure {
+                        // Ignore transient network errors and keep polling
+                    }
+            }
+
+            if (isActive && attempts >= maxAttempts) {
+                 _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                 _state.value = _state.value.copy(telegramStatus = "EXPIRED", telegramMode = false)
             }
         }
     }

@@ -251,7 +251,7 @@ class TelegramAuthService(
                  JsonArray(listOf(
                     JsonObject(mapOf(
                         "text" to JsonPrimitive(getMsg(BTN_APP, languageCode)),
-                        "url" to JsonPrimitive("loyaltyloop://auth")
+                        "url" to JsonPrimitive("https://loyaltyloop.up.railway.app/public/open-app?lang=$languageCode")
                     ))
                 ))
             ))
