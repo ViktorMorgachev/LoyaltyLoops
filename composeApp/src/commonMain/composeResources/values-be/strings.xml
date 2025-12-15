@@ -13,6 +13,11 @@
     <string name="profile_loading">Загрузка...</string>
     <string name="profile_error_load">Памылка загрузкі</string>
     <string name="auth_success">Паспяховы ўваход</string>
+    <string name="auth_telegram_btn">Увайсці праз Telegram</string>
+    <string name="auth_telegram_hint">Націсніце кнопку ніжэй, каб адкрыць Telegram і пацвердзіць уваход.</string>
+    <string name="auth_telegram_open">Адкрыць Telegram</string>
+    <string name="auth_telegram_back">Вярнуцца да тэлефона</string>
+    <string name="auth_telegram_pending">Чакаем пацверджання ў Telegram...</string>
     <string name="ignore" />
 
     <!-- Errors -->

@@ -25,7 +25,8 @@ data class UserDto(
     val qrSecret: String,
     val language: String = "ru",
     val isFrozenUntil: Long? = null,
-    val isDeleted: Boolean = false
+    val isDeleted: Boolean = false,
+    val telegramId: Long? = null
 )
 
 @Serializable

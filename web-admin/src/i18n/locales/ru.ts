@@ -107,7 +107,12 @@ export const ru = {
       change_number: "Изменить номер",
       code_sent: "Код отправлен",
       resend_code: "Отправить повторно",
-      success: "Успешный вход!"
+      success: "Успешный вход!",
+      telegram_scan: "Отсканируйте код телефоном или нажмите кнопку ниже",
+      telegram_open: "Открыть Telegram",
+      back_phone: "Вернуться к телефону",
+      telegram_login: "Войти через Telegram",
+      telegram_expires_in: "Код истекает через {{time}}"
     },
     menu: {
       title: "Консоль",

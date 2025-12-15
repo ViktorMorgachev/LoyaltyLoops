@@ -35,7 +35,6 @@ import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.routes.configRoutes
 import io.loyaltyloop.server.routes.appRoutes
-import io.loyaltyloop.server.routes.appRoutes
 import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
@@ -71,6 +70,8 @@ import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.service.RatingService
 import io.loyaltyloop.server.utils.string
 import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
+import io.loyaltyloop.server.repository.AuthSessionRepository
+import io.loyaltyloop.server.service.TelegramAuthService
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -148,6 +149,7 @@ fun Application.module() {
         masking = false
     }
 
+
     install(RateLimit) {
         register {
             rateLimiter(limit = 300, refillPeriod = 60.seconds)
@@ -157,12 +159,16 @@ fun Application.module() {
         }
     }
 
-    val jwtSecret = environment.config.property("jwt.secret").getString()
-    val jwtIssuer = environment.config.property("jwt.issuer").getString()
-    val jwtAudience = environment.config.property("jwt.audience").getString()
-    val jwtRealm = environment.config.property("jwt.realm").getString()
 
-    DatabaseFactory.init(environment.config)
+
+    val envConfig = environment.config
+
+    val jwtSecret = envConfig.string("jwt.secret", "")
+    val jwtIssuer = envConfig.string("jwt.issuer", "")
+    val jwtAudience = envConfig.string("jwt.audience", "")
+    val jwtRealm = envConfig.string("jwt.realm")
+
+    DatabaseFactory.init(envConfig)
 
     // Создаем экземпляр репозитория
     val userRepository = UserRepository()
@@ -177,11 +183,11 @@ fun Application.module() {
     val waitlistRepository = WaitlistRepository()
     val eventLogger = EventLogger(systemEventRepository)
 
-    val tokenService = TokenService(environment.config)
-    val otpService = OtpService(environment.config)
+    val tokenService = TokenService(envConfig)
+    val otpService = OtpService(envConfig)
     val cardRealtimeService = CardRealtimeService()
     
-    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, environment.config)
+    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, envConfig)
     
     val transactionService = TransactionService(
         userRepository,
@@ -191,16 +197,10 @@ fun Application.module() {
         eventLogger,
     )
 
-//    val ratingService = RatingService(
-//        ratingRepository = ratingRepository,
-//        transactionRepository = transactionRepository,
-//        eventLogger = eventLogger
-//    )
-
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
 
-    var webBaseUrl = environment.config.propertyOrNull("app.webBaseUrl")?.getString() ?: "http://localhost:3000"
+    var webBaseUrl = envConfig.string("app.webBaseUrl",  "http://localhost:3000")
 
     // Fix common configuration error where protocol is missing
     if (!webBaseUrl.startsWith("http://") && !webBaseUrl.startsWith("https://")) {
@@ -214,13 +214,13 @@ fun Application.module() {
         supportChatService = supportChatService
     )
 
-    val smsProvider = environment.config.string("sms.smsProvider", "internal")
-    val preludeApiKey = environment.config.string("sms.prelude_conf.apiKey", "")
+    val smsProvider = envConfig.string("sms.smsProvider", "internal")
+    val preludeApiKey = envConfig.string("sms.prelude_conf.apiKey", "")
     val smsRateLimits = SmsRateLimits(
-        maxPerMinute = environment.config.int("sms.limits.perMinute", 1),
-        maxPerHour = environment.config.int("sms.limits.perHour", 5),
-        maxFailedAttempts = environment.config.int("sms.limits.maxOtpAttempts", 3),
-        blockDurationMs = environment.config.long("sms.limits.blockDurationMs", 3_600_000L)
+        maxPerMinute = envConfig.int("sms.limits.perMinute", 1),
+        maxPerHour = envConfig.int("sms.limits.perHour", 5),
+        maxFailedAttempts = envConfig.int("sms.limits.maxOtpAttempts", 3),
+        blockDurationMs = envConfig.long("sms.limits.blockDurationMs", 3_600_000L)
     )
 
     val smsService = if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
@@ -230,6 +230,13 @@ fun Application.module() {
     } else {
         ConsoleSmsService(otpService, eventLogger, systemEventRepository, smsRateLimits)
     }
+
+    val authSessionRepository = AuthSessionRepository()
+    val botToken = envConfig.string("telegram.botToken", "")
+    val botUsername = envConfig.string("telegram.botUsername", "")
+    val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
+    val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername)
+    telegramAuthService.start(autoCleanupSession)
 
     // Start Background Jobs
     val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService(smsService, emailService, systemEventRepository)
@@ -283,8 +290,8 @@ fun Application.module() {
         }
     }
 
-    val superPhone = environment.config.propertyOrNull("admin.superUserPhone")?.getString()
-    val defaultPin = environment.config.propertyOrNull("admin.defaultPin")?.getString()
+    val superPhone = envConfig.string("admin.superUserPhone", "").ifEmpty { null }
+    val defaultPin = envConfig.string("admin.defaultPin", "").ifEmpty { null }
 
 
     
@@ -328,16 +335,14 @@ fun Application.module() {
     }
 
     routing {
-
-
-        val enableSwagger =  environment?.config?.bool("features.enableSwagger", false) ?: false
+        val enableSwagger =  envConfig.bool("features.enableSwagger", false)
         if (enableSwagger) {
             swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
         }
 
         // Подключаем наши новые маршруты
         rateLimit(RateLimitName("auth")) {
-            authRoutes(userRepository, partnerRepository, tokenService, smsService, eventLogger)
+            authRoutes(userRepository, partnerRepository, tokenService, smsService, eventLogger, envConfig, telegramAuthService, authSessionRepository)
         }
 
         rateLimit {

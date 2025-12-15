@@ -107,7 +107,12 @@ export const en = {
       change_number: "Change Number",
       code_sent: "Code sent",
       resend_code: "Resend",
-      success: "Login successful!"
+      success: "Login successful!",
+      telegram_scan: "Scan this code with your phone or click the button below",
+      telegram_open: "Open Telegram",
+      back_phone: "Back to Phone",
+      telegram_login: "Log in with Telegram",
+      telegram_expires_in: "Code expires in {{time}}"
     },
     menu: {
       title: "Console",
