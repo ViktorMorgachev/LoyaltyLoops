@@ -19,8 +19,8 @@ class SupportChatWebSocketHandler(
 
     suspend fun handlePartner(call: ApplicationCall, session: DefaultWebSocketServerSession) {
         val userId = resolveUserId(call, session) ?: return
-        val partner = runCatching { partnerRepository.getPartnerByUserId(userId) }.getOrNull()
-        if (partner == null || partner.ownerId != userId) {
+        val partner = runCatching { partnerRepository.getPartnerForMember(userId) }.getOrNull()
+        if (partner == null) {
             session.close(CloseReason(CloseReason.Codes.VIOLATED_POLICY, "Access denied"))
             return
         }

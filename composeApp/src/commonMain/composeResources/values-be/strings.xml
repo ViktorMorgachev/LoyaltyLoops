@@ -18,6 +18,8 @@
     <string name="auth_telegram_open">Адкрыць Telegram</string>
     <string name="auth_telegram_back">Вярнуцца да тэлефона</string>
     <string name="auth_telegram_pending">Чакаем пацверджання ў Telegram...</string>
+    <string name="auth_telegram_connecting">Падключэнне...</string>
+    <string name="auth_telegram_title">Уваход праз Telegram</string>
     <string name="ignore" />
 
     <!-- Errors -->

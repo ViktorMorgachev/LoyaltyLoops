@@ -15,6 +15,7 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
     // Don't log stacktrace for expected business exceptions unless debug
     if (exception !is LoyaltyException) {
         logger.error("Error handling request: ${call.request.uri}", exception)
+        exception.printStackTrace() // Force print stacktrace to console for local dev
     } else {
         logger.warn("Business Exception: ${exception.code} - ${exception.message} at ${call.request.uri}")
     }

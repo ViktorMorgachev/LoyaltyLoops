@@ -18,6 +18,7 @@ import { useUser } from '../../context/UserContext';
 import { reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 import { PublicPointsPreviewDialog } from '../../components/map/PublicPointsPreviewDialog';
 import { PhoneInput } from '../../components/inputs/PhoneInput';
+import { TimezoneSelect } from '../../components/common/TimezoneSelect';
 
 type WeekDayId =
     | 'MONDAY'
@@ -240,10 +241,10 @@ export const PointDetailsPage = () => {
   const [scheduleTimezone, setScheduleTimezone] = useState(DEFAULT_TIMEZONE);
   const [temporarilyPaused, setTemporarilyPaused] = useState(false);
   const countryOptions = React.useMemo(() => ([
-    { code: 'KG', currency: 'KGS', label: t('countries.KG') },
-    { code: 'KZ', currency: 'KZT', label: t('countries.KZ') },
-    { code: 'UZ', currency: 'UZS', label: t('countries.UZ') },
-    { code: 'BY', currency: 'BYN', label: t('countries.BY') },
+    { code: 'KG', currency: 'KGS', label: t('countries.KG'), defaultTimezone: 'Asia/Bishkek' },
+    { code: 'KZ', currency: 'KZT', label: t('countries.KZ'), defaultTimezone: 'Asia/Almaty' },
+    { code: 'UZ', currency: 'UZS', label: t('countries.UZ'), defaultTimezone: 'Asia/Tashkent' },
+    { code: 'BY', currency: 'BYN', label: t('countries.BY'), defaultTimezone: 'Europe/Minsk' },
   ]), [t]);
   const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
@@ -370,7 +371,7 @@ export const PointDetailsPage = () => {
 
       const parsedSchedule = parseSchedulePayload(data.point.schedule);
       setScheduleState(parsedSchedule.state);
-      setScheduleTimezone(parsedSchedule.timezone);
+      setScheduleTimezone(data.point.timezone || parsedSchedule.timezone || DEFAULT_TIMEZONE);
       setTemporarilyPaused(Boolean(data.point.temporarilyPaused));
 
       // Sort tiers by index just in case
@@ -490,6 +491,7 @@ export const PointDetailsPage = () => {
             latitude: formData.latitude ?? 0,
             longitude: formData.longitude ?? 0,
             currency: currency,
+            timezone: scheduleTimezone, // Top-level timezone
             contactPhone: normalizeOptional(formData.contactPhone),
             contactLink: normalizeOptional(formData.contactLink),
             additionalInfo: normalizeOptional(formData.additionalInfo, additionalInfoLimit),
@@ -647,6 +649,9 @@ export const PointDetailsPage = () => {
             <Typography variant="h6" mb={3} fontWeight="bold">{t('point_details.tab_settings')}</Typography>
             
             <Box display="grid" gridTemplateColumns={{ xs: '1fr', sm: '1fr 1fr' }} gap={2}>
+            
+            {/* Country REMOVED from top as per user feedback */}
+
             <TextField 
                 label={t('dashboard.label_point_name')} 
                 fullWidth margin="normal" 
@@ -708,7 +713,6 @@ export const PointDetailsPage = () => {
                 helperText={t('point_details.contact_link_hint')}
                 inputProps={{ maxLength: 80 }}
             />
-            </Box>
             
             <TextField
                 label={t('point_details.additional_info_label')}
@@ -721,29 +725,41 @@ export const PointDetailsPage = () => {
                 disabled={!canEdit}
                 helperText={`${t('point_details.additional_info_hint')} (${additionalInfoLength}/${additionalInfoLimit})`}
                 inputProps={{ maxLength: additionalInfoLimit }}
+                sx={{ gridColumn: '1 / -1' }}
             />
 
+            {/* Timezone & Currency Moved below contact info */}
+            <Box mt={2}>
+                <TimezoneSelect 
+                    value={scheduleTimezone} 
+                    onChange={(newTz) => {
+                        setScheduleTimezone(newTz);
+                        if (newTz.includes('Bishkek')) setCurrency('KGS');
+                        else if (newTz.includes('Almaty')) setCurrency('KZT');
+                        else if (newTz.includes('Tashkent')) setCurrency('UZS');
+                        else if (newTz.includes('Minsk')) setCurrency('BYN');
+                    }} 
+                    label={t('dashboard.timezone_label', 'Timezone')} 
+                    disabled={!canEdit}
+                    fullWidth
+                />
+            </Box>
             <FormControl fullWidth margin="normal" disabled={!canEdit}>
-                <InputLabel>{t('point_details.country_label', 'Country')}</InputLabel>
+                <InputLabel>{t('dashboard.label_currency', 'Currency')}</InputLabel>
                 <Select
-                    value={country}
-                    label={t('point_details.country_label', 'Country')}
-                    onChange={(e) => {
-                        const code = e.target.value as string;
-                        setCountry(code);
-                        const option = countryOptions.find(o => o.code === code);
-                        if (option) {
-                            setCurrency(option.currency);
-                        }
-                    }}
+                    value={currency}
+                    label={t('dashboard.label_currency', 'Currency')}
+                    onChange={(e) => setCurrency(e.target.value)}
                 >
-                     {countryOptions.map(option => (
-                        <MenuItem key={option.code} value={option.code}>
-                            {option.label} ({option.currency})
-                        </MenuItem>
-                     ))}
+                    <MenuItem value="KGS">KGS (Сом)</MenuItem>
+                    <MenuItem value="KZT">KZT (Тенге)</MenuItem>
+                    <MenuItem value="UZS">UZS (Сум)</MenuItem>
+                    <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+                    <MenuItem value="USD">USD (Доллар)</MenuItem>
                 </Select>
             </FormControl>
+
+            </Box>
 
             <Box mt={4}>
                 <Typography variant="subtitle2" gutterBottom fontWeight="600">{t('point_details.map_location')}</Typography>

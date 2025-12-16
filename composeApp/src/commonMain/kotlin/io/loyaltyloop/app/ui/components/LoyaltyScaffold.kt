@@ -29,6 +29,7 @@ fun LoyaltyScaffold(
     Scaffold(
         modifier = modifier,
         topBar = topBar,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         bottomBar = bottomBar,
         floatingActionButton = floatingActionButton,
         containerColor = MaterialTheme.colorScheme.background,

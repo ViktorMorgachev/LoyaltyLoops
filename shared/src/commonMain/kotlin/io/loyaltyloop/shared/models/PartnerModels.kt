@@ -24,7 +24,7 @@ data class UpdatePartnerRequest(
     val logoUrl: String?, // Пока просто ссылка текстом
     val burnBonusesDays: Int? = null,
     val downgradeTierDays: Int? = null,
-    val defaultVisitsTarget: Int = 10 //TODO Вынести в преференсы (можно в конфиги)
+    val defaultVisitsTarget: Int = 10
 )
 
 @Serializable

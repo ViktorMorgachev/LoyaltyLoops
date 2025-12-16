@@ -50,7 +50,8 @@ class LoginScreenModel(
         val telegramMode: Boolean = false,
         val telegramUuid: String? = null,
         val telegramBot: String? = null,
-        val telegramStatus: String = "PENDING"
+        val telegramStatus: String = "PENDING",
+        val isTelegramStarting: Boolean = false
     )
 
     enum class Step {
@@ -257,11 +258,11 @@ class LoginScreenModel(
 
     private fun startTelegramAuth() {
         screenModelScope.launch {
-            _state.value = _state.value.copy(isLoading = true)
+            _state.value = _state.value.copy(isTelegramStarting = true)
             repository.startTelegramAuth()
                 .onSuccess { data ->
                     _state.value = _state.value.copy(
-                        isLoading = false,
+                        isTelegramStarting = false, // Выключаем
                         telegramMode = true,
                         telegramUuid = data.uuid,
                         telegramBot = data.bot,
@@ -271,11 +272,11 @@ class LoginScreenModel(
                 }
                 .onFailure {
                     _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
-                    _state.value = _state.value.copy(isLoading = false)
+                    _state.value = _state.value.copy(isTelegramStarting = false)
                 }
                 .onError { _, _ ->
                      _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
-                     _state.value = _state.value.copy(isLoading = false)
+                     _state.value = _state.value.copy(isTelegramStarting = false)
                 }
         }
     }
@@ -286,11 +287,31 @@ class LoginScreenModel(
             var attempts = 0
             val maxAttempts = expiredIn / 2
 
-            while (attempts < maxAttempts) {
+            while (isActive && attempts < maxAttempts) {
                 delay(2000)
                 attempts++
 
-                checkTelegramStatus(uuid)
+                repository.checkTelegramStatus(uuid)
+                    .onSuccess { statusResponse ->
+                        if (statusResponse.status == "CONFIRMED" && statusResponse.auth != null) {
+                            handleAuthSuccess(statusResponse.auth!!)
+                            telegramJob?.cancel()
+                        } else if (statusResponse.status == "EXPIRED") {
+                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                             _state.value = _state.value.copy(telegramStatus = "EXPIRED")
+                             telegramJob?.cancel()
+                        }
+                    }
+                    .onError { code, _ ->
+                        if (code == AppErrorCode.NOT_FOUND || code == AppErrorCode.TOKEN_EXPIRED) {
+                             _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_session_expired), SnackbarType.Error))
+                             _state.value = _state.value.copy(telegramStatus = "EXPIRED")
+                             telegramJob?.cancel()
+                        }
+                    }
+                    .onFailure {
+                        // Ignore transient network errors and keep polling
+                    }
             }
 
             if (isActive && attempts >= maxAttempts) {
@@ -315,8 +336,7 @@ class LoginScreenModel(
                             )
                         )
                         _state.value = _state.value.copy(
-                            telegramStatus = "EXPIRED",
-                            telegramMode = false
+                            telegramStatus = "EXPIRED"
                         )
                         telegramJob?.cancel()
                     }
@@ -330,8 +350,7 @@ class LoginScreenModel(
                             )
                         )
                         _state.value = _state.value.copy(
-                            telegramStatus = "EXPIRED",
-                            telegramMode = false
+                            telegramStatus = "EXPIRED"
                         )
                         telegramJob?.cancel()
                     }

@@ -233,6 +233,7 @@ export const en = {
     },
     settings: {
       title: "Business Settings",
+      timezone_label: "Timezone",
       name_label: "Brand Name",
       color_label: "Brand Color",
       color_helper: "Shown on client map",
@@ -268,6 +269,7 @@ export const en = {
       label_target: "Target (how many?)",
       label_cashback: "Initial Cashback (%)",
       label_currency: "Currency",
+      timezone_label: "Timezone", // Added
       country_label: "Country",
       country_placeholder: "Select country",
       pin_label: "Owner PIN (4-12 digits)",
@@ -490,7 +492,7 @@ export const en = {
       contact_link_label: "Contact Link",
       contact_link_hint: "e.g. https://t.me/brand",
       additional_info_label: "Additional Info",
-      additional_info_hint: "Visible to clients (max 20 chars)",
+      additional_info_hint: "Visible to clients (max 30 chars)",
       max_burn_label: "Max Burn %",
       max_burn_hint: "Max % of bill payable with points (0-100)",
       map_location: "Map Location",
