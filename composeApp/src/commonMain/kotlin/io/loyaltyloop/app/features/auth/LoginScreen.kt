@@ -28,15 +28,15 @@ import io.loyaltyloop.app.ui.components.LoyaltyScaffold
 import io.loyaltyloop.app.ui.components.OtpTextField
 import io.loyaltyloop.app.ui.components.show
 import io.loyaltyloop.app.utils.MaskVisualTransformation
-
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import loyaltyloop.composeapp.generated.resources.*
+import org.koin.core.parameter.parametersOf
 
-class LoginScreen : Screen {
+class LoginScreen(val uuid: String? = null) : Screen {
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<LoginScreenModel>()
+        val viewModel = koinScreenModel<LoginScreenModel>{ parametersOf(uuid)}
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val keyboardController = LocalSoftwareKeyboardController.current
@@ -54,6 +54,12 @@ class LoginScreen : Screen {
                         }
                     }
                 }
+            }
+        }
+
+        LaunchedEffect(uuid){
+            uuid?.let {
+                viewModel.onAction(LoginScreenModel.Action.OnAutoStartTelegram(it))
             }
         }
 
