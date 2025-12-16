@@ -38,13 +38,6 @@ export const PointsPage = () => {
   const [contactPhone, setContactPhone] = useState('');
   const [contactLink, setContactLink] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
-  const countryOptions = React.useMemo(() => ([
-    { code: 'KG', currency: 'KGS', label: t('countries.KG'), defaultTimezone: 'Asia/Bishkek' },
-    { code: 'KZ', currency: 'KZT', label: t('countries.KZ'), defaultTimezone: 'Asia/Almaty' },
-    { code: 'UZ', currency: 'UZS', label: t('countries.UZ'), defaultTimezone: 'Asia/Tashkent' },
-    { code: 'BY', currency: 'BYN', label: t('countries.BY'), defaultTimezone: 'Europe/Minsk' },
-  ]), [t]);
-  const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
   const [timezone, setTimezone] = useState('Asia/Bishkek');
 

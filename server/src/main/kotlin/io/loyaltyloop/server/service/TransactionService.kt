@@ -190,7 +190,7 @@ class TransactionService(
         cardId: String,
         purchaseAmount: Double,
         strategy: TransactionStrategy
-    )= newSuspendedTransaction {
+    ) = newSuspendedTransaction {
 
         // 1. Проверка прав
         if (!partnerRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {

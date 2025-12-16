@@ -246,7 +246,6 @@ export const PointDetailsPage = () => {
     { code: 'UZ', currency: 'UZS', label: t('countries.UZ'), defaultTimezone: 'Asia/Tashkent' },
     { code: 'BY', currency: 'BYN', label: t('countries.BY'), defaultTimezone: 'Europe/Minsk' },
   ]), [t]);
-  const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
   const additionalInfoLimit = 30;
@@ -361,10 +360,8 @@ export const PointDetailsPage = () => {
 
       if (matchedCountry) {
         setCurrency(matchedCountry.currency);
-        setCountry(matchedCountry.code);
       } else {
         setCurrency('KGS');
-        setCountry('KG');
       }
 
       setAwardOnMixedPayment(Boolean(data.settings.awardOnMixedPayment));
