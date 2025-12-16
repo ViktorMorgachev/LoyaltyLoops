@@ -10,7 +10,6 @@ export const COUNTRY_CODES: CountryConfig[] = [
     { code: 'KG', dial: '+996', mask: '999 99-99-99', name: 'Kyrgyzstan', emoji: '🇰🇬' },
     { code: 'KZ', dial: '+7', mask: '777 777-77-77', name: 'Kazakhstan', emoji: '🇰🇿' },
     { code: 'UZ', dial: '+998', mask: '99 999-99-99', name: 'Uzbekistan', emoji: '🇺🇿' },
-    { code: 'RU', dial: '+7', mask: '999 999-99-99', name: 'Russia', emoji: '🇷🇺' },
     { code: 'BY', dial: '+375', mask: '99 999-99-99', name: 'Belarus', emoji: '🇧🇾' },
 ];
 
@@ -53,28 +52,20 @@ export const formatPhoneWithMask = (rawDigits: string, mask: string): string => 
 export const detectCountry = (fullPhone: string): CountryConfig | undefined => {
     if (!fullPhone) return undefined;
     // Сортируем по длине кода (от длинного к короткому), чтобы +996 не перепутать с +9 (если такой будет)
-    // В нашем случае +7 для KZ и RU. Тут сложнее.
-    
+    // В нашем случае +7 для KZ.
+
     // Сначала ищем точное совпадение начала
     const candidates = COUNTRY_CODES.filter(c => fullPhone.startsWith(c.dial));
-    
+
     if (candidates.length === 1) return candidates[0];
     if (candidates.length > 1) {
-        // Конфликт (например RU/KZ оба +7).
-        // Смотрим следующие цифры.
+        // Конфликт (например KZ и еще кто-то с +7).
+        // Сейчас только KZ с +7.
         // KZ: +7 7...
-        // RU: +7 9... (обычно, но есть и другие).
-        // У нас в маске KZ зашито '777...', значит код начинается с 7.
-        // Проверим маску.
-        // Для простоты: если вторая цифра 7 - это KZ, иначе RU (упрощение)
-        const codeLength = candidates[0].dial.length; // +7 -> length 2
-        const nextDigit = fullPhone[codeLength];
-        if (nextDigit === '7') {
-            return candidates.find(c => c.code === 'KZ');
-        }
-        return candidates.find(c => c.code === 'RU');
+        // Если вдруг появится еще кто-то, логику усложним.
+        return candidates[0];
     }
-    
+
     return undefined;
 };
 

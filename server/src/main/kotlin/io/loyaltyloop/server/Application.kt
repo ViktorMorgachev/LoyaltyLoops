@@ -102,6 +102,7 @@ fun Application.module() {
         allowHeader("X-Device-Model")
         allowHeader("X-Os-Version")
         allowHeader("X-App-Version")
+        allowHeader("X-Timezone-Id")
 
         // Разрешаем куки/токены
         allowCredentials = true
@@ -281,7 +282,8 @@ fun Application.module() {
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]
-            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | UA: $userAgent"
+            val origin = call.request.headers["Origin"]
+            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | UA: $userAgent | Origin: $origin"
         }
     }
 

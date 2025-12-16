@@ -127,23 +127,16 @@ class TransactionRepository {
 
     // --- ОСТАЛЬНЫЕ МЕТОДЫ (Без изменений логики, только синтаксис) ---
 
-    suspend fun incrementVisits(cardId: String, amount: Int = 1) = dbQuery {
+     fun incrementVisits(cardId: String)  {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             with(SqlExpressionBuilder) {
-                it[visitsCount] = visitsCount + amount
+                it[visitsCount] = visitsCount + 1
             }
             it[lastActivityAt] = System.currentTimeMillis()
         }
     }
 
-    suspend fun updateVisits(cardId: String, newCount: Int) = dbQuery {
-        LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
-            it[visitsCount] = newCount
-            it[lastActivityAt] = System.currentTimeMillis()
-        }
-    }
-
-    suspend fun addCashback(cardId: String, cashback: Double, spentAmount: Double) = dbQuery {
+     fun addCashback(cardId: String, cashback: Double, spentAmount: Double) {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             with(SqlExpressionBuilder) {
                 it[balance] = balance + cashback
@@ -153,7 +146,7 @@ class TransactionRepository {
         }
     }
 
-    suspend fun updateTier(cardId: String, level: Int) = dbQuery {
+     fun updateTier(cardId: String, level: Int)  {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             it[tierLevel] = level
             it[lastActivityAt] = System.currentTimeMillis()

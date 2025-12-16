@@ -43,7 +43,11 @@ object DatabaseFactory {
             jdbcUrl = url
             username = user
             password = pass
-            maximumPoolSize = 3
+            idleTimeout = 120_000 // 2 минуты простоя
+            keepaliveTime = 30_000 // Пинг каждые 30 сек
+            minimumIdle = 2
+            maximumPoolSize = 10
+            maxLifetime = 300_000
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()

@@ -17,6 +17,8 @@ import { useUser } from '../../context/UserContext';
 import { geocodeAddress, reverseGeocode as reverseGeocodeYandex } from '../../utils/yandexGeocode';
 import { PhoneInput } from '../../components/inputs/PhoneInput';
 
+import { TimezoneSelect } from '../../components/common/TimezoneSelect';
+
 export const PointsPage = () => {
   const { t } = useTranslation();
   const { showError, showSuccess } = useNotification();
@@ -37,13 +39,14 @@ export const PointsPage = () => {
   const [contactLink, setContactLink] = useState('');
   const [additionalInfo, setAdditionalInfo] = useState('');
   const countryOptions = React.useMemo(() => ([
-    { code: 'KG', currency: 'KGS', label: t('countries.KG') },
-    { code: 'KZ', currency: 'KZT', label: t('countries.KZ') },
-    { code: 'UZ', currency: 'UZS', label: t('countries.UZ') },
-    { code: 'BY', currency: 'BYN', label: t('countries.BY') },
+    { code: 'KG', currency: 'KGS', label: t('countries.KG'), defaultTimezone: 'Asia/Bishkek' },
+    { code: 'KZ', currency: 'KZT', label: t('countries.KZ'), defaultTimezone: 'Asia/Almaty' },
+    { code: 'UZ', currency: 'UZS', label: t('countries.UZ'), defaultTimezone: 'Asia/Tashkent' },
+    { code: 'BY', currency: 'BYN', label: t('countries.BY'), defaultTimezone: 'Europe/Minsk' },
   ]), [t]);
   const [country, setCountry] = useState('KG');
   const [currency, setCurrency] = useState('KGS');
+  const [timezone, setTimezone] = useState('Asia/Bishkek');
 
   const [strategy, setStrategy] = useState('TIERED_LTV');
   const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
@@ -233,6 +236,7 @@ export const PointsPage = () => {
         latitude: lat,
         longitude: lng,
         currency,
+        timezone, // Added
         programType: strategy,
         baseCashback: isTiered ? baseCashbackValue : 0,
         awardOnMixedPayment,
@@ -249,6 +253,7 @@ export const PointsPage = () => {
       setAddress('');
       setLatitude('');
       setLongitude('');
+      setTimezone('Asia/Bishkek'); // Reset to default
       setAwardOnMixedPayment(false);
       setContactPhone('');
       setContactLink('');
@@ -388,27 +393,40 @@ export const PointsPage = () => {
                   {latitude && longitude ? t('point_details.location_selected', 'Location selected via map') : t('point_details.map_hint', 'Click on the map to set coordinates. You can edit the address manually afterwards.')}
               </Typography>
           </Box>
-          <FormControl fullWidth sx={{ mt: 1 }}>
-              <InputLabel>{t('dashboard.country_label')}</InputLabel>
-              <Select
-                value={country}
-                label={t('dashboard.country_label')}
-                onChange={(e) => {
-                    const code = e.target.value as string;
-                    setCountry(code);
-                    const option = countryOptions.find(o => o.code === code);
-                    if (option) {
-                        setCurrency(option.currency);
-                    }
-                }}
-              >
-                  {countryOptions.map((option) => (
-                      <MenuItem key={option.code} value={option.code}>
-                          {option.label} ({option.currency})
-                      </MenuItem>
-                  ))}
-              </Select>
-          </FormControl>
+
+            <Box display="flex" gap={2}>
+                <Box flex={1}>
+                    <TimezoneSelect 
+                        value={timezone} 
+                        onChange={(newTz) => {
+                            setTimezone(newTz);
+                            // Auto-select currency based on timezone
+                            if (newTz.includes('Bishkek')) setCurrency('KGS');
+                            else if (newTz.includes('Almaty')) setCurrency('KZT');
+                            else if (newTz.includes('Tashkent')) setCurrency('UZS');
+                            else if (newTz.includes('Minsk')) setCurrency('BYN');
+                        }} 
+                        label={t('dashboard.timezone_label', 'Timezone')} 
+                        fullWidth 
+                    />
+                </Box>
+                <Box flex={1}>
+                    <FormControl fullWidth>
+                        <InputLabel>{t('dashboard.label_currency', 'Currency')}</InputLabel>
+                        <Select
+                            value={currency}
+                            label={t('dashboard.label_currency', 'Currency')}
+                            onChange={(e) => setCurrency(e.target.value)}
+                        >
+                            <MenuItem value="KGS">KGS (Сом)</MenuItem>
+                            <MenuItem value="KZT">KZT (Тенге)</MenuItem>
+                            <MenuItem value="UZS">UZS (Сум)</MenuItem>
+                            <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+                            <MenuItem value="USD">USD (Доллар)</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Box>
+            </Box>
 
             <FormControl fullWidth sx={{ mt: 1 }}>
                 <InputLabel>{t('dashboard.label_point_type')}</InputLabel>

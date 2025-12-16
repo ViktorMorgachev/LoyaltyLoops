@@ -13,6 +13,8 @@
     <string name="profile_loading">Loading...</string>
     <string name="profile_error_load">Load error</string>
     <string name="auth_success">Login successful</string>
+    <string name="auth_telegram_connecting">Connecting...</string>
+    <string name="auth_telegram_title">Login via Telegram</string>
     <string name="ignore" />
 
     <!-- Errors -->

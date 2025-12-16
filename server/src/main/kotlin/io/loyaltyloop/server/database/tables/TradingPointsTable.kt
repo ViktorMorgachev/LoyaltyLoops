@@ -29,6 +29,8 @@ object TradingPointsTable : Table("trading_points") {
     val contactPhone = varchar("contact_phone", 30).nullable()
     val contactLink = varchar("contact_link", 50).nullable()
     val additionalInfo = varchar("additional_info", 40).nullable()
+    
+    val timezone = varchar("timezone", 50).default("UTC")
 
     override val primaryKey = PrimaryKey(id)
 }
