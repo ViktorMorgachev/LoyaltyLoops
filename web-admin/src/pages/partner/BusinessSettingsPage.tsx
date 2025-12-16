@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, Divider, Alert, Stack } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, Divider, Alert, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
@@ -14,6 +14,7 @@ export const BusinessSettingsPage = () => {
     const navigate = useNavigate();
 
     const [name, setName] = useState('');
+    const [baseCurrency, setBaseCurrency] = useState('USD');
     const [color, setColor] = useState('#4F46E5'); // Дефолтный Индиго
     const [logo, setLogo] = useState('');
     const [burnBonusesDays, setBurnBonusesDays] = useState('');
@@ -31,7 +32,8 @@ export const BusinessSettingsPage = () => {
             const res = await api.get('/partners/me');
             const data = res.data;
             setName(data.businessName || '');
-            setColor(data.color || '#4F46E5');
+            setBaseCurrency(data.baseCurrency);
+            setColor(data.color);
             setLogo(data.logoUrl || '');
             setBurnBonusesDays(data.burnBonusesDays !== null && data.burnBonusesDays !== undefined ? String(data.burnBonusesDays) : '');
             setDowngradeTierDays(data.downgradeTierDays !== null && data.downgradeTierDays !== undefined ? String(data.downgradeTierDays) : '');
@@ -54,6 +56,7 @@ export const BusinessSettingsPage = () => {
             const parsedVisits = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
             await api.put('/partners/me', {
                 businessName: name,
+                baseCurrency: baseCurrency,
                 color: color,
                 logoUrl: logo,
                 burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays, 10) : null,
@@ -116,6 +119,21 @@ export const BusinessSettingsPage = () => {
                     placeholder="https://example.com/logo.png"
                             helperText="URL ссылки на изображение"
                 />
+
+                <FormControl fullWidth margin="normal">
+                    <InputLabel>{t('dashboard.label_base_currency', 'Base Currency')}</InputLabel>
+                    <Select
+                        value={baseCurrency}
+                        label={t('dashboard.label_base_currency', 'Base Currency')}
+                        onChange={(e) => setBaseCurrency(e.target.value)}
+                    >
+                        <MenuItem value="USD">USD (Доллар)</MenuItem>
+                        <MenuItem value="KGS">KGS (Сом)</MenuItem>
+                        <MenuItem value="KZT">KZT (Тенге)</MenuItem>
+                        <MenuItem value="UZS">UZS (Сум)</MenuItem>
+                        <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+                    </Select>
+                </FormControl>
 
                         <Divider sx={{ my: 4 }} />
 

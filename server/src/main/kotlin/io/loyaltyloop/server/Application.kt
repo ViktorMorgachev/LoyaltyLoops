@@ -72,6 +72,7 @@ import io.loyaltyloop.server.utils.string
 import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.service.TelegramAuthService
+import io.loyaltyloop.server.utils.CardUtils
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -170,10 +171,13 @@ fun Application.module() {
     val jwtRealm = envConfig.string("jwt.realm")
 
     DatabaseFactory.init(envConfig)
-
-    // Создаем экземпляр репозитория
-    val userRepository = UserRepository()
     val partnerRepository = PartnerRepository()
+    val redisService = io.loyaltyloop.server.service.RedisService(envConfig)
+    val exchangeRateService = io.loyaltyloop.server.service.ExchangeRateService(redisService, apiKey = envConfig.string("keys.exchangeRate", ""))
+    val cardUtils = CardUtils(exchangeRateService = exchangeRateService, partnerRepository = partnerRepository)
+    // Создаем экземпляр репозитория
+    val userRepository = UserRepository(cardUtils)
+
     val platformRepository = PlatformRepository()
     val transactionRepository = TransactionRepository()
     val pinResetTokenRepository = PinResetTokenRepository()
@@ -188,15 +192,9 @@ fun Application.module() {
     val otpService = OtpService(envConfig)
     val cardRealtimeService = CardRealtimeService()
     
-    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, envConfig)
+    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, envConfig, cardUtils)
     
-    val transactionService = TransactionService(
-        userRepository,
-        transactionRepository,
-        partnerRepository,
-        cardRealtimeService,
-        eventLogger,
-    )
+
 
     val supportChatService = SupportChatService(supportChatRepository)
     val emailService = ConsoleEmailService()
@@ -236,13 +234,27 @@ fun Application.module() {
     val botToken = envConfig.string("telegram.botToken", "")
     val botUsername = envConfig.string("telegram.botUsername", "")
     val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
-    val web = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
     val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername, webBaseUrl)
     telegramAuthService.start(autoCleanupSession)
+
+
+    
+
+    exchangeRateService.start(this)
 
     // Start Background Jobs
     val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService(smsService, emailService, systemEventRepository)
     loyaltyEngine.start(this)
+
+    val transactionService = TransactionService(
+        userRepository,
+        transactionRepository,
+        partnerRepository,
+        cardRealtimeService,
+        eventLogger,
+        cardUtils,
+        exchangeRateService // Added dependency
+    )
 
     install(ContentNegotiation) {
         json(Json {
@@ -282,8 +294,14 @@ fun Application.module() {
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]
-            val origin = call.request.headers["Origin"]
-            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | UA: $userAgent | Origin: $origin"
+            val timeZone = call.request.headers["X-Timezone-Id"]
+            val deviceId = call.request.headers["X-Device-Id"]
+            val devicePlatform = call.request.headers["X-Device-Platform"]
+            val deviceModel = call.request.headers["X-Device-Model"]
+            val osVersion = call.request.headers["X-Os-Version"]
+            val appVersion = call.request.headers["X-App-Version"]
+            val dateTime = java.time.Instant.now().toString()
+            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId date:$dateTime]"
         }
     }
 
@@ -360,7 +378,8 @@ fun Application.module() {
             publicRoutes(waitlistRepository)
             clientRoutes(userRepository,
                 deviceTokenRepository,
-                ratingService)
+                ratingService,
+                cardUtils)
             terminalRoutes(
                 userRepository = userRepository,
                 transactionService = transactionService,

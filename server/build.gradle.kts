@@ -22,6 +22,7 @@ dependencies {
     // Дополнительные зависимости
     implementation(libs.okhttp)
     implementation(libs.prelude.sdk)
+    implementation(libs.jedis)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)

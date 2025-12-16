@@ -35,6 +35,7 @@ enum class TransactionSuccessType {
 data class TransactionResult(
     val cardId: String,
     val newBalance: Double,
+    val currency: String,
     val newVisits: Int,
     val type: TransactionSuccessType = TransactionSuccessType.SUCCESS_DEFAULT,
     val args: List<String> = emptyList()
@@ -48,7 +49,8 @@ data class TransactionHistoryDto(
     val type: String,      // VISIT, EARN, SPEND
     val amount: Double,    // Сумма покупки
     val pointsDelta: Double, // Баллы (+/-)
-    val visitsDelta: Int     // Визиты (+/-)
+    val visitsDelta: Int,    // Визиты (+/-)
+    val currency: String? = null // Валюта транзакции
 )
 
 @Serializable
@@ -68,7 +70,9 @@ data class TransactionCalculationDto(
     val moneyPaid: Double,     // Сколько денег платить
     val newBalance: Double,    // Прогноз баланса
     val newVisits: Int, // Прогноз визитов
-    val message: LoyaltyMessage
+    val message: LoyaltyMessage,
+    val currency: String = "",      // Пример: "KGS", "USD", "RUB"
+    val exchangeRate: Double = 1.0  // Пример: 85.0 (Курс Base -> Terminal)
 ){
     enum class LoyaltyMessage{
         VISIT,

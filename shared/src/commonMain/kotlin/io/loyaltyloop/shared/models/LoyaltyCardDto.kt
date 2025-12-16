@@ -12,9 +12,9 @@ data class LoyaltyCardDto(
     val totalSpent: Double,
     val visitsCount: Int,
     val tierLevel: Int,
-    val block: CardBlockStatus? = null,
-    val pause: CardPauseStatus? = null,
-    val visitsTarget: Int = 10,
+    val block: CardBlockStatus?,
+    val pause: CardPauseStatus?,
+    val visitsTarget: Int,
     @SerialName("blockedUntil")
     val legacyBlockedUntil: Long? = block?.until,
     @SerialName("isBlocked")
@@ -23,12 +23,17 @@ data class LoyaltyCardDto(
     val legacyIsClosed: Boolean = pause != null,
     @SerialName("closedReason")
     val legacyClosedReason: String? = pause?.reason,
-    val partnerName: String = "",
-    val cardColor: String = "#808080",
-    val logoUrl: String? = null,
-    val trustScore: Double = 4.0,
-    val fraudFlag: Boolean = false,
-    val riskLevel: RiskLevel = RiskLevel.YELLOW
+    val partnerName: String,
+    val cardColor: String,
+    val logoUrl: String?,
+    val trustScore: Double,
+    val fraudFlag: Boolean,
+    val riskLevel: RiskLevel,
+    
+    // Multi-currency support
+    val partnerBaseCurrency: String,
+    val estimatedValue: Double, // Value in user's local currency
+    val estimatedCurrency: String // User's local currency code
 )
 
 @Serializable

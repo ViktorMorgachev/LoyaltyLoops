@@ -43,8 +43,6 @@ class TerminalScreen : Screen {
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.currentOrThrow.parent ?: LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
-        var scannerKey by remember { mutableStateOf(0) }
-        var scannerActive by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             viewModel.events.collect { event ->
@@ -61,7 +59,6 @@ class TerminalScreen : Screen {
                                 event.strategy
                             )
                         )
-                        scannerActive = false
                     }
 
                     is TerminalScreenModel.Event.NavigateToStats -> {

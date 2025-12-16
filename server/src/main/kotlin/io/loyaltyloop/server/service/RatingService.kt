@@ -5,19 +5,17 @@ import io.ktor.server.config.tryGetString
 import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.utils.CardUtils
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.*
 import org.slf4j.LoggerFactory
-import java.time.Instant
-import java.time.temporal.ChronoUnit
-import kotlin.math.max
-import kotlin.math.min
 
 class RatingService(
     private val ratingRepository: RatingRepository,
     private val transactionRepository: TransactionRepository,
     private val eventLogger: EventLogger,
-    private val config: ApplicationConfig // Injected config
+    private val config: ApplicationConfig, // Injected config
+    private val cardUtils: CardUtils,
 ) {
     private val logger = LoggerFactory.getLogger("RatingService")
 
@@ -48,7 +46,7 @@ class RatingService(
         }
     }
 
-    suspend fun rateClient(cashierId: String, dto: CreateClientRatingDto): TrustScoreDto {
+    suspend fun rateClient(cashierId: String, dto: CreateClientRatingDto, timeZoneCurrency: String): TrustScoreDto {
         val partnerId = ratingRepository.getPartnerIdByPointId(dto.tradingPointId)
             ?: throw LoyaltyException(AppErrorCode.POINT_NOT_FOUND, "Trading point not found")
 
@@ -61,8 +59,8 @@ class RatingService(
         // If the rating is very low (1) but the client is generally very reliable (Green/VIP) in this partner network,
         // and there is no Fraud tag, we might ignore this as a potential "revenge" rating or anomaly.
         // Rule: If Current Score >= 4.5 (Green) AND New Rating == 1 AND No FRAUD tag -> Ignore
-        
-        val currentCard = transactionRepository.getCardByUserAndPartner(dto.userId, partnerId)
+
+        val currentCard =  cardUtils.getCardByUserAndPartner(dto.userId, partnerId,timeZoneCurrency )
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Client card not found")
 
         var isIgnored = false
@@ -117,14 +115,6 @@ class RatingService(
     suspend fun rateService(userId: String, dto: CreateServiceReviewDto): String {
         val partnerId = ratingRepository.getPartnerIdByPointId(dto.tradingPointId)
              ?: throw LoyaltyException(AppErrorCode.POINT_NOT_FOUND, "Trading point not found")
-             
-        // Return review ID
-        // Note: The repository method returns Unit currently, but uses UUID inside. 
-        // We should probably change repo to return ID, but for now let's assume void is fine or update repo.
-        // Actually, the route expects an ID. Let's update repo later if needed, or just return empty string for now if repo doesn't return it.
-        // Wait, I see I used UUID.randomUUID() in Repo. I can't easily get it back unless I change Repo signature.
-        // I will assume for now we don't need the ID on client immediately, or I'll update repo.
-        // Let's check RatingRepository.createServiceReview.
         
         ratingRepository.createServiceReview(partnerId, userId, dto)
         return "review_created" // Placeholder

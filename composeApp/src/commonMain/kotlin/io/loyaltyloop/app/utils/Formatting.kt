@@ -8,3 +8,15 @@ fun formatAmount(amount: Double): String {
     }
 }
 
+fun getCurrencySymbol(currencyCode: String): String {
+    return when (currencyCode.uppercase()) {
+        "USD" -> "$"
+        "EUR" -> "€"
+        "RUB" -> "₽"
+        "KGS" -> "c"
+        "KZT" -> "₸"
+        "UZS" -> "so'm"
+        "BYN" -> "Br"
+        else -> currencyCode
+    }
+}

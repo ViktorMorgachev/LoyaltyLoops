@@ -5,13 +5,16 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.service.ExchangeRateService
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.CalculateTransactionRequest
 import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.server.utils.getCurrencyForTimezone
 import io.loyaltyloop.shared.models.CreateClientRatingDto
 
 fun Route.terminalRoutes(
@@ -25,21 +28,25 @@ fun Route.terminalRoutes(
             post("/scan") {
                 val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<ScanQrRequest>()
-                
-                val response = transactionService.scanQr(cashierUserId, request)
+
+                val timezoneCurrency = call.getCurrencyForTimezone()
+
+                val response = transactionService.scanQr(cashierUserId, timezoneCurrency, request)
                 call.respond(response)
             }
 
             post("/calculate") {
                 val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<CalculateTransactionRequest>()
+                val timezoneCurrency = call.getCurrencyForTimezone()
 
                 val result = transactionService.calculateTransaction(
                     cashierUserId = cashierUserId,
                     tradingPointId = request.tradingPointId,
                     cardId = request.cardId,
                     purchaseAmount = request.purchaseAmount,
-                    strategy = request.strategy
+                    strategy = request.strategy,
+                    estimatedCurrency = timezoneCurrency
                 )
                 
                 call.respond(result)
@@ -48,13 +55,15 @@ fun Route.terminalRoutes(
             post("/process") {
                 val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<ProcessTransactionRequest>()
+                val timezoneCurrency = call.getCurrencyForTimezone()
 
                 val result = transactionService.processTransaction(
                     cashierUserId = cashierUserId,
                     tradingPointId = request.tradingPointId,
                     cardId = request.cardId,
                     purchaseAmount = request.purchaseAmount,
-                    strategy = request.strategy
+                    strategy = request.strategy,
+                    estimatedCurrency = timezoneCurrency
                 )
                 
                 call.respond(result)
@@ -69,8 +78,9 @@ fun Route.terminalRoutes(
             post("/rate-client") {
                 val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<CreateClientRatingDto>()
+                val timezoneCurrency = call.getCurrencyForTimezone()
                 
-                val result = ratingService.rateClient(cashierUserId, request)
+                val result = ratingService.rateClient(cashierUserId, request, timezoneCurrency)
                 call.respond(result)
             }
         }

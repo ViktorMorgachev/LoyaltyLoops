@@ -46,6 +46,7 @@ class PartnerRepository {
             it[defaultVisitsTarget] = 10
             it[color] = request.color ?: "#4F46E5"
             it[logoUrl] = request.logoUrl
+            it[baseCurrency] = request.baseCurrency
         }
 
         newPartnerId
@@ -83,7 +84,7 @@ class PartnerRepository {
     /**
      * Convenience method: Get partner by ID
      */
-    suspend fun getPartnerById(partnerID: String): PartnerEntity = dbQuery {
+    suspend fun getPartnerByIdQ(partnerID: String): PartnerEntity = dbQuery {
         val row = PartnersTable.selectAll()
             .where { PartnersTable.id eq partnerID }
             .singleOrNull()
@@ -111,6 +112,7 @@ class PartnerRepository {
             it[burnBonusesDays] = request.burnBonusesDays
             it[downgradeTierDays] = request.downgradeTierDays
             it[defaultVisitsTarget] = request.defaultVisitsTarget
+            it[baseCurrency] = request.baseCurrency
         }
 
         // Синхронизируем дефолтную цель визитов с настройками
@@ -565,7 +567,8 @@ class PartnerRepository {
             downgradeTierDays = row[PartnersTable.downgradeTierDays],
             defaultVisitsTarget = row[PartnersTable.defaultVisitsTarget],
             ownerPhone = null,
-            subscriptionWarnings = null
+            subscriptionWarnings = null,
+            baseCurrency = row[PartnersTable.baseCurrency]
         )
     }
 

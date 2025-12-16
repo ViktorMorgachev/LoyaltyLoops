@@ -3,8 +3,10 @@ package io.loyaltyloop.server.utils
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
+import io.ktor.server.application.call
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
+import io.ktor.server.request.header
 import io.ktor.server.request.httpMethod
 import io.ktor.server.response.respond
 import io.loyaltyloop.server.repository.UserRepository
@@ -57,6 +59,15 @@ suspend fun ApplicationCall.getUserIdOrRespond(
 
     }
     return userId
+}
+
+suspend fun ApplicationCall.getCurrencyForTimezone(): String {
+    val timezoneId = request.header("X-Timezone-Id") ?: throw LoyaltyException(
+        AppErrorCode.INVALID_REQUEST,
+        "X-Timezone-Id header is required for currency conversion"
+    )
+
+    return TimezoneUtils.getCurrencyForTimezone(timezoneId)
 }
 
 private fun ApplicationCall.isMutatingRequest(): Boolean {

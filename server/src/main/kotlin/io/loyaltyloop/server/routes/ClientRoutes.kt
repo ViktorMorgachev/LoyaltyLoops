@@ -7,6 +7,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.DeviceTokenRepository
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
@@ -22,12 +23,15 @@ import io.loyaltyloop.shared.models.UserProfileResponse
 import io.loyaltyloop.shared.models.Country
 import io.loyaltyloop.shared.models.CreateServiceReviewDto
 import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.server.utils.CardUtils
+import io.loyaltyloop.server.utils.getCurrencyForTimezone
 
 @Suppress("ThrowsCount")
 fun Route.clientRoutes(
     userRepository: UserRepository,
     deviceTokenRepository: DeviceTokenRepository,
-    ratingService: RatingService
+    ratingService: RatingService,
+    cardUtils: CardUtils
 ) {
     route("/client") {
         authenticate("auth-jwt") {
@@ -89,8 +93,9 @@ fun Route.clientRoutes(
             get("/cards") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
-                val cards = userRepository.getUserCards(userId)
-                call.respond(cards)
+                val timezoneCurrency = call.getCurrencyForTimezone()
+
+                call.respond(cardUtils.getUserCards(userId = userId, estimatedCurrency = timezoneCurrency))
             }
 
             post("/device-token") {

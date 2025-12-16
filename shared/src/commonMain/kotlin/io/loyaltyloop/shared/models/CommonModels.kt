@@ -57,7 +57,10 @@ enum class AppErrorCode {
     // Moderation
     USER_BANNED,
     BLOCK_REQUEST_CREATED,
-    BLOCK_REQUEST_ALREADY_EXISTS
+    BLOCK_REQUEST_ALREADY_EXISTS,
+
+    // Finance
+    CURRENCY_RATE_NOT_FOUND
 }
 
 

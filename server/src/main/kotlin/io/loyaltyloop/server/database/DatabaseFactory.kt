@@ -33,6 +33,7 @@ import io.loyaltyloop.server.database.tables.ClientRatingsTable
 import io.loyaltyloop.server.database.tables.ServiceReviewsTable
 import io.loyaltyloop.server.database.tables.WaitlistTable
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
+import io.loyaltyloop.server.database.tables.ExchangeRatesTable
 
 object DatabaseFactory {
 
@@ -89,7 +90,8 @@ object DatabaseFactory {
                 ClientRatingsTable,
                 ServiceReviewsTable,
                 WaitlistTable,
-                AuthSessionsTable
+                AuthSessionsTable,
+                ExchangeRatesTable
             )
         }
     }
@@ -133,7 +135,9 @@ object DatabaseFactory {
                 SupportMessagesTable,
                 DeviceTokensTable,
                 SystemEventsTable,
-                WaitlistTable
+                WaitlistTable,
+                AuthSessionsTable,
+                ExchangeRatesTable
             )
         }
     }

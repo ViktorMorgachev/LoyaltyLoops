@@ -1,10 +1,13 @@
 package io.loyaltyloop.server.database.tables
 
+import io.loyaltyloop.shared.models.CardBlockStatus
+import io.loyaltyloop.shared.models.CardPauseStatus
+import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.Table
 
 object LoyaltyCardTable : Table("loyalty_cards") {
     // Уникальный ID самой карты
-    val id = varchar("id", 50)
+    val id = varchar("id", 50).databaseGenerated()
 
     // Чья это карта? (Ссылка на глобального юзера)
     val userId = varchar("user_id", 50).index()
@@ -36,10 +39,29 @@ object LoyaltyCardTable : Table("loyalty_cards") {
 
     // Дата последней активности (для сгорания бонусов)
     val lastActivityAt = long("last_activity_at").default(System.currentTimeMillis())
+    
+    // Multi-currency support
 
     override val primaryKey = PrimaryKey(id)
 
     init {
         uniqueIndex("uk_user_partner", userId, partnerId)
+    }
+}
+
+fun ResultRow.pauseStatus(): CardPauseStatus? {
+    val isPaused = this[LoyaltyCardTable.isPaused]
+    return if (isPaused) {
+        CardPauseStatus(
+            reason = this[LoyaltyCardTable.pauseReason]
+        )
+    } else {
+        null
+    }
+}
+
+fun ResultRow.blockStatus(): CardBlockStatus? {
+   return this[LoyaltyCardTable.blockedUntil]?.let {
+        CardBlockStatus(until = it, reason = this[LoyaltyCardTable.blockedReason])
     }
 }

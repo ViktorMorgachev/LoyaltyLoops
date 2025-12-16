@@ -14,7 +14,11 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.service.ExchangeRateService
+import io.loyaltyloop.server.service.RedisService
+import io.loyaltyloop.server.utils.CardUtils
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.AuthResponse
@@ -32,7 +36,6 @@ import kotlinx.serialization.json.jsonPrimitive
 
 class AuthTest {
 
-    private val userRepo = UserRepository()
 
     private fun generateExpiredToken(userId: String): String {
         return JWT.create()

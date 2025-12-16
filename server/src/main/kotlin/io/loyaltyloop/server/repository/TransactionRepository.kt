@@ -5,12 +5,13 @@ import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
-import io.loyaltyloop.server.utils.toBaseCardDto
+import io.loyaltyloop.server.service.ExchangeRateService
 import io.loyaltyloop.shared.models.CardBlockStatus
 import io.loyaltyloop.shared.models.CardPauseStatus
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.TransactionHistoryDto
 import io.loyaltyloop.shared.models.CashierDailyStatsDto
+import io.loyaltyloop.shared.models.Currency
 import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.SortOrder
@@ -83,50 +84,6 @@ class TransactionRepository {
         )
     }
 
-    // --- ПОЛУЧЕНИЕ КАРТ (ИСПРАВЛЕНО ПОД ВАШУ ТАБЛИЦУ) ---
-
-    // Получить карту по ID
-    suspend fun getCardById(cardId: String): LoyaltyCardDto? = dbQuery {
-        // Используем явный join, т.к. в LoyaltyCardTable поля id/partnerId это просто varchar
-        LoyaltyCardTable.join(
-            otherTable = PartnersTable,
-            joinType = JoinType.INNER,
-            onColumn = LoyaltyCardTable.partnerId,
-            otherColumn = PartnersTable.id
-        )
-            .selectAll()
-            .where { LoyaltyCardTable.id eq cardId }
-            .map { row ->
-                rowToCardDto(row).copy(
-                    visitsTarget = row[PartnersTable.defaultVisitsTarget]
-                )
-            }
-            .singleOrNull()
-    }
-
-    // Получить карту по UserID и PartnerID
-    suspend fun getCardByUserAndPartner(userId: String, partnerId: String): LoyaltyCardDto? = dbQuery {
-        LoyaltyCardTable.join(
-            otherTable = PartnersTable,
-            joinType = JoinType.INNER,
-            onColumn = LoyaltyCardTable.partnerId,
-            otherColumn = PartnersTable.id
-        )
-            .selectAll()
-            .where {
-                (LoyaltyCardTable.userId eq userId) and
-                        (LoyaltyCardTable.partnerId eq partnerId)
-            }
-            .map { row ->
-                rowToCardDto(row).copy(
-                    visitsTarget = row[PartnersTable.defaultVisitsTarget]
-                )
-            }
-            .singleOrNull()
-    }
-
-    // --- ОСТАЛЬНЫЕ МЕТОДЫ (Без изменений логики, только синтаксис) ---
-
      fun incrementVisits(cardId: String)  {
         LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
             with(SqlExpressionBuilder) {
@@ -153,53 +110,6 @@ class TransactionRepository {
         }
     }
 
-    suspend fun deleteCard(cardId: String): LoyaltyCardDto? = dbQuery {
-        val snapshot = LoyaltyCardTable.join(
-            PartnersTable, JoinType.INNER, LoyaltyCardTable.partnerId, PartnersTable.id
-        ).selectAll().where { LoyaltyCardTable.id eq cardId }.singleOrNull() ?: return@dbQuery null
-
-        LoyaltyCardTable.deleteWhere { LoyaltyCardTable.id eq cardId }
-
-        rowToCardDto(snapshot).copy(visitsTarget = snapshot[PartnersTable.defaultVisitsTarget])
-    }
-
-    suspend fun mutateCard(
-        cardId: String,
-        balance: Double? = null,
-        visits: Int? = null,
-        tierLevel: Int? = null,
-        totalSpent: Double? = null,
-        block: CardBlockStatus? = null,
-        blockUpdate: Boolean = false,
-        pause: CardPauseStatus? = null,
-        pauseUpdate: Boolean = false
-    ): LoyaltyCardDto? = dbQuery {
-        val hasChanges = listOf(balance, visits, tierLevel, totalSpent).any { it != null } || blockUpdate || pauseUpdate
-
-        // Если изменений нет, просто возвращаем карту
-        if (!hasChanges) {
-            return@dbQuery getCardById(cardId)
-        }
-
-        val updatedCount = LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
-            balance?.let { value -> it[LoyaltyCardTable.balance] = value }
-            visits?.let { value -> it[LoyaltyCardTable.visitsCount] = value }
-            tierLevel?.let { value -> it[LoyaltyCardTable.tierLevel] = value }
-            totalSpent?.let { value -> it[LoyaltyCardTable.totalSpent] = value }
-            if (blockUpdate) {
-                it[LoyaltyCardTable.blockedUntil] = block?.until
-                it[LoyaltyCardTable.blockedReason] = block?.reason?.takeIf { r -> r.isNotBlank() }
-            }
-            if (pauseUpdate) {
-                it[LoyaltyCardTable.isPaused] = (pause != null)
-                it[LoyaltyCardTable.pauseReason] = pause?.reason?.takeIf { r -> r.isNotBlank() }
-            }
-            it[lastActivityAt] = System.currentTimeMillis()
-        }
-
-        if (updatedCount > 0) getCardById(cardId) else null
-    }
-
     suspend fun recordTransaction(
         userId: String,
         pointId: String,
@@ -207,7 +117,10 @@ class TransactionRepository {
         type: String,
         amount: Double,
         pointsDelta: Double,
-        visitsDelta: Int
+        visitsDelta: Int,
+        currency: String,
+        exchangeRate: Double,
+        pointsBaseValue: Double
     ) = dbQuery {
         TransactionsHistoryTable.insert {
             it[id] = UUID.randomUUID().toString()
@@ -219,6 +132,9 @@ class TransactionRepository {
             it[this.pointsDelta] = pointsDelta
             it[this.visitsDelta] = visitsDelta
             it[this.timestamp] = System.currentTimeMillis()
+            it[this.currency] = currency
+            it[this.exchangeRateSnapshot] = exchangeRate
+            it[this.pointsBaseValue] = pointsBaseValue
         }
     }
 
@@ -240,7 +156,8 @@ class TransactionRepository {
                     type = row[TransactionsHistoryTable.type],
                     amount = row[TransactionsHistoryTable.amount],
                     pointsDelta = row[TransactionsHistoryTable.pointsDelta],
-                    visitsDelta = row[TransactionsHistoryTable.visitsDelta]
+                    visitsDelta = row[TransactionsHistoryTable.visitsDelta],
+                    currency = row[TransactionsHistoryTable.currency]
                 )
             }
     }
@@ -266,7 +183,8 @@ class TransactionRepository {
                     type = row[TransactionsHistoryTable.type],
                     amount = row[TransactionsHistoryTable.amount],
                     pointsDelta = row[TransactionsHistoryTable.pointsDelta],
-                    visitsDelta = row[TransactionsHistoryTable.visitsDelta]
+                    visitsDelta = row[TransactionsHistoryTable.visitsDelta],
+                    currency = row[TransactionsHistoryTable.currency]
                 )
             }
     }
@@ -277,11 +195,4 @@ class TransactionRepository {
             it[fraudFlag] = fraud
         }
     }
-
-    private fun rowToCardDto(row: ResultRow): LoyaltyCardDto =
-        row.toBaseCardDto().copy(
-            partnerName = row[PartnersTable.businessName],
-            cardColor = row[PartnersTable.color],
-            logoUrl = row[PartnersTable.logoUrl]
-        )
 }

@@ -2,15 +2,15 @@ package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.utils.CardUtils
 import io.loyaltyloop.server.utils.LoyaltyException
-import io.loyaltyloop.server.utils.toBaseCardDto
 import io.loyaltyloop.shared.models.*
 import io.loyaltyloop.server.utils.toUserDto
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.util.UUID
 
-class UserRepository {
+class UserRepository(val cardUtils: CardUtils) {
 
     // --- USER MANAGEMENT ---
 
@@ -119,76 +119,28 @@ class UserRepository {
     suspend fun findOrCreateCard(
         userId: String,
         partnerId: String,
-        partnerName: String,
-        partnerColor: String,
-        partnerLogo: String?,
-        defaultVisitsTarget: Int
+        estimatedCurrency: String,
+        counter: Int = 0,
     ): Pair<LoyaltyCardDto, Boolean> = dbQuery {
         // 1. Ищем существующую карту
-        val existingRow = LoyaltyCardTable.selectAll()
-            .where { (LoyaltyCardTable.userId eq userId) and (LoyaltyCardTable.partnerId eq partnerId) }
-            .limit(1)
-            .singleOrNull()
+        val card = cardUtils.getUserCards(userId = userId, estimatedCurrency = estimatedCurrency).firstOrNull { it.partnerId == partnerId }
 
-        if (existingRow != null) {
-            val dto = existingRow.toBaseCardDto().copy(
-                partnerName = partnerName,
-                cardColor = partnerColor,
-                logoUrl = partnerLogo,
-                visitsTarget = defaultVisitsTarget
-            )
-            return@dbQuery dto to false
+        if (card != null) {
+            return@dbQuery card to (counter == 1) // true, если карта была создана на предыдущем шаге
         }
 
-        // 2. Создаем новую
-        val newId = UUID.randomUUID().toString()
-        LoyaltyCardTable.insert {
-            it[id] = newId
-            it[this.userId] = userId
-            it[this.partnerId] = partnerId
-            it[balance] = 0.0
-            it[totalSpent] = 0.0
-            it[tierLevel] = 1
-            it[visitsCount] = 0
-            it[trustScore] = 4.0
-            it[fraudFlag] = false
+        cardUtils.insertNewCard(userId, partnerId)
+
+        if (counter == 0){
+            return@dbQuery findOrCreateCard(userId = userId, partnerId = partnerId, counter = 0 + 1, estimatedCurrency = estimatedCurrency)
+        } else {
+            throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Failed to create card after retry")
         }
 
-        val newCard = LoyaltyCardDto(
-            id = newId,
-            userId = userId,
-            partnerId = partnerId,
-            balance = 0.0,
-            totalSpent = 0.0,
-            tierLevel = 1,
-            block = null,
-            pause = null,
-            visitsTarget = defaultVisitsTarget,
-            partnerName = partnerName,
-            cardColor = partnerColor,
-            logoUrl = partnerLogo,
-            visitsCount = 0,
-            trustScore = 4.0,
-            fraudFlag = false,
-            riskLevel = RiskLevel.YELLOW
-        )
-        newCard to true
+
     }
 
-    suspend fun getUserCards(userId: String): List<LoyaltyCardDto> = dbQuery {
-        // Здесь нужен явный JOIN, так как в LoyaltyCardTable нет references
-        LoyaltyCardTable
-            .join(PartnersTable, JoinType.INNER, LoyaltyCardTable.partnerId, PartnersTable.id)
-            .selectAll().where { LoyaltyCardTable.userId eq userId }
-            .map { row ->
-                row.toBaseCardDto().copy(
-                    partnerName = row[PartnersTable.businessName],
-                    cardColor = row[PartnersTable.color],
-                    logoUrl = row[PartnersTable.logoUrl],
-                    visitsTarget = row[PartnersTable.defaultVisitsTarget]
-                )
-            }
-    }
+
 
     // --- WORKSPACES & JOBS ---
 

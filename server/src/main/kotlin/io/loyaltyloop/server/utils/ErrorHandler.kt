@@ -62,6 +62,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.SMS_PROVIDER_ERROR -> HttpStatusCode.ServiceUnavailable
 
+                AppErrorCode.CURRENCY_RATE_NOT_FOUND -> HttpStatusCode.InternalServerError
+
                 AppErrorCode.OTP_ATTEMPTS_EXCEEDED ,  AppErrorCode.RATE_LIMIT_EXCEEDEG, AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
 
                 AppErrorCode.SECURITY_QR_SECRET_MISSING,

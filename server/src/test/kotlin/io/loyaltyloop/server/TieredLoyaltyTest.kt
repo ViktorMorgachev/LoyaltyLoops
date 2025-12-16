@@ -34,7 +34,6 @@ import kotlin.test.assertTrue
 
 class TieredLoyaltyTest {
 
-    private val userRepository = UserRepository()
 
     @Test
     fun `earn only tiered flow awards cashback based on tier percent`() = testApplication {

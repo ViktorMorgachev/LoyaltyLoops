@@ -19,11 +19,8 @@ import io.ktor.server.config.*
 import io.ktor.server.testing.*
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PlatformRepository
-import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.ChangePointStatusRequest
-import io.loyaltyloop.shared.models.CountryCode
-import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.Currency
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
@@ -89,7 +86,7 @@ suspend fun HttpClient.createCashierEcosystem(
     // Упростим: Создадим точку через API, потом найдем её в БД
     createTradingPoint(ownerToken = ownerToken, name = "Cashier Point", currency = Currency.KGS, type =  TradingPointType.COFFEE_SHOP)
 
-    val partnerId = partnerRepo.getPartnerById(ownerId).id
+    val partnerId = partnerRepo.getPartnerByIdQ(ownerId).id
     val point = partnerRepo.getPointsByPartnerId(partnerId).first()
     val inviteCode = point.inviteCode ?: throw IllegalStateException("No invite code generated")
 
@@ -150,28 +147,7 @@ suspend fun HttpClient.changeTradingPointActivity(
     }
 }
 
-suspend fun HttpClient.createPartner(
-    token: String,           // Токен владельца
-    ownerId: String,         // ID владельца (чтобы найти партнера в БД)
-    repo: PartnerRepository, // Репозиторий для поиска ID
-    name: String = "Test Cafe",
-    country: CountryCode = CountryCode.KG
-): String {
-    val response = post("/partners/create") {
-        header("Authorization", "Bearer $token")
-        contentType(ContentType.Application.Json)
-    setBody(CreatePartnerRequest(name, country, ownerPin = "1234"))
-    }
 
-    if (response.status != HttpStatusCode.Created) {
-        throw IllegalStateException("Failed to create partner. Status: ${response.status}, Body: ${response.bodyAsText()}")
-    }
-
-    // Достаем ID из базы данных, так как API возвращает просто сообщение
-    // (Это надежнее, чем парсить строку сообщения)
-    return repo.getPartnerByUserId(ownerId).id
-
-}
 
 
 // ...

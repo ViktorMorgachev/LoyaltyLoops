@@ -36,6 +36,7 @@ postgresql = "42.7.3"
 h2 = "2.2.224"
 hikaricp = "5.1.0"
 prelude = "0.10.0"
+jedis = "5.1.0"
 
 # --- Android Features (Maps, Camera, Firebase) ---
 yandex-maps = "4.5.1-lite"
@@ -110,6 +111,7 @@ ktor-server-rate-limit = { module = "io.ktor:ktor-server-rate-limit", version.re
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 prelude-sdk = { module = "so.prelude.sdk:prelude-java", version.ref = "prelude" }
+jedis = { module = "redis.clients:jedis", version.ref = "jedis" }
 
 # --- DATABASE (Exposed) ---
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }

@@ -58,7 +58,6 @@ class TerminalResultScreenModel(
             val cardId: String,
             val userId: String,
             val strategy: TransactionStrategy,
-            val currency: String
         ) : Event
         data class NavigateToRating(val userId: String, val tradingPointId: String) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
@@ -140,7 +139,6 @@ class TerminalResultScreenModel(
                             cardId = scanData.cardId,
                             userId = scanData.userId,
                             strategy = _state.value.strategy,
-                            currency = scanData.currency
                         )
                     )
                 }

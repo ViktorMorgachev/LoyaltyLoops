@@ -38,7 +38,6 @@ data class TransactionConfirmationScreen(
     val cardId: String,
     val userId: String,
     val strategy: TransactionStrategy,
-    val currency: String
 ) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -101,7 +100,7 @@ data class TransactionConfirmationScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 val formatCurrencyText: (Double) -> String = { value ->
-                    formatCurrency(value, currency)
+                    formatCurrency(value, calculation.currency)
                 }
                 val pointsSuffix = stringResource(Res.string.term_res_points_suffix)
                 val formatPoints: (Double) -> String = { value ->

@@ -14,12 +14,9 @@ import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.ChangePartnerStatusRequest
-import io.loyaltyloop.shared.models.JoinPlatformAdminRequest
 import io.loyaltyloop.shared.models.UserRole
-import kotlinx.serialization.Serializable
 import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.SendSupportMessageRequest
-import io.loyaltyloop.shared.models.SupportThreadResponse
 
 import io.loyaltyloop.server.models.SystemEventFilter
 import io.loyaltyloop.server.models.SystemEventType
@@ -124,7 +121,7 @@ fun Route.adminRoutes(
                 requireAdminRole(userRepo, userId, requireWrite = false)
 
                 val partnerId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Partner ID required")
-                val partner = partnerRepo.getPartnerById(partnerId)
+                val partner = partnerRepo.getPartnerByIdQ(partnerId)
                 call.respond(partner)
             }
 

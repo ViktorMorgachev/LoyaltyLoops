@@ -29,11 +29,11 @@ class TradingPointValidationTest {
         val client = createJsonClient()
         val owner = client.registerAndLogin()
 
-        client.post("/partners/create") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz", ownerPin = "1234"))
-        }.apply { assertEquals(HttpStatusCode.Created, status) }
+//        client.post("/partners/create") {
+//            header("Authorization", "Bearer ${owner.accessToken}")
+//            contentType(ContentType.Application.Json)
+//            setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz", ownerPin = "1234"))
+//        }.apply { assertEquals(HttpStatusCode.Created, status) }
 
         client.createTradingPoint(ownerToken = owner.accessToken, currency = Currency.KGS)
 
@@ -77,11 +77,11 @@ class TradingPointValidationTest {
         val client = createJsonClient()
         val owner = client.registerAndLogin()
 
-        client.post("/partners/create") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz 2", ownerPin = "1234"))
-        }.apply { assertEquals(HttpStatusCode.Created, status) }
+//        client.post("/partners/create") {
+//            header("Authorization", "Bearer ${owner.accessToken}")
+//            contentType(ContentType.Application.Json)
+//            setBody(io.loyaltyloop.shared.models.CreatePartnerRequest("Validation Biz 2", ownerPin = "1234"))
+//        }.apply { assertEquals(HttpStatusCode.Created, status) }
 
         client.createTradingPoint(ownerToken = owner.accessToken, currency = Currency.KGS)
 

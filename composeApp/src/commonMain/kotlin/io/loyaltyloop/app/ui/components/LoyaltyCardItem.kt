@@ -100,9 +100,17 @@ fun LoyaltyCardItemPreview() {
             tierLevel = 2,
             partnerName = "Hybrid Coffee",
             cardColor = "#5C6AC4",
-            logoUrl = null,
+            logoUrl = "",
             block = null,
-            pause = null
+            pause = null,
+            partnerBaseCurrency = "USD",
+            estimatedValue = 45.0,
+            estimatedCurrency = "KGS",
+            visitsTarget = 10,
+            trustScore = 4.8,
+            fraudFlag = false,
+            riskLevel = io.loyaltyloop.shared.models.RiskLevel.GREEN
+
         ),
         isFlipped = false,
         onFlipToggle = {},
@@ -326,6 +334,15 @@ private fun LoyaltyCardFront(
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
+                    if (card.estimatedCurrency != card.partnerBaseCurrency) {
+                        val symbol = io.loyaltyloop.app.utils.getCurrencySymbol(card.estimatedCurrency)
+                        val value = card.estimatedValue.roundToInt()
+                        Text(
+                            text = "≈ $value $symbol (${card.estimatedCurrency})",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
                 }
         }
 

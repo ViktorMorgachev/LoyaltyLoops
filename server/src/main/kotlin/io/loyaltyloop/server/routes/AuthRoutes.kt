@@ -234,7 +234,7 @@ fun Route.authRoutes(
 
                 // TODO проверить что пользователь не кассир и не обычный пользователь и имеет доступ к workspaceId
 
-                val partner = partnerRepository.getPartnerById(request.workspaceId)
+                val partner = partnerRepository.getPartnerByIdQ(request.workspaceId)
 
                 val isValid = partnerRepository.verifyPartnerPin(partner.id, request.pin)
                 if (isValid) call.respond(HttpStatusCode.OK)

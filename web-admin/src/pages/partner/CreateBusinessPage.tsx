@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Container, Paper, Typography, TextField, Button, Box, Avatar } from '@mui/material';
+import { Container, Paper, Typography, TextField, Button, Box, Avatar, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
@@ -15,6 +15,7 @@ export const CreateBusinessPage = () => {
   const { refreshUser } = useUser();
 
   const [name, setName] = useState('');
+  const [baseCurrency, setBaseCurrency] = useState('USD');
   const [color, setColor] = useState('#4F46E5');
   const [logo, setLogo] = useState('');
   const [pin, setPin] = useState('');
@@ -37,7 +38,8 @@ export const CreateBusinessPage = () => {
         countryCode: "KG",
         ownerPin: pin,
         color: color,
-        logoUrl: logo || null
+        logoUrl: logo || null,
+        baseCurrency: baseCurrency
       });
 
       showSuccess(t('common.create') + " OK");
@@ -72,6 +74,21 @@ export const CreateBusinessPage = () => {
           value={name} onChange={(e) => setName(e.target.value)}
               sx={{ mb: 3 }}
         />
+
+        <FormControl fullWidth sx={{ mb: 3 }}>
+            <InputLabel>{t('dashboard.label_base_currency', 'Base Currency')}</InputLabel>
+            <Select
+                value={baseCurrency}
+                label={t('dashboard.label_base_currency', 'Base Currency')}
+                onChange={(e) => setBaseCurrency(e.target.value)}
+            >
+                <MenuItem value="USD">USD (Доллар)</MenuItem>
+                <MenuItem value="KGS">KGS (Сом)</MenuItem>
+                <MenuItem value="KZT">KZT (Тенге)</MenuItem>
+                <MenuItem value="UZS">UZS (Сум)</MenuItem>
+                <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+            </Select>
+        </FormControl>
 
             <Box mb={3} textAlign="left">
                  <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>{t('settings.color_label')}</Typography>

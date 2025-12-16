@@ -28,5 +28,8 @@ object PartnersTable : Table("partners") {
     
     val managerInviteCode = varchar("manager_invite_code", 20).nullable().uniqueIndex()
 
+    // [NEW] Валюта, в которой физически хранится баланс в БД.
+    val baseCurrency = varchar("base_currency", 3).default("USD")
+
     override val primaryKey = PrimaryKey(id)
 }
