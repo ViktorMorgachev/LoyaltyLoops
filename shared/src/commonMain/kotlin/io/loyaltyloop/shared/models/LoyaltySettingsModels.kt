@@ -55,7 +55,8 @@ data class UpdateTradingPointRequest(
     val temporarilyPaused: Boolean = false,
     val contactPhone: String? = null,
     val contactLink: String? = null,
-    val additionalInfo: String? = null
+    val additionalInfo: String? = null,
+    val timezone: String = "UTC"
 )
 
 @Serializable

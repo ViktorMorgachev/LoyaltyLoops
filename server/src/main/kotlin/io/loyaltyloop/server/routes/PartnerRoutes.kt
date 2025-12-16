@@ -65,22 +65,23 @@ fun Route.partnerRoutes(
 
             get("/reviews/summary") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerByUserId(userId)
-                ensureOwner(partner, userId)
-                
+                val partner = partnerRepository.getPartnerForMember(userId)
+
                 // DEBUG: Dump data if special param is present
                 val from = call.request.queryParameters["from"]?.toLongOrNull()
                 val to = call.request.queryParameters["to"]?.toLongOrNull()
                 val pointId = call.request.queryParameters["pointId"]
                 
-                val data = ratingRepository.getAnalyticsData(partner.id, from, to, pointId)
+                val clientTz = call.request.headers["X-Timezone-Id"]
+                val timezone = if (!clientTz.isNullOrBlank()) clientTz else "UTC"
+                
+                val data = ratingRepository.getAnalyticsData(partner.id, from, to, pointId, timezone)
                 call.respond(data)
             }
 
             get("/reviews") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerByUserId(userId)
-                ensureOwner(partner, userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
@@ -92,8 +93,7 @@ fun Route.partnerRoutes(
             
             get("/client-ratings") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerByUserId(userId)
-                ensureOwner(partner, userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
@@ -104,8 +104,11 @@ fun Route.partnerRoutes(
 
             get("/analytics") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                partnerRepository.getPartnerForMember(userId)
 
                 val periodStr = call.request.queryParameters["period"] ?: "WEEK"
+                val clientTz = call.request.headers["X-Timezone-Id"]
+                val timezone = if (!clientTz.isNullOrBlank()) clientTz else "UTC"
                 
                 val period = try {
                     io.loyaltyloop.shared.models.AnalyticsPeriod.valueOf(periodStr.uppercase())
@@ -113,7 +116,7 @@ fun Route.partnerRoutes(
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid period. Use WEEK, MONTH, SIX_MONTHS, YEAR")
                 }
 
-                val analytics = transactionService.getAnalytics(userId, period)
+                val analytics = transactionService.getAnalytics(userId, period, timezone)
                 call.respond(analytics)
             }
 
@@ -140,7 +143,7 @@ fun Route.partnerRoutes(
             put("/pin") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@put
                 val request = call.receive<UpdatePinRequest>()
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
 
                 if (!SecurityUtils.isStrongPin(request.newPin)) {
@@ -177,7 +180,7 @@ fun Route.partnerRoutes(
             post("/pin/reset") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val request = call.receive<ResetPinRequest>()
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
 
                 if (!request.confirm) {
@@ -202,7 +205,7 @@ fun Route.partnerRoutes(
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@post
                 val user = userRepository.getUserById(userId) ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
                 val email = user.email ?: throw LoyaltyException(AppErrorCode.EMAIL_NOT_SET, "Email is required for PIN reset")
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
 
                 pinResetTokenRepository.revokeAll(userId)
@@ -226,7 +229,7 @@ fun Route.partnerRoutes(
             route("/support") {
                 get("/thread") {
                     val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
-                    val partner = partnerRepository.getPartnerForUser(userId)
+                    val partner = partnerRepository.getPartnerForMember(userId)
                     // Managers are allowed to read support threads
 
                     val response = supportChatService.getPartnerThread(partner.id)
@@ -241,7 +244,7 @@ fun Route.partnerRoutes(
                         throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Message cannot be empty")
                     }
 
-                    val partner = partnerRepository.getPartnerForUser(userId)
+                    val partner = partnerRepository.getPartnerForMember(userId)
                     // Managers are allowed to send support messages
 
                     supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
@@ -274,7 +277,7 @@ fun Route.partnerRoutes(
             get("/points") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
                 try {
-                    val partner = partnerRepository.getPartnerForUser(userId)
+                    val partner = partnerRepository.getPartnerForMember(userId)
                     val points = partnerRepository.getPointsByPartnerId(partner.id)
                     call.respond(points)
                 } catch (e: LoyaltyException){
@@ -344,7 +347,7 @@ fun Route.partnerRoutes(
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
                 val cashierId = call.parameters["cashierId"]!!
 
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
                 
                 // Найти точку или партнера, к которому относится кассир
@@ -362,7 +365,7 @@ fun Route.partnerRoutes(
             get("/me") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
                 call.respond(partner)
             }
@@ -380,7 +383,7 @@ fun Route.partnerRoutes(
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Default visits target must be at least 1")
                 }
                 
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
 
                 partnerRepository.updatePartner(userId, request)
@@ -393,7 +396,7 @@ fun Route.partnerRoutes(
                 val request = call.receive<CreateTradingPointRequest>()
                 validateBaseCashback(request.baseCashback)
 
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
 
                 partnerRepository.createTradingPoint(
@@ -409,7 +412,7 @@ fun Route.partnerRoutes(
             post("/managers/invite") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@post
                 
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
                 
                 val code = partnerRepository.generateManagerInvite(partner.id)
@@ -433,7 +436,7 @@ fun Route.partnerRoutes(
             
             get("/managers") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
                 
                 val list = partnerRepository.getManagers(partner.id)
@@ -444,7 +447,7 @@ fun Route.partnerRoutes(
                  val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
                  val managerId = call.parameters["id"]!!
                  
-                 val partner = partnerRepository.getPartnerByUserId(userId)
+                 val partner = partnerRepository.getPartnerForMember(userId)
                  ensureOwner(partner, userId)
                  
                 // Проверить, принадлежит ли менеджер этому партнеру (по записи менеджера)
@@ -461,7 +464,7 @@ fun Route.partnerRoutes(
 
             get("/cashiers") {
                 val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerByUserId(userId)
+                val partner = partnerRepository.getPartnerForMember(userId)
                 ensureOwner(partner, userId)
                 
                 val list = partnerRepository.getAllCashiers(partner.id)
@@ -487,7 +490,7 @@ fun Route.partnerRoutes(
             val user = userRepository.getUserById(record.userId)
                 ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
 
-            val partner = partnerRepository.getPartnerByUserId(record.userId)
+            val partner = partnerRepository.getPartnerForMember(record.userId)
 
             partnerRepository.updatePartnerPin(partner.id, request.newPin)
             pinResetTokenRepository.markUsed(record.id)

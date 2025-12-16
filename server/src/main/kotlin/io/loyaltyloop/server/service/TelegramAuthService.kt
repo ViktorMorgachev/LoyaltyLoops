@@ -25,60 +25,89 @@ class TelegramAuthService(
     val webBaseUrl: String
 ) {
     private val logger = LoggerFactory.getLogger(TelegramAuthService::class.java)
+
     private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(10, TimeUnit.SECONDS) // На подключение 10 сек ок
+        .readTimeout(70, TimeUnit.SECONDS)    // ВАЖНО: Увеличили с 30 до 70
+        .writeTimeout(70, TimeUnit.SECONDS)   // На запись тоже лучше поднять
         .build()
     private val json = Json { ignoreUnknownKeys = true }
-    private var lastUpdateId = 0L
-    private var job: Job? = null
 
+    private var job: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     fun start(autoCleanupSessionInMillis: Long = 60_000) {
+
         if (botToken.isBlank()) {
             logger.warn("⚠️ Telegram Bot Token is missing. Telegram Auth skipped.")
             return
         }
-        job = CoroutineScope(Dispatchers.IO).launch {
-            logger.info("🚀 Telegram Auth Service started.")
-            
-            // Safety: Delete webhook to ensure polling works
-            try {
-                 val request = Request.Builder().url("https://api.telegram.org/bot$botToken/deleteWebhook").build()
-                 client.newCall(request).execute().close()
-            } catch (e: Exception) {
-                 logger.warn("Could not delete webhook (ignore if first run): ${e.message}")
-            }
 
-            var lastCleanupTime = System.currentTimeMillis()
+        logger.info("🚀 Telegram Auth Service started.")
+
+        // 0. Удаляем вебхук (на всякий случай, чтобы работал getUpdates)
+        scope.launch {
+            try {
+                val request = Request.Builder()
+                    .url("https://api.telegram.org/bot$botToken/deleteWebhook")
+                    .build()
+                client.newCall(request).execute().close()
+            } catch (e: Exception) {
+                logger.warn("Could not delete webhook (ignore if first run): ${e.message}")
+            }
+        }
+
+        // 1. ФОНОВАЯ ЗАДАЧА: Очистка старых сессий (независимо от Телеграма)
+        scope.launch {
             while (isActive) {
                 try {
-                    // Cleanup expired sessions every minute
-                    if (System.currentTimeMillis() - lastCleanupTime > autoCleanupSessionInMillis) {
-                        authSessionRepository.cleanupExpiredSessions()
-                        lastCleanupTime = System.currentTimeMillis()
-                    }
+                    authSessionRepository.cleanupExpiredSessions()
+                } catch (e: Exception) {
+                    logger.error("Session cleanup error: ${e.message}")
+                }
+                delay(autoCleanupSessionInMillis) // Ждем минуту перед следующей чисткой
+            }
+        }
 
+        // 2. ОСНОВНАЯ ЗАДАЧА: Long Polling (слушаем сообщения)
+        job = scope.launch {
+            var lastUpdateId = 0L
+
+            while (isActive) {
+                try {
+                    // В getUpdates у тебя должен стоять timeout=50 в URL!
                     val updates = getUpdates(lastUpdateId + 1)
+
                     updates.forEach { update ->
                         val updateId = update["update_id"]?.jsonPrimitive?.long ?: 0L
                         if (updateId >= lastUpdateId) lastUpdateId = updateId
-                        processUpdate(update)
+
+                        // Запускаем обработку в отдельной корутине, чтобы не тормозить поллинг
+                        launch {
+                            processUpdate(update)
+                        }
                     }
+                } catch (e: java.net.SocketTimeoutException) {
+                    // Это НОРМАЛЬНО для Long Polling.
+                    // Телеграм просто не прислал данных за 50 сек.
+                    // Идем на новый круг без задержки.
+                    continue
                 } catch (e: Exception) {
+                    // Реальная ошибка (нет сети, неверный токен и т.д.)
                     logger.error("Telegram Polling Error: ${e.message}")
-                    delay(4000)
+                    delay(4000) // Пауза, чтобы не спамить логами
                 }
-                delay(1000)
             }
         }
     }
 
     fun stop() {
         job?.cancel()
+         scope.cancel() // Можно отменить весь скоуп при выключении приложения
     }
 
+
     private fun getUpdates(offset: Long): List<JsonObject> {
-        val url = "https://api.telegram.org/bot$botToken/getUpdates?offset=$offset&timeout=10"
+        val url = "https://api.telegram.org/bot$botToken/getUpdates?offset=$offset&timeout=50"
         val request = Request.Builder().url(url).build()
         
         client.newCall(request).execute().use { response ->

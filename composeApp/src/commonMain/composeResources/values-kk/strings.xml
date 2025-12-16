@@ -18,6 +18,8 @@
     <string name="auth_telegram_open">Telegram ашу</string>
     <string name="auth_telegram_back">Телефонға оралу</string>
     <string name="auth_telegram_pending">Telegram-да растауды күтудеміз...</string>
+    <string name="auth_telegram_connecting">Қосылудамыз...</string>
+    <string name="auth_telegram_title">Telegram арқылы кіру</string>
     <string name="ignore" />
 
     <!-- Errors -->

@@ -22,6 +22,7 @@ import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.shared.models.PartnerStatus
 import kotlin.math.abs
 import io.loyaltyloop.shared.models.CashierDailyStatsDto
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 
 class TransactionService(
     private val userRepository: UserRepository,
@@ -189,7 +190,7 @@ class TransactionService(
         cardId: String,
         purchaseAmount: Double,
         strategy: TransactionStrategy
-    ): TransactionResult {
+    ) = newSuspendedTransaction {
 
         // 1. Проверка прав
         if (!partnerRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {
@@ -272,14 +273,24 @@ class TransactionService(
             )
         } else {
             // MONEY (CHARGE or SPEND)
+
+            // Logic to determine if we should merge money paid into the SPEND transaction
+            // We merge if:
+            // 1. Points were spent
+            // 2. Money was paid
+            // 3. No points were awarded (either due to policy 'awardOnMixedPayment = false' or 0% rate)
+            val mergeMoneyIntoSpend = calc.pointsSpent > 0 && calc.moneyPaid > 0 && calc.pointsToAward == 0.0
+
             if (calc.pointsSpent > 0) {
-                transactionRepository.addCashback(card.id, -calc.pointsSpent, 0.0)
+                val amountRecorded = if (mergeMoneyIntoSpend) calc.moneyPaid else 0.0
+
+                transactionRepository.addCashback(card.id, -calc.pointsSpent, amountRecorded)
                 transactionRepository.recordTransaction(
                     userId = card.userId,
                     pointId = tradingPointId,
                     cashierId = cashierUserId,
                     type = "SPEND",
-                    amount = 0.0,
+                    amount = amountRecorded,
                     pointsDelta = -calc.pointsSpent,
                     visitsDelta = 0
                 )
@@ -291,7 +302,7 @@ class TransactionService(
                 )
             }
 
-            if (calc.moneyPaid > 0 || calc.pointsToAward > 0) {
+            if (!mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)) {
                 transactionRepository.addCashback(card.id, calc.pointsToAward, calc.moneyPaid)
                 transactionRepository.recordTransaction(
                     userId = card.userId,
@@ -310,12 +321,15 @@ class TransactionService(
                 )
             }
 
-            val newTotalSpent = card.totalSpent + calc.moneyPaid
+            // FIX RACE CONDITION: Reload card to get actual TotalSpent from DB (including concurrent updates)
+            val refreshedCard = transactionRepository.getCardById(card.id) ?: card
+            val currentTotalSpent = refreshedCard.totalSpent
+
             val nextTier = settings.tiers
-                .filter { it.threshold <= newTotalSpent }
+                .filter { it.threshold <= currentTotalSpent }
                 .maxByOrNull { it.levelIndex }
 
-            if (nextTier != null && nextTier.levelIndex > card.tierLevel) {
+            if (nextTier != null && nextTier.levelIndex > refreshedCard.tierLevel) {
                 transactionRepository.updateTier(card.id, nextTier.levelIndex)
                 eventLogger.log(
                     type = SystemEventType.TIER_CHANGE,
@@ -388,8 +402,7 @@ class TransactionService(
                 tradingPointId = tradingPointId
             )
         )
-
-        return result
+        result
     }
 
     private fun fmt(value: Double): String {
@@ -404,7 +417,7 @@ class TransactionService(
      * Получает историю транзакций для Партнера
      */
     suspend fun getPartnerHistory(ownerId: String): List<io.loyaltyloop.shared.models.TransactionHistoryDto> {
-        val partner = partnerRepository.getPartnerByUserId(ownerId)
+        val partner = partnerRepository.getPartnerForMember(ownerId)
 
         return transactionRepository.getHistoryForPartner(partner.id)
     }
@@ -412,10 +425,16 @@ class TransactionService(
     // --- Analytics ---
 
     suspend fun getAnalytics(
-        ownerId: String,
-        period: io.loyaltyloop.shared.models.AnalyticsPeriod
+        userId: String,
+        period: io.loyaltyloop.shared.models.AnalyticsPeriod,
+        timezone: String = "UTC"
     ): io.loyaltyloop.shared.models.AnalyticsResponse {
-        val partner = partnerRepository.getPartnerByUserId(ownerId)
+        val partner = partnerRepository.getPartnerForMember(userId)
+        val zoneId = try {
+            java.time.ZoneId.of(timezone)
+        } catch (e: Exception) {
+            java.time.ZoneId.of("UTC")
+        }
 
         val now = System.currentTimeMillis()
         val (from, grouping) = when (period) {
@@ -429,11 +448,11 @@ class TransactionService(
 
         // 1. Group existing data
         val groupedMap = transactions.groupBy {
-            formatDate(it.timestamp, grouping)
+            formatDate(it.timestamp, grouping, zoneId)
         }
 
         // 2. Generate all dates in range (to fill gaps with 0)
-        val allLabels = generateDateLabels(from, now, grouping)
+        val allLabels = generateDateLabels(from, now, grouping, zoneId)
 
         // 3. Map all labels to points
         val points = allLabels.map { dateLabel ->
@@ -459,10 +478,9 @@ class TransactionService(
 
     private enum class GroupingType { DAY, MONTH }
 
-    private fun formatDate(timestamp: Long, type: GroupingType): String {
+    private fun formatDate(timestamp: Long, type: GroupingType, zoneId: java.time.ZoneId): String {
         val instant = java.time.Instant.ofEpochMilli(timestamp)
-        val zone = java.time.ZoneId.systemDefault()
-        val ldt = java.time.LocalDateTime.ofInstant(instant, zone)
+        val ldt = java.time.LocalDateTime.ofInstant(instant, zoneId)
 
         return when (type) {
             GroupingType.DAY -> ldt.toLocalDate().toString()
@@ -470,10 +488,9 @@ class TransactionService(
         }
     }
 
-    private fun generateDateLabels(from: Long, to: Long, type: GroupingType): List<String> {
-        val zone = java.time.ZoneId.systemDefault()
-        val startLdt = java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(from), zone)
-        val endLdt = java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(to), zone)
+    private fun generateDateLabels(from: Long, to: Long, type: GroupingType, zoneId: java.time.ZoneId): List<String> {
+        val startLdt = java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(from), zoneId)
+        val endLdt = java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(to), zoneId)
 
         val labels = mutableSetOf<String>()
         var current = startLdt

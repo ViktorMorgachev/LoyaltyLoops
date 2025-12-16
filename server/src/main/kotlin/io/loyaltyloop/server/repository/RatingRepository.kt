@@ -166,7 +166,19 @@ class RatingRepository {
 
     // --- ANALYTICS ---
 
-    suspend fun getAnalyticsData(partnerId: String, from: Long? = null, to: Long? = null, pointId: String? = null): AnalyticsDataDto = dbQuery {
+    suspend fun getAnalyticsData(
+        partnerId: String,
+        from: Long? = null,
+        to: Long? = null,
+        pointId: String? = null,
+        timezone: String = "UTC"
+    ): AnalyticsDataDto = dbQuery {
+        val zoneId = try {
+            java.time.ZoneId.of(timezone)
+        } catch (e: Exception) {
+            java.time.ZoneId.of("UTC")
+        }
+
         // 1. Фильтрация
         val query = ServiceReviewsTable.selectAll()
             .where { ServiceReviewsTable.partnerId eq partnerId }
@@ -190,7 +202,7 @@ class RatingRepository {
         // 2. График по дням
         val series = allRows
             .groupBy {
-                Instant.ofEpochMilli(it[ServiceReviewsTable.createdAt]).atZone(ZoneOffset.UTC).toLocalDate()
+                Instant.ofEpochMilli(it[ServiceReviewsTable.createdAt]).atZone(zoneId).toLocalDate()
             }
             .map { (date, rows) ->
                 val rts = rows.map { it[ServiceReviewsTable.rating] }
@@ -200,7 +212,7 @@ class RatingRepository {
                 val npsDay = if (cnt > 0) ((prom - det).toDouble() / cnt * 100).toInt() else 0
 
                 AnalyticsSeriesPointDto(
-                    date = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli(),
+                    date = date.atStartOfDay(zoneId).toInstant().toEpochMilli(),
                     nps = npsDay,
                     totalReviews = cnt,
                     averageRating = if (cnt > 0) rts.average() else 0.0

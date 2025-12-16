@@ -37,7 +37,7 @@ fun Route.mapsRoutes(
 
                 try {
                     // Пытаемся найти партнера по userId
-                    val partner = partnerRepository.getPartnerByUserId(userId)
+                    val partner = partnerRepository.getPartnerForMember(userId)
                     // Если нашли - возвращаем его точки
                     val points = partnerRepository.getPointsByPartnerId(partner.id)
                     call.respond(points)

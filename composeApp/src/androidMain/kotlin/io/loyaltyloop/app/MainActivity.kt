@@ -9,8 +9,10 @@ import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import co.touchlab.kermit.Logger
 import io.loyaltyloop.app.navigation.NavigatorHolder
 import io.loyaltyloop.app.features.wallet.LoyaltyCardDetailsScreen
@@ -37,6 +39,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // 1. Включаем Edge-to-Edge (рисуем под барами)
+        enableEdgeToEdge()
+
+        // 2. Гарантируем, что контент не будет перекрыт системными панелями,
+        // но фон будет под ними.
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         FirebaseApp.initializeApp(this)
         FirebaseCrashlytics.getInstance().isCrashlyticsCollectionEnabled = AppConfig.isProd
         handleNotificationIntent(intent)

@@ -72,7 +72,8 @@ data class TradingPointDto(
     val temporarilyPaused: Boolean = false,
     val contactPhone: String? = null,
     val contactLink: String? = null, // URL (e.g. t.me/..., wa.me/...)
-    val additionalInfo: String? = null // Max 20 chars
+    val additionalInfo: String? = null, // Max 30 chars
+    val timezone: String = "UTC"
 )
 
 @Serializable
@@ -110,5 +111,6 @@ data class CreateTradingPointRequest(
     val temporarilyPaused: Boolean = false,
     val contactPhone: String? = null,
     val contactLink: String? = null,
-    val additionalInfo: String? = null
+    val additionalInfo: String? = null,
+    val timezone: String = "UTC"
 )

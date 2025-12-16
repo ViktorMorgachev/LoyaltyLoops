@@ -30,6 +30,7 @@ import io.loyaltyloop.app.utils.LogType
 import io.loyaltyloop.app.utils.write
 import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
+import kotlinx.datetime.TimeZone
 
 object NetworkClient {
 
@@ -134,6 +135,13 @@ object NetworkClient {
             header("X-Device-Model", deviceInfo.model)
             header("X-Os-Version", deviceInfo.osVersion)
             header("X-App-Version", deviceInfo.appVersion)
+            
+            // Timezone
+            try {
+                header("X-Timezone-Id", TimeZone.currentSystemDefault().id)
+            } catch (e: Exception) {
+                header("X-Timezone-Id", "UTC")
+            }
         }
         }
     }

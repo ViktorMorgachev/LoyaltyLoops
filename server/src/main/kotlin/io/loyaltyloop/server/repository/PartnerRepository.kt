@@ -15,6 +15,7 @@ import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import java.time.Instant
 import java.util.UUID
+import kotlin.jvm.Throws
 
 class PartnerRepository {
 
@@ -50,45 +51,38 @@ class PartnerRepository {
         newPartnerId
     }
 
-    suspend fun getPartnerByUserId(userID: String): PartnerEntity = dbQuery {
-
-        var row = PartnersTable.selectAll()
-            .where { PartnersTable.ownerId eq userID }
-            .singleOrNull()
-
-        if (row == null) {
-            throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found for this user")
-        }
+    /**
+     * Finds a partner owned by the user.
+     * Returns null if not found.
+     */
+    suspend fun getPartnerByOwnerId(ownerId: String): PartnerEntity? = dbQuery {
+        val row = PartnersTable.selectAll()
+            .where { PartnersTable.ownerId eq ownerId }
+            .singleOrNull() ?: return@dbQuery null
 
         val baseEntity = rowToPartnerEntity(row)
 
-        // Подгружаем предупреждения о подписках (только для детального просмотра)
+        // Warnings are relevant for owners
         val warnings = getExpiringPointsForPartner(baseEntity.id)
-
         baseEntity.copy(subscriptionWarnings = warnings)
     }
 
-    suspend fun getPartnerForUser(userId: String): PartnerEntity = dbQuery {
-        // 1. Try Owner
-        var row = PartnersTable.selectAll()
-            .where { PartnersTable.ownerId eq userId }
-            .singleOrNull()
-
-        // 2. Try Manager
-        if (row == null) {
-            row = PartnersTable.innerJoin(PartnerManagersTable)
-                .selectAll()
-                .where { (PartnerManagersTable.userId eq userId) and (PartnerManagersTable.isActive eq true) }
-                .singleOrNull()
-        }
-
-        if (row == null) {
-            throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner or Manager not found for this user")
-        }
+    /**
+     * Finds a partner where the user is a manager.
+     * Returns null if not found.
+     */
+    suspend fun getPartnerByManagerId(managerId: String): PartnerEntity? = dbQuery {
+        val row = PartnersTable.innerJoin(PartnerManagersTable)
+            .selectAll()
+            .where { (PartnerManagersTable.userId eq managerId) and (PartnerManagersTable.isActive eq true) }
+            .singleOrNull() ?: return@dbQuery null
 
         rowToPartnerEntity(row)
     }
 
+    /**
+     * Convenience method: Get partner by ID
+     */
     suspend fun getPartnerById(partnerID: String): PartnerEntity = dbQuery {
         val row = PartnersTable.selectAll()
             .where { PartnersTable.id eq partnerID }
@@ -96,6 +90,17 @@ class PartnerRepository {
             ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found")
 
         rowToPartnerEntity(row)
+    }
+
+    /**
+     * Unified method to get the partner associated with a user (either as Owner or Manager).
+     * Throws BUSINESS_NOT_FOUND if neither.
+     */
+    @Throws(LoyaltyException::class)
+    suspend fun getPartnerForMember(userId: String): PartnerEntity {
+        return getPartnerByOwnerId(userId)
+            ?: getPartnerByManagerId(userId)
+            ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found for this user")
     }
 
     suspend fun updatePartner(ownerId: String, request: UpdatePartnerRequest) = dbQuery {
@@ -226,6 +231,7 @@ class PartnerRepository {
             it[isActive] = false // Ждет оплаты
             it[rating] = 0.0
             it[ratingCount] = 0
+            it[timezone] = request.timezone
         }
 
         // DRY: Используем хелпер для создания настроек
@@ -249,6 +255,7 @@ class PartnerRepository {
             it[contactPhone] = request.contactPhone
             it[contactLink] = request.contactLink
             it[additionalInfo] = request.additionalInfo
+            it[timezone] = request.timezone
         }
 
         // 2. Find Settings ID
@@ -585,8 +592,9 @@ class PartnerRepository {
         temporarilyPaused = row[TradingPointsTable.isTemporarilyPaused],
         contactPhone = row[TradingPointsTable.contactPhone],
         contactLink = row[TradingPointsTable.contactLink],
-        additionalInfo = row[TradingPointsTable.additionalInfo]
-    )
+        additionalInfo = row[TradingPointsTable.additionalInfo],
+        timezone = row[TradingPointsTable.timezone]
+        )
 
     private fun ResultRow.parseSchedule(): WeeklyScheduleDto? {
         val raw = this[TradingPointsTable.workingHoursJson] ?: return null

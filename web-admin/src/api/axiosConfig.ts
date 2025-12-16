@@ -122,6 +122,13 @@ api.interceptors.request.use((config) => {
     config.headers['X-Device-Model'] = navigator.userAgent; // Browser User Agent
     config.headers['X-Os-Version'] = navigator.platform; // OS Platform
     config.headers['X-App-Version'] = '1.0.0'; // Web Admin Version
+    
+    // Timezone
+    try {
+        config.headers['X-Timezone-Id'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (e) {
+        config.headers['X-Timezone-Id'] = 'UTC';
+    }
 
     return config;
 }, (error) => {
