@@ -18,47 +18,40 @@ class RedisService(config: ApplicationConfig) {
     private val pool: JedisPool
 
     init {
+        // Read pool tuning from config (with sane defaults)
+        val poolMaxTotal = config.int("redis.pool.maxTotal", 128)
+        val poolMaxIdle = config.int("redis.pool.maxIdle", 128)
+        val poolMinIdle = config.int("redis.pool.minIdle", 32)
+
+        val testOnBorrow = config.bool("redis.pool.testOnBorrow", false)
+        val testOnReturn = config.bool("redis.pool.testOnReturn", false)
+        val testWhileIdle = config.bool("redis.pool.testWhileIdle", true)
+
+        val minEvictableIdleTimeMs = config.long("redis.pool.minEvictableIdleTimeMs", 60_000L)
+        val timeBetweenEvictionRunsMs = config.long("redis.pool.timeBetweenEvictionRunsMs", 30_000L)
+        val numTestsPerEvictionRun = config.int("redis.pool.numTestsPerEvictionRun", 32)
+
+        val blockWhenExhausted = config.bool("redis.pool.blockWhenExhausted", true)
+        val maxWaitMs = config.long("redis.pool.maxWaitMs", 2_000L)
+        val jmxEnabled = config.bool("redis.pool.jmxEnabled", true)
+
         val poolConfig = JedisPoolConfig().apply {
-            // --- 1. РАЗМЕР ПУЛА (Scaling) ---
-            // Для High-Load лучше держать размер пула фиксированным (maxTotal == maxIdle).
-            // Это предотвращает постоянное создание и уничтожение объектов соединений при скачках трафика.
-            // Если у тебя Ktor (Netty) обрабатывает много запросов, 128 - хорошее начало.
-            maxTotal = 128
-            maxIdle = 128
-            minIdle = 32   // Всегда держим горячий запас
+            maxTotal = poolMaxTotal
+            maxIdle = poolMaxIdle
+            minIdle = poolMinIdle
 
-            // --- 2. ПРОИЗВОДИТЕЛЬНОСТЬ (Speed) ---
-            // КРИТИЧНО: Отключаем проверки "на лету".
-            // Мы не хотим пинговать Redis при каждом запросе клиента.
-            testOnBorrow = false
-            testOnReturn = false
+            this.testOnBorrow = testOnBorrow
+            this.testOnReturn = testOnReturn
+            this.testWhileIdle = testWhileIdle
 
-            // --- 3. ФОНОВОЕ ЗДОРОВЬЕ (Health Check) ---
-            // Включаем "Санитара", который работает в отдельном потоке.
-            testWhileIdle = true
+            minEvictableIdleTime = Duration.ofMillis(minEvictableIdleTimeMs)
+            timeBetweenEvictionRuns = Duration.ofMillis(timeBetweenEvictionRunsMs)
+            this.numTestsPerEvictionRun = numTestsPerEvictionRun
 
-            // Как часто запускать проверку (раз в 30 сек)
-            timeBetweenEvictionRuns = Duration.ofSeconds(30)
+            this.blockWhenExhausted = blockWhenExhausted
+            setMaxWait(Duration.ofMillis(maxWaitMs))
 
-            // Математика для High-Load:
-            // У нас 128 соединений. Мы хотим проверить их все примерно за 2 минуты,
-            // чтобы балансировщик Railway не успел их убить (обычно таймаут 5-10 мин).
-            // 128 соединений / 4 запуска (2 мин / 30 сек) = 32.
-            // Проверяем по 32 соединения за раз.
-            numTestsPerEvictionRun = 32
-
-            // Если соединение просто висит без дела 60 секунд - проверяем его пингом.
-            minEvictableIdleTime = Duration.ofSeconds(60)
-
-            // --- 4. ЗАЩИТА ОТ ЗАВИСАНИЙ (Fail Fast) ---
-            // Если все 128 соединений заняты, ждем максимум 2 секунды.
-            // Если не дождались — кидаем ошибку.
-            // Лучше упасть с ошибкой "Server Busy", чем подвесить поток Ktor навсегда.
-            blockWhenExhausted = true
-            setMaxWait(Duration.ofSeconds(2))
-
-            // Включаем JMX мониторинг (полезно, если подключишь Prometheus/Grafana)
-            jmxEnabled = true
+            this.jmxEnabled = jmxEnabled
         }
 
         pool = if (password != null) {
@@ -103,4 +96,13 @@ class RedisService(config: ApplicationConfig) {
     fun close() {
         pool.close()
     }
+
+    private fun ApplicationConfig.int(path: String, default: Int): Int =
+        propertyOrNull(path)?.getString()?.toIntOrNull() ?: default
+
+    private fun ApplicationConfig.long(path: String, default: Long): Long =
+        propertyOrNull(path)?.getString()?.toLongOrNull() ?: default
+
+    private fun ApplicationConfig.bool(path: String, default: Boolean): Boolean =
+        propertyOrNull(path)?.getString()?.toBooleanStrictOrNull() ?: default
 }
