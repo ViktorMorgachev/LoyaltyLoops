@@ -174,7 +174,7 @@ fun Application.module() {
     val partnerRepository = PartnerRepository()
     val redisService = io.loyaltyloop.server.service.RedisService(envConfig)
     val exchangeRateService = io.loyaltyloop.server.service.ExchangeRateService(redisService, apiKey = envConfig.string("keys.exchangeRate", ""))
-    val cardUtils = CardUtils(exchangeRateService = exchangeRateService, partnerRepository = partnerRepository)
+    val cardUtils = CardUtils(exchangeRateService = exchangeRateService)
     // Создаем экземпляр репозитория
     val userRepository = UserRepository(cardUtils)
 

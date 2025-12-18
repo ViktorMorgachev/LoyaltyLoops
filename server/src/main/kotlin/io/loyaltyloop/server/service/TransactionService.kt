@@ -302,32 +302,45 @@ class TransactionService(
             // Вспомогательная функция: Конвертируем KGS обратно в USD для записи в базу
             fun toBase(localVal: Double): Double = (localVal / rate).round(2)
 
-            val mergeMoneyIntoSpend =
-                calc.pointsSpent > 0 && calc.moneyPaid > 0 && calc.pointsToAward == 0.0
+            val moneyPaidBase = toBase(calc.moneyPaid)
+
+            // Логика "Слияния" (из твоих настроек):
+            // Если списание есть, деньги есть, но начисления НЕТ (из-за настроек awardOnMixedPayment=false)
+            // -> Мы записываем деньги в транзакцию SPEND.
+            val mergeMoneyIntoSpend = calc.pointsSpent > 0 && calc.moneyPaid > 0 && calc.pointsToAward == 0.0
 
 
             if (calc.pointsSpent > 0) {
-                val spentBase = toBase(calc.pointsSpent)       // 425 KGS -> 5.0 USD
-                val moneyPaidBase = toBase(calc.moneyPaid)     // Для totalSpent
+
+                val spentBase = toBase(calc.pointsSpent)
+
+                // Решаем: добавлять ли сумму покупки (moneyPaidBase) к TotalSpent здесь?
+                // ДА, ЕСЛИ:
+                // 1. Мы сливаем транзакции (mergeMoneyIntoSpend == true)
+                // 2. ИЛИ Если блока начисления (EARN) вообще не будет (например, чистая оплата баллами)
+
+                val willEarnBlockRun = !mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)
+
+                val moneyToAdd = if (mergeMoneyIntoSpend || !willEarnBlockRun) {
+                    moneyPaidBase
+                } else {
+                    0.0 // Деньги учтем в следующем блоке
+                }
 
                 val amountRecorded = if (mergeMoneyIntoSpend) calc.moneyPaid else 0.0
 
-                transactionRepository.addCashback(
-                    card.id,
-                    cashback = -spentBase,
-                    spentAmount = if (mergeMoneyIntoSpend) moneyPaidBase else 0.0
-                )
+                transactionRepository.addCashback(card.id, -spentBase, moneyToAdd)
                 transactionRepository.recordTransaction(
                     userId = card.userId,
                     pointId = tradingPointId,
                     cashierId = cashierUserId,
                     type = "SPEND",
-                    amount = amountRecorded, // This is usually 0 if money is separate, but can be > 0 if merged
+                    amount = amountRecorded,
                     pointsDelta = -calc.pointsSpent,
                     visitsDelta = 0,
                     currency = point.currency,
                     exchangeRate = rate,
-                    pointsBaseValue = -spentBase // Convert amount to base value
+                    pointsBaseValue = -spentBase
                 )
 
                 eventLogger.log(
@@ -341,9 +354,9 @@ class TransactionService(
 
             if (!mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)) {
                 val earnedBase = toBase(calc.pointsToAward) // 500 KGS -> 5.88 USD
-                val moneyPaidBase = toBase(calc.moneyPaid)  // 5000 KGS -> 58.8 USD
+                val moneyToAdd = moneyPaidBase
+                transactionRepository.addCashback(card.id, earnedBase, moneyToAdd)
 
-                transactionRepository.addCashback(card.id, earnedBase, moneyPaidBase)
                 transactionRepository.recordTransaction(
                     userId = card.userId,
                     pointId = tradingPointId,
@@ -354,7 +367,7 @@ class TransactionService(
                     visitsDelta = 0,
                     currency = point.currency,
                     exchangeRate = rate,
-                    pointsBaseValue = earnedBase // Convert amount to base value
+                    pointsBaseValue = earnedBase
                 )
                 eventLogger.log(
                     type = SystemEventType.ACCRUAL,
