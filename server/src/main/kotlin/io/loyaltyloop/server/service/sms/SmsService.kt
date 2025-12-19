@@ -2,6 +2,7 @@ package io.loyaltyloop.server.service.sms
 
 import io.loyaltyloop.server.models.VerificationSignals
 
+// TODO checked
 interface SmsService {
     suspend fun sendSms(phone: String, text: String): Boolean
 

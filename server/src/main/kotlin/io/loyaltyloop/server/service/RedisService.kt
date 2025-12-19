@@ -6,6 +6,7 @@ import redis.clients.jedis.JedisPool
 import redis.clients.jedis.JedisPoolConfig
 import java.time.Duration
 
+// TODO checked
 class RedisService(config: ApplicationConfig) {
 
     private val logger = LoggerFactory.getLogger(RedisService::class.java)
@@ -75,8 +76,6 @@ class RedisService(config: ApplicationConfig) {
         }
     }
 
-    // Updated signature to match usage in ExchangeRateService.kt
-    // If ttlSeconds is null, no expiration is set
     fun set(key: String, value: String, ttlSeconds: Int? = null) {
         use { jedis ->
             if (ttlSeconds != null) {

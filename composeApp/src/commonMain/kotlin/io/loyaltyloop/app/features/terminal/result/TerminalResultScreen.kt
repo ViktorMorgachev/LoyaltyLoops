@@ -67,11 +67,11 @@ import kotlinx.coroutines.launch
 import io.loyaltyloop.shared.utils.getCurrencySymbol
 import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
 
-data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId: String, val strategy: TransactionStrategy) : Screen {
+data class TerminalResultScreen(val scanData: ScanQrResponse, val strategy: TransactionStrategy) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<TerminalResultScreenModel> { parametersOf(scanData, tradingPointId, strategy) }
+        val viewModel = koinScreenModel<TerminalResultScreenModel> { parametersOf(scanData, strategy) }
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -86,17 +86,15 @@ data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId
                         navigator?.pop()
                     }
                     is TerminalResultScreenModel.Event.NavigateToRating -> {
-                        navigator?.replace(RateClientScreen(event.userId, event.tradingPointId))
+                        navigator?.replace(RateClientScreen(event.userId))
                     }
                     is TerminalResultScreenModel.Event.NavigateToConfirmation -> {
                         navigator?.push(
                             TransactionConfirmationScreen(
                                 calculation = event.calculation,
-                                tradingPointId = event.tradingPointId,
                                 cardId = event.cardId,
                                 userId = event.userId,
                                 strategy = event.strategy,
-                                currency = event.currency
                             )
                         )
                     }

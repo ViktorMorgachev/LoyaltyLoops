@@ -79,7 +79,8 @@ data class TradingPointDto(
 @Serializable
 data class TradingPointDetailsDto(
     val point: TradingPointDto,
-    val settings: LoyaltySettingsDto
+    val settings: LoyaltySettingsDto,
+    val baseCurrency: String
 )
 
 @Serializable
@@ -102,10 +103,11 @@ data class CreateTradingPointRequest(
     val programType: LoyaltyProgramType = LoyaltyProgramType.TIERED_LTV,
 
     // Для VISITS
-    val visitsTarget: Int = 10,       //TODO Вынести в конфиги
+    val visitsTarget: Int = 10,
 
     // Для TIERED (можно передать базовый процент или список, для простоты возьмем базовый)
-    val baseCashback: Double  = 5.0,
+    val baseCashback: Double,
+    val maxBurnPercentage: Int,
     val awardOnMixedPayment: Boolean = false,
     val schedule: WeeklyScheduleDto? = null,
     val temporarilyPaused: Boolean = false,

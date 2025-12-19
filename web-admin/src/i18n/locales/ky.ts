@@ -51,6 +51,7 @@ export const ky = {
     errors: {
       INVALID_PHONE: "Телефон номеринин форматы туура эмес",
       INVALID_PHONE_NUMBER: "Телефон номеринин форматы туура эмес",
+      INVALID_EMAIL_FORMAT: "Электрондук почтанын форматы туура эмес",
       INVALID_CODE: "Код туура эмес",
       CODE_EXPIRED: "Коддун мөөнөтү бүттү",
       USER_NOT_FOUND: "Колдонуучу табылган жок",
@@ -125,6 +126,13 @@ export const ky = {
       system_events: "Аудит",
       platform_staff: "Кызматкерлер",
       create_business: "Бизнес түзүү"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Өнөктөш менеджери катары кошулуу",
@@ -255,6 +263,7 @@ export const ky = {
       label_target: "Максат (канчоо чогултуу керек?)",
       label_cashback: "Баштапкы Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Негизги валюта",
       timezone_label: "Убакыт алкагы",
       country_label: "Өлкө",
       country_placeholder: "Өлкөнү тандаңыз",
@@ -362,6 +371,8 @@ export const ky = {
       send: "Жөнөтүү",
       sent: "Билдирүү жөнөтүлдү",
       validation_empty: "Билдирүү бош болбошу керек",
+      name_required: "Аты милдеттүү",
+      email_required: "Email милдеттүү",
       empty_state: "Билдирүүлөр жок",
       no_messages: "Азырынча билдирүүлөр жок",
       no_threads: "Диалогдор жок",

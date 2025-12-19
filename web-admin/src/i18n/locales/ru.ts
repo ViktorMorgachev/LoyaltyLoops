@@ -51,6 +51,7 @@ export const ru = {
     errors: {
       INVALID_PHONE: "Неверный формат номера",
       INVALID_PHONE_NUMBER: "Неверный формат номера телефона",
+      INVALID_EMAIL_FORMAT: "Неверный формат электронной почты",
       INVALID_CODE: "Неверный код",
       CODE_EXPIRED: "Код истек",
       USER_NOT_FOUND: "Пользователь не найден",
@@ -136,6 +137,13 @@ export const ru = {
       system_events: "Аудит",
       platform_staff: "Сотрудники",
       create_business: "Создать Бизнес"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Присоединиться как менеджер партнёра",
@@ -269,6 +277,7 @@ export const ru = {
       label_target: "Цель (сколько собрать?)",
       label_cashback: "Начальный Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Базовая валюта",
       timezone_label: "Часовой пояс",
       country_label: "Страна",
       country_placeholder: "Выберите страну",
@@ -376,6 +385,8 @@ export const ru = {
       send: "Отправить",
       sent: "Сообщение отправлено",
       validation_empty: "Сообщение не может быть пустым",
+      name_required: "Имя обязательно для заполнения",
+      email_required: "Email обязательно для заполнения",
       empty_state: "Сообщений пока нет",
       no_messages: "Пока без сообщений",
       no_threads: "Диалогов пока нет",
@@ -487,7 +498,7 @@ export const ru = {
       overview_currency: "Валюта",
       status_active: "Активен",
       status_inactive: "Не активен",
-      address_label: "Адрес (введите вручную)",
+      address_label: "Адрес",
       contact_phone_label: "Контактный телефон",
       contact_link_label: "Ссылка для связи",
       contact_link_hint: "Например: https://t.me/brand или https://wa.me/996...",

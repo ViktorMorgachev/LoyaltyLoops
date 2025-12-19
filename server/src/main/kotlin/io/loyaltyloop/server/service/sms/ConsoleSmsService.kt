@@ -9,6 +9,7 @@ import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import org.slf4j.LoggerFactory
 
+// TODO checked
 data class SmsRateLimits(
     val maxPerMinute: Int,
     val maxPerHour: Int,
@@ -37,10 +38,8 @@ class ConsoleSmsService(
     ): String {
         checkOtpBlock(phone)
 
-        // Anti-fraud checks
         val now = System.currentTimeMillis()
 
-        // 1. Limit: Max N requests per 60 seconds
         val recentCount = systemEventRepository.countEvents(
             type = SystemEventType.SMS_REQUEST,
             userPhone = phone,
@@ -50,18 +49,17 @@ class ConsoleSmsService(
             throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "Wait before resending SMS")
         }
 
-        // 2. Limit: Max N requests per hour
         val hourlyCount = systemEventRepository.countEvents(
             type = SystemEventType.SMS_REQUEST,
             userPhone = phone,
-            since = now - 3_600_000 // last hour
+            since = now - 3_600_000
         )
         if (hourlyCount >= limits.maxPerHour) {
             throw LoyaltyException(AppErrorCode.TOO_MANY_REQUESTS, "Too many SMS attempts. Try again later.")
         }
 
         val code = otpService.generateCode(phone)
-        // 3. Шлем в консоль
+
         sendSms(phone, "Your code: $code")
 
         val ipInfo = signals?.ip?.let { " [IP: $it]" } ?: ""
@@ -72,7 +70,6 @@ class ConsoleSmsService(
             payload = "SMS sent with code: $code$ipInfo"
         )
 
-        // 4. Возвращаем номер телефона как ID проверки
         return phone
     }
 

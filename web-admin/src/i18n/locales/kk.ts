@@ -51,6 +51,7 @@ export const kk = {
     errors: {
       INVALID_PHONE: "Телефон нөмірінің пішімі қате",
       INVALID_PHONE_NUMBER: "Телефон нөмірінің пішімі қате",
+      INVALID_EMAIL_FORMAT: "Электрондық пошта пішімі қате",
       INVALID_CODE: "Код қате",
       CODE_EXPIRED: "Код мерзімі өтті",
       USER_NOT_FOUND: "Пайдаланушы табылмады",
@@ -125,6 +126,13 @@ export const kk = {
       system_events: "Аудит",
       platform_staff: "Қызметкерлер",
       create_business: "Бизнес құру"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Серіктес менеджері ретінде қосылу",
@@ -255,6 +263,7 @@ export const kk = {
       label_target: "Мақсат (қанша жинау керек?)",
       label_cashback: "Бастапқы Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Негізгі валюта",
       timezone_label: "Уақыт белдеуі",
       country_label: "Ел",
       country_placeholder: "Елді таңдаңыз",
@@ -362,6 +371,8 @@ export const kk = {
       send: "Жіберу",
       sent: "Хабарлама жіберілді",
       validation_empty: "Хабарлама бос болмауы керек",
+      name_required: "Аты міндетті",
+      email_required: "Email міндетті",
       empty_state: "Хабарламалар жоқ",
       no_messages: "Әзірге хабарламалар жоқ",
       no_threads: "Диалогтар жоқ",

@@ -2,37 +2,9 @@ package io.loyaltyloop.server
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.client.call.body
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.client.statement.bodyAsText
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.server.service.ExchangeRateService
-import io.loyaltyloop.server.service.RedisService
-import io.loyaltyloop.server.utils.CardUtils
-import io.loyaltyloop.shared.models.ApiMessage
-import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.AuthResponse
-import io.loyaltyloop.shared.models.RefreshTokenRequest
-import io.loyaltyloop.shared.models.SendCodeRequest
-import io.loyaltyloop.shared.models.VerifyCodeRequest
 import java.util.Date
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotEquals
-import kotlin.test.assertTrue
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 
 class AuthTest {
 

@@ -23,6 +23,10 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.prelude.sdk)
     implementation(libs.jedis)
+    
+    // Koin
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger)
 
     testImplementation(kotlin("test"))
     testImplementation(libs.ktor.server.test.host)

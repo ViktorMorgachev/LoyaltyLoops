@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { 
     Container, Typography, Paper, Box, Button, Table, TableHead, TableBody, 
     TableRow, TableCell, Tabs, Tab, Dialog, DialogTitle, DialogContent, 
-    DialogActions, Tooltip, Chip
+    DialogActions, Tooltip, Chip, Skeleton
 } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
@@ -18,6 +18,8 @@ export const PartnerStaffPage = () => {
     const [cashiers, setCashiers] = useState<any[]>([]);
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [openInvite, setOpenInvite] = useState(false);
+    const [loadingManagers, setLoadingManagers] = useState(true);
+    const [loadingCashiers, setLoadingCashiers] = useState(false);
 
     useEffect(() => {
         loadManagers();
@@ -31,19 +33,25 @@ export const PartnerStaffPage = () => {
 
     const loadManagers = async () => {
         try {
+            setLoadingManagers(true);
             const res = await api.get('/partners/managers');
             setManagers(res.data);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoadingManagers(false);
         }
     };
 
     const loadCashiers = async () => {
         try {
+            setLoadingCashiers(true);
             const res = await api.get('/partners/cashiers');
             setCashiers(res.data);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoadingCashiers(false);
         }
     };
 
@@ -70,7 +78,7 @@ export const PartnerStaffPage = () => {
 
     const handleGenerateInvite = async () => {
         try {
-            const res = await api.post('/partners/managers/invite');
+            const res = await api.get('/partners/managers/invite');
             setInviteCode(res.data.inviteCode);
             setOpenInvite(true);
         } catch (e) {
@@ -93,7 +101,8 @@ export const PartnerStaffPage = () => {
         if (!confirm(t('staff.confirm_fire'))) return;
         try {
             // Delete all cashier entries for this user
-            await Promise.all(user.points.map((p: any) => api.delete(`/partners/cashiers/${p.id}`)));
+            // API now requires pointId for deletion: DELETE /cashiers/{pointId}/{cashierId}
+            await Promise.all(user.points.map((p: any) => api.delete(`/partners/cashiers/${p.id}/${user.userId}`)));
             loadCashiers();
         } catch (e) {
             console.error(e);
@@ -132,7 +141,17 @@ export const PartnerStaffPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {managers.length === 0 ? (
+                            {loadingManagers ? (
+                                Array.from({ length: 3 }).map((_, idx) => (
+                                    <TableRow key={`mgr-skel-${idx}`}>
+                                        <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                                        <TableCell><Skeleton variant="text" width="50%" /></TableCell>
+                                        <TableCell><Skeleton variant="rectangular" width={100} height={24} /></TableCell>
+                                        <TableCell><Skeleton variant="rectangular" width={80} height={24} /></TableCell>
+                                        <TableCell align="right"><Skeleton variant="text" width={60} /></TableCell>
+                                    </TableRow>
+                                ))
+                            ) : managers.length === 0 ? (
                                 <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_managers')}</TableCell></TableRow>
                             ) : (
                                 managers.map((m) => (
@@ -174,7 +193,18 @@ export const PartnerStaffPage = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {uniqueCashiers.length === 0 ? (
+                            {loadingCashiers ? (
+                                Array.from({ length: 3 }).map((_, idx) => (
+                                    <TableRow key={`cashier-skel-${idx}`}>
+                                        <TableCell><Skeleton variant="text" width="60%" /></TableCell>
+                                        <TableCell><Skeleton variant="text" width="50%" /></TableCell>
+                                        <TableCell><Skeleton variant="rectangular" width={100} height={24} /></TableCell>
+                                        <TableCell><Skeleton variant="rectangular" width={140} height={24} /></TableCell>
+                                        <TableCell><Skeleton variant="rectangular" width={80} height={24} /></TableCell>
+                                        <TableCell align="right"><Skeleton variant="text" width={60} /></TableCell>
+                                    </TableRow>
+                                ))
+                            ) : uniqueCashiers.length === 0 ? (
                                 <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_cashiers')}</TableCell></TableRow>
                             ) : (
                                 uniqueCashiers.map((u: any) => (

@@ -26,7 +26,8 @@ data class UpdatePartnerRequest(
     val burnBonusesDays: Int? = null,
     val downgradeTierDays: Int? = null,
     val defaultVisitsTarget: Int = 10,
-    val baseCurrency: String
+    val baseCurrency: String,
+    val tiers: List<LoyaltyTierDto>? = null
 )
 
 @Serializable
@@ -59,6 +60,7 @@ data class PartnerEntity(
     val ownerId: String,
     val businessName: String,
     val countryCode: String,
+    val managerInviteCode: String,
     val hasPin: Boolean,
     val status: PartnerStatus,
     val logoUrl: String?,
@@ -68,7 +70,8 @@ data class PartnerEntity(
     val defaultVisitsTarget: Int,
     val ownerPhone: String? = null,
     val subscriptionWarnings: List<ExpiringPointDto>? = null,
-    val baseCurrency: String
+    val baseCurrency: String,
+    val tiers: List<LoyaltyTierDto>? = null
 )
 
 @Serializable

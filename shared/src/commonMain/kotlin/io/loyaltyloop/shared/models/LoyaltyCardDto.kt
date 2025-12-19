@@ -27,6 +27,7 @@ data class LoyaltyCardDto(
     val cardColor: String,
     val logoUrl: String?,
     val trustScore: Double,
+    val totalScore: Int,
     val fraudFlag: Boolean,
     val riskLevel: RiskLevel,
     

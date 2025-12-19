@@ -57,12 +57,12 @@ val appModule = module {
     factory { ProfileScreenModel(get(), get(), get(), get(), get()) }
     factory { JoinCompanyScreenModel(get()) }
 
-    factory { TerminalScreenModel(get(), get()) }
+    factory { TerminalScreenModel(get(), get(), get()) }
     factory { (scanData: ScanQrResponse, tradingPointId: String, strategy: TransactionStrategy) ->
         TerminalResultScreenModel(scanData, tradingPointId, strategy, get())
     }
-    factory { (calc: TransactionCalculationDto, tpId: String, cardId: String, userId: String, strategy: TransactionStrategy) ->
-        TransactionConfirmationScreenModel(calc, tpId, cardId, userId, strategy, get())
+    factory { (calc: TransactionCalculationDto, cardId: String, userId: String, strategy: TransactionStrategy) ->
+        TransactionConfirmationScreenModel(calculation = calc, cardId =  cardId,  userId = userId, strategy = strategy, get())
     }
     factory { CashierStatsScreenModel(get()) }
     factory { (userId: String, tpId: String) ->

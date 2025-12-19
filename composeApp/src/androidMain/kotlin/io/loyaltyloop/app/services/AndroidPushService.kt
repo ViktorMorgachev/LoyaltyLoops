@@ -49,14 +49,13 @@ class AndroidPushService(
                 ensureSyncForCurrentWorkspace()
                 return@launch
             }
-
             try {
                 NotificationChannels.ensureCreated(appContext)
                 FirebaseMessaging.getInstance().isAutoInitEnabled = true
                 val token = fetchFcmToken() ?: return@launch
                 cachedToken = token
                 syncTokenWithServer(
-                    buildContext(sessionManager.currentWorkspace.value),
+                    context = buildContext(token, sessionManager.currentWorkspace.value),
                     force = true
                 )
                 startWorkspaceListener()
@@ -74,7 +73,6 @@ class AndroidPushService(
     override suspend fun unregister()  {
         scope.launch {
             if (!isRegistered) return@launch
-
             try {
                 workspaceJob?.cancel()
                 workspaceJob = null
@@ -91,13 +89,14 @@ class AndroidPushService(
 
     }
 
-    private fun buildContext(workspace: UserWorkspace?): DeviceTokenContext {
+    private fun buildContext(token: String, workspace: UserWorkspace?): DeviceTokenContext {
         val role = workspace?.role ?: UserRole.CLIENT
         val workspaceId = when (role) {
             UserRole.CLIENT -> null
             else -> workspace?.id
         }
         return DeviceTokenContext(
+            token = token,
             platform = DevicePlatform.ANDROID,
             role = role,
             workspaceId = workspaceId
@@ -169,15 +168,17 @@ class AndroidPushService(
     }
 
     private suspend fun ensureSyncForCurrentWorkspace() {
-        val context = buildContext(sessionManager.currentWorkspace.value)
-        var forceSync = false
         var token = cachedToken
+
+        var forceSync = false
+
         if (token == null) {
             token = fetchFcmToken()
             if (token == null) return
             cachedToken = token
             forceSync = true
         }
+        val context = buildContext(token, sessionManager.currentWorkspace.value)
         syncTokenWithServer(context, force = forceSync)
     }
 
@@ -186,7 +187,7 @@ class AndroidPushService(
         workspaceJob = scope.launch {
             sessionManager.currentWorkspace.collectLatest { workspace ->
                 cachedToken?.let {
-                    syncTokenWithServer(buildContext(workspace), force = false)
+                    syncTokenWithServer(buildContext(it, workspace), force = false)
                 }
             }
         }

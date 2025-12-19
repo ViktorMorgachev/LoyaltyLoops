@@ -51,6 +51,7 @@ export const en = {
     errors: {
       INVALID_PHONE: "Invalid phone format",
       INVALID_PHONE_NUMBER: "Invalid phone number format",
+      INVALID_EMAIL_FORMAT: "Invalid email format",
       INVALID_CODE: "Invalid code",
       CODE_EXPIRED: "Code expired",
       USER_NOT_FOUND: "User not found",
@@ -136,6 +137,13 @@ export const en = {
       system_events: "Audit",
       platform_staff: "Platform Staff",
       create_business: "Create Business"
+    },
+    currency: {
+        USD: "USD (Dollar)",
+        KGS: "KGS (Som)",
+        KZT: "KZT (Tenge)",
+        UZS: "UZS (Sum)",
+        BYN: "BYN (Bel. ruble)"
     },
     join_partner: {
       title: "Join as Partner Manager",
@@ -269,6 +277,7 @@ export const en = {
       label_target: "Target (how many?)",
       label_cashback: "Initial Cashback (%)",
       label_currency: "Currency",
+      label_base_currency: "Base Currency",
       timezone_label: "Timezone", // Added
       country_label: "Country",
       country_placeholder: "Select country",
@@ -376,6 +385,8 @@ export const en = {
       send: "Send",
       sent: "Message sent",
       validation_empty: "Message cannot be empty",
+      name_required: "Name is required",
+      email_required: "Email is required",
       empty_state: "No messages yet",
       no_messages: "No messages",
       no_threads: "No threads yet",

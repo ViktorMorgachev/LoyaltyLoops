@@ -130,6 +130,12 @@ api.interceptors.request.use((config) => {
         config.headers['X-Timezone-Id'] = 'UTC';
     }
 
+    // Workspace ID
+    const currentWorkspaceId = localStorage.getItem('currentWorkspaceId');
+    if (currentWorkspaceId && !config.headers['X-Workspace-Id']) {
+        config.headers['X-Workspace-Id'] = currentWorkspaceId;
+    }
+
     return config;
 }, (error) => {
     return Promise.reject(error);

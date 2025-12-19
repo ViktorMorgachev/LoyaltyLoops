@@ -2,54 +2,69 @@ package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
+import io.loyaltyloop.server.models.AuthSessionStatus
+import io.loyaltyloop.server.service.email.ConsoleEmailService
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUUID
+import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AuthSession
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
-import java.util.UUID
+import org.slf4j.LoggerFactory
+import java.time.temporal.ChronoUnit
 
-
+// TODO checked
 class AuthSessionRepository {
 
+    private val logger = LoggerFactory.getLogger(AuthSessionRepository::class.java)
     suspend fun createSession(ttlMs: Long): String = dbQuery {
-        val uuid = UUID.randomUUID().toString()
-        val now = System.currentTimeMillis()
-        AuthSessionsTable.insert {
-            it[id] = uuid
-            it[status] = "PENDING"
-            it[createdAt] = now
-            it[expiresAt] = now + ttlMs
+        val now = nowUtc()
+        val expirationTime = now.plus(ttlMs, ChronoUnit.MILLIS)
+
+        val newId = AuthSessionsTable.insertAndGetId {
+            it[status] = AuthSessionStatus.PENDING
+            it[expiresAt] = expirationTime
         }
-        uuid
+        newId.value.toString()
     }
 
     suspend fun getSession(uuid: String): AuthSession? = dbQuery {
-        AuthSessionsTable.selectAll().where { AuthSessionsTable.id eq uuid }
-            .map {
-                AuthSession(
-                    id = it[AuthSessionsTable.id],
-                    status = it[AuthSessionsTable.status],
-                    telegramId = it[AuthSessionsTable.telegramId],
-                    phone = it[AuthSessionsTable.phone],
-                    userId = it[AuthSessionsTable.userId],
-                    expiresAt = it[AuthSessionsTable.expiresAt]
-                )
-            }.singleOrNull()
-    }
+        val sessionUuid = uuid.toUUID()
 
-    suspend fun confirmSession(uuid: String, telegramId: Long, phone: String, userId: String?) = dbQuery {
-        AuthSessionsTable.update({ AuthSessionsTable.id eq uuid }) {
-            it[status] = "CONFIRMED"
-            it[this.telegramId] = telegramId
-            it[this.phone] = phone
-            it[this.userId] = userId
-        }
+        AuthSessionsTable.selectAll()
+            .where { AuthSessionsTable.id eq sessionUuid }
+            .map { row ->
+                AuthSession(
+                    id = row[AuthSessionsTable.id].value.toString(),
+                    status = row[AuthSessionsTable.status].name,
+                    telegramId = row[AuthSessionsTable.telegramId],
+                    phone = row[AuthSessionsTable.phone],
+                    userId = row[AuthSessionsTable.user]?.value?.toString(),
+                    expiresAt = row[AuthSessionsTable.expiresAt].toUtcMillis()
+                )
+            }
+            .singleOrNull()
     }
 
     suspend fun cleanupExpiredSessions() = dbQuery {
-        val now = System.currentTimeMillis()
+        val now = nowUtc()
+
         AuthSessionsTable.deleteWhere {
             AuthSessionsTable.expiresAt less now
         }
+    }
+
+    suspend fun confirmSession(uuid: String, telegramId: Long, phone: String, userId: String): Boolean  = dbQuery {
+        val sessionUuid = uuid.toUUID()
+        val userUuid = userId.toUUID()
+        val updatedCount = AuthSessionsTable.update({ AuthSessionsTable.id eq sessionUuid }) {
+            it[status] = AuthSessionStatus.CONFIRMED
+
+            it[this.telegramId] = telegramId
+            it[this.phone] = phone
+            it[user] = userUuid
+        }
+        updatedCount > 0
     }
 }
 

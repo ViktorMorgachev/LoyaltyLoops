@@ -31,10 +31,10 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlinx.coroutines.launch
 import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
+import io.loyaltyloop.shared.models.Currency
 
 data class TransactionConfirmationScreen(
     val calculation: TransactionCalculationDto,
-    val tradingPointId: String,
     val cardId: String,
     val userId: String,
     val strategy: TransactionStrategy,
@@ -42,7 +42,7 @@ data class TransactionConfirmationScreen(
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<TransactionConfirmationScreenModel> { parametersOf(calculation, tradingPointId, cardId, userId, strategy) }
+        val viewModel = koinScreenModel<TransactionConfirmationScreenModel> { parametersOf(calculation, cardId, userId, strategy) }
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -62,7 +62,7 @@ data class TransactionConfirmationScreen(
                         navigator?.popUntil { it is TerminalScreen }
                     }
                     is TransactionConfirmationScreenModel.Event.NavigateToRating -> {
-                        navigator?.replace(RateClientScreen(event.userId, event.tradingPointId))
+                        navigator?.replace(RateClientScreen(event.userId))
                     }
                 }
             }

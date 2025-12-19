@@ -4,9 +4,9 @@ import io.ktor.server.config.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
+// TODO checked
 class OtpService(config: ApplicationConfig) {
 
-    // Читаем TTL из конфига (по дефолту 2 минуты)
     private val codeTtl = config.propertyOrNull("otp.ttl")?.getString()?.toLong() ?: 120_000L
 
     // Хранилище: Телефон -> Данные о коде
@@ -36,15 +36,13 @@ class OtpService(config: ApplicationConfig) {
     fun validateCode(phone: String, code: String): Boolean {
         val entry = otpStorage[phone] ?: return false
 
-        // 1. Проверка времени
         if (System.currentTimeMillis() > entry.expiresAt) {
             otpStorage.remove(phone) // Удаляем протухший
             return false
         }
 
-        // 2. Проверка совпадения
         if (entry.code == code) {
-            otpStorage.remove(phone) // Код использован, удаляем
+            otpStorage.remove(phone)
             return true
         }
 

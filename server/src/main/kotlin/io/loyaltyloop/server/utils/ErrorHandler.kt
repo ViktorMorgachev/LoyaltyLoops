@@ -33,6 +33,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.POINT_PAUSED,
                 AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.CODE_EXPIRED,
+                AppErrorCode.WAS_FIRED,
+                AppErrorCode.WORKSPACE_ID_MISSING,
                 AppErrorCode.INVALID_PIN -> HttpStatusCode.Forbidden
 
                 AppErrorCode.NOT_FOUND,
@@ -84,7 +86,6 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                     )
                     return
                 }
-
             }
 
             call.respond(

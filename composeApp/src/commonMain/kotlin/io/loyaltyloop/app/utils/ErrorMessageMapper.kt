@@ -64,6 +64,9 @@ fun AppErrorCode.toResource(message: String? = null): StringResource {
         AppErrorCode.USER_BANNED -> Res.string.error_user_banned
         AppErrorCode.BLOCK_REQUEST_CREATED -> Res.string.term_report_success
         AppErrorCode.BLOCK_REQUEST_ALREADY_EXISTS -> Res.string.error_block_request_exists
+        AppErrorCode.WAS_FIRED -> TODO()
+        AppErrorCode.WORKSPACE_ID_MISSING -> TODO()
+        AppErrorCode.CURRENCY_RATE_NOT_FOUND -> TODO()
     }
 }
 

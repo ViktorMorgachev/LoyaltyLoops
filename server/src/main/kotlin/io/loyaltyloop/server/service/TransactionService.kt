@@ -1,7 +1,6 @@
 package io.loyaltyloop.server.service
 
 import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.shared.config.SecurityDefaults
 import io.loyaltyloop.shared.models.LoyaltyProgramType
@@ -19,120 +18,93 @@ import io.loyaltyloop.shared.models.CardRealtimeEventType
 import io.loyaltyloop.shared.models.CardRealtimePayload
 import io.loyaltyloop.shared.utils.CryptoUtils
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.repository.HistoryRepository
 import io.loyaltyloop.server.service.LoyaltyCalculator.round
-import io.loyaltyloop.server.utils.CardUtils
+import io.loyaltyloop.server.repository.LoyaltyCardRepository
+import io.loyaltyloop.server.repository.PartnerStaffRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.shared.models.PartnerStatus
 import kotlin.math.abs
-import io.loyaltyloop.shared.models.CashierDailyStatsDto
+import io.loyaltyloop.shared.models.LoyaltySettingsDto
+import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.TransactionHistoryDto
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import java.time.LocalDateTime
 
+// TODO Checked
 class TransactionService(
     private val userRepository: UserRepository,
-    private val transactionRepository: TransactionRepository,
     private val partnerRepository: PartnerRepository,
+    private val partnerStaffRepository: PartnerStaffRepository,
+    private val tradingPointRepository: TradingPointRepository,
     private val realtimeService: CardRealtimeService,
     private val eventLogger: EventLogger,
-    private val cardUtils: CardUtils,
-    private val exchangeRateService: ExchangeRateService
+    private val loyaltyCardRepository: LoyaltyCardRepository,
+    private val exchangeRateService: ExchangeRateService,
+    private val historyRepository: HistoryRepository
 ) {
 
-    suspend fun getCashierDailyStats(cashierId: String): CashierDailyStatsDto {
-        val zoneId = java.time.ZoneId.systemDefault()
-        val now = System.currentTimeMillis()
-        val todayStart =
-            java.time.LocalDate.now(zoneId).atStartOfDay(zoneId).toInstant().toEpochMilli()
-
-        return transactionRepository.getCashierStats(cashierId, todayStart, now)
-    }
-
-    suspend fun scanQr(cashierUserId: String, estimatedCurrency: String, request: ScanQrRequest): ScanQrResponse {
+    suspend fun scanQr(
+        cashierUserId: String,
+        tradingPointId: String,
+        estimatedCurrency: String,
+        request: ScanQrRequest
+    ): ScanQrResponse {
         // 1. Проверка прав кассира
-        if (!partnerRepository.isUserCashierAtPoint(cashierUserId, request.tradingPointId)) {
-            throw LoyaltyException(
-                AppErrorCode.FORBIDDEN,
-                "User is not a cashier at this trading point"
-            )
+        if (!partnerStaffRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {
+            throw LoyaltyException(AppErrorCode.FORBIDDEN, "User is not a cashier at this trading point")
         }
 
-        val point = partnerRepository.getPointById(request.tradingPointId)
+        // 2. Валидация точки и статуса партнера
+        val point = tradingPointRepository.getPointById(tradingPointId)
+        if (!point.active) throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
+        if (point.temporarilyPaused) throw LoyaltyException(AppErrorCode.POINT_PAUSED)
 
-        if (!point.active) {
-            throw LoyaltyException(AppErrorCode.POINT_INACTIVE, "Trading point is inactive")
-        }
-        if (point.temporarilyPaused) {
-            throw LoyaltyException(AppErrorCode.POINT_PAUSED, "Trading point temporarily paused")
-        }
-
-        val partnerIdFromRepo = partnerRepository.getPartnerIdByPoint(request.tradingPointId)
-        val partner = partnerRepository.getPartnerByIdQ(partnerIdFromRepo)
+        val partnerId = tradingPointRepository.getPartnerIdByPointId(tradingPointId)
+        val partner = partnerRepository.getPartnerByIdOrThrow(partnerId, loadOtherData = false)
 
         if (partner.status == PartnerStatus.BLOCKED) {
-            throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED, "Partner account is blocked")
+            throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED)
         }
 
-        // 3. Парсинг QR-кода
+        // 3. Обработка QR-кода
         val qrData = parseQrCode(request.qrContent)
+        validateQrTimestamp(qrData.timestamp)
 
-        // 4. Проверка времени (защита от replay атак)
-        val now = System.currentTimeMillis() / 1000
-        if (abs(now - qrData.timestamp) > SecurityDefaults.QR_TOKEN_TTL_SECONDS) {
-            throw LoyaltyException(
-                AppErrorCode.QR_EXPIRED,
-                "QR code expired. Please refresh the screen."
-            )
-        }
-
-        // 5. Получение и проверка клиента
         val customer = userRepository.getUserById(qrData.userId)
             ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
 
-        // 6. Проверка подписи
         validateQrSignature(customer, qrData.timestamp, qrData.signature)
 
-        // 7. Найти или создать карту (Сквозная лояльность: карта привязана к Партнеру)
-        val (card, isCreatedNow) = userRepository.findOrCreateCard(
+        // 4. Работа с картой лояльности
+        val (card, isCreatedNow) = loyaltyCardRepository.findOrCreateCard(
             userId = customer.id,
-            partnerId = partner.id,
+            partnerId = partnerId,
             estimatedCurrency = estimatedCurrency
         )
 
-        if (card.legacyIsBlocked) {
-            throw LoyaltyException(AppErrorCode.CARD_BLOCKED)
-        }
-
-        if (!isCreatedNow) {
-            ensureCardActive(card)
-        }
+        ensureCardActive(card)
 
         if (isCreatedNow) {
-            realtimeService.notifyUser(
-                userId = customer.id,
-                payload = CardRealtimePayload(
-                    eventType = CardRealtimeEventType.CARD_CREATED,
-                    cardId = card.id,
-                    cardSnapshot = card,
-                    tradingPointId = request.tradingPointId
-                )
-            )
+            notifyUserCardCreated(customer.id, card, tradingPointId)
         }
 
-        // 8. Получение настроек лояльности текущей точки
-        val settings = partnerRepository.getSettingsByPointId(request.tradingPointId)
-
-        // 9. Определение текущего процента кешбэка
+        // 5. Формирование ответа
+        val settings = tradingPointRepository.getSettingsByPointId(tradingPointId)
         val currentTier = settings.tiers.find { it.levelIndex == card.tierLevel }
-        val percent = currentTier?.cashbackPercent ?: 0.0
+        val cashbackPercent = currentTier?.cashbackPercent ?: 0.0
 
         return ScanQrResponse(
             userId = customer.id,
             userPhone = customer.phoneNumber,
             firstName = customer.firstName,
             cardId = card.id,
-            currentBalance = card.balance,
+            currentBalance = card.estimatedValue,
             visitsCount = card.visitsCount,
             programType = settings.programType,
             visitsTarget = settings.visitsTarget,
-            cashbackPercent = percent,
+            cashbackPercent = cashbackPercent,
             maxBurnPercentage = settings.maxBurnPercentage,
             currency = point.currency,
             awardOnMixedPayment = settings.awardOnMixedPayment,
@@ -140,6 +112,25 @@ class TransactionService(
             trustScore = card.trustScore,
             riskLevel = card.riskLevel,
             fraudFlag = card.fraudFlag
+        )
+    }
+
+    private fun validateQrTimestamp(timestamp: Long) {
+        val now = System.currentTimeMillis() / 1000
+        if (abs(now - timestamp) > SecurityDefaults.QR_TOKEN_TTL_SECONDS) {
+            throw LoyaltyException(AppErrorCode.QR_EXPIRED, "QR code expired. Please refresh the screen.")
+        }
+    }
+
+    private suspend fun notifyUserCardCreated(userId: String, card: LoyaltyCardDto, tradingPointId: String) {
+        realtimeService.notifyUser(
+            userId = userId,
+            payload = CardRealtimePayload(
+                eventType = CardRealtimeEventType.CARD_CREATED,
+                cardId = card.id,
+                cardSnapshot = card,
+                tradingPointId = tradingPointId
+            )
         )
     }
 
@@ -152,32 +143,21 @@ class TransactionService(
         estimatedCurrency: String,
     ): TransactionCalculationDto {
 
-        if (!partnerRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {
-            throw LoyaltyException(
-                AppErrorCode.FORBIDDEN,
-                "User is not a cashier at this trading point"
-            )
-        }
+        validateTransactionAccess(cashierUserId, tradingPointId)
 
-        val point = partnerRepository.getPointById(tradingPointId)
-        if (!point.active) {
-            throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
-        }
-        if (point.temporarilyPaused) {
-            throw LoyaltyException(AppErrorCode.POINT_PAUSED)
-        }
-
-        // Multi-Currency Logic
-        val partnerId = partnerRepository.getPartnerIdByPoint(tradingPointId)
-        val partner = partnerRepository.getPartnerByIdQ(partnerId)
-        // 1. Получаем курс: Base (USD) -> Local (KGS). Пример: 85.0
-
-        val rate = exchangeRateService.getRate(partner.baseCurrency, point.currency)
-        val card = cardUtils.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency)
+        val card = loyaltyCardRepository.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
+
         ensureCardActive(card)
 
-        val settings = partnerRepository.getSettingsByPointId(tradingPointId)
+        val point = tradingPointRepository.getPointById(tradingPointId)
+        val partner = partnerRepository.getPartnerByPointId(tradingPointId)
+            ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found")
+
+        // 1. Получаем курс: Base (USD) -> Local (KGS). Пример: 85.0
+
+        val settings = tradingPointRepository.getSettingsByPointId(tradingPointId)
+        val rate = exchangeRateService.getRate(partner.baseCurrency, point.currency)
 
         // 2. Создаем "Виртуальную карту" в местной валюте
         // Если у клиента 10 USD, калькулятор должен видеть 850 KGS
@@ -186,12 +166,16 @@ class TransactionService(
             totalSpent = (card.totalSpent * rate).round(2) // Важно для проверки Tier Update в местной валюте
         )
 
+        val localTiers = settings.tiers.map { tier ->
+            tier.copy(threshold = (tier.threshold * rate).round(2))
+        }
+
         val calc = LoyaltyCalculator.calculate(
+            settingsTiers = localTiers,
             card = localCard,
-            purchaseAmount = purchaseAmount, // Calculate using Base Currency
+            purchaseAmount = purchaseAmount,
             maxBurnPercentage = settings.maxBurnPercentage,
             settingsVisitTarget = settings.visitsTarget,
-            settingsTiers = settings.tiers,
             strategy = strategy,
             awardOnMixedPayment = settings.awardOnMixedPayment
         )
@@ -202,7 +186,6 @@ class TransactionService(
         )
     }
 
-    @Suppress("LongMethod", "ThrowsCount", "CyclomaticComplexMethod")
     suspend fun processTransaction(
         cashierUserId: String,
         tradingPointId: String,
@@ -212,247 +195,351 @@ class TransactionService(
         estimatedCurrency: String,
     ) = newSuspendedTransaction {
 
-        // 1. Проверка прав
-        if (!partnerRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {
-            throw LoyaltyException(
-                AppErrorCode.FORBIDDEN,
-                "User is not a cashier at this trading point"
-            )
-        }
+        validateTransactionAccess(cashierUserId, tradingPointId)
 
-        val point = partnerRepository.getPointById(tradingPointId)
-
-        if (!point.active) {
-            throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
-        }
-        if (point.temporarilyPaused) {
-            throw LoyaltyException(AppErrorCode.POINT_PAUSED)
-        }
-
-        // 2. Получаем карту и проверяем валидность
-        val card = cardUtils.getCardByID(cardId, estimatedCurrency)
+        val card = loyaltyCardRepository.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
 
-        val partner = partnerRepository.getPartnerByIdQ(card.id)
+        ensureCardActive(card)
 
-        // Multi-Currency Logic
+        val point = tradingPointRepository.getPointById(tradingPointId)
+        val partner = partnerRepository.getPartnerByPointId(tradingPointId)
+            ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found")
+
+        // 1. Получаем курс: Base (USD) -> Local (KGS). Пример: 85.0
+        val settings = tradingPointRepository.getSettingsByPointId(tradingPointId)
         val rate = exchangeRateService.getRate(partner.baseCurrency, point.currency)
 
-        // 3. Получаем настройки ТОЧКИ (чтобы понять, какую стратегию применять)
-        val settings = partnerRepository.getSettingsByPointId(tradingPointId)
+        validateLoyaltyStrategyCompatibility(settings.programType, strategy)
 
-        // 3. Получаем проверяем условие настройки лояльности точки и то что пришло к нам
-        with(settings) {
-            if (programType == LoyaltyProgramType.TIERED_LTV && strategy == TransactionStrategy.VISIT) {
-                throw LoyaltyException(
-                    AppErrorCode.INVALID_REQUEST,
-                    "Loyalty settings ${programType} is not compatible with strategy VISIT"
-                )
-            }
-            if (programType == LoyaltyProgramType.VISIT_COUNTER && strategy != TransactionStrategy.VISIT) {
-                throw LoyaltyException(
-                    AppErrorCode.INVALID_REQUEST,
-                    "Loyalty settings ${programType} is not compatible with strategy MONEY"
-                )
-            }
-        }
-
-        val localCard = card.copy(
-            balance = (card.balance * rate).round(2),
-            totalSpent = (card.totalSpent * rate).round(2)
-        )
-
-        val calc = LoyaltyCalculator.calculate(
-            card = localCard,
-            purchaseAmount = purchaseAmount, // 5000 KGS
-            maxBurnPercentage = settings.maxBurnPercentage,
-            settingsVisitTarget = settings.visitsTarget,
-            settingsTiers = settings.tiers,
-            strategy = strategy,
-            awardOnMixedPayment = settings.awardOnMixedPayment
-        )
-
+        // 4. Расчет лояльности
+        val calc = calculateLoyalty(card, purchaseAmount, strategy, settings, rate)
         if (calc.message == TransactionCalculationDto.LoyaltyMessage.TIERED_ERROR_AMOUNT) {
             throw LoyaltyException(AppErrorCode.INVALID_AMOUNT, "Invalid Amount")
         }
 
-        if (strategy == TransactionStrategy.VISIT) {
-            transactionRepository.incrementVisits(card.id)
-            transactionRepository.recordTransaction(
-                userId = card.userId,
-                pointId = tradingPointId,
-                cashierId = cashierUserId,
-                type = "VISIT",
-                amount = 0.0,
-                pointsDelta = 0.0,
-                visitsDelta = 1,
-                currency = point.currency,
-                exchangeRate = rate,
-                pointsBaseValue = 0.0
-            )
-            eventLogger.log(
-                type = SystemEventType.VISIT,
-                userId = card.userId,
-                partnerId = card.partnerId,
-                payload = "Visit recorded at point $tradingPointId by cashier $cashierUserId. Visits delta: 1"
-            )
-        } else {
-            // --- MONEY STRATEGY ---
+        val updatedAt = nowUtc()
 
-            // Вспомогательная функция: Конвертируем KGS обратно в USD для записи в базу
-            fun toBase(localVal: Double): Double = (localVal / rate).round(2)
-
-            val moneyPaidBase = toBase(calc.moneyPaid)
-
-            // Логика "Слияния" (из твоих настроек):
-            // Если списание есть, деньги есть, но начисления НЕТ (из-за настроек awardOnMixedPayment=false)
-            // -> Мы записываем деньги в транзакцию SPEND.
-            val mergeMoneyIntoSpend = calc.pointsSpent > 0 && calc.moneyPaid > 0 && calc.pointsToAward == 0.0
-
-
-            if (calc.pointsSpent > 0) {
-
-                val spentBase = toBase(calc.pointsSpent)
-
-                // Решаем: добавлять ли сумму покупки (moneyPaidBase) к TotalSpent здесь?
-                // ДА, ЕСЛИ:
-                // 1. Мы сливаем транзакции (mergeMoneyIntoSpend == true)
-                // 2. ИЛИ Если блока начисления (EARN) вообще не будет (например, чистая оплата баллами)
-
-                val willEarnBlockRun = !mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)
-
-                val moneyToAdd = if (mergeMoneyIntoSpend || !willEarnBlockRun) {
-                    moneyPaidBase
-                } else {
-                    0.0 // Деньги учтем в следующем блоке
-                }
-
-                val amountRecorded = if (mergeMoneyIntoSpend) calc.moneyPaid else 0.0
-
-                transactionRepository.addCashback(card.id, -spentBase, moneyToAdd)
-                transactionRepository.recordTransaction(
-                    userId = card.userId,
-                    pointId = tradingPointId,
-                    cashierId = cashierUserId,
-                    type = "SPEND",
-                    amount = amountRecorded,
-                    pointsDelta = -calc.pointsSpent,
-                    visitsDelta = 0,
-                    currency = point.currency,
-                    exchangeRate = rate,
-                    pointsBaseValue = -spentBase
-                )
-
-                eventLogger.log(
-                    type = SystemEventType.REDEMPTION,
-                    userId = card.userId,
-                    partnerId = card.partnerId,
-                    payload = "Redeemed ${calc.pointsSpent} points at point $tradingPointId"
-                )
-
-            }
-
-            if (!mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)) {
-                val earnedBase = toBase(calc.pointsToAward) // 500 KGS -> 5.88 USD
-                val moneyToAdd = moneyPaidBase
-                transactionRepository.addCashback(card.id, earnedBase, moneyToAdd)
-
-                transactionRepository.recordTransaction(
-                    userId = card.userId,
-                    pointId = tradingPointId,
-                    cashierId = cashierUserId,
-                    type = "EARN",
-                    amount = calc.moneyPaid,
-                    pointsDelta = calc.pointsToAward,
-                    visitsDelta = 0,
-                    currency = point.currency,
-                    exchangeRate = rate,
-                    pointsBaseValue = earnedBase
-                )
-                eventLogger.log(
-                    type = SystemEventType.ACCRUAL,
-                    userId = card.userId,
-                    partnerId = card.partnerId,
-                    payload = "Accrued ${calc.pointsToAward} points for ${calc.moneyPaid} amount at point $tradingPointId"
-                )
-            }
-
-            // FIX RACE CONDITION: Reload card to get actual TotalSpent from DB (including concurrent updates)
-            val refreshedCard = cardUtils.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency) ?: card
-
-            val nextTier = settings.tiers
-                .filter { tier -> tier.threshold <= refreshedCard.totalSpent }
-                .maxByOrNull { it.levelIndex }
-
-
-            if (nextTier != null && nextTier.levelIndex > refreshedCard.tierLevel) {
-                transactionRepository.updateTier(card.id, nextTier.levelIndex)
-                eventLogger.log(
-                    type = SystemEventType.TIER_CHANGE,
-                    userId = card.userId,
-                    partnerId = card.partnerId,
-                    payload = "Tier upgraded to ${nextTier.levelIndex}"
-                )
-            }
-        }
-
-        val successType: TransactionSuccessType
-        val successArgs: List<String>
+        // 5. Выполнение транзакции в зависимости от стратегии
+        val cashierResult: TransactionResult
+        val clientPayload: CardRealtimePayload
 
         if (strategy == TransactionStrategy.VISIT) {
-            val target = settings.visitsTarget
-            if (target > 0 && calc.newVisits % target == 0 && calc.newVisits > 0) {
-                successType = TransactionSuccessType.VISIT_REWARD
-                successArgs = listOf(target.toString())
-            } else {
-                successType = TransactionSuccessType.VISIT_PROGRESS
-                successArgs = listOf(
-                    calc.newVisits.toString(),
-                    target.toString(),
-                    (calc.newVisits - card.visitsCount).coerceAtLeast(1).toString()
-                )
-            }
+            val (cRes, cPayload) = processVisitTransaction(
+                card, cashierUserId, tradingPointId, point.currency, rate, settings, calc, updatedAt
+            )
+            cashierResult = cRes
+            clientPayload = cPayload
         } else {
-            // MONEY
-            val spent = calc.pointsSpent
-            val earned = calc.pointsToAward
+            val (cRes, cPayload) = processMoneyTransaction(
+                card, cashierUserId, tradingPointId, point.currency, rate, calc, updatedAt
+            )
+            cashierResult = cRes
+            clientPayload = cPayload
 
-            if (spent > 0 && earned > 0) {
-                successType = TransactionSuccessType.POINTS_SPENT_EARNED
-                successArgs = listOf(fmt(spent), fmt(earned))
-            } else if (spent > 0) {
-                successType = TransactionSuccessType.POINTS_SPENT
-                successArgs = listOf(fmt(spent))
-            } else if (earned > 0) {
-                successType = TransactionSuccessType.POINTS_EARNED
-                successArgs = listOf(fmt(earned))
-            } else {
-                successType = TransactionSuccessType.BALANCE_INFO
-                successArgs = listOf(fmt(calc.newBalance))
-            }
+            updateTierIfEligible(card.id, estimatedCurrency, settings.tiers, updatedAt)
         }
+
+        // 6. Уведомление
+        notifyUserTransaction(card.userId, clientPayload)
+
+        cashierResult
+    }
+
+    private suspend fun validateTransactionAccess(cashierUserId: String, tradingPointId: String) {
+        if (!partnerStaffRepository.isUserCashierAtPoint(cashierUserId, tradingPointId)) {
+            throw LoyaltyException(AppErrorCode.FORBIDDEN, "User is not a cashier at this trading point")
+        }
+        val point = tradingPointRepository.getPointById(tradingPointId)
+        if (!point.active) throw LoyaltyException(AppErrorCode.POINT_INACTIVE)
+        if (point.temporarilyPaused) throw LoyaltyException(AppErrorCode.POINT_PAUSED)
+    }
+
+    private fun validateLoyaltyStrategyCompatibility(programType: LoyaltyProgramType, strategy: TransactionStrategy) {
+        if (programType == LoyaltyProgramType.TIERED_LTV && strategy == TransactionStrategy.VISIT) {
+            throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Loyalty settings $programType is not compatible with strategy VISIT")
+        }
+        if (programType == LoyaltyProgramType.VISIT_COUNTER && strategy != TransactionStrategy.VISIT) {
+            throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Loyalty settings $programType is not compatible with strategy MONEY")
+        }
+    }
+
+    private fun calculateLoyalty(
+        card: LoyaltyCardDto,
+        purchaseAmount: Double,
+        strategy: TransactionStrategy,
+        settings: LoyaltySettingsDto,
+        rate: Double
+    ): TransactionCalculationDto {
+        // Конвертация в локальную валюту для калькулятора
+        val localCard = card.copy(
+            balance = (card.balance * rate).round(2),
+            totalSpent = (card.totalSpent * rate).round(2)
+        )
+        val localTiers = settings.tiers.map { tier ->
+            tier.copy(threshold = (tier.threshold * rate).round(2))
+        }
+
+        return LoyaltyCalculator.calculate(
+            card = localCard,
+            purchaseAmount = purchaseAmount,
+            maxBurnPercentage = settings.maxBurnPercentage,
+            settingsVisitTarget = settings.visitsTarget,
+            settingsTiers = localTiers,
+            strategy = strategy,
+            awardOnMixedPayment = settings.awardOnMixedPayment
+        )
+    }
+
+    private suspend fun processVisitTransaction(
+        card: LoyaltyCardDto,
+        cashierUserId: String,
+        tradingPointId: String,
+        currency: String,
+        rate: Double,
+        settings: LoyaltySettingsDto,
+        calc: TransactionCalculationDto,
+        updatedAt: LocalDateTime
+    ): Pair<TransactionResult, CardRealtimePayload> {
+
+        val target = settings.visitsTarget
+        val isReward = target > 0 && calc.newVisits % target == 0 && calc.newVisits > 0
+
+        val typeStr = if (isReward) "VISIT_REWARD" else "VISIT_PROGRESS"
+        val successType = if (isReward) TransactionSuccessType.VISIT_REWARD else TransactionSuccessType.VISIT_PROGRESS
+        
+        val successArgs = if (isReward) {
+            loyaltyCardRepository.dropVisits(card.id, updatedAt)
+            listOf(target.toString())
+        } else {
+            loyaltyCardRepository.incrementVisits(card.id, updatedAt)
+            listOf(
+                calc.newVisits.toString(),
+                target.toString(),
+                (calc.newVisits - card.visitsCount).coerceAtLeast(1).toString()
+            )
+        }
+
+        historyRepository.recordTransaction(
+            userId = card.userId,
+            pointId = tradingPointId,
+            cashierId = cashierUserId,
+            type = typeStr,
+            amount = 0.0,
+            pointsDelta = 0.0,
+            visitsDelta = 1,
+            currency = currency,
+            exchangeRate = rate,
+            updatedAt = updatedAt,
+            pointsBaseValue = 0.0
+        )
+
+        eventLogger.log(
+            type = SystemEventType.VISIT,
+            userId = card.userId,
+            partnerId = card.partnerId,
+            payload = "Visit recorded at point $tradingPointId by cashier $cashierUserId"
+        )
 
         val result = TransactionResult(
             cardId = card.id,
             newBalance = calc.newBalance,
             newVisits = calc.newVisits,
             type = successType,
-            currency = point.currency,
+            currency = currency,
             args = successArgs
         )
-        realtimeService.notifyUser(
-            userId = card.userId,
-            payload = CardRealtimePayload(
-                eventType = CardRealtimeEventType.TRANSACTION,
-                cardId = card.id,
-                successType = successType,
-                args = successArgs,
-                newBalance = calc.newBalance,
-                newVisits = calc.newVisits,
-                tradingPointId = tradingPointId
-            )
+
+        val payload = CardRealtimePayload(
+            eventType = CardRealtimeEventType.TRANSACTION,
+            cardId = card.id,
+            successType = successType,
+            args = successArgs,
+            newBalance = calc.newBalance, // Visits logic is simpler, balance not affected usually
+            newVisits = calc.newVisits,
+            tradingPointId = tradingPointId
         )
-        result
+
+        return result to payload
+    }
+
+    private suspend fun processMoneyTransaction(
+        card: LoyaltyCardDto,
+        cashierUserId: String,
+        tradingPointId: String,
+        currency: String,
+        rate: Double,
+        calc: TransactionCalculationDto,
+        updatedAt: LocalDateTime
+    ): Pair<TransactionResult, CardRealtimePayload> {
+        // Возвращаем ДВА разных объекта результата
+        fun toBase(localVal: Double): Double = (localVal / rate).round(2)
+        val moneyPaidBase = toBase(calc.moneyPaid)
+
+        // Логика "Слияния": Если списание есть, деньги есть, но начисления НЕТ (awardOnMixedPayment=false)
+        val mergeMoneyIntoSpend = calc.pointsSpent > 0 && calc.moneyPaid > 0 && calc.pointsToAward == 0.0
+
+        val spentLocal = calc.pointsSpent
+        val earnedLocal = calc.pointsToAward
+        val earnedBase = toBase(earnedLocal)
+
+        var cashierSuccessType: TransactionSuccessType
+        var cashierArgs: List<String>
+
+        var clientSuccessType: TransactionSuccessType
+        var clientArgs: List<String>
+
+        // 1. Формирование ответа для КАССИРА (Все в ЛОКАЛЬНОЙ валюте)
+        if (spentLocal > 0 && earnedLocal > 0) {
+            cashierSuccessType = TransactionSuccessType.POINTS_SPENT_EARNED
+            cashierArgs = listOf(fmt(spentLocal), fmt(earnedLocal))
+        } else if (spentLocal > 0) {
+            cashierSuccessType = TransactionSuccessType.POINTS_SPENT
+            cashierArgs = listOf(fmt(spentLocal))
+        } else if (earnedLocal > 0) {
+            cashierSuccessType = TransactionSuccessType.POINTS_EARNED
+            cashierArgs = listOf(fmt(earnedLocal))
+        } else {
+            cashierSuccessType = TransactionSuccessType.BALANCE_INFO
+            cashierArgs = listOf(fmt(calc.newBalance))
+        }
+
+        // 2. Формирование ответа для КЛИЕНТА (Обычно в BASE валюте, но если currencies differ -> показываем approx)
+        // Для простоты покажем Базовые баллы. Если есть разница курсов, можно добавить второй аргумент.
+        // Но TransactionSuccessType имеет фиксированное кол-во аргументов для UI.
+        // Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType, либо передавать "10 (~850 сом)" как один аргумент.
+        
+        val showApprox = rate != 1.0 && rate > 0
+
+        fun formatEarned(base: Double, local: Double): String {
+            return if (showApprox) "${fmt(base)} (~${fmt(local)} $currency)" else fmt(base)
+        }
+
+        if (spentLocal > 0 && earnedBase > 0) {
+            clientSuccessType = TransactionSuccessType.POINTS_SPENT_EARNED
+            // Списание показываем в локальной валюте (скидка), Начисление - в базовой (баллы)
+            clientArgs = listOf(fmt(spentLocal), formatEarned(earnedBase, earnedLocal))
+        } else if (spentLocal > 0) {
+            clientSuccessType = TransactionSuccessType.POINTS_SPENT
+            clientArgs = listOf(fmt(spentLocal))
+        } else if (earnedBase > 0) {
+            clientSuccessType = TransactionSuccessType.POINTS_EARNED
+            clientArgs = listOf(formatEarned(earnedBase, earnedLocal))
+        } else {
+            clientSuccessType = TransactionSuccessType.BALANCE_INFO
+            clientArgs = listOf(fmt(toBase(calc.newBalance)))
+        }
+
+        if (spentLocal > 0) {
+            val spentBase = toBase(spentLocal)
+
+             val moneyToRecordInSpend = if (mergeMoneyIntoSpend) calc.moneyPaid else 0.0
+             val moneyAddToLtv = if (mergeMoneyIntoSpend) moneyPaidBase else 0.0
+
+            loyaltyCardRepository.addCashback(card.id, -spentBase, moneyAddToLtv, updatedAt)
+            
+            historyRepository.recordTransaction(
+                userId = card.userId,
+                pointId = tradingPointId,
+                cashierId = cashierUserId,
+                type = "SPEND",
+                amount = moneyToRecordInSpend,
+                pointsDelta = -spentLocal,
+                visitsDelta = 0,
+                currency = currency,
+                exchangeRate = rate,
+                pointsBaseValue = -spentBase,
+                updatedAt = updatedAt
+            )
+             eventLogger.log(
+                type = SystemEventType.REDEMPTION,
+                userId = card.userId,
+                partnerId = card.partnerId,
+                payload = "Redeemed $spentLocal points at point $tradingPointId"
+            )
+        }
+
+        // 2. Обработка НАЧИСЛЕНИЯ (Earn)
+        if (!mergeMoneyIntoSpend && (calc.moneyPaid > 0 || calc.pointsToAward > 0)) {
+
+            val earnedBaseVal = toBase(earnedLocal)
+            val moneyAddToLtv = moneyPaidBase
+
+            loyaltyCardRepository.addCashback(card.id, earnedBaseVal, moneyAddToLtv, updatedAt)
+
+            historyRepository.recordTransaction(
+                userId = card.userId,
+                pointId = tradingPointId,
+                cashierId = cashierUserId,
+                type = "EARN",
+                amount = calc.moneyPaid,
+                pointsDelta = earnedLocal,
+                visitsDelta = 0,
+                currency = currency,
+                exchangeRate = rate,
+                pointsBaseValue = earnedBaseVal,
+                updatedAt = updatedAt
+            )
+             eventLogger.log(
+                type = SystemEventType.ACCRUAL,
+                userId = card.userId,
+                partnerId = card.partnerId,
+                payload = "Accrued $earnedLocal points at point $tradingPointId"
+            )
+        }
+
+        val cashierResult = TransactionResult(
+            cardId = card.id,
+            newBalance = calc.newBalance, // Local balance for Cashier
+            newVisits = calc.newVisits,
+            type = cashierSuccessType,
+            currency = currency,
+            args = cashierArgs
+        )
+
+        val clientPayload = CardRealtimePayload(
+            eventType = CardRealtimeEventType.TRANSACTION,
+            cardId = card.id,
+            successType = clientSuccessType,
+            args = clientArgs,
+            newBalance = toBase(calc.newBalance), // Base balance for Client
+            newVisits = calc.newVisits,
+            tradingPointId = tradingPointId
+        )
+
+        return cashierResult to clientPayload
+    }
+
+    private suspend fun updateTierIfEligible(
+        cardId: String,
+        estimatedCurrency: String,
+        tiers: List<LoyaltyTierDto>,
+        updatedAt: LocalDateTime
+    ) {
+        val refreshedCard = loyaltyCardRepository.getCardByID(cardId, estimatedCurrency) ?: return
+        val nextTier = tiers
+            .filter { tier -> tier.threshold <= refreshedCard.totalSpent }
+            .maxByOrNull { it.levelIndex }
+
+        if (nextTier != null && nextTier.levelIndex > refreshedCard.tierLevel) {
+            loyaltyCardRepository.updateTier(cardId, nextTier.levelIndex, updatedAt)
+            eventLogger.log(
+                type = SystemEventType.TIER_CHANGE,
+                userId = refreshedCard.userId,
+                partnerId = refreshedCard.partnerId,
+                payload = "Tier upgraded to ${nextTier.levelIndex}"
+            )
+        }
+    }
+
+    private suspend fun notifyUserTransaction(
+        userId: String,
+        payload: CardRealtimePayload
+    ) {
+        realtimeService.notifyUser(
+            userId = userId,
+            payload = payload
+        )
     }
 
     private fun fmt(value: Double): String {
@@ -466,117 +553,8 @@ class TransactionService(
     /**
      * Получает историю транзакций для Партнера
      */
-    suspend fun getPartnerHistory(ownerId: String): List<io.loyaltyloop.shared.models.TransactionHistoryDto> {
-        val partner = partnerRepository.getPartnerForMember(ownerId)
-
-        return transactionRepository.getHistoryForPartner(partner.id)
-    }
-
-    // --- Analytics ---
-
-    suspend fun getAnalytics(
-        userId: String,
-        period: io.loyaltyloop.shared.models.AnalyticsPeriod,
-        timezone: String = "UTC"
-    ): io.loyaltyloop.shared.models.AnalyticsResponse {
-        val partner = partnerRepository.getPartnerForMember(userId)
-        val zoneId = try {
-            java.time.ZoneId.of(timezone)
-        } catch (e: Exception) {
-            java.time.ZoneId.of("UTC")
-        }
-
-        val now = System.currentTimeMillis()
-        val (from, grouping) = when (period) {
-            io.loyaltyloop.shared.models.AnalyticsPeriod.WEEK -> (now - 6 * 24 * 3600 * 1000L) to GroupingType.DAY // 7 days including today
-            io.loyaltyloop.shared.models.AnalyticsPeriod.MONTH -> (now - 29 * 24 * 3600 * 1000L) to GroupingType.DAY // 30 days
-            io.loyaltyloop.shared.models.AnalyticsPeriod.SIX_MONTHS -> (now - 180L * 24 * 3600 * 1000L) to GroupingType.MONTH
-            io.loyaltyloop.shared.models.AnalyticsPeriod.YEAR -> (now - 365L * 24 * 3600 * 1000L) to GroupingType.MONTH
-        }
-
-        val transactions = transactionRepository.getTransactionsForAnalytics(partner.id, from, now)
-
-        // 1. Group existing data
-        val groupedMap = transactions.groupBy {
-            formatDate(it.timestamp, grouping, zoneId)
-        }
-
-        // 2. Generate all dates in range (to fill gaps with 0)
-        val allLabels = generateDateLabels(from, now, grouping, zoneId)
-
-        // 3. Map all labels to points
-        val points = allLabels.map { dateLabel ->
-            val txList = groupedMap[dateLabel] ?: emptyList()
-            io.loyaltyloop.shared.models.RevenueChartPoint(
-                date = dateLabel,
-                revenue = txList.sumOf { it.amount },
-                transactionsCount = txList.size
-            )
-        }
-
-        val totalRevenue = transactions.sumOf { it.amount }
-        val totalTransactions = transactions.size
-        val averageCheck = if (totalTransactions > 0) totalRevenue / totalTransactions else 0.0
-
-        return io.loyaltyloop.shared.models.AnalyticsResponse(
-            totalRevenue = totalRevenue,
-            totalTransactions = totalTransactions,
-            averageCheck = averageCheck,
-            chartData = points
-        )
-    }
-
-    private enum class GroupingType { DAY, MONTH }
-
-    private fun formatDate(timestamp: Long, type: GroupingType, zoneId: java.time.ZoneId): String {
-        val instant = java.time.Instant.ofEpochMilli(timestamp)
-        val ldt = java.time.LocalDateTime.ofInstant(instant, zoneId)
-
-        return when (type) {
-            GroupingType.DAY -> ldt.toLocalDate().toString()
-            GroupingType.MONTH -> "${ldt.year}-${ldt.monthValue.toString().padStart(2, '0')}"
-        }
-    }
-
-    private fun generateDateLabels(
-        from: Long,
-        to: Long,
-        type: GroupingType,
-        zoneId: java.time.ZoneId
-    ): List<String> {
-        val startLdt =
-            java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(from), zoneId)
-        val endLdt = java.time.LocalDateTime.ofInstant(java.time.Instant.ofEpochMilli(to), zoneId)
-
-        val labels = mutableSetOf<String>()
-        var current = startLdt
-
-        // Limit loop to prevent infinite cycle in case of error (max 400 iterations covers year)
-        var steps = 0
-        while (!current.isAfter(endLdt) && steps < 400) {
-            val label = when (type) {
-                GroupingType.DAY -> current.toLocalDate().toString()
-                GroupingType.MONTH -> "${current.year}-${
-                    current.monthValue.toString().padStart(2, '0')
-                }"
-            }
-            labels.add(label)
-
-            current = when (type) {
-                GroupingType.DAY -> current.plusDays(1)
-                GroupingType.MONTH -> current.plusMonths(1)
-            }
-            steps++
-        }
-
-        // Ensure 'today' is included if loop missed it due to time calculation
-        val lastLabel = when (type) {
-            GroupingType.DAY -> endLdt.toLocalDate().toString()
-            GroupingType.MONTH -> "${endLdt.year}-${endLdt.monthValue.toString().padStart(2, '0')}"
-        }
-        labels.add(lastLabel)
-
-        return labels.sorted()
+    suspend fun getPartnerHistory(partnerId: String): List<TransactionHistoryDto> {
+        return historyRepository.getHistoryForPartner(partnerId)
     }
 
     // --- Helpers ---

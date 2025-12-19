@@ -1,9 +1,12 @@
 services:
   db:
     image: postgres:15-alpine
+    command: postgres -c timezone=UTC
     container_name: loyalty_postgres
     restart: always
     environment:
+      TZ: UTC
+      PGTZ: UTC
       POSTGRES_USER: loyalty_user
       POSTGRES_PASSWORD: loyalty_password
       POSTGRES_DB: loyalty_db
@@ -11,6 +14,13 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - loyalty_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U loyalty_user -d loyalty_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   server:
     build:
@@ -21,14 +31,19 @@ services:
     ports:
       - "8080:8080"
     environment:
+      TZ: UTC
       JDBC_DATABASE_URL: jdbc:postgresql://db:5432/loyalty_db
       JDBC_DATABASE_USERNAME: loyalty_user
       JDBC_DATABASE_PASSWORD: loyalty_password
       REDIS_HOST: redis
       REDIS_PORT: 6379
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - loyalty_net
 
   redis:
     image: redis:alpine
@@ -36,17 +51,25 @@ services:
     restart: always
     ports:
       - "6379:6379"
+    environment:
+      TZ: UTC
+    networks:
+      - loyalty_net
 
   web-admin:
     build:
-      context: ./web-admin
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: web-admin/Dockerfile
     container_name: loyalty_web_admin
     restart: always
     ports:
       - "3000:80"
     depends_on:
       - server
+    environment:
+      TZ: UTC
+    networks:
+      - loyalty_net
 
   pgadmin:
     image: dpage/pgadmin4
@@ -58,6 +81,12 @@ services:
       - "5050:80"
     depends_on:
       - db
+    networks:
+      - loyalty_net
 
 volumes:
   postgres_data:
+
+networks:
+  loyalty_net:
+    driver: bridge

@@ -8,13 +8,13 @@ object TimezoneUtils {
      * Determines the local currency based on the provided timezone ID.
      * This is a heuristic mapping for common regions in the CIS/Central Asia.
      */
+    // TODO checked
     fun getCurrencyForTimezone(timezoneId: String): String {
         if (timezoneId.isBlank()) throw LoyaltyException(
             AppErrorCode.INVALID_REQUEST,
             "Cannot determine currency for empty timezone: $timezoneId"
         )
 
-        // Normalize: "Asia/Bishkek" -> "KGS"
         val timezoneCurrency = when {
             // Kyrgyzstan
             timezoneId == "Asia/Bishkek" -> "KGS"

@@ -108,6 +108,7 @@ fun LoyaltyCardItemPreview() {
             estimatedCurrency = "KGS",
             visitsTarget = 10,
             trustScore = 4.8,
+            totalScore = 100,
             fraudFlag = false,
             riskLevel = io.loyaltyloop.shared.models.RiskLevel.GREEN
 

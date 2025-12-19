@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Button, Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem,
-  Alert, Switch, FormControlLabel
+  Alert, Switch, FormControlLabel, Skeleton
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -49,6 +49,7 @@ export const PointsPage = () => {
   const [tempCoords, setTempCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [tempAddress, setTempAddress] = useState('');
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
+  const [loadingPoints, setLoadingPoints] = useState(true);
 
   useEffect(() => {
     loadPoints();
@@ -57,12 +58,15 @@ export const PointsPage = () => {
 
   const loadPoints = async () => {
     try {
+      setLoadingPoints(true);
       const res = await api.get('/partners/points');
       setPoints(res.data);
     } catch (e: any) {
       if (e.response && e.response.status !== 404) {
           showError(getErrorMessage(e));
       }
+    } finally {
+      setLoadingPoints(false);
     }
   };
 
@@ -220,7 +224,7 @@ export const PointsPage = () => {
       const visitTargetForPayload = (strategy === 'VISIT_COUNTER' || strategy === 'HYBRID') ? visitsGoal : undefined;
       const trimmedPhone = contactPhone.trim();
       const trimmedLink = contactLink.trim();
-      const trimmedInfo = additionalInfo.trim().slice(0, 20);
+      const trimmedInfo = additionalInfo.trim().slice(0, 30);
 
       const payload = {
         name,
@@ -229,13 +233,14 @@ export const PointsPage = () => {
         latitude: lat,
         longitude: lng,
         currency,
-        timezone, // Added
+        timezone,
         programType: strategy,
         baseCashback: isTiered ? baseCashbackValue : 0,
         awardOnMixedPayment,
         contactPhone: trimmedPhone || undefined,
         contactLink: trimmedLink || undefined,
         additionalInfo: trimmedInfo ? trimmedInfo : undefined,
+        maxBurnPercentage: 100,
         ...(visitTargetForPayload !== undefined ? { visitsTarget: visitTargetForPayload } : {})
       };
 
@@ -295,44 +300,54 @@ export const PointsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {points.length === 0 && (
+            {loadingPoints ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <TableRow key={`skeleton-${idx}`}>
+                  <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="50%" /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={120} height={28} /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={90} height={28} /></TableCell>
+                </TableRow>
+              ))
+            ) : points.length === 0 ? (
               <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                         {t('dashboard.empty')}
                     </TableCell>
               </TableRow>
-            )}
-            {points.map((p) => (
-              <TableRow 
-                key={p.id} 
-                hover 
-                onClick={() => navigate(`/partner/points/${p.id}`)} 
-                sx={{ cursor: 'pointer' }}
-              >
-                <TableCell>{p.name}</TableCell>
-                <TableCell>{getLocalizedType(p.type)}</TableCell>
-                <TableCell>
-                  {p.inviteCode ? (
+            ) : (
+              points.map((p) => (
+                <TableRow 
+                  key={p.id} 
+                  hover 
+                  onClick={() => navigate(`/partner/points/${p.id}`)} 
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell>{p.name}</TableCell>
+                  <TableCell>{getLocalizedType(p.type)}</TableCell>
+                  <TableCell>
+                    {p.inviteCode ? (
+                      <Chip
+                        label={p.inviteCode}
+                        onClick={(e) => copyInvite(e, p.inviteCode)}
+                        icon={<ContentCopyIcon />}
+                        color="primary"
+                        clickable
+                        variant="outlined"
+                        size="small"
+                      />
+                    ) : "—"}
+                  </TableCell>
+                  <TableCell>
                     <Chip
-                      label={p.inviteCode}
-                      onClick={(e) => copyInvite(e, p.inviteCode)}
-                      icon={<ContentCopyIcon />}
-                      color="primary"
-                      clickable
-                      variant="outlined"
-                          size="small"
+                      label={p.active ? t('common.status_active') : t('common.status_not_paid')}
+                      color={p.active ? "success" : "error"}
+                      size="small"
                     />
-                  ) : "—"}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={p.active ? t('common.status_active') : t('common.status_not_paid')}
-                    color={p.active ? "success" : "error"}
-                    size="small"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
         </Box>
@@ -374,9 +389,9 @@ export const PointsPage = () => {
             fullWidth
             value={additionalInfo}
             onChange={(e) => setAdditionalInfo(e.target.value)}
-            helperText={`${t('point_details.additional_info_hint')} (${additionalInfo.length}/20)`}
+            helperText={`${t('point_details.additional_info_hint')} (${additionalInfo.length}/30)`}
             sx={{ mt: 1 }}
-            inputProps={{ maxLength: 20 }}
+            inputProps={{ maxLength: 30 }}
         />
           <Box mt={1} display="flex" flexDirection="column" gap={1}>
               <Button variant="outlined" onClick={openLocationDialog}>

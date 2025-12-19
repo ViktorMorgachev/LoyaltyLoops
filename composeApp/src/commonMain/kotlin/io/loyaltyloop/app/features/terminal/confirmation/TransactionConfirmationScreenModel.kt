@@ -28,7 +28,6 @@ import loyaltyloop.composeapp.generated.resources.error_network
 
 class TransactionConfirmationScreenModel(
     private val calculation: TransactionCalculationDto,
-    private val tradingPointId: String,
     private val cardId: String,
     private val userId: String,
     private val strategy: TransactionStrategy,
@@ -42,7 +41,7 @@ class TransactionConfirmationScreenModel(
     sealed interface Event {
         data object NavigateBack : Event
         data object NavigateToScan : Event // Вернуться на сканирование после успеха
-        data class NavigateToRating(val userId: String, val tradingPointId: String) : Event
+        data class NavigateToRating(val userId: String) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -58,7 +57,6 @@ class TransactionConfirmationScreenModel(
 
 
             repository.processTransaction(
-                tradingPointId = tradingPointId,
                 cardId = cardId,
                 amount = calculation.purchaseAmount,
                 strategy = strategy
@@ -66,7 +64,7 @@ class TransactionConfirmationScreenModel(
                 .onSuccess { result ->
                     _events.send(Event.ShowMessage(TransactionResultMapper.getMessage(result), SnackbarType.Success))
                     delay(1000)
-                    _events.send(Event.NavigateToRating(userId, tradingPointId))
+                    _events.send(Event.NavigateToRating(userId))
                 }
                 .onFailure { exception ->
                     log.write("Transaction failed", LogType.Error, exception)

@@ -55,7 +55,6 @@ class TerminalScreen : Screen {
                         navigator.push(
                             TerminalResultScreen(
                                 event.scanData,
-                                event.tradingPointId,
                                 event.strategy
                             )
                         )
@@ -83,7 +82,6 @@ fun TerminalContent(
     snackbarHostState: SnackbarHostState,
     onAction: (TerminalScreenModel.Action) -> Unit
 ) {
-    val playStoreUrl = "https://play.google.com/store/apps/details?id=io.loyaltyloop.app"
     var showDownloadSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -111,7 +109,7 @@ fun TerminalContent(
                     textAlign = TextAlign.Center
                 )
                 val painter = rememberQrCodePainter(
-                    data = playStoreUrl,
+                    data = state.storeUrl,
                     shapes = QrShapes(
                         ball = QrBallShape.roundCorners(.25f),
                         frame = QrFrameShape.roundCorners(.25f),

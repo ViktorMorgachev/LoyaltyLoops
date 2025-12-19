@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, Divider, Alert, Stack, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, Divider, Alert, Stack, FormControl, InputLabel, Select, MenuItem, Table, TableHead, TableRow, TableCell, TableBody } from '@mui/material';
 import { api } from '../../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../../context/NotificationContext';
@@ -20,8 +20,43 @@ export const BusinessSettingsPage = () => {
     const [burnBonusesDays, setBurnBonusesDays] = useState('');
     const [downgradeTierDays, setDowngradeTierDays] = useState('');
     const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
+    const [tiers, setTiers] = useState<any[]>([]);
     const [subscriptionWarnings, setSubscriptionWarnings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+
+    const normalizePercentForDisplay = (value: any) => {
+        if (value === null || value === undefined || value === '') return '';
+        const numeric = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numeric)) return '';
+        if (numeric > 0 && numeric < 1) {
+            return parseFloat((numeric * 100).toFixed(4)).toString();
+        }
+        return parseFloat(numeric.toFixed(4)).toString();
+    };
+
+    const sanitizeNumber = (value: any) => {
+        if (value === '' || value === null || value === undefined) return 0;
+        const numeric = typeof value === 'number' ? value : parseFloat(value);
+        if (isNaN(numeric) || numeric < 0) return 0;
+        return numeric;
+    };
+
+    const updateTierValue = (index: number, field: 'threshold' | 'cashbackPercent', value: string) => {
+        setTiers((prev) =>
+            prev.map((tier, idx) => (idx === index ? { ...tier, [field]: value } : tier))
+        );
+    };
+
+    const clampTierValue = (index: number, field: 'threshold' | 'cashbackPercent', value: string) => {
+        if (value === '') return;
+        const numeric = sanitizeNumber(value);
+        updateTierValue(index, field, numeric.toString());
+    };
+
+    const renderTierLabel = (tier: any) => {
+        if (!tier) return '-';
+        return tier.loyaltyTier?.descr || tier.loyaltyTier?.level || `Tier ${tier.levelIndex}`;
+    };
 
     useEffect(() => {
         loadData();
@@ -39,6 +74,14 @@ export const BusinessSettingsPage = () => {
             setDowngradeTierDays(data.downgradeTierDays !== null && data.downgradeTierDays !== undefined ? String(data.downgradeTierDays) : '');
             setDefaultVisitsTarget(data.defaultVisitsTarget !== null && data.defaultVisitsTarget !== undefined ? String(data.defaultVisitsTarget) : '10');
             setSubscriptionWarnings(data.subscriptionWarnings || []);
+
+            const sortedTiers = (data.tiers || []).sort((a: any, b: any) => a.levelIndex - b.levelIndex);
+            const normalizedTiers = sortedTiers.map((tier: any) => ({
+                ...tier,
+                threshold: tier.threshold !== undefined && tier.threshold !== null ? tier.threshold.toString() : '0',
+                cashbackPercent: normalizePercentForDisplay(tier.cashbackPercent)
+            }));
+            setTiers(normalizedTiers);
         } catch (e: any) {
             if (e.response && e.response.status === 404) {
                 // No business yet -> Redirect to create
@@ -54,6 +97,13 @@ export const BusinessSettingsPage = () => {
     const handleSave = async () => {
         try {
             const parsedVisits = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
+            
+            const normalizedTiers = tiers.map((tier: any) => ({
+                ...tier,
+                threshold: sanitizeNumber(tier.threshold),
+                cashbackPercent: sanitizeNumber(tier.cashbackPercent)
+            }));
+
             await api.put('/partners/me', {
                 businessName: name,
                 baseCurrency: baseCurrency,
@@ -61,7 +111,8 @@ export const BusinessSettingsPage = () => {
                 logoUrl: logo,
                 burnBonusesDays: burnBonusesDays ? parseInt(burnBonusesDays, 10) : null,
                 downgradeTierDays: downgradeTierDays ? parseInt(downgradeTierDays, 10) : null,
-                defaultVisitsTarget: parsedVisits
+                defaultVisitsTarget: parsedVisits,
+                tiers: normalizedTiers
             });
             showSuccess(t('settings.save_success'));
             await loadData();
@@ -127,11 +178,11 @@ export const BusinessSettingsPage = () => {
                         label={t('dashboard.label_base_currency', 'Base Currency')}
                         onChange={(e) => setBaseCurrency(e.target.value)}
                     >
-                        <MenuItem value="USD">USD (Доллар)</MenuItem>
-                        <MenuItem value="KGS">KGS (Сом)</MenuItem>
-                        <MenuItem value="KZT">KZT (Тенге)</MenuItem>
-                        <MenuItem value="UZS">UZS (Сум)</MenuItem>
-                        <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+                        <MenuItem value="USD">{t('currency.USD', 'USD (Доллар)')}</MenuItem>
+                        <MenuItem value="KGS">{t('currency.KGS', 'KGS (Сом)')}</MenuItem>
+                        <MenuItem value="KZT">{t('currency.KZT', 'KZT (Тенге)')}</MenuItem>
+                        <MenuItem value="UZS">{t('currency.UZS', 'UZS (Сум)')}</MenuItem>
+                        <MenuItem value="BYN">{t('currency.BYN', 'BYN (Бел. рубль)')}</MenuItem>
                     </Select>
                 </FormControl>
 
@@ -151,6 +202,57 @@ export const BusinessSettingsPage = () => {
                     helperText={t('settings.visits_target_hint')}
                 />
                         </Box>
+
+                        <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>{t('point_details.levels_config')}</Typography>
+                        <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mb: 4 }}>
+                            <Table size="small">
+                                <TableHead sx={{ bgcolor: 'grey.100' }}>
+                                    <TableRow>
+                                        <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_name')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_threshold')}</TableCell>
+                                        <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_percent')}</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {tiers.map((tier, idx) => (
+                                        <TableRow key={idx}>
+                                            <TableCell>{renderTierLabel(tier)}</TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    type="number"
+                                                    size="small"
+                                                    value={tier.threshold}
+                                                    disabled={tier.levelIndex === 1}
+                                                    inputProps={{ min: 0, inputMode: 'decimal' }}
+                                                    onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
+                                                    onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
+                                                    InputProps={{
+                                                        endAdornment: (
+                                                            <span style={{ marginLeft: 4, fontSize: '0.8rem', color: 'gray' }}>
+                                                                {baseCurrency || ''}
+                                                            </span>
+                                                        )
+                                                    }}
+                                                    sx={{ maxWidth: 160 }}
+                                                />
+                                            </TableCell>
+                                            <TableCell>
+                                                <TextField
+                                                    type="number"
+                                                    size="small"
+                                                    value={tier.cashbackPercent}
+                                                    inputProps={{ min: 0, inputMode: 'decimal' }}
+                                                    onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
+                                                    onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
+                                                    InputProps={{ endAdornment: <span style={{ marginLeft: 4, fontSize: '0.8rem', color: 'gray' }}>%</span> }}
+                                                    sx={{ maxWidth: 100 }}
+                                                />
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </Paper>
 
                         <Typography variant="subtitle1" sx={{ mt: 4, mb: 1, fontWeight: 600 }}>{t('settings.expiration_policy')}</Typography>
                         <Paper variant="outlined" sx={{ p: 2, bgcolor: 'grey.50', borderRadius: 2 }}>

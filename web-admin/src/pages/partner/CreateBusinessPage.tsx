@@ -82,11 +82,11 @@ export const CreateBusinessPage = () => {
                 label={t('dashboard.label_base_currency', 'Base Currency')}
                 onChange={(e) => setBaseCurrency(e.target.value)}
             >
-                <MenuItem value="USD">USD (Доллар)</MenuItem>
-                <MenuItem value="KGS">KGS (Сом)</MenuItem>
-                <MenuItem value="KZT">KZT (Тенге)</MenuItem>
-                <MenuItem value="UZS">UZS (Сум)</MenuItem>
-                <MenuItem value="BYN">BYN (Бел. рубль)</MenuItem>
+                <MenuItem value="USD">{t('currency.USD', 'USD (Доллар)')}</MenuItem>
+                <MenuItem value="KGS">{t('currency.KGS', 'KGS (Сом)')}</MenuItem>
+                <MenuItem value="KZT">{t('currency.KZT', 'KZT (Тенге)')}</MenuItem>
+                <MenuItem value="UZS">{t('currency.UZS', 'UZS (Сум)')}</MenuItem>
+                <MenuItem value="BYN">{t('currency.BYN', 'BYN (Бел. рубль)')}</MenuItem>
             </Select>
         </FormControl>
 

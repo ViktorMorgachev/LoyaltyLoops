@@ -18,6 +18,7 @@ enum class AppErrorCode {
     RATE_LIMIT_EXCEEDEG,
     OTP_ATTEMPTS_EXCEEDED,
     ACCOUNT_DELETED,
+    WAS_FIRED,
     SMS_PROVIDER_ERROR,
 
     // Auth
@@ -30,6 +31,7 @@ enum class AppErrorCode {
     CARD_IS_BLOCKED,
     USER_CREATION_FAILED,
     INVALID_PIN,
+    WORKSPACE_ID_MISSING,
 
     // Business
     BUSINESS_ALREADY_EXISTS,

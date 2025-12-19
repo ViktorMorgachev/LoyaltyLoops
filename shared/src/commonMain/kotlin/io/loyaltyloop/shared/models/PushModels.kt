@@ -6,7 +6,8 @@ import kotlinx.serialization.Serializable
 data class DeviceTokenContext(
     val platform: DevicePlatform,
     val role: UserRole,
-    val workspaceId: String? = null
+    val workspaceId: String? = null,
+    val token: String,
 )
 
 @Serializable
@@ -16,7 +17,7 @@ data class RegisterDeviceTokenRequest(
     val role: UserRole,
     val workspaceId: String? = null
 ) {
-    fun context(): DeviceTokenContext = DeviceTokenContext(platform, role, workspaceId)
+    fun context(): DeviceTokenContext = DeviceTokenContext(platform, role, workspaceId, token)
 }
 
 @Serializable
@@ -42,6 +43,7 @@ data class CardRealtimePayload(
 @Serializable
 enum class DevicePlatform {
     ANDROID,
-    IOS
+    IOS,
+    WEB
 }
 

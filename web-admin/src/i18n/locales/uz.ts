@@ -51,6 +51,7 @@ export const uz = {
     errors: {
       INVALID_PHONE: "Telefon raqami formati noto'g'ri",
       INVALID_PHONE_NUMBER: "Telefon raqami formati noto'g'ri",
+      INVALID_EMAIL_FORMAT: "Elektron pochta formati noto'g'ri",
       INVALID_CODE: "Kod noto'g'ri",
       CODE_EXPIRED: "Kod muddati tugagan",
       USER_NOT_FOUND: "Foydalanuvchi topilmadi",
@@ -125,6 +126,13 @@ export const uz = {
       system_events: "Audit",
       platform_staff: "Xodimlar",
       create_business: "Biznes yaratish"
+    },
+    currency: {
+        USD: "USD (Dollar)",
+        KGS: "KGS (Som)",
+        KZT: "KZT (Tenge)",
+        UZS: "UZS (So'm)",
+        BYN: "BYN (Bel. rubl)"
     },
     join_partner: {
       title: "Hamkor menejeri sifatida qo'shilish",
@@ -255,6 +263,7 @@ export const uz = {
       label_target: "Maqsad (qancha to'plash kerak?)",
       label_cashback: "Boshlang'ich Keshbek (%)",
       label_currency: "Valyuta",
+      label_base_currency: "Asosiy valyuta",
       timezone_label: "Vaqt zonasi",
       country_label: "Mamlakat",
       country_placeholder: "Mamlakatni tanlang",
@@ -362,6 +371,8 @@ export const uz = {
       send: "Yuborish",
       sent: "Xabar yuborildi",
       validation_empty: "Xabar bo'sh bo'lmasligi kerak",
+      name_required: "Ism majburiy",
+      email_required: "Email majburiy",
       empty_state: "Xabarlar yo'q",
       no_messages: "Hozircha xabarlar yo'q",
       no_threads: "Dialoglar yo'q",

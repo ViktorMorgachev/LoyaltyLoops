@@ -1,59 +1,68 @@
 package io.loyaltyloop.server.database.tables
 
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.CardBlockStatus
 import io.loyaltyloop.shared.models.CardPauseStatus
+import org.jetbrains.exposed.dao.id.UUIDTable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
+import java.math.BigDecimal
+import java.time.LocalDateTime
 
-object LoyaltyCardTable : Table("loyalty_cards") {
-    // Уникальный ID самой карты
-    val id = varchar("id", 50).databaseGenerated()
-
-    // Чья это карта? (Ссылка на глобального юзера)
-    val userId = varchar("user_id", 50).index()
-
-    // Какого заведения эта карта? (Ссылка на Партнера)
-    val partnerId = varchar("partner_id", 50).index()
-
-    // ФИНАНСЫ (накопления в этом конкретном заведении)
-    val balance = double("balance").default(0.0)       // Доступные баллы
-
-    // Приостановка карты (архивная)
-    val isPaused = bool("is_closed").default(false)
-    val pauseReason = varchar("pause_reason", 255).nullable()
-    val totalSpent = double("total_spent").default(0.0) // Сколько денег потратил всего (LTV)
-
-    // УРОВЕНЬ (Кешируем текущий уровень, чтобы не пересчитывать каждый раз)
-    // Например: 0 - Start, 1 - Middle, 2 - Top
-    val tierLevel = integer("tier_level").default(0)
-
+/**
+ * Таблица Бонусных Карт (Счетов) пользователей.
+ * Центральная сущность для хранения баланса и статуса клиента в конкретном бизнесе.
+ *
+ * **Важные архитектурные моменты:**
+ * 1. **Принцип "Один Бизнес — Одна Карта":**
+ *    Индекс `uniqueIndex(user, partner)` гарантирует, что у пользователя не может быть
+ *    двух счетов у одного партнера.
+ *
+ * 2. **Base Currency Storage:**
+ *    Баланс (`balance`) и LTV (`totalSpent`) всегда хранятся в **Базовой Валюте Партнера** (напр. USD).
+ *    Конвертация в локальную валюту точки происходит только в момент отображения (UI)
+ *    или расчета транзакции. Это защищает от курсовых колебаний.
+ *
+ * 3. **Жизненный цикл (CASCADE):**
+ *    Если удаляется Пользователь ИЛИ Партнер — карта удаляется.
+ *    Для сохранения финансовой отчетности используется `TransactionsHistoryTable`,
+ *    но сама карта (как активный счет) существовать без владельца бизнеса не может.
+ *
+ * 4. **Fraud & Scoring:**
+ *    Поля `trustScore` и `fraudFlag` позволяют блокировать начисление бонусов
+ *    подозрительным пользователям, не блокируя их полностью в системе.
+ */
+// TODO checked
+object LoyaltyCardsTable : UUIDTable("loyalty_cards") {
+    val user = reference("user_id", UsersTable, onDelete = ReferenceOption.CASCADE)
+    val partner = reference("partner_id", PartnersTable, onDelete = ReferenceOption.CASCADE)
+    val balance = decimal("balance", 10, 2).default(BigDecimal.ZERO)
+    val totalSpent = decimal("total_spent", 12, 2).default(BigDecimal.ZERO)
+    val tierLevel = integer("tier_level").default(1)
     val visitsCount = integer("visits_count").default(0)
-
-    // Блокировка конкретно в этом заведении
-    val blockedUntil = long("blocked_until").nullable()
+    val isPaused = bool("is_paused").default(false)
+    val pauseReason = varchar("pause_reason", 255).nullable()
+    val blockedUntil = datetime("blocked_until").nullable()
     val blockedReason = varchar("blocked_reason", 255).nullable()
-
-    // Рейтинг доверия (Social Score)
     val trustScore = double("trust_score").default(4.0)
     val fraudFlag = bool("fraud_flag").default(false)
 
-    // Дата последней активности (для сгорания бонусов)
-    val lastActivityAt = long("last_activity_at").default(System.currentTimeMillis())
-    
-    // Multi-currency support
-
-    override val primaryKey = PrimaryKey(id)
-
+    val totalScore = integer("total_score").default(1)
+    val lastActivityAt = datetime("last_activity_at").defaultExpression(CurrentDateTime)
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
     init {
-        uniqueIndex("uk_user_partner", userId, partnerId)
+        uniqueIndex("uk_user_partner", user, partner)
     }
 }
 
 fun ResultRow.pauseStatus(): CardPauseStatus? {
-    val isPaused = this[LoyaltyCardTable.isPaused]
+    val isPaused = this[LoyaltyCardsTable.isPaused]
     return if (isPaused) {
         CardPauseStatus(
-            reason = this[LoyaltyCardTable.pauseReason]
+            reason = this[LoyaltyCardsTable.pauseReason]
         )
     } else {
         null
@@ -61,7 +70,15 @@ fun ResultRow.pauseStatus(): CardPauseStatus? {
 }
 
 fun ResultRow.blockStatus(): CardBlockStatus? {
-   return this[LoyaltyCardTable.blockedUntil]?.let {
-        CardBlockStatus(until = it, reason = this[LoyaltyCardTable.blockedReason])
+    val until = this[LoyaltyCardsTable.blockedUntil]
+    val now = nowUtc()
+    return if (until != null && until.isAfter(now)) {
+        val untilMillis = until.toUtcMillis()
+        CardBlockStatus(
+            until = untilMillis,
+            reason = this[LoyaltyCardsTable.blockedReason]
+        )
+    } else {
+        null
     }
 }

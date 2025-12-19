@@ -2,20 +2,27 @@ package io.loyaltyloop.server.service
 
 import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
+import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
+import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
 import io.loyaltyloop.server.repository.RatingRepository
-import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.models.SystemEventType
-import io.loyaltyloop.server.utils.CardUtils
+import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.LoyaltyCardRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.shared.models.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
+import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
 
+// TODO checked
 class RatingService(
     private val ratingRepository: RatingRepository,
-    private val transactionRepository: TransactionRepository,
     private val eventLogger: EventLogger,
     private val config: ApplicationConfig, // Injected config
-    private val cardUtils: CardUtils,
+    private val loyaltyCardRepository: LoyaltyCardRepository,
+    private val tradingPointRepository: TradingPointRepository
 ) {
     private val logger = LoggerFactory.getLogger("RatingService")
 
@@ -46,25 +53,18 @@ class RatingService(
         }
     }
 
-    suspend fun rateClient(cashierId: String, dto: CreateClientRatingDto, timeZoneCurrency: String): TrustScoreDto {
-        val partnerId = ratingRepository.getPartnerIdByPointId(dto.tradingPointId)
-            ?: throw LoyaltyException(AppErrorCode.POINT_NOT_FOUND, "Trading point not found")
+    suspend fun rateClient(cashierId: String, dto: CreateClientRatingDto, tradingPointId: String, timeZoneCurrency: String): TrustScoreDto {
+        val partnerId = tradingPointRepository.getPartnerIdByPointId(tradingPointId)
 
-        // 1. Anti-Abuse: Check frequency (1 per day per cashier->user)
         if (enableCooldown && ratingRepository.hasCashierRatedUserRecently(cashierId, dto.userId)) {
              throw LoyaltyException(AppErrorCode.RATE_LIMIT_EXCEEDEG, "You have already rated this client today")
         }
-        
-        // 2. Anti-Abuse: Outlier Detection
-        // If the rating is very low (1) but the client is generally very reliable (Green/VIP) in this partner network,
-        // and there is no Fraud tag, we might ignore this as a potential "revenge" rating or anomaly.
-        // Rule: If Current Score >= 4.5 (Green) AND New Rating == 1 AND No FRAUD tag -> Ignore
 
-        val currentCard =  cardUtils.getCardByUserAndPartner(dto.userId, partnerId,timeZoneCurrency )
+        val currentCard =  loyaltyCardRepository.getCardByUserAndPartner(dto.userId, partnerId,timeZoneCurrency )
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Client card not found")
 
         var isIgnored = false
-        if (currentCard.trustScore >= 4.5 && dto.rating == 1 && !dto.tags.contains(ClientRatingTag.FRAUD)) {
+        if (currentCard.trustScore >= 4.5 && currentCard.totalScore > 100 && dto.rating == 1 && !dto.tags.contains(ClientRatingTag.FRAUD)) {
             isIgnored = true
             eventLogger.log(
                 type = SystemEventType.WARNING,
@@ -73,33 +73,28 @@ class RatingService(
                 payload = "Anti-Abuse: Ignored 1-star rating for awesome client (Score: ${currentCard.trustScore}). User: ${dto.userId}"
             )
         }
-        
-        // 3. Save Rating
-        ratingRepository.createClientRating(partnerId, cashierId, dto, isIgnored)
-        
-        // If ignored, we don't update the score (return old score)
+
+        ratingRepository.createClientRating(partnerId, cashierId, tradingPointId, dto, isIgnored)
+
         if (isIgnored) {
             return TrustScoreDto(currentCard.trustScore, currentCard.riskLevel, currentCard.fraudFlag)
         }
-        
-        // 4. Update Loyalty Card
-        // Check for FRAUD tag
+
         var fraudFlag = currentCard.fraudFlag
         if (dto.tags.contains(ClientRatingTag.FRAUD)) {
             fraudFlag = true
             eventLogger.log(
-                type = SystemEventType.WARNING, // Changed from INFO to WARNING
+                type = SystemEventType.WARNING,
                 userId = cashierId,
                 partnerId = partnerId,
                 payload = "Client marked as FRAUD by cashier. User: ${dto.userId}"
             )
         }
-        
-        // Calculate new Score
+
         val lastRatings = ratingRepository.getLastRatingsForUser(dto.userId, partnerId, 20)
         val newScore = calculateTrustScore(lastRatings)
         
-        transactionRepository.updateTrustScore(currentCard.id, newScore, fraudFlag)
+        updateTrustScore(currentCard.id, newScore, fraudFlag)
         
         val riskLevel = when {
             fraudFlag -> RiskLevel.BLACK
@@ -112,17 +107,25 @@ class RatingService(
         return TrustScoreDto(newScore, riskLevel, fraudFlag)
     }
     
-    suspend fun rateService(userId: String, dto: CreateServiceReviewDto): String {
-        val partnerId = ratingRepository.getPartnerIdByPointId(dto.tradingPointId)
-             ?: throw LoyaltyException(AppErrorCode.POINT_NOT_FOUND, "Trading point not found")
+    suspend fun rateService(userId: String, dto: CreateServiceReviewDto) {
+        val partnerId = tradingPointRepository.getPartnerIdByPointId(dto.tradingPointId)
         
         ratingRepository.createServiceReview(partnerId, userId, dto)
-        return "review_created" // Placeholder
     }
 
-    
+    suspend fun updateTrustScore(cardId: String, score: Double, fraud: Boolean) = dbQuery {
+        val cardUuid = cardId.toUUID()
+
+        LoyaltyCardsTable.update({ LoyaltyCardsTable.id eq cardUuid }) {
+            it[trustScore] = score
+            it[fraudFlag] = fraud
+            it[totalScore] = totalScore + 1
+        }
+    }
+
+
     private fun calculateTrustScore(ratings: List<RatingRepository.ClientRatingEntity>): Double {
-        if (ratings.isEmpty()) return 4.0 // Default for new
+        if (ratings.isEmpty()) return 4.0
         
         var totalScore = 0.0
         
@@ -139,7 +142,6 @@ class RatingService(
         }
         
         val avg = totalScore / ratings.size
-        // Clamp result 0.0 .. 5.0
         return avg.coerceIn(0.0, 5.0)
     }
 }

@@ -51,6 +51,7 @@ export const be = {
     errors: {
       INVALID_PHONE: "Няправільны фармат нумара",
       INVALID_PHONE_NUMBER: "Няправільны фармат нумара тэлефона",
+      INVALID_EMAIL_FORMAT: "Няправільны фармат электроннай пошты",
       INVALID_CODE: "Няправільны код",
       CODE_EXPIRED: "Код пратэрмінаваны",
       USER_NOT_FOUND: "Карыстальнік не знойдзены",
@@ -125,6 +126,13 @@ export const be = {
       system_events: "Аўдыт",
       platform_staff: "Супрацоўнікі",
       create_business: "Стварыць Бізнес"
+    },
+    currency: {
+        USD: "USD (Даляр)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тэнге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубель)"
     },
     join_partner: {
       title: "Далучыцца як мэнэджар партнёра",
@@ -255,6 +263,7 @@ export const be = {
       label_target: "Мэта (колькі сабраць?)",
       label_cashback: "Пачатковы Кэшбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Базавая валюта",
       timezone_label: "Гадзінны пояс",
       country_label: "Краіна",
       country_placeholder: "Выберыце краіну",
@@ -362,6 +371,8 @@ export const be = {
       send: "Адправіць",
       sent: "Паведамленне адпраўлена",
       validation_empty: "Паведамленне не можа быць пустым",
+      name_required: "Імя абавязкова",
+      email_required: "Email абавязкова",
       empty_state: "Паведамленняў пакуль няма",
       no_messages: "Пакуль без паведамленняў",
       no_threads: "Дыялогаў пакуль няма",
@@ -473,7 +484,7 @@ export const be = {
       overview_currency: "Валюта",
       status_active: "Актыўны",
       status_inactive: "Не актыўны",
-      address_label: "Адрас (увядзіце ўручную)",
+      address_label: "Адрас",
       contact_phone_label: "Кантактны тэлефон",
       contact_link_label: "Спасылка для сувязі",
       contact_link_hint: "Напрыклад: https://t.me/brand або https://wa.me/996...",

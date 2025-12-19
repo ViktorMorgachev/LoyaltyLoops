@@ -2,6 +2,7 @@ package io.loyaltyloop.server.utils
 
 import io.ktor.server.config.ApplicationConfig
 
+// TODO checked
 fun ApplicationConfig.string(path: String, default: String = ""): String =
     propertyOrNull(path)?.getString()?.takeIf { it.isNotBlank() } ?: default
 

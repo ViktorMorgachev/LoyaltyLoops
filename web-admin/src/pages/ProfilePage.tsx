@@ -64,7 +64,9 @@ export const ProfilePage = () => {
         if (!isPartnerOwner) return;
         setPinMetaLoading(true);
         try {
-            const res = await api.get('/partners/me');
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            const res = await api.get('/partners/me', { headers });
             setHasOwnerPin(Boolean(res.data?.hasPin));
             setSubscriptionWarnings(res.data?.subscriptionWarnings || []); // Added
         } catch (error) {
@@ -73,7 +75,7 @@ export const ProfilePage = () => {
         } finally {
             setPinMetaLoading(false);
         }
-    }, [isPartnerOwner]);
+    }, [isPartnerOwner, workspaces]);
 
     useEffect(() => {
         if (isPartnerOwner) {
@@ -91,6 +93,17 @@ export const ProfilePage = () => {
     };
 
     const handleSave = async () => {
+        if (!profile.firstName?.trim()) {
+            showError(t('support.name_required'));
+            return;
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!profile.email?.trim() || !emailRegex.test(profile.email)) {
+            showError(t('errors.INVALID_EMAIL_FORMAT'));
+            return;
+        }
+
         try {
             await api.post('/client/profile', { firstName: profile.firstName, email: profile.email });
             showSuccess(t('common.save') + " OK");
@@ -131,10 +144,13 @@ export const ProfilePage = () => {
         }
         setPinLoading(true);
         try {
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            
             await api.put('/partners/pin', {
                 currentPin: requiresCurrentPin ? pinForm.current : undefined,
                 newPin: pinForm.next
-            });
+            }, { headers });
             setPinForm({ current: '', next: '', confirm: '' });
             if (!requiresCurrentPin) {
                 setHasOwnerPin(true);
@@ -152,7 +168,10 @@ export const ProfilePage = () => {
     const handlePinResetRequest = async () => {
         setResetLoading(true);
         try {
-            await api.post('/partners/pin/reset/request');
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            
+            await api.post('/partners/pin/reset/request', {}, { headers });
             showSuccess(t('profile.pin_reset_email_sent'));
         } catch (e: any) {
             showError(getErrorMessage(e));

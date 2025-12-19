@@ -1,376 +1,496 @@
 package io.loyaltyloop.server.service
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.LoyaltyCardTable
-import io.loyaltyloop.server.database.tables.PartnerManagersTable
+import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
+import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
 import io.loyaltyloop.server.database.tables.UsersTable
-import io.loyaltyloop.server.database.tables.SystemStaffTable
+import io.loyaltyloop.server.i18n.ServerResources
 import io.loyaltyloop.shared.models.UserRole
 import org.jetbrains.exposed.sql.or
 import io.loyaltyloop.server.repository.SystemEventRepository
-import io.loyaltyloop.server.service.sms.ConsoleSmsService
-import io.loyaltyloop.server.service.email.ConsoleEmailService
 import io.loyaltyloop.server.service.email.EmailService
-import org.jetbrains.exposed.sql.JoinType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
 import java.util.UUID
 import kotlin.time.Duration.Companion.hours
-import io.loyaltyloop.server.i18n.ServerResources
-import io.loyaltyloop.server.models.SubscriptionWarningDto
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.repository.RefreshTokenRepository
+import io.loyaltyloop.server.service.email.EmailTemplate
+import io.loyaltyloop.server.service.email.EmailTemplateService
 import io.loyaltyloop.server.service.sms.SmsService
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUserDto
+import io.loyaltyloop.shared.models.TransactionTypeHistory
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
+import org.jetbrains.exposed.sql.ResultRow
+import java.math.BigDecimal
+import java.time.format.DateTimeFormatter
 
-
-class LoyaltyEngineService(val smsService: SmsService, val emailService: EmailService,  val systemEventRepository: SystemEventRepository) {
+// TODO checked
+class LoyaltyEngineService(
+    val smsService: SmsService,
+    val emailService: EmailService,
+    val emailTemplateService: EmailTemplateService,
+    val systemEventRepository: SystemEventRepository,
+    val refreshTokenRepository: RefreshTokenRepository,
+) {
 
     private val logger = LoggerFactory.getLogger("LoyaltyEngine")
 
-    fun start(scope: CoroutineScope) {
-        scope.launch(Dispatchers.IO) {
-            logger.info("Loyalty Engine started")
-            delay(10000) 
-            
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    fun start() {
+        logger.info("Loyalty Engine started")
+        scope.launch {
+            delay(10000) // Warmup
+
             while (isActive) {
                 try {
                     runExpirationCycle()
-                    runSubscriptionCheck()
                 } catch (e: Exception) {
-                    logger.error("Error in engine cycle", e)
+                    logger.error("Error in runExpirationCycle cycle", e)
                 }
-                delay(24.hours) 
+                // Запускаем раз в сутки (или раз в час, если нужно точнее)
+                delay(24.hours)
             }
         }
+
+        scope.launch {
+
+            delay(10000) // Warmup
+
+            while (isActive) {
+                try {
+                    runSubscriptionCheck()
+                } catch (e: Exception) {
+                    logger.error("Error in runSubscriptionCheck cycle", e)
+                }
+                // Запускаем раз в сутки (или раз в час, если нужно точнее)
+                delay(24.hours)
+            }
+        }
+
+        scope.launch {
+            delay(10000) // Warmup
+            while (isActive) {
+                try {
+                    runExpiredTokens()
+                } catch (e: Exception) {
+                    logger.error("Error in runExpiredTokens cycle", e)
+                }
+                delay(1.hours)
+            }
+        }
+
+    }
+
+    private data class PartnerExpirationRule(
+        val partnerId: UUID,
+        val burnDays: Int?,
+        val downgradeDays: Int?,
+        val baseCurrency: String
+    )
+
+    private suspend fun runExpiredTokens(){
+        refreshTokenRepository.cleanupExpiredTokens()
     }
 
     private suspend fun runExpirationCycle() = dbQuery {
-        // ... (existing expiration logic)
-        logger.info("Running expiration cycle...")
-        val now = System.currentTimeMillis()
+        logger.info("Running expiration & downgrade cycle...")
+        val now = nowUtc()
 
-        val rules = PartnersTable
-            .selectAll().where { PartnersTable.burnBonusesDays.isNotNull() }.associate {
-                it[PartnersTable.id] to it[PartnersTable.burnBonusesDays]!!
+        val partnersRules = PartnersTable
+            .slice(
+                PartnersTable.id,
+                PartnersTable.burnBonusesDays,
+                PartnersTable.downgradeTierDays,
+                PartnersTable.baseCurrency
+            )
+            .select {
+                (PartnersTable.burnBonusesDays.isNotNull()) or
+                        (PartnersTable.downgradeTierDays.isNotNull())
+            }
+            .map { row ->
+                PartnerExpirationRule(
+                    partnerId = row[PartnersTable.id].value,
+                    burnDays = row[PartnersTable.burnBonusesDays],
+                    downgradeDays = row[PartnersTable.downgradeTierDays],
+                    baseCurrency = row[PartnersTable.baseCurrency]
+                )
             }
 
-        var expiredCount = 0
+        var burnedCount = 0
+        var downgradedCount = 0
 
-        rules.forEach { (partnerId, days) ->
-            val threshold = now - (days * 24 * 60 * 60 * 1000L)
+        partnersRules.forEach { rule ->
 
-            val cards = LoyaltyCardTable
-                .selectAll()
-                .where {
-                    (LoyaltyCardTable.partnerId eq partnerId) and
-                    (LoyaltyCardTable.lastActivityAt less threshold) and
-                    (LoyaltyCardTable.balance greater 0.0)
-                }
-                .map { 
-                    Triple(it[LoyaltyCardTable.id], it[LoyaltyCardTable.balance], it[LoyaltyCardTable.userId])
-                }
+            if (rule.burnDays != null) {
+                val burnThreshold = now.minusDays(rule.burnDays.toLong())
 
-            cards.forEach { (cardId, balance, cardUserId) ->
-                LoyaltyCardTable.update({ LoyaltyCardTable.id eq cardId }) {
-                    it[this.balance] = 0.0
-                    it[lastActivityAt] = now 
-                }
+                val cardsToBurn = LoyaltyCardsTable
+                    .select {
+                        (LoyaltyCardsTable.partner eq rule.partnerId) and
+                                (LoyaltyCardsTable.lastActivityAt less burnThreshold) and
+                                (LoyaltyCardsTable.balance greater BigDecimal.ZERO)
+                    }
+                    .toList()
 
-                TransactionsHistoryTable.insert {
-                    it[id] = UUID.randomUUID().toString()
-                    it[userId] = cardUserId
-                    it[tradingPointId] = "SYSTEM_EXPIRATION"
-                    it[cashierId] = "SYSTEM"
-                    it[type] = "EXPIRATION"
-                    it[amount] = 0.0
-                    it[pointsDelta] = -balance
-                    it[visitsDelta] = 0
-                    it[timestamp] = now
+                cardsToBurn.forEach { row ->
+                    val cardId = row[LoyaltyCardsTable.id]
+                    val currentBalance = row[LoyaltyCardsTable.balance]
+                    val userId = row[LoyaltyCardsTable.user]
+
+                    LoyaltyCardsTable.update({ LoyaltyCardsTable.id eq cardId }) {
+                        it[this.balance] = BigDecimal.ZERO
+                        it[this.visitsCount] = 0
+                    }
+
+                    // 2. Пишем в историю
+                    TransactionsHistoryTable.insert {
+                        it[user] = userId
+                        it[partner] = rule.partnerId
+                        it[type] = TransactionTypeHistory.EXPIRATION
+                        it[amount] = BigDecimal.ZERO
+                        it[pointsDelta] = currentBalance.negate()
+                        it[visitsDelta] = 0
+                        it[exchangeRateSnapshot] = BigDecimal.ONE
+                        it[currency] = rule.baseCurrency
+                        it[createdAt] = now
+                    }
+                    burnedCount++
                 }
-                expiredCount++
+            }
+
+            if (rule.downgradeDays != null) {
+                val downgradeThreshold = now.minusDays(rule.downgradeDays.toLong())
+
+                // Ищем карты: (Этого партнера) И (Давно не был) И (Уровень выше 1)
+                // Если уровень уже 1 (Start), понижать некуда.
+                val cardsToDowngrade = LoyaltyCardsTable
+                    .select {
+                        (LoyaltyCardsTable.partner eq rule.partnerId) and
+                                (LoyaltyCardsTable.lastActivityAt less downgradeThreshold) and
+                                (LoyaltyCardsTable.tierLevel greater 1)
+                    }
+                    .toList()
+
+                if (cardsToDowngrade.isNotEmpty()) {
+                    // Нам нужно знать пороги уровней этого партнера, чтобы правильно срезать TotalSpent
+                    val partnerTiers = LoyaltyTiersTable
+                        .select { LoyaltyTiersTable.partner eq rule.partnerId }
+                        .orderBy(LoyaltyTiersTable.levelIndex).associate {
+                            it[LoyaltyTiersTable.levelIndex] to it[LoyaltyTiersTable.threshold]
+                        } // Map<LevelIndex, Threshold>
+
+                    cardsToDowngrade.forEach { row ->
+                        val cardId = row[LoyaltyCardsTable.id]
+                        val currentLevel = row[LoyaltyCardsTable.tierLevel]
+                        val totalVisits = row[LoyaltyCardsTable.visitsCount]
+                        val userId = row[LoyaltyCardsTable.user]
+
+                        val targetLevel = currentLevel - 1
+                        val targetVisits = (totalVisits - 1).coerceAtLeast(0)
+
+                        // Получаем порог (цену) целевого уровня
+                        // Например, для Silver (2) порог 5000.
+                        // Если у юзера было 9000 (Gold), мы срежем ему LTV до 5000.
+                        val targetThreshold = partnerTiers[targetLevel] ?: BigDecimal.ZERO
+
+                        // 1. Понижаем уровень и срезаем LTV
+                        LoyaltyCardsTable.update({ LoyaltyCardsTable.id eq cardId }) {
+                            it[tierLevel] = targetLevel
+                            it[totalSpent] = targetThreshold
+                            it[visitsCount] = targetVisits
+                        }
+
+                        TransactionsHistoryTable.insert {
+                            it[user] = userId
+                            it[partner] = rule.partnerId
+                            it[type] = TransactionTypeHistory.TIER_DOWNGRADE
+                            it[amount] = BigDecimal.ZERO
+                            it[pointsDelta] = BigDecimal.ZERO
+                            it[visitsDelta] = -1
+                            it[exchangeRateSnapshot] = BigDecimal.ONE
+                            it[currency] = rule.baseCurrency
+                            it[createdAt] = now
+                        }
+
+                        systemEventRepository.logEvent(
+                            type = SystemEventType.TIER_CHANGE,
+                            userId = userId.value.toString(),
+                            partnerId = rule.partnerId.toString(),
+                            payload = "Inactive Downgrade: Level $currentLevel -> $targetLevel"
+                        )
+                        downgradedCount++
+                    }
+                }
             }
         }
-        
-        if (expiredCount > 0) {
-            logger.info("Expiration cycle completed. Expired $expiredCount cards.")
+
+        if (burnedCount > 0 || downgradedCount > 0) {
+            logger.info("Cycle finished. Burned: $burnedCount cards, Downgraded: $downgradedCount cards.")
         }
     }
 
     suspend fun runSubscriptionCheck() = dbQuery {
         logger.info("Running subscription check...")
-        val now = System.currentTimeMillis()
-        
-        // 1. Find EXPIRED subscriptions (FIXED_TERM)
-        val expiredSubs = PlatformSubscriptionsTable
-            .innerJoin(TradingPointsTable) // Join to get partnerId from Point
-            .selectAll()
-            .where {
-                (PlatformSubscriptionsTable.isActive eq true) and 
-                (PlatformSubscriptionsTable.endDate.isNotNull()) and 
-                (PlatformSubscriptionsTable.endDate less now)
-            }.map { 
-                Triple(it[PlatformSubscriptionsTable.id], it[TradingPointsTable.partnerId], it[PlatformSubscriptionsTable.pointId])
-            }
+        val now = nowUtc()
+        val in3Days = now.plusDays(3)
+        val in1Day = now.plusDays(1)
 
-        expiredSubs.forEach { (subId, partnerId, pointId) ->
-            logger.warn("Subscription expired for Point $pointId (Partner $partnerId, Sub: $subId). Deactivating...")
-            
-            // Deactivate Subscription
+
+        // А. WARNING (3 дня осталось, еще не отправляли)
+        val warningSubs = PlatformSubscriptionsTable
+            .innerJoin(TradingPointsTable)
+            .innerJoin(PartnersTable)
+            .select {
+                (PlatformSubscriptionsTable.isActive eq true) and
+                        (PlatformSubscriptionsTable.endDate.isNotNull()) and
+                        (PlatformSubscriptionsTable.endDate lessEq in3Days) and
+                        (PlatformSubscriptionsTable.endDate greater in1Day) and
+                        (PlatformSubscriptionsTable.warningSentAt.isNull())
+            }
+            .toList()
+
+        warningSubs.forEach { row ->
+            sendNotifications(row, isUrgent = false)
+
+            PlatformSubscriptionsTable.update({ PlatformSubscriptionsTable.id eq row[PlatformSubscriptionsTable.id] }) {
+                it[warningSentAt] = now
+                it[this.updatedAt] = updatedAt
+            }
+        }
+
+        val criticalSubs = PlatformSubscriptionsTable
+            .innerJoin(TradingPointsTable)
+            .innerJoin(PartnersTable)
+            .select {
+                (PlatformSubscriptionsTable.isActive eq true) and
+                        (PlatformSubscriptionsTable.endDate.isNotNull()) and
+                        (PlatformSubscriptionsTable.endDate lessEq in1Day) and
+                        (PlatformSubscriptionsTable.endDate greater now) and
+                        (PlatformSubscriptionsTable.criticalSentAt.isNull())
+            }
+            .toList()
+
+        criticalSubs.forEach { row ->
+            sendNotifications(row, isUrgent = true)
+
+            PlatformSubscriptionsTable.update({ PlatformSubscriptionsTable.id eq row[PlatformSubscriptionsTable.id] }) {
+                it[criticalSentAt] = now
+                it[this.updatedAt] = now
+            }
+        }
+
+        val expiredSubs = PlatformSubscriptionsTable
+            .innerJoin(TradingPointsTable)
+            .select {
+                (PlatformSubscriptionsTable.isActive eq true) and
+                        (PlatformSubscriptionsTable.endDate.isNotNull()) and
+                        (PlatformSubscriptionsTable.endDate lessEq now)
+            }
+            .toList()
+
+        expiredSubs.forEach { row ->
+            val subId = row[PlatformSubscriptionsTable.id]
+            val pointId = row[TradingPointsTable.id].value
+            val partnerId = row[TradingPointsTable.partner].value
+
             PlatformSubscriptionsTable.update({ PlatformSubscriptionsTable.id eq subId }) {
                 it[isActive] = false
+                it[this.updatedAt] = now
             }
 
-            // Deactivate Specific Point (pointId is mandatory)
+            // Деактивируем точку (согласно документации)
             TradingPointsTable.update({ TradingPointsTable.id eq pointId }) {
                 it[isActive] = false
+                it[this.updatedAt] = now
+                it[isTemporarilyPaused] = true
             }
 
-            // Notify (Log event)
             systemEventRepository.logEvent(
-                type = SystemEventType.INFO,
+                type = SystemEventType.SUBSCRIPTION_EXPIRED,
                 userId = "SYSTEM",
-                userPhone = null,
-                partnerId = partnerId,
+                partnerId = partnerId.toString(),
                 payload = "Subscription EXPIRED for Point $pointId. Deactivated."
             )
         }
 
-        // 2. Find WARNING subscriptions (Expires in <= 3 days)
-        val warningThreshold = now + (3 * 24 * 60 * 60 * 1000L)
-        val allWarningSubs = PlatformSubscriptionsTable
-            .innerJoin(TradingPointsTable)
-            .innerJoin(PartnersTable) // Join Partners to get business name
-            .selectAll()
-            .where {
-                (PlatformSubscriptionsTable.isActive eq true) and
-                (TradingPointsTable.isActive eq true) and // Check Point is Active
-                (PlatformSubscriptionsTable.endDate.isNotNull()) and
-                (PlatformSubscriptionsTable.endDate less warningThreshold) and
-                (PlatformSubscriptionsTable.endDate greater now)
-            }.map {
-                SubscriptionWarningDto(
-                    partnerId = it[TradingPointsTable.partnerId],
-                    partnerName = it[PartnersTable.businessName],
-                    pointId = it[PlatformSubscriptionsTable.pointId],
-                    pointName = it[TradingPointsTable.name],
-                    endDate = it[PlatformSubscriptionsTable.endDate]!!
-                )
-            }
+        // Г. Уведомление Админам (Сводный отчет)
+        if (warningSubs.isNotEmpty() || criticalSubs.isNotEmpty()) {
+            notifyPlatformAdmins(warningSubs,  criticalSubs)
+        }
 
-        // Filter duplicates: Group by PointID, take the subscription with MAX endDate
-        val warningSubs = allWarningSubs
-            .groupBy { it.pointId }
-            .map { (_, subs) -> 
-                // We assume the valid subscription is the one that extends furthest.
-                // If I have one expiring tomorrow and one next month, the point is safe until next month.
-                // But here our query only picked subs expiring < 3 days.
-                // So all of them are expiring soon. We take the latest of them.
-                subs.maxByOrNull { it.endDate }!!
-            }
+    }
 
-        warningSubs.forEach { sub ->
-            val timeLeft = sub.endDate - now
-            val daysLeft = timeLeft / (24 * 60 * 60 * 1000.0)
+    // --- NOTIFICATION LOGIC ---
 
-            // Logic:
-            // If roughly 1 day left (0.0 < daysLeft <= 1.2): Send URGENT (Email + SMS)
-            // If roughly 3 days left (1.2 < daysLeft <= 3.2): Send WARNING (Email)
-            // Note: This logic depends on job frequency. Assuming daily job.
-            
-            // Or strictly:
-            // 3 Day Warning: 1.2 < days <= 3.2
-            // 1 Day Warning: days <= 1.2
-            
-            var sendSms = false
-            var subjectKey = ""
-            var bodyKey = ""
-            var eventPayload = ""
-            val isUrgent: Boolean
-            
-            if (daysLeft <= 1.2) {
-                // Critical (approx 1 day or less)
-                isUrgent = true
-                sendSms = true
-                subjectKey = "sub_expiring_1day_subject"
-                bodyKey = "sub_expiring_1day_body"
-                eventPayload = "CRITICAL: Subscription expires in < 24h for Point ${sub.pointId}."
-            } else if (daysLeft > 1.2 && daysLeft <= 3.2) {
-                // Warning (approx 3 days)
-                isUrgent = false
-                sendSms = false // Only Email
-                subjectKey = "sub_expiring_subject"
-                bodyKey = "sub_expiring_body"
-                eventPayload = "WARNING: Subscription expires in 3 days for Point ${sub.pointId}."
-            } else {
-                // In between or too far
-                return@forEach
-            }
-            
-            logger.info("Processing notification for Point ${sub.pointId}. Days left: $daysLeft. Urgent: $sendSms")
-            
-            systemEventRepository.logEvent(
-                type = SystemEventType.INFO,
-                userId = "SYSTEM",
-                userPhone = null,
-                partnerId = sub.partnerId,
-                payload = eventPayload
-            )
+    private suspend fun sendNotifications(row: ResultRow, isUrgent: Boolean) {
+        // 1. Подготовка данных
+        val pointName = row[TradingPointsTable.name]
+        val partnerName = row[PartnersTable.businessName]
+        val endDate = row[PlatformSubscriptionsTable.endDate] // LocalDateTime
+        val dateStr = DateTimeFormatter.ISO_LOCAL_DATE.format(endDate)
 
-            // Notify Owner
-            val ownerInfo = PartnersTable
-                .join(UsersTable, JoinType.INNER, PartnersTable.ownerId, UsersTable.id)
-                .selectAll()
-                .where { PartnersTable.id eq sub.partnerId }
-                .map { Triple(it[UsersTable.phoneNumber], it[UsersTable.email], it[UsersTable.language]) }
-                .singleOrNull()
+        val partnerId = row[PartnersTable.id].value
+        val partnerOwnerId = row[PartnersTable.owner].value
 
-            if (ownerInfo != null) {
-                val (phone, email, lang) = ownerInfo
-                val dateStr = java.time.Instant.ofEpochMilli(sub.endDate).toString()
-                
-                val args = mapOf("pointName" to sub.pointName, "date" to dateStr)
-                
-                val message = ServerResources.get(lang, bodyKey, args)
-                val subject = ServerResources.get(lang, subjectKey)
-                
-                if (sendSms) {
-                     smsService.sendSms(phone, message)
-                     systemEventRepository.logEvent(
-                        type = SystemEventType.INFO,
-                        userId = "SYSTEM",
-                        partnerId = sub.partnerId,
-                        payload = "Notification SENT (SMS) to owner ($phone)"
-                     )
-                }
-                
-                if (!email.isNullOrBlank()) {
-                    emailService.sendEmail(email, subject, message)
-                    systemEventRepository.logEvent(
-                        type = SystemEventType.INFO,
-                        userId = "SYSTEM",
-                        partnerId = sub.partnerId,
-                        payload = "Notification SENT (EMAIL) to owner ($email)"
-                     )
+        // 2. Уведомление ВЛАДЕЛЬЦА (Owner)
+        val owner = UsersTable.select { UsersTable.id eq partnerOwnerId }.singleOrNull()
+
+        if (owner != null) {
+            val email = owner[UsersTable.email]
+            val phone = owner[UsersTable.phoneNumber]
+            val lang = owner[UsersTable.language] // "ru", "en", "ky"
+
+            // А. СМС (Только если критично и есть телефон)
+            if (isUrgent && phone.isNotBlank()) {
+                // Берем чистый текст из ресурсов без HTML обертки
+                val args = mapOf("pointName" to pointName, "date" to dateStr)
+                val smsText = ServerResources.get(lang, "sub_critical_body", args)
+
+                try {
+                    smsService.sendSms(phone, smsText)
+                    logNotification("SMS", "Owner", partnerId.toString())
+                } catch (e: Exception) {
+                    logger.error("Failed to send SMS to owner $phone", e)
                 }
             }
 
-            // --- Notify Partner Managers ---
-            val partnerManagers = PartnerManagersTable
-                .innerJoin(UsersTable)
-                .selectAll()
-                .where { (PartnerManagersTable.partnerId eq sub.partnerId) and (PartnerManagersTable.isActive eq true) }
-                .map { Triple(it[UsersTable.email], it[UsersTable.phoneNumber], it[UsersTable.language]) }
+            if (!email.isNullOrBlank()) {
+                try {
+                    val template = EmailTemplate.SubscriptionAlert(
+                        isManager = false,
+                        pointName = pointName,
+                        partnerName = partnerName,
+                        date = dateStr,
+                        isUrgent = isUrgent
+                    )
 
-            partnerManagers.forEach { (pmEmail, pmPhone, pmLang) ->
-                 val dateStr = java.time.Instant.ofEpochMilli(sub.endDate).toString()
-                 val args = mapOf("pointName" to sub.pointName, "partnerName" to sub.partnerName, "date" to dateStr)
+                    val subject = emailTemplateService.buildSubject(template, lang)
+                    val body = emailTemplateService.buildBody(template, lang)
 
-                 // Reuse Manager Template
-                 val managerBodyKey = if (isUrgent) "sub_expiring_1day_manager_body" else "sub_expiring_manager_body"
-                 
-                 val message = ServerResources.get(pmLang, managerBodyKey, args)
-                 val subject = ServerResources.get(pmLang, subjectKey)
-                 
-                 if (!pmEmail.isNullOrBlank()) {
-                     emailService.sendEmail(pmEmail, subject, message)
-                     systemEventRepository.logEvent(
-                        type = SystemEventType.INFO,
-                        userId = "SYSTEM",
-                        partnerId = sub.partnerId,
-                        payload = "Notification SENT (EMAIL) to Partner Manager ($pmEmail)"
-                     )
-                 }
-            }
-
-            // --- Notify Manager (Requester) ---
-            val requesterId = PlatformSubscriptionsTable
-                .selectAll()
-                .where { (PlatformSubscriptionsTable.pointId eq sub.pointId) and (PlatformSubscriptionsTable.isActive eq true) }
-                .map { it[PlatformSubscriptionsTable.requesterId] }
-                .singleOrNull()
-
-            if (!requesterId.isNullOrBlank()) {
-                val managerInfo = UsersTable.selectAll().where { UsersTable.id eq requesterId }
-                    .map { it[UsersTable.email] to it[UsersTable.phoneNumber] }
-                    .singleOrNull()
-                
-                if (managerInfo != null) {
-                    val (mgrEmail, mgrPhone) = managerInfo
-                    val dateStr = java.time.Instant.ofEpochMilli(sub.endDate).toString()
-                    val args = mapOf("pointName" to sub.pointName, "partnerName" to sub.partnerName, "date" to dateStr)
-                    
-                    // Determine Manager Template Keys
-                    val managerBodyKey = if (isUrgent) "sub_expiring_1day_manager_body" else "sub_expiring_manager_body"
-                    
-                    // Use default EN or RU for manager if lang not known
-                    val message = ServerResources.get("ru", managerBodyKey, args) 
-                    val subject = ServerResources.get("ru", subjectKey)
-
-                    // EXCEPTION: Do NOT send SMS to Manager for 1-day warning (Email only)
-                    // sendSms logic is only for Partner Owner in this context
-                    
-                    if (!mgrEmail.isNullOrBlank()) {
-                        emailService.sendEmail(mgrEmail, subject, message)
-                        systemEventRepository.logEvent(
-                            type = SystemEventType.INFO,
-                            userId = "SYSTEM",
-                            partnerId = sub.partnerId,
-                            payload = "Notification SENT (EMAIL) to Manager ($mgrEmail)"
-                        )
-                    }
+                    emailService.sendEmail(email, subject, body)
+                    logNotification("EMAIL", "Owner", partnerId.toString())
+                } catch (e: Exception) {
+                    logger.error("Failed to send Email to owner $email", e)
                 }
             }
         }
-        
-        // Notify Platform Admins (Summary of ALL expiring < 3 days)
-        if (warningSubs.isNotEmpty()) {
-            notifyPlatformAdmins(warningSubs)
+
+        val managers = PartnerStaffTable
+            .innerJoin(UsersTable)
+            .slice(UsersTable.email, UsersTable.language)
+            .select {
+                (PartnerStaffTable.partner eq partnerId) and
+                        (PartnerStaffTable.role eq UserRole.PARTNER_MANAGER) and
+                        (PartnerStaffTable.isActive eq true)
+            }
+            .map { it[UsersTable.email] to it[UsersTable.language] }
+
+        managers.forEach { (mgrEmail, mgrLang) ->
+            if (!mgrEmail.isNullOrBlank()) {
+                try {
+                    val template = EmailTemplate.SubscriptionAlert(
+                        isManager = true, // Важно: текст для менеджера
+                        pointName = pointName,
+                        partnerName = partnerName,
+                        date = dateStr,
+                        isUrgent = isUrgent
+                    )
+
+                    val subject = emailTemplateService.buildSubject(template, mgrLang)
+                    val body = emailTemplateService.buildBody(template, mgrLang)
+
+                    emailService.sendEmail(mgrEmail, subject, body)
+                    logNotification("EMAIL", "Manager", partnerId.toString())
+                } catch (e: Exception) {
+                    logger.error("Failed to send Email to manager $mgrEmail", e)
+                }
+            }
         }
     }
 
-    private suspend fun notifyPlatformAdmins(subs: List<SubscriptionWarningDto>) = dbQuery {
-         val admins = UsersTable
-             .join(SystemStaffTable, JoinType.LEFT, UsersTable.id, SystemStaffTable.userId)
-             .selectAll()
-             .where {
-                 (UsersTable.isSuperAdmin eq true) or
-                         (SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER)
-             }.mapNotNull { it[UsersTable.email] }
-             .filter { it.isNotBlank() }
+    private suspend fun notifyPlatformAdmins(
+        warningSubs: List<ResultRow>,
+        criticalSubs: List<ResultRow>
+    ) = dbQuery {
+        // 1. Находим получателей (Супер-Админы и Супер-Менеджеры)
+        val admins = SystemStaffTable
+            .innerJoin(UsersTable)
+            .slice(UsersTable.email)
+            .select {
+                (SystemStaffTable.isActive eq true) and
+                        (SystemStaffTable.role inList listOf(
+                            UserRole.PLATFORM_SUPER_ADMIN,
+                            UserRole.PLATFORM_SUPER_MANAGER
+                        ))
+            }
+            .mapNotNull { it.toUserDto() }
+            .filter { !it.email.isNullOrEmpty() }
             .distinct()
 
-         if (admins.isEmpty()) return@dbQuery
+        if (admins.isEmpty()) return@dbQuery
 
-         val sb = StringBuilder("Critical: The following subscriptions are expiring soon:\n\n")
-         subs.forEach { sub ->
-             sb.append("- Point: ${sub.pointName} (ID: ${sub.pointId})\n")
-             sb.append("  Partner ID: ${sub.partnerId}\n")
-             sb.append("  Expires: ${java.time.Instant.ofEpochMilli(sub.endDate)}\n\n")
-         }
-         
-         admins.forEach { email ->
-             emailService.sendEmail(email, "LoyaltyLoop: Expiring Subscriptions Report", sb.toString())
-             
-             systemEventRepository.logEvent(
-                type = SystemEventType.INFO,
-                userId = "SYSTEM",
-                partnerId = "PLATFORM", // General platform event
-                payload = "Notification SENT (EMAIL SUMMARY) to Admin ($email)"
-             )
-         }
+        fun mapToItem(row: ResultRow): EmailTemplate.SuperAdminSummaryReport.SummaryItem {
+            val requesterId = row[PlatformSubscriptionsTable.requester]
+
+            val managerEmail = requesterId?.let { id ->
+                UsersTable.slice(UsersTable.email)
+                    .select { UsersTable.id eq id }
+                    .singleOrNull()
+                    ?.get(UsersTable.email)
+            }
+
+            return EmailTemplate.SuperAdminSummaryReport.SummaryItem(
+                partner = row[PartnersTable.businessName],
+                point = row[TradingPointsTable.name],
+                date = DateTimeFormatter.ISO_LOCAL_DATE.format(row[PlatformSubscriptionsTable.endDate]),
+                managerEmail = managerEmail ?: "N/A"
+            )
+        }
+
+        val template = EmailTemplate.SuperAdminSummaryReport(
+            critical = criticalSubs.map { mapToItem(it) },
+            warning = warningSubs.map { mapToItem(it) }
+        )
+
+
+        // 4. Рассылка
+        admins.forEach { admin ->
+            val subject = emailTemplateService.buildSubject(template, admin.language)
+            val body = emailTemplateService.buildBody(template, admin.language)
+            try {
+                emailService.sendEmail(admin.email!!, subject, body)
+            } catch (e: Exception) {
+                logger.error("Failed to send admin report to ${admin.email}", e)
+            }
+        }
+
+        logNotification("EMAIL_SUMMARY", "Admins", "PLATFORM")
     }
+
+    private suspend fun logNotification(channel: String, targetRole: String, partnerId: String) {
+        systemEventRepository.logEvent(
+            type = SystemEventType.NOTIFICATION_SENT,
+            userId = "SYSTEM",
+            partnerId = partnerId,
+            payload = "Notification ($channel) sent to $targetRole regarding subscription."
+        )
+    }
+
+
 }

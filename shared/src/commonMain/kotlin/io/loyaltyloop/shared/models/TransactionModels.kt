@@ -9,9 +9,22 @@ enum class TransactionStrategy {
     VISIT   // Визит
 }
 
+enum class TransactionTypeHistory {
+    VISIT,
+    EARN,
+    CHARGE,
+    VISIT_REWARD,
+    VISIT_PROGRESS,
+    POINTS_SPENT_EARNED,
+    POINTS_SPENT,
+    POINTS_EARNED,
+    BALANCE_INFO,
+    EXPIRATION,      // Полное сгорание бонусов
+    TIER_DOWNGRADE
+}
+
 @Serializable
 data class ProcessTransactionRequest(
-    val tradingPointId: String,
     val cardId: String,
     val purchaseAmount: Double = 0.0,
     val strategy: TransactionStrategy
@@ -55,7 +68,6 @@ data class TransactionHistoryDto(
 
 @Serializable
 data class CalculateTransactionRequest(
-    val tradingPointId: String,
     val cardId: String,
     val purchaseAmount: Double = 0.0,
     val strategy: TransactionStrategy
@@ -71,7 +83,7 @@ data class TransactionCalculationDto(
     val newBalance: Double,    // Прогноз баланса
     val newVisits: Int, // Прогноз визитов
     val message: LoyaltyMessage,
-    val currency: String = "",      // Пример: "KGS", "USD", "RUB"
+    val currency: String,      // Пример: "KGS", "USD", "RUB"
     val exchangeRate: Double = 1.0  // Пример: 85.0 (Курс Base -> Terminal)
 ){
     enum class LoyaltyMessage{

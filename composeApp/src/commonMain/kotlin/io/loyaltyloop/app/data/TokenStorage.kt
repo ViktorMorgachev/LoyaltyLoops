@@ -15,6 +15,8 @@ class TokenStorage(private val settings: Settings) {
         private const val KEY_CURRENT_WORKSPACE_ID = "current_workspace_id"
         private const val KEY_IS_ROLE_SELECTED = "is_role_selected"
         private const val KEY_APP_LANGUAGE = "app_language"
+
+        private const val KEY_APP_STORE = "app_store"
         private const val KEY_LAST_SHOWN_WHATS_NEW_VERSION = "last_shown_whats_new_version"
     }
 
@@ -65,6 +67,8 @@ class TokenStorage(private val settings: Settings) {
         }
     }
 
+
+
     fun getCurrentWorkspaceId(): String? {
         return settings.getStringOrNull(KEY_CURRENT_WORKSPACE_ID)
     }
@@ -79,6 +83,12 @@ class TokenStorage(private val settings: Settings) {
 
     fun setAppLanguageCode(code: String) {
         settings.putString(KEY_APP_LANGUAGE, code)
+    }
+
+    fun getAppStoreUrl(): String = settings.getString(KEY_APP_STORE, "https://play.google.com/store/apps/details?id=io.loyaltyloop.app")
+
+    fun setAppStoreUrl(storeUrl: String) {
+        settings.putString(KEY_APP_STORE, storeUrl)
     }
 
     fun getAppLanguageCode(): String? = settings.getStringOrNull(KEY_APP_LANGUAGE)

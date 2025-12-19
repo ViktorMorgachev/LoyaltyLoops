@@ -135,6 +135,7 @@ object NetworkClient {
             header("X-Device-Model", deviceInfo.model)
             header("X-Os-Version", deviceInfo.osVersion)
             header("X-App-Version", deviceInfo.appVersion)
+            header("X-Workspace-Id", tokenStorage.getCurrentWorkspaceId())
             
             // Timezone
             try {

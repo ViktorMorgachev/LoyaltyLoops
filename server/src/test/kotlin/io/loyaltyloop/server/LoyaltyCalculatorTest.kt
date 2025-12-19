@@ -51,7 +51,12 @@ class LoyaltyCalculatorTest {
         riskLevel = RiskLevel.GREEN,
         partnerBaseCurrency = "USD",
         estimatedValue = balance,
-        estimatedCurrency = "KGS"
+        estimatedCurrency = "KGS",
+        cardColor = "#FFFFFF",
+        logoUrl = null,
+        trustScore = 5.0,
+        totalScore = 100,
+        fraudFlag = false
     )
 
     @Test

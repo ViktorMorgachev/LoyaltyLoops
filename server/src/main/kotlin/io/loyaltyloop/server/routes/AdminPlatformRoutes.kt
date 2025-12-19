@@ -12,7 +12,10 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.repository.PlatformRepository
+import io.loyaltyloop.server.repository.SubscriptionRepository
+import io.loyaltyloop.server.repository.SystemStaffRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.AppErrorCode
@@ -24,51 +27,38 @@ import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.server.service.email.EmailService // Added
 import org.jetbrains.exposed.sql.select
 
+
+// TODO checked
 fun Route.adminPlatformRoutes(
     platformRepository: PlatformRepository,
-    userRepository: UserRepository,
-    emailService: EmailService // Injected
+    systemStaffRepository: SystemStaffRepository,
+    accessControlService: AccessControlService,
+    subscriptionRepository: SubscriptionRepository
 ) {
     authenticate("auth-jwt") {
+
         route("/platform") {
-            
-            // --- JOIN ---
+
             post("/join") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<JoinPlatformAdminRequest>()
                 
-                val role = platformRepository.validateInvite(request.inviteCode) 
-                    ?: throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE)
-                
-                // Check if already joined?
-                val existingRole = platformRepository.getSystemRole(userId)
-                if (existingRole != null) {
-                    throw LoyaltyException(AppErrorCode.ALREADY_JOINED)
-                }
-
-                platformRepository.createSystemStaff(userId, role)
+                val role = systemStaffRepository.validateInvite(request.inviteCode)
+                systemStaffRepository.acceptInvite(code = request.inviteCode, userId, role)
                 call.respond(HttpStatusCode.OK)
             }
 
             get("/alerts") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val role = platformRepository.getSystemRole(userId)
-                
-                if (role !in listOf(UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER, UserRole.PLATFORM_MANAGER)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN)
-                }
-                
-                val alerts = platformRepository.getExpiringSubscriptions()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requireSystemRole(userId)
+
+                val alerts = subscriptionRepository.getExpiringSubscriptions()
                 call.respond(alerts)
             }
 
             post("/requests") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-                val role = platformRepository.getSystemRole(userId)
-                
-                if (role !in listOf(UserRole.PLATFORM_MANAGER, UserRole.PLATFORM_SUPER_MANAGER, UserRole.PLATFORM_SUPER_ADMIN)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN, "Access denied")
-                }
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requireSystemRole(userId)
 
                 val request = call.receive<CreatePlatformRequest>()
                 val id = platformRepository.createRequest(userId, request)
@@ -76,8 +66,9 @@ fun Route.adminPlatformRoutes(
             }
 
             get("/requests") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val role = platformRepository.getSystemRole(userId)
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requireSystemRole(userId)
+                val role = systemStaffRepository.getSystemRole(userId)
                 
                 val status = call.request.queryParameters["status"]?.let { PlatformRequestStatus.valueOf(it) }
                 val filterRequesterId = call.request.queryParameters["requesterId"]
@@ -98,25 +89,17 @@ fun Route.adminPlatformRoutes(
             }
 
             post("/requests/{id}/approve") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-                val role = platformRepository.getSystemRole(userId)
-                
-                if (role !in listOf(UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN)
-                }
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requireSystemRole(userId, UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)
 
                 val requestId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST)
-                platformRepository.approveRequest(requestId, userId, emailService)
+                platformRepository.approveRequest(requestId, userId)
                 call.respond(HttpStatusCode.OK)
             }
 
             post("/requests/{id}/reject") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-                val role = platformRepository.getSystemRole(userId)
-                
-                if (role !in listOf(UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN)
-                }
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requireSystemRole(userId, UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)
 
                 val requestId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST)
                 val body = call.receive<RejectRequestDto>()
@@ -127,58 +110,32 @@ fun Route.adminPlatformRoutes(
             // --- STAFF & INVITES ---
 
             post("/invite") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-                val role = platformRepository.getSystemRole(userId)
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+
                 val targetRoleStr = call.request.queryParameters["role"] ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")
                 val targetRole = UserRole.valueOf(targetRoleStr)
 
-                // Permission check
-                val canInvite = when (role) {
-                    UserRole.PLATFORM_SUPER_ADMIN -> targetRole == UserRole.PLATFORM_SUPER_MANAGER || targetRole == UserRole.PLATFORM_MANAGER
-                    UserRole.PLATFORM_SUPER_MANAGER -> targetRole == UserRole.PLATFORM_MANAGER
-                    else -> false
-                }
-
-                if (!canInvite) throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role")
-
-                val code = platformRepository.generateInvite(targetRole, userId)
+                val code = systemStaffRepository.generateInvite(targetRole, userId)
                 call.respond(mapOf("code" to code))
             }
 
             get("/staff") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val role = platformRepository.getSystemRole(userId)
-
-                if (role !in listOf(UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN)
-                }
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requireSystemRole(userId, UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)
 
                 val roleFilter = call.request.queryParameters["role"]?.let { UserRole.valueOf(it) }
-                val staff = platformRepository.getSystemStaff(roleFilter)
+                val staff = systemStaffRepository.getSystemStaff(roleFilter)
                 call.respond(staff)
             }
 
+
             delete("/staff/{id}") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
-                val role = platformRepository.getSystemRole(userId)
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@delete
+                accessControlService.requireSystemRole(userId, UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)
+                val role = systemStaffRepository.getSystemRole(userId)
                 val staffId = call.parameters["id"] ?: throw LoyaltyException(AppErrorCode.INVALID_REQUEST)
 
-                if (role !in listOf(UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)) {
-                    throw LoyaltyException(AppErrorCode.FORBIDDEN)
-                }
-                
-                // Prevent deleting higher or equal roles
-                val targetStaffRole = platformRepository.getSystemRoleByStaffId(staffId)
-                if (targetStaffRole != null) {
-                     if (targetStaffRole == UserRole.PLATFORM_SUPER_ADMIN) {
-                         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Cannot delete Super Admin")
-                     }
-                     if (role == UserRole.PLATFORM_SUPER_MANAGER && targetStaffRole == UserRole.PLATFORM_SUPER_MANAGER) {
-                         throw LoyaltyException(AppErrorCode.FORBIDDEN, "Cannot delete another Super Manager")
-                     }
-                }
-                
-                platformRepository.removeSystemStaff(staffId)
+                systemStaffRepository.removeSystemStaff(staffId,role)
                 call.respond(HttpStatusCode.OK)
             }
         }

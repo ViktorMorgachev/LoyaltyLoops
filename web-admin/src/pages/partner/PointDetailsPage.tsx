@@ -318,6 +318,7 @@ export const PointDetailsPage = () => {
   };
 
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [partnerBaseCurrency, setPartnerBaseCurrency] = useState<string>(''); // Base currency of partner for thresholds
 
   const renderTierLabel = (tier: any) => {
     if (!tier) return '-';
@@ -350,6 +351,7 @@ export const PointDetailsPage = () => {
       });
       
       setProgramType(data.settings.programType);
+      setPartnerBaseCurrency(data.baseCurrency || '');
       setMaxBurnPercentage(data.settings.maxBurnPercentage || 100);
 
       const backendCurrency = data.point.currency?.trim();
@@ -533,7 +535,7 @@ export const PointDetailsPage = () => {
        }
        if (confirm(t('point_details.confirm_delete'))) {
           try {
-            await api.delete(`/partners/cashiers/${cashierId}`);
+            await api.delete(`/partners/cashiers/${id}/${cashierId}`);
             showSuccess(t('point_details.fire_success'));
             loadCashiers();
           } catch (e: any) {
@@ -920,16 +922,23 @@ export const PointDetailsPage = () => {
                                 <TableRow key={idx}>
                                     <TableCell>{renderTierLabel(tier)}</TableCell>
                                     <TableCell>
-                                        <TextField 
-                                            type="number"
-                                            size="small" 
-                                            value={tier.threshold}
-                                            disabled={tier.levelIndex === 1}
-                                            inputProps={{ min: 0, inputMode: 'decimal' }}
-                                            onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
-                                            onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
-                                                sx={{ maxWidth: 120 }}
-                                        />
+                                    <TextField 
+                                        type="number"
+                                        size="small" 
+                                        value={tier.threshold}
+                                        disabled={tier.levelIndex === 1}
+                                        inputProps={{ min: 0, inputMode: 'decimal' }}
+                                        onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
+                                        onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
+                                        InputProps={{
+                                          endAdornment: (
+                                            <span style={{ marginLeft: 4, fontSize: '0.8rem', color: 'gray' }}>
+                                              {partnerBaseCurrency || ''}
+                                            </span>
+                                          )
+                                        }}
+                                        sx={{ maxWidth: 160 }}
+                                    />
                                     </TableCell>
                                     <TableCell>
                                         <TextField 

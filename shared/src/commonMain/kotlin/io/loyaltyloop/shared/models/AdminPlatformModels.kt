@@ -9,7 +9,7 @@ data class JoinPlatformAdminRequest(
 
 enum class SubscriptionType {
     FIXED_TERM, // Фиксированный срок
-    REV_SHARE   // % от оборота
+    REV_SHARE,   // % от оборота
 }
 
 enum class PlatformRequestType {
@@ -75,7 +75,7 @@ data class PlatformRequestDto(
     val createdAt: Long,
     val updatedAt: Long,
     
-    val targetPartnerId: String,
+    val targetPartnerId: String?,
     val targetPartnerName: String? = null,
     val targetPointId: String?,
     val targetPointName: String? = null,

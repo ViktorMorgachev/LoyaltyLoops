@@ -73,10 +73,12 @@ class SplashScreenModel(
             // 1. Check Version
             val versionResult = appRepository.getAppVersion(platform = platformName)
             versionResult.onSuccess { versionInfo ->
+                tokenStorage.setAppStoreUrl(versionInfo.storeUrl)
                 if (versionInfo.force && versionInfo.latestVersionCode > BuildAppConfig.VERSION_CODE) {
                     _events.send(Event.NavigateToForceUpdate(versionInfo.storeUrl))
                     return@launch
                 }
+
             }.onFailure {
                 // Log error but continue
                 log.write("Version check failed: ${it.message}", LogType.Warning)

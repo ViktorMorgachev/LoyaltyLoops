@@ -7,28 +7,33 @@ import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.shared.models.PartnerStatus
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.nowUtc
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.selectAll
-import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
+
+// TODO checked
 class ExchangeRateService(
     private val redisService: RedisService,
-    private val apiKey: String // Лучше передавать из конфига
+    private val apiKey: String
 ) {
     private val logger = LoggerFactory.getLogger(ExchangeRateService::class.java)
     private val client = OkHttpClient.Builder()
@@ -39,8 +44,10 @@ class ExchangeRateService(
     // 25 часов (чтобы пережить сбой крона, но удалять мусор)
     private val CACHE_TTL = 25 * 60 * 60
 
-    fun start(scope: CoroutineScope) {
-        scope.launch(Dispatchers.IO) {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    fun start() {
+        scope.launch {
             logger.info("🚀 ExchangeRateService started")
             while (isActive) { // Используем isActive для корректной остановки
                 try {
@@ -58,7 +65,6 @@ class ExchangeRateService(
 
         val key = "rate:$fromCurrency:$toCurrency"
 
-        // 1. Try Redis (Hot Cache)
         try {
             val cached = redisService.get(key)
             if (cached != null) {
@@ -68,34 +74,43 @@ class ExchangeRateService(
             logger.warn("⚠️ Redis unavailable, falling back to DB", e)
         }
 
-        // 2. Try DB (Persistent Storage)
         val dbRate = dbQuery {
-            ExchangeRatesTable.selectAll()
-                .where { (ExchangeRatesTable.fromCurrency eq fromCurrency) and (ExchangeRatesTable.toCurrency eq toCurrency) }
-                .singleOrNull()?.get(ExchangeRatesTable.rate)
+            ExchangeRatesTable
+                .slice(ExchangeRatesTable.rate)
+                .select {
+                    (ExchangeRatesTable.fromCurrency eq fromCurrency) and
+                            (ExchangeRatesTable.toCurrency eq toCurrency)
+                }
+                .singleOrNull()
+                ?.get(ExchangeRatesTable.rate)
         }
 
         if (dbRate != null) {
-            // [FIX] Restore Redis Cache! (Self-healing)
+            val rateValue = dbRate.toDouble()
+
             try {
-                redisService.set(key, dbRate.toString(), CACHE_TTL)
-            } catch (e: Exception) { logger.warn("Redis restore failed", e) }
-            return dbRate
+                redisService.set(key, rateValue.toString(), CACHE_TTL)
+            } catch (e: Exception) {
+                logger.warn("Redis restore failed", e)
+            }
+            return rateValue
         }
 
-        // 3. Lazy Fetch (API Fallback)
         logger.info("⚠️ Rate missing for $fromCurrency -> $toCurrency. Attempting lazy fetch...")
 
         return try {
             val rates = fetchRatesFromApi(fromCurrency)
             val targetRate = rates[toCurrency]
-                ?: throw LoyaltyException(AppErrorCode.CURRENCY_RATE_NOT_FOUND, "Target currency not in API")
+                ?: throw LoyaltyException(
+                    AppErrorCode.CURRENCY_RATE_NOT_FOUND,
+                    "Target currency not in API"
+                )
 
-            // Async/Sync save (делаем синхронно для надежности)
             saveRatesToDbAndCache(fromCurrency, rates)
 
             targetRate
         } catch (e: Exception) {
+            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
             logger.error("❌ Lazy fetch failed for $fromCurrency -> $toCurrency", e)
             throw LoyaltyException(AppErrorCode.CURRENCY_RATE_NOT_FOUND, "Rate fetch failed")
         }
@@ -104,7 +119,6 @@ class ExchangeRateService(
     private suspend fun updateRates() {
         logger.info("🔄 Updating exchange rates...")
 
-        // 1. Get Bases & Targets (Без изменений)
         val baseCurrencies = dbQuery {
             PartnersTable.slice(PartnersTable.baseCurrency)
                 .select((PartnersTable.status eq PartnerStatus.ACTIVE) or (PartnersTable.status eq PartnerStatus.PENDING))
@@ -119,7 +133,7 @@ class ExchangeRateService(
                 .withDistinct()
                 .map { it[TradingPointsTable.currency] }
                 .filter { it.length == 3 }
-        }.toSet() // В Set для быстрого поиска
+        }.toSet()
 
         if (baseCurrencies.isEmpty()) return
 
@@ -127,13 +141,14 @@ class ExchangeRateService(
         baseCurrencies.forEach { base ->
             try {
                 val allRates = fetchRatesFromApi(base)
-                // Фильтруем: оставляем только те валюты, которые используются в наших точках
+                // Оставляем только те валюты, которые используются в точках
                 val relevantRates = allRates.filterKeys { it in terminalCurrencies }
 
                 if (relevantRates.isNotEmpty()) {
                     saveRatesToDbAndCache(base, relevantRates)
                 }
             } catch (e: Exception) {
+                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
                 logger.error("❌ Failed to update rates for base $base", e)
             }
         }
@@ -146,13 +161,17 @@ class ExchangeRateService(
         try {
             rates.forEach { (target, rate) ->
                 val key = "rate:$base:$target"
-                redisService.set(key, rate.toString(), CACHE_TTL) // [FIX] Передаем TTL
+                redisService.set(key, rate.toString(), CACHE_TTL)
             }
-        } catch (e: Exception) { logger.warn("Redis set failed", e) }
+        } catch (e: Exception) {
+            logger.warn("Redis set failed", e)
+        }
 
         // 2. Save to DB
         dbQuery {
-            // Удаляем ТОЛЬКО записи для текущей базовой валюты
+            val now = nowUtc()
+
+            // Удаляем старые курсы только для этой базовой валюты
             ExchangeRatesTable.deleteWhere {
                 ExchangeRatesTable.fromCurrency eq base
             }
@@ -160,13 +179,15 @@ class ExchangeRateService(
             ExchangeRatesTable.batchInsert(rates.toList()) { (target, rate) ->
                 this[ExchangeRatesTable.fromCurrency] = base
                 this[ExchangeRatesTable.toCurrency] = target
-                this[ExchangeRatesTable.rate] = rate
-                this[ExchangeRatesTable.updatedAt] = System.currentTimeMillis()
+
+                this[ExchangeRatesTable.rate] = BigDecimal.valueOf(rate)
+
+                this[ExchangeRatesTable.updatedAt] = now
             }
         }
     }
 
-    private fun fetchRatesFromApi(base: String): Map<String, Double> {
+    private suspend fun fetchRatesFromApi(base: String): Map<String, Double> = withContext(Dispatchers.IO) {
         val url = "https://v6.exchangerate-api.com/v6/$apiKey/latest/$base"
         val request = Request.Builder().url(url).build()
 
@@ -186,7 +207,7 @@ class ExchangeRateService(
             conversionRates.keys().forEach { key ->
                 map[key] = conversionRates.getDouble(key)
             }
-            return map
+            return@withContext map
         }
     }
 }

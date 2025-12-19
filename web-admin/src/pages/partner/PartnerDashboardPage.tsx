@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Paper, Typography, Box, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import { Container, Paper, Typography, Box, ToggleButton, ToggleButtonGroup, Skeleton } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
 import { Group as GroupIcon, Store as StoreIcon, Receipt as ReceiptIcon } from '@mui/icons-material';
@@ -37,6 +37,7 @@ export const PartnerDashboardPage = () => {
     const [period, setPeriod] = useState<AnalyticsPeriod>(AnalyticsPeriod.WEEK);
     const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null);
     const [pointsCount, setPointsCount] = useState(0);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         loadData();
@@ -44,6 +45,7 @@ export const PartnerDashboardPage = () => {
 
     const loadData = async () => {
         try {
+            setLoading(true);
             const res = await api.get(`/partners/analytics?period=${period}`);
             setAnalytics(res.data);
             
@@ -52,6 +54,8 @@ export const PartnerDashboardPage = () => {
         } catch(e: any) { 
             // Ignore 404 (New user)
             if(e.response?.status !== 404) console.error(e); 
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -86,39 +90,48 @@ export const PartnerDashboardPage = () => {
             
             {/* Используем CSS Grid */}
             <Box display="grid" gridTemplateColumns={{ xs: '1fr', md: '1fr 1fr 1fr' }} gap={3}>
-                <Box>
-                    <KpiCard 
-                        title={t('menu.my_points')} 
-                        value={pointsCount} 
-                        icon={<StoreIcon sx={{ color: '#1976d2', fontSize: 32 }} />}
-                        color="#1976d2"
-                    />
-                </Box>
-                <Box>
-                    <KpiCard 
-                        title={t('admin.total_transactions')} 
-                        value={analytics?.totalTransactions || 0} 
-                        icon={<ReceiptIcon sx={{ color: '#2e7d32', fontSize: 32 }} />}
-                        color="#2e7d32"
-                    />
-                </Box>
-                <Box>
-                    <KpiCard 
-                        title={t('admin.total_revenue')} 
-                        value={formatRevenue(analytics?.totalRevenue)} 
-                        icon={<GroupIcon sx={{ color: '#ed6c02', fontSize: 32 }} />} 
-                        color="#ed6c02"
-                    />
-                </Box>
+                {[0,1,2].map((idx) => (
+                    <Box key={idx}>
+                        {loading ? (
+                            <>
+                                <Skeleton variant="text" width="50%" height={40} />
+                                <Skeleton variant="text" width="30%" />
+                            </>
+                        ) : idx === 0 ? (
+                            <KpiCard 
+                                title={t('menu.my_points')} 
+                                value={pointsCount} 
+                                icon={<StoreIcon sx={{ color: '#1976d2', fontSize: 32 }} />}
+                                color="#1976d2"
+                            />
+                        ) : idx === 1 ? (
+                            <KpiCard 
+                                title={t('admin.total_transactions')} 
+                                value={analytics?.totalTransactions || 0} 
+                                icon={<ReceiptIcon sx={{ color: '#2e7d32', fontSize: 32 }} />}
+                                color="#2e7d32"
+                            />
+                        ) : (
+                            <KpiCard 
+                                title={t('admin.total_revenue')} 
+                                value={formatRevenue(analytics?.totalRevenue)} 
+                                icon={<GroupIcon sx={{ color: '#ed6c02', fontSize: 32 }} />} 
+                                color="#ed6c02"
+                            />
+                        )}
+                    </Box>
+                ))}
             </Box>
 
             {/* График */}
             <Box mt={4}>
                 <Paper elevation={0} sx={{ p: 4, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
                     <Typography variant="h6" mb={3} fontWeight="bold">{t('common.revenue_chart')}</Typography>
-                    {analytics?.chartData && analytics.chartData.length > 0 ? (
+                    {loading ? (
+                        <Skeleton variant="rectangular" height={300} />
+                    ) : analytics?.chartData && analytics.chartData.length > 0 ? (
                         <Box height={300}>
-                        <RevenueChart data={analytics.chartData} />
+                            <RevenueChart data={analytics.chartData} />
                         </Box>
                     ) : (
                         <Box height={300} display="flex" alignItems="center" justifyContent="center">
