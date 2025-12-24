@@ -2,219 +2,173 @@ package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toThreadDto
+import io.loyaltyloop.server.utils.toUUID
+import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.*
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import java.util.UUID
 
+// TODO checked
 class SupportChatRepository {
 
     data class MessageInsertResult(
         val thread: SupportThreadDto,
         val message: SupportMessageDto
     )
+    private val threadQuery = SupportThreadsTable.innerJoin(PartnersTable)
 
-    // Приватный Query для переиспользования (DRY)
-    // Джойним PartnersTable, чтобы получить имя бизнеса для заголовка чата
-    private val threadQuery = SupportThreadsTable
-        .join(PartnersTable, JoinType.INNER, onColumn = SupportThreadsTable.partnerId, otherColumn = PartnersTable.id)
-
-    suspend fun getOrCreateThread(partnerId: String): SupportThreadDto = dbQuery {
-        // 1. Пытаемся найти существующий тред
-        val existing = threadQuery
-            .selectAll()
-            .where { SupportThreadsTable.partnerId eq partnerId }
-            .singleOrNull()
-
-        if (existing != null) {
-            return@dbQuery existing.toThreadDto()
-        }
-
-        // 2. Если не нашли — создаем новый
-        val newId = UUID.randomUUID().toString()
-        val now = System.currentTimeMillis()
-
-        // Используем try-catch на случай "гонки", если два запроса пришли одновременно
-        // и пытаются создать тред для одного партнера (uniqueIndex защитит)
-        try {
-            SupportThreadsTable.insert {
-                it[id] = newId
-                it[this.partnerId] = partnerId
-                it[createdAt] = now
-                it[updatedAt] = now
-                it[lastMessage] = null
-                it[lastMessageAt] = null
-                it[unreadForAdmin] = 0
-                it[unreadForPartner] = 0
-                it[isClosed] = false
-            }
-        } catch (e: Exception) {
-            // Если упали (Unique Constraint), значит тред уже создан в параллельном потоке.
-            // Просто возвращаем его.
-            return@dbQuery threadQuery
-                .selectAll()
-                .where { SupportThreadsTable.partnerId eq partnerId }
-                .single()
-                .toThreadDto()
-        }
-
-        // Возвращаем только что созданный (делаем select, чтобы подтянуть данные из join)
-        threadQuery
-            .selectAll()
-            .where { SupportThreadsTable.id eq newId }
-            .single()
-            .toThreadDto()
-    }
-
-    suspend fun getThreadById(threadId: String): SupportThreadDto? = dbQuery {
-        threadQuery
-            .selectAll()
-            .where { SupportThreadsTable.id eq threadId }
-            .singleOrNull()
-            ?.toThreadDto()
-    }
-
-    suspend fun listThreads(): List<SupportThreadDto> = dbQuery {
-        threadQuery
-            .selectAll()
-            // Сортируем: сначала те, где были недавние сообщения (nulls last)
-            .orderBy(SupportThreadsTable.lastMessageAt to SortOrder.DESC_NULLS_LAST)
-            .limit(200) // Разумное ограничение для админки
-            .map { it.toThreadDto() }
-    }
-
-    suspend fun listMessages(threadId: String, limit: Int = 100): List<SupportMessageDto> = dbQuery {
-        SupportMessagesTable
-            .selectAll()
-            .where { SupportMessagesTable.threadId eq threadId }
-            .orderBy(SupportMessagesTable.createdAt to SortOrder.ASC) // Хронологический порядок
-            .limit(limit)
-            .map { it.toMessageDto() }
-    }
-
-    suspend fun appendMessage(
-        threadId: String,
-        senderId: String,
-        senderRole: UserRole,
+    suspend fun sendMessage(
+        partnerId: String,
+        senderUserId: String,
         content: String,
         isFromPartner: Boolean
     ): MessageInsertResult = dbQuery {
-        val now = System.currentTimeMillis()
-        val messageId = UUID.randomUUID().toString()
+        val partnerUuid = partnerId.toUUID()
+        val userUuid = senderUserId.toUUID()
+        val now = nowUtc()
 
-        // 1. Вставляем сообщение
-        SupportMessagesTable.insert {
-            it[id] = messageId
-            it[this.threadId] = threadId
-            it[this.senderUserId] = senderId
-            it[this.senderRole] = senderRole.name
-            it[this.content] = content
-            it[createdAt] = now
-            it[this.isFromPartner] = isFromPartner
-            it[readByPartner] = !isFromPartner // Если отправил партнер, то он уже "прочитал"
-            it[readByAdmin] = isFromPartner    // Если отправил админ, то он уже "прочитал"
+        var threadId = SupportThreadsTable
+            .slice(SupportThreadsTable.id)
+            .select { SupportThreadsTable.partner eq partnerUuid }
+            .singleOrNull()
+            ?.get(SupportThreadsTable.id)
+
+        if (threadId == null) {
+            threadId = SupportThreadsTable.insertAndGetId {
+                it[partner] = partnerUuid
+                it[createdAt] = now
+                it[updatedAt] = now
+                it[topic] = "Support Chat"
+                it[isClosed] = false
+                it[unreadForAdmin] = 0
+                it[unreadForPartner] = 0
+            }
         }
 
-        // 2. Обновляем тред (атомарно инкрементируем счетчики)
+        val messageId = SupportMessagesTable.insertAndGetId {
+            it[thread] = threadId
+            it[this.senderUserId] = userUuid
+            it[this.content] = content
+            it[this.isFromPartner] = isFromPartner
+            it[isRead] = false
+            it[createdAt] = now
+        }
+
         SupportThreadsTable.update({ SupportThreadsTable.id eq threadId }) {
-            it[lastMessage] = content.take(500) // Сохраняем превью (обрезаем если слишком длинное)
+            it[lastMessageSnippet] = content.take(100)
             it[lastMessageAt] = now
             it[updatedAt] = now
+            it[isClosed] = false
 
+            // Инкремент счетчиков
             with(SqlExpressionBuilder) {
                 if (isFromPartner) {
-                    // Пишет Партнер -> Увеличиваем счетчик Админа, сбрасываем счетчик Партнера
+                    // Пишет партнер -> +1 непрочитанное у Админа
                     it.update(unreadForAdmin, unreadForAdmin + 1)
-                    it[unreadForPartner] = 0
                 } else {
-                    // Пишет Админ -> Увеличиваем счетчик Партнера, сбрасываем счетчик Админа
+                    // Пишет админ -> +1 непрочитанное у Партнера
                     it.update(unreadForPartner, unreadForPartner + 1)
-                    it[unreadForAdmin] = 0
                 }
             }
         }
 
-        // 3. Возвращаем обновленные данные
-        val thread = threadQuery.selectAll().where { SupportThreadsTable.id eq threadId }.single().toThreadDto()
+        val threadRow = threadQuery.select { SupportThreadsTable.id eq threadId }.single()
+        val threadDto = threadRow.toThreadDto()
+
 
         val messageDto = SupportMessageDto(
-            id = messageId,
-            threadId = threadId,
-            senderId = senderId,
-            senderRole = senderRole,
+            id = messageId.value.toString(),
+            threadId = threadId.value.toString(),
+            senderId = senderUserId,
+            senderRole = if (isFromPartner) UserRole.PARTNER_ADMIN else UserRole.PLATFORM_MANAGER,
             content = content,
-            createdAt = now,
+            createdAt = now.toUtcMillis(),
             isFromPartner = isFromPartner
         )
 
-        MessageInsertResult(thread, messageDto)
+        MessageInsertResult(threadDto, messageDto)
     }
 
-    // Помечаем, что Партнер прочитал сообщения
-    suspend fun markReadByPartner(threadId: String) = dbQuery {
-        // 1. Обновляем статус сообщений
+    /**
+     * Пометить чат как прочитанный.
+     * Сбрасывает счетчики и обновляет флаги сообщений.
+     */
+    suspend fun markAsRead(threadId: String, isReaderPartner: Boolean) = dbQuery {
+        val threadUuid = threadId.toUUID()
+        val now = nowUtc()
+
+        // 1. Сбрасываем счетчик в Треде
+        SupportThreadsTable.update({ SupportThreadsTable.id eq threadUuid }) {
+            if (isReaderPartner) {
+                it[unreadForPartner] = 0
+            } else {
+                it[unreadForAdmin] = 0
+            }
+        }
+        val targetMessagesFromPartner = !isReaderPartner
+
         SupportMessagesTable.update({
-            (SupportMessagesTable.threadId eq threadId) and (SupportMessagesTable.readByPartner eq false)
+            (SupportMessagesTable.thread eq threadUuid) and
+                    (SupportMessagesTable.isFromPartner eq targetMessagesFromPartner) and
+                    (SupportMessagesTable.isRead eq false)
         }) {
-            it[readByPartner] = true
-        }
-        // 2. Сбрасываем счетчик в треде
-        SupportThreadsTable.update({ SupportThreadsTable.id eq threadId }) {
-            it[unreadForPartner] = 0
+            it[isRead] = true
+            it[readAt] = now
         }
     }
 
-    // Помечаем, что Админ прочитал сообщения
-    suspend fun markReadByAdmin(threadId: String) = dbQuery {
-        SupportMessagesTable.update({
-            (SupportMessagesTable.threadId eq threadId) and (SupportMessagesTable.readByAdmin eq false)
-        }) {
-            it[readByAdmin] = true
-        }
-        SupportThreadsTable.update({ SupportThreadsTable.id eq threadId }) {
-            it[unreadForAdmin] = 0
+    suspend fun closeThread(threadId: String) = dbQuery {
+        SupportThreadsTable.update({ SupportThreadsTable.id eq threadId.toUUID() }) {
+            it[isClosed] = true
         }
     }
 
-    // --- Helpers / Facades ---
+    suspend fun getThreads(
+        viewerIsPartner: Boolean,
+        partnerId: String? = null,
+        limit: Int = 20,
+        offset: Long = 0
+    ): List<SupportThreadDto> = dbQuery {
+        val query = threadQuery.selectAll()
 
-    suspend fun getThreadWithMessages(threadId: String, limit: Int = 100): SupportThreadResponse? {
-        val thread = getThreadById(threadId) ?: return null
-        val messages = listMessages(threadId, limit)
-        return SupportThreadResponse(thread, messages)
+        if (partnerId != null) {
+            query.andWhere { SupportThreadsTable.partner eq partnerId.toUUID() }
+        }
+
+        query.orderBy(SupportThreadsTable.updatedAt to SortOrder.DESC)
+            .limit(limit, offset)
+            .map { row -> row.toThreadDto() }
     }
 
-    // Удобный метод для API партнера
-    suspend fun getThreadForPartner(partnerId: String, limit: Int = 100): SupportThreadResponse {
-        val thread = getOrCreateThread(partnerId)
-        val messages = listMessages(thread.id, limit)
-        return SupportThreadResponse(thread, messages)
+    suspend fun getMessages(threadId: String, limit: Int = 50, offset: Long = 0): List<SupportMessageDto> = dbQuery {
+        val threadUuid = threadId.toUUID()
+
+        SupportMessagesTable
+            .select { SupportMessagesTable.thread eq threadUuid }
+            .orderBy(SupportMessagesTable.createdAt, SortOrder.DESC)
+            .limit(limit, offset)
+            .map { row ->
+                val isFromPartner = row[SupportMessagesTable.isFromPartner]
+
+                SupportMessageDto(
+                    id = row[SupportMessagesTable.id].value.toString(),
+                    threadId = row[SupportMessagesTable.thread].value.toString(),
+                    senderId = row[SupportMessagesTable.senderUserId]?.value?.toString() ?: "",
+                    senderRole = if (isFromPartner) UserRole.PARTNER_ADMIN else UserRole.PLATFORM_MANAGER,
+                    content = row[SupportMessagesTable.content],
+                    createdAt = row[SupportMessagesTable.createdAt].toUtcMillis(),
+                    isFromPartner = row[SupportMessagesTable.isFromPartner]
+                )
+            }.reversed()
     }
 
-    // --- MAPPERS ---
+    // --- HELPERS ---
+    suspend fun getThreadById(threadId: String): SupportThreadDto? = dbQuery {
+        threadQuery
+            .select { SupportThreadsTable.id eq threadId.toUUID() }
+            .singleOrNull()
+            ?.toThreadDto()
+    }
 
-    private fun ResultRow.toThreadDto(): SupportThreadDto = SupportThreadDto(
-        id = this[SupportThreadsTable.id],
-        partnerId = this[SupportThreadsTable.partnerId],
-        partnerName = this[PartnersTable.businessName],
-        lastMessageSnippet = this[SupportThreadsTable.lastMessage],
-        lastMessageAt = this[SupportThreadsTable.lastMessageAt],
-        unreadForPartner = this[SupportThreadsTable.unreadForPartner],
-        unreadForAdmin = this[SupportThreadsTable.unreadForAdmin],
-        isClosed = this[SupportThreadsTable.isClosed]
-    )
-
-    private fun ResultRow.toMessageDto(): SupportMessageDto = SupportMessageDto(
-        id = this[SupportMessagesTable.id],
-        threadId = this[SupportMessagesTable.threadId],
-        senderId = this[SupportMessagesTable.senderUserId],
-        senderRole = try {
-            UserRole.valueOf(this[SupportMessagesTable.senderRole])
-        } catch (e: Exception) {
-            UserRole.PARTNER_ADMIN // Fallback, если роль была удалена из enum
-        },
-        content = this[SupportMessagesTable.content],
-        createdAt = this[SupportMessagesTable.createdAt],
-        isFromPartner = this[SupportMessagesTable.isFromPartner]
-    )
 }

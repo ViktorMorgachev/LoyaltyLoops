@@ -148,6 +148,7 @@
     <string name="profile_language_dialog_cancel">Отмена</string>
     <string name="profile_language_updated">Язык обновлён</string>
     <string name="language_ru">Русский</string>
+    <string name="language_en">Английский</string>
     <string name="language_ky">Кыргызча</string>
     <string name="language_kk">Qazaqşa</string>
     <string name="language_uz">Oʻzbekcha</string>
@@ -241,7 +242,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">АКЦИЯ: </string>
     <string name="term_res_visit_action_suffix">-й товар в подарок</string>
-    <string name="term_res_next_free">СЛЕДУЮЩИЙ ВИЗИТ - ПРИЗОВОЙ! 🎁</string>
+    <string name="term_res_next_free">ЭТОТ ВИЗИТ — ПРИЗОВОЙ! 🎁</string>
     <string name="term_res_btn_add_visit">Засчитать визит (+1)</string>
 
     <!-- Tiered Strategy -->

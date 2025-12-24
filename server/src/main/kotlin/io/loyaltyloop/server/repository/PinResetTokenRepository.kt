@@ -3,68 +3,87 @@ package io.loyaltyloop.server.repository
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import io.loyaltyloop.server.utils.SecurityUtils
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUUID
+import io.loyaltyloop.server.utils.toUtcLocalDateTime
+import io.loyaltyloop.server.utils.toUtcMillis
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
+// TODO checked
 data class PinResetToken(
     val id: String,
-    val userId: String,
+    val partnerId: String,
     val tokenHash: String,
     val expiresAt: Long,
     val usedAt: Long?
 )
 
 class PinResetTokenRepository {
+    suspend fun createToken(partnerId: String, token: String, expiresAt: Long): String = dbQuery {
+        val partnerUuid = partnerId.toUUID()
+        val expiresAtDate = expiresAt.toUtcLocalDateTime()
 
-    suspend fun createToken(userId: String, token: String, expiresAt: Long): String = dbQuery {
-        val id = UUID.randomUUID().toString()
-        PinResetTokensTable.insert {
-            it[this.id] = id
-            it[this.userId] = userId
-            it[this.tokenHash] = SecurityUtils.hashValue(token)
-            it[this.expiresAt] = expiresAt
-            it[this.usedAt] = null
+        PinResetTokensTable.deleteWhere {
+            (PinResetTokensTable.partner eq partnerUuid)
         }
-        id
+
+        val newId = PinResetTokensTable.insertAndGetId {
+            it[partner] = partnerUuid
+            it[tokenHash] = SecurityUtils.hashValue(token)
+            it[this.expiresAt] = expiresAtDate
+            it[usedAt] = null
+        }
+
+        newId.value.toString()
     }
 
     suspend fun findValidToken(token: String): PinResetToken? = dbQuery {
         val hash = SecurityUtils.hashValue(token)
-        val now = System.currentTimeMillis()
-        val condition = (PinResetTokensTable.tokenHash eq hash) and
-            (PinResetTokensTable.usedAt.isNull()) and
-            (PinResetTokensTable.expiresAt greaterEq now)
+        val now = nowUtc()
 
         PinResetTokensTable
             .selectAll()
-            .where { condition }
-            .map {
+            .where {
+                (PinResetTokensTable.tokenHash eq hash) and
+                        (PinResetTokensTable.usedAt.isNull()) and
+                        (PinResetTokensTable.expiresAt greater now)
+            }
+            .map { row ->
                 PinResetToken(
-                    id = it[PinResetTokensTable.id],
-                    userId = it[PinResetTokensTable.userId],
-                    tokenHash = it[PinResetTokensTable.tokenHash],
-                    expiresAt = it[PinResetTokensTable.expiresAt],
-                    usedAt = it[PinResetTokensTable.usedAt]
+                    id = row[PinResetTokensTable.id].value.toString(),
+                    partnerId = row[PinResetTokensTable.partner].value.toString(), // [FIX]
+                    tokenHash = row[PinResetTokensTable.tokenHash],
+                    expiresAt = row[PinResetTokensTable.expiresAt].toUtcMillis(),
+                    usedAt = row[PinResetTokensTable.usedAt]?.toUtcMillis()
                 )
             }
             .singleOrNull()
     }
 
-    suspend fun markUsed(tokenId: String) = dbQuery {
-        PinResetTokensTable.update({ PinResetTokensTable.id eq tokenId }) {
-            it[usedAt] = System.currentTimeMillis()
+    suspend fun markUsed(tokenId: String): Boolean = dbQuery {
+        val tokenUuid = tokenId.toUUID()
+        val updated = PinResetTokensTable.update({ PinResetTokensTable.id eq tokenUuid }) {
+            it[usedAt] = nowUtc()
         }
+        updated > 0
     }
 
-    suspend fun revokeAll(userId: String) = dbQuery {
-        PinResetTokensTable.deleteWhere { PinResetTokensTable.userId eq userId }
+
+    suspend fun revokeAll(partnerId: String) = dbQuery {
+        val partnerId = partnerId.toUUID()
+        PinResetTokensTable.deleteWhere {
+            PinResetTokensTable.partner eq partnerId
+        }
     }
 }
 

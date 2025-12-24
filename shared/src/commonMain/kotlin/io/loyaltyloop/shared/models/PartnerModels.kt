@@ -14,7 +14,8 @@ data class CreatePartnerRequest(
     val countryCode: CountryCode = CountryCode.KG,
     val ownerPin: String,
     val color: String? = null,
-    val logoUrl: String? = null
+    val logoUrl: String? = null,
+    val baseCurrency: String
 )
 
 @Serializable
@@ -24,7 +25,9 @@ data class UpdatePartnerRequest(
     val logoUrl: String?, // Пока просто ссылка текстом
     val burnBonusesDays: Int? = null,
     val downgradeTierDays: Int? = null,
-    val defaultVisitsTarget: Int = 10
+    val defaultVisitsTarget: Int = 10,
+    val baseCurrency: String,
+    val tiers: List<LoyaltyTierDto>? = null
 )
 
 @Serializable
@@ -57,15 +60,18 @@ data class PartnerEntity(
     val ownerId: String,
     val businessName: String,
     val countryCode: String,
+    val managerInviteCode: String,
     val hasPin: Boolean,
     val status: PartnerStatus,
     val logoUrl: String?,
     val color: String,
     val burnBonusesDays: Int?,
     val downgradeTierDays: Int?,
-    val defaultVisitsTarget: Int = 10,
+    val defaultVisitsTarget: Int,
     val ownerPhone: String? = null,
-    val subscriptionWarnings: List<ExpiringPointDto>? = null
+    val subscriptionWarnings: List<ExpiringPointDto>? = null,
+    val baseCurrency: String,
+    val tiers: List<LoyaltyTierDto>? = null
 )
 
 @Serializable

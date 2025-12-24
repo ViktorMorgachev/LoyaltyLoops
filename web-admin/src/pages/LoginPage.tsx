@@ -84,7 +84,10 @@ export const LoginPage = () => {
           }).catch(() => {
              // Token invalid, stay here
              localStorage.removeItem('accessToken');
+             localStorage.removeItem('currentWorkspaceId');
           });
+      } else {
+        localStorage.removeItem('currentWorkspaceId');
       }
   }, []);
 

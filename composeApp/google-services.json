@@ -23,8 +23,26 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:261695852928:android:d1530a79e055bbb716f165",
+        "android_client_info": {
+          "package_name": "io.loyaltyloop.app.stage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCG7Wl1osNoJQFqsvAaFq0vq8Pwd238fhc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"
 }
-

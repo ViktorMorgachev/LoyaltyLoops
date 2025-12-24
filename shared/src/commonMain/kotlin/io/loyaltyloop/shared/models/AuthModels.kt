@@ -54,7 +54,6 @@ data class RefreshTokenRequest(val refreshToken: String)
 
 @Serializable
 data class VerifyPinRequest(
-    val workspaceId: String,
     val pin: String
 )
 

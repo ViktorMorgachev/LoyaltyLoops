@@ -147,6 +147,7 @@
     <string name="profile_language_dialog_cancel">Жокко чыгаруу</string>
     <string name="profile_language_updated">Тил жаңыртылды</string>
     <string name="language_ru">Орусча</string>
+    <string name="language_en">Англисча</string>
     <string name="language_ky">Кыргызча</string>
     <string name="language_kk">Казакча</string>
     <string name="language_uz">Өзбекче</string>
@@ -240,7 +241,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">АКЦИЯ: </string>
     <string name="term_res_visit_action_suffix">-товар белекке</string>
-    <string name="term_res_next_free">КИЙИНКИ КЕЛҮҮ - БЕЛЕК МЕНЕН! 🎁</string>
+    <string name="term_res_next_free">БУЛ КЕЛҮҮ — БЕЛЕК МЕНЕН! 🎁</string>
     <string name="term_res_btn_add_visit">Келүү кошуу (+1)</string>
 
     <!-- Tiered Strategy -->

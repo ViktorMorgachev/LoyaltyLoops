@@ -9,6 +9,7 @@ import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
 import io.ktor.websocket.send
 
+// TODO checked
 class CardRealtimeService {
 
     private val sessions = ConcurrentHashMap<String, MutableSet<DefaultWebSocketServerSession>>()

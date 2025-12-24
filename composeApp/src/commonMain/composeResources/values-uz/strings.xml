@@ -147,6 +147,7 @@
     <string name="profile_language_dialog_cancel">Bekor qilish</string>
     <string name="profile_language_updated">Til yangilandi</string>
     <string name="language_ru">Ruscha</string>
+    <string name="language_en">Inglizcha</string>
     <string name="language_ky">Qirg‘izcha</string>
     <string name="language_kk">Qozoqcha</string>
     <string name="language_uz">O‘zbekcha</string>
@@ -240,7 +241,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">AKSIYA: </string>
     <string name="term_res_visit_action_suffix">-tovar sovg‘aga</string>
-    <string name="term_res_next_free">KEYINGI TASHRIF - SOVG‘A BILAN! 🎁</string>
+    <string name="term_res_next_free">BU TASHRIF — SOVG‘A BILAN! 🎁</string>
     <string name="term_res_btn_add_visit">Tashrif qo‘shish (+1)</string>
 
     <!-- Tiered Strategy -->

@@ -3,6 +3,7 @@ package io.loyaltyloop.app.ui.components.map
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import io.loyaltyloop.shared.models.TradingPointType
+import io.loyaltyloop.shared.models.GeoLocation
 
 data class MapMarker(
     val id: String,
@@ -25,6 +26,9 @@ expect fun YandexMap(
     modifier: Modifier = Modifier,
     cameraPosition: CameraPosition,
     markers: List<MapMarker>,
+    userLocation: GeoLocation? = null,
+    searchAreaCenter: GeoLocation? = null,
+    searchRadius: Int? = null,
     onMapClick: () -> Unit,
     onMarkerClick: (String) -> Unit
 )

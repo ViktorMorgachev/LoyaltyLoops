@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class CreateClientRatingDto(
     val userId: String,
-    val tradingPointId: String,
     val rating: Int, // 1-5
     val tags: List<ClientRatingTag> = emptyList(),
     val comment: String? = null

@@ -47,10 +47,12 @@ export const uz = {
       status_updated: "Holat yangilandi",
       status_changed: "Holat o'zgartirildi",
       rows_per_page: "Sahifadagi qatorlar:",
+      click_to_copy: "Nusxalash uchun bosing"
     },
     errors: {
       INVALID_PHONE: "Telefon raqami formati noto'g'ri",
       INVALID_PHONE_NUMBER: "Telefon raqami formati noto'g'ri",
+      INVALID_EMAIL_FORMAT: "Elektron pochta formati noto'g'ri",
       INVALID_CODE: "Kod noto'g'ri",
       CODE_EXPIRED: "Kod muddati tugagan",
       USER_NOT_FOUND: "Foydalanuvchi topilmadi",
@@ -125,6 +127,13 @@ export const uz = {
       system_events: "Audit",
       platform_staff: "Xodimlar",
       create_business: "Biznes yaratish"
+    },
+    currency: {
+        USD: "USD (Dollar)",
+        KGS: "KGS (Som)",
+        KZT: "KZT (Tenge)",
+        UZS: "UZS (So'm)",
+        BYN: "BYN (Bel. rubl)"
     },
     join_partner: {
       title: "Hamkor menejeri sifatida qo'shilish",
@@ -255,6 +264,7 @@ export const uz = {
       label_target: "Maqsad (qancha to'plash kerak?)",
       label_cashback: "Boshlang'ich Keshbek (%)",
       label_currency: "Valyuta",
+      label_base_currency: "Asosiy valyuta",
       timezone_label: "Vaqt zonasi",
       country_label: "Mamlakat",
       country_placeholder: "Mamlakatni tanlang",
@@ -268,6 +278,7 @@ export const uz = {
       label_lvl_gold: "Oltin (%)",
       hint_target: "Masalan: 6 (har 6-chi bepul)",
       hint_cashback: "Masalan: 5 (5% bilan boshlaymiz)",
+      hint_cashback_global: "Keshbek ma'lumotlari biznes sozlamalarida o'rnatiladi",
       hint_tiered_levels: "3 daraja yaratiladi: Start ({{base}}%), Kumush ({{mid}}%), Oltin ({{max}}%)",
       types: {
           COFFEE_SHOP: "Qahvaxona",
@@ -362,6 +373,8 @@ export const uz = {
       send: "Yuborish",
       sent: "Xabar yuborildi",
       validation_empty: "Xabar bo'sh bo'lmasligi kerak",
+      name_required: "Ism majburiy",
+      email_required: "Email majburiy",
       empty_state: "Xabarlar yo'q",
       no_messages: "Hozircha xabarlar yo'q",
       no_threads: "Dialoglar yo'q",
@@ -443,6 +456,7 @@ export const uz = {
       check_triggered: "Tekshirish boshlandi"
     },
     point_details: {
+      admin_title: "Savdo nuqtasi tafsilotlari",
       block_title: "Tafsilotlar",
       title: "Nuqtani boshqarish",
       tab_overview: "Sharh",
@@ -483,7 +497,6 @@ export const uz = {
       max_burn_hint: "Chekning qancha foizini bonuslar bilan yopish mumkin (0-100)",
       map_location: "Xaritadagi o'rni",
       map_hint: "Koordinatalarni tanlash uchun xaritani bosing.",
-      map_point_label: "Nuqta",
       latitude_label: "Kenglik",
       longitude_label: "Uzunlik",
       coords_required: "Koordinatalar kerak",
@@ -540,6 +553,9 @@ export const uz = {
       schedule_validation_range: "{{day}} vaqtini tekshiring.",
       schedule_validation_lunch_pair: "{{day}} uchun tanaffus vaqtini to'liq to'ldiring.",
       schedule_validation_lunch_range: "Tanaffus ish vaqti ichida bo'lishi kerak.",
+      schedule_not_set: "Jadval o'rnatilmagan",
+      schedule_day: "Kun",
+      schedule_hours: "Ish soatlari",
       pause_label: "Vaqtinchalik to'xtatilgan",
       pause_helper: "Kassirlar operatsiya bajara olmaydi.",
       pause_warning: "Nuqta tanaffusda. Mijozlar «Vaqtinchalik yopiq» deb ko'radi.",
@@ -586,6 +602,8 @@ export const uz = {
       unit_km: "km",
       edit_forbidden: "Faqat ega o'zgartira oladi.",
       readonly_hint: "Menejer rejimi: o'zgartirish mumkin emas.",
+      status_label: "Holat",
+      map_point_label: "Koordinatalar",
       contacts_title: "Aloqalar",
       info_title: "Ma'lumot",
       coming_soon: "Tez orada",
@@ -620,7 +638,9 @@ export const uz = {
       amount_label: "Summa",
       duration_label: "Davomiyligi",
       create_request_btn: "So'rov yaratish",
-      creating: "Yaratilmoqda..."
+      creating: "Yaratilmoqda...",
+      point_details: "Savdo nuqtasi tafsilotlari",
+      admin_title: "Savdo nuqtasi tafsilotlari"
     },
     platform: {
       staff_title: "Platforma xodimlari",
@@ -849,6 +869,22 @@ export const uz = {
       desc: "Ballar to'plash, sovg'a olish va progressni kuzatish uchun ilovani o'rnating.",
       btn_apk: "APK yuklash",
       requirements: "Android 8.0 yoki undan yuqori talab qilinadi"
+    },
+    client_onboarding: {
+      welcome_title: "LoyaltyLoop-ga xush kelibsiz",
+      welcome_subtitle: "Sevimli joylaringiz bitta ilovada. Ballar to'plang va sovg'alar oling.",
+      steps_title: "Bu qanday ishlaydi?",
+      step_1: "Ilovani yuklab oling",
+      step_2: "Telefon raqamingiz orqali ro'yxatdan o'ting",
+      step_3: "Har xaridda QR-kodni ko'rsating",
+      download_title: "Ilovani o'rnatish",
+      download_apk: "APK yuklab olish (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Tez orada",
+      version: "Versiya",
+      size: "Hajmi"
     }
   }
 };

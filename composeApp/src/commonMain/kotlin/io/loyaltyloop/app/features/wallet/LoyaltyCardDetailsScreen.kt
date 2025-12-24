@@ -12,7 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.koin.koinScreenModel
 import org.koin.core.parameter.parametersOf
 
 class LoyaltyCardDetailsScreen(
@@ -21,7 +21,7 @@ class LoyaltyCardDetailsScreen(
 
     @Composable
     override fun Content() {
-        val viewModel = getScreenModel<LoyaltyCardDetailsScreenModel> { parametersOf(cardId) }
+        val viewModel = koinScreenModel<LoyaltyCardDetailsScreenModel> { parametersOf(cardId) }
         val state = viewModel.state.collectAsState()
 
         Column(

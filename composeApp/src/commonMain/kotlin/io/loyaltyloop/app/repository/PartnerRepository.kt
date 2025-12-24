@@ -64,7 +64,6 @@ class PartnerRepository(private val client: HttpClient) {
     }
 
     suspend fun calculateTransaction(
-        tradingPointId: String,
         cardId: String,
         amount: Double,
         strategy: TransactionStrategy
@@ -73,7 +72,6 @@ class PartnerRepository(private val client: HttpClient) {
             client.post("/terminal/calculate") {
                 contentType(ContentType.Application.Json)
                 setBody(CalculateTransactionRequest(
-                    tradingPointId = tradingPointId,
                     cardId = cardId,
                     purchaseAmount = amount,
                     strategy = strategy
@@ -83,7 +81,6 @@ class PartnerRepository(private val client: HttpClient) {
     }
 
     suspend fun processTransaction(
-        tradingPointId: String, 
         cardId: String, 
         amount: Double?, 
         strategy: TransactionStrategy
@@ -92,7 +89,6 @@ class PartnerRepository(private val client: HttpClient) {
             client.post("/terminal/process") {
                 contentType(ContentType.Application.Json)
                 setBody(ProcessTransactionRequest(
-                    tradingPointId = tradingPointId, 
                     cardId = cardId, 
                     purchaseAmount = amount ?: 0.0, 
                     strategy = strategy

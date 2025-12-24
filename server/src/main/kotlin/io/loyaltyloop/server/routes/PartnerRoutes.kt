@@ -12,144 +12,181 @@ import io.ktor.server.routing.put
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.PartnerStaffRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
-import io.loyaltyloop.server.utils.requirePartnerWriteAccess
-import io.loyaltyloop.server.utils.requirePointReadAccess
-import io.loyaltyloop.server.utils.requirePointWriteAccess
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CreatePartnerRequest
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import io.loyaltyloop.shared.models.JoinTradingPointRequest
-import io.loyaltyloop.shared.models.LoyaltyProgramType
-import io.loyaltyloop.shared.models.LoyaltyTierDto
-import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.UpdatePartnerRequest
 import io.loyaltyloop.shared.models.TradingPointDetailsDto
 import io.loyaltyloop.shared.models.UpdateTradingPointRequest
 import io.loyaltyloop.shared.models.UpdatePinRequest
 import io.loyaltyloop.shared.models.ResetPinRequest
 import io.loyaltyloop.shared.models.PinResetConfirmRequest
-import io.loyaltyloop.shared.models.UpdateLoyaltySettingsRequest
 import io.loyaltyloop.server.service.TransactionService
-import io.loyaltyloop.shared.models.PartnerEntity
 import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.server.service.email.EmailService
-import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.server.service.AnalyticsService
 import io.loyaltyloop.shared.models.SendSupportMessageRequest
 import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.repository.DeviceTokenRepository
 import io.loyaltyloop.server.repository.RatingRepository
-import okhttp3.internal.http2.ErrorCode
-import java.time.Instant
-private const val PIN_FREEZE_MS = 24 * 60 * 60 * 1000L
-private const val PIN_RESET_TOKEN_TTL = 15 * 60 * 1000L
+import io.loyaltyloop.server.repository.SubscriptionRepository
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.server.utils.getTimezone
+import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUtcMillis
+import io.loyaltyloop.server.utils.validatePhoneNumber
+import io.loyaltyloop.shared.models.AnalyticsPeriod
+import io.loyaltyloop.shared.models.DevicePlatform
+import io.loyaltyloop.shared.models.VerifyPinRequest
 
+private const val PIN_FREEZE_HOURS = 24L
+private const val PIN_RESET_TTL_HOURS = 12L
+
+// TODO Checked
 fun Route.partnerRoutes(
     userRepository: UserRepository,
     partnerRepository: PartnerRepository,
+    partnerStaffRepository: PartnerStaffRepository,
+    tradingPointRepository: TradingPointRepository,
     transactionService: TransactionService,
     pinResetTokenRepository: PinResetTokenRepository,
     emailService: EmailService,
     webBaseUrl: String,
     supportChatService: SupportChatService,
     eventLogger: EventLogger,
-    ratingRepository: RatingRepository // Injected repo
+    deviceTokenRepository: DeviceTokenRepository,
+    ratingRepository: RatingRepository,
+    accessControlService: AccessControlService,
+    analyticsService: AnalyticsService,
+    subscriptionRepository: SubscriptionRepository
 ) {
     route("/partners") {
         authenticate("auth-jwt") {
 
-            get("/reviews/summary") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerForMember(userId)
+            post("/verify-pin") {
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService, allowFrozenActions = true) ?: return@post
+                accessControlService.requirePartnerAccess(userId = userId, partnerId = workspaceId, allowManager = true)
+                val request = call.receive<VerifyPinRequest>()
 
-                // DEBUG: Dump data if special param is present
+                val isValid = partnerRepository.verifyPartnerPin(workspaceId, request.pin)
+
+                if (isValid) call.respond(HttpStatusCode.OK)
+                else {
+                    eventLogger.log(
+                        type = SystemEventType.PIN_VERIFICATION_FAILED,
+                        userId = userId,
+                        partnerId = workspaceId,
+                        payload = "Invalid PIN verification attempt"
+                    )
+                    throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
+                }
+            }
+
+            get("/reviews/summary") {
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                val timezone = call.getTimezone()
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
+
                 val from = call.request.queryParameters["from"]?.toLongOrNull()
                 val to = call.request.queryParameters["to"]?.toLongOrNull()
                 val pointId = call.request.queryParameters["pointId"]
                 
-                val clientTz = call.request.headers["X-Timezone-Id"]
-                val timezone = if (!clientTz.isNullOrBlank()) clientTz else "UTC"
-                
-                val data = ratingRepository.getAnalyticsData(partner.id, from, to, pointId, timezone)
+                val data = ratingRepository.getAnalyticsData(workspaceId, from, to, pointId, timezone)
                 call.respond(data)
             }
 
             get("/reviews") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerForMember(userId)
-                
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
+
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-                
-                // By default return client reviews of service
-                val list = ratingRepository.getServiceReviews(partner.id, limit, offset)
+
+                val list = ratingRepository.getServiceReviews(workspaceId, limit, offset)
                 call.respond(list)
             }
             
             get("/client-ratings") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerForMember(userId)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
                 
-                val list = ratingRepository.getClientRatings(partner.id, limit, offset)
+                val list = ratingRepository.getClientRatings(workspaceId, limit, offset)
                 call.respond(list)
             }
 
             get("/analytics") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                partnerRepository.getPartnerForMember(userId)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                val timezone = call.getTimezone()
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
 
                 val periodStr = call.request.queryParameters["period"] ?: "WEEK"
-                val clientTz = call.request.headers["X-Timezone-Id"]
-                val timezone = if (!clientTz.isNullOrBlank()) clientTz else "UTC"
-                
+
                 val period = try {
-                    io.loyaltyloop.shared.models.AnalyticsPeriod.valueOf(periodStr.uppercase())
+                    AnalyticsPeriod.valueOf(periodStr.uppercase())
                 } catch (e: IllegalArgumentException) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid period. Use WEEK, MONTH, SIX_MONTHS, YEAR")
                 }
 
-                val analytics = transactionService.getAnalytics(userId, period, timezone)
+                val analytics = analyticsService.getAnalytics(workspaceId, period, timezone)
                 call.respond(analytics)
             }
 
             get("/history") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                // Service exceptions will be handled by ErrorHandler
-                val history = transactionService.getPartnerHistory(userId)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
+                val history = transactionService.getPartnerHistory(workspaceId)
                 call.respond(history)
             }
             
             post("/create") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<CreatePartnerRequest>()
+                val timeZone = call.getTimezone()
                 
                 if (request.businessName.isBlank()) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
                 }
 
-                val partnerId = partnerRepository.createPartner(userId, request)
+                if (!SecurityUtils.isStrongPin(request.ownerPin)) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "PIN must contain 4-12 digits")
+                }
+
+                val partnerId = partnerRepository.createPartner(userId, timeZone, request)
                 
                 call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Business created: $partnerId"))
             }
 
             put("/pin") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@put
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@put
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
                 val request = call.receive<UpdatePinRequest>()
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
 
                 if (!SecurityUtils.isStrongPin(request.newPin)) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "PIN must contain 4-12 digits")
                 }
-
+                val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId)
                 if (partner.hasPin) {
                     val current = request.currentPin ?: throw LoyaltyException(AppErrorCode.INVALID_PIN, "Current PIN is required")
                     val valid = partnerRepository.verifyPartnerPin(partner.id, current)
@@ -164,9 +201,9 @@ fun Route.partnerRoutes(
                     }
                 }
 
-                partnerRepository.updatePartnerPin(partner.id, request.newPin)
-                userRepository.setFrozenUntil(userId, null)
-                
+                partnerRepository.updatePartnerPin(workspaceId, request.newPin)
+                userRepository.setFrozenUntil(userId, nowUtc().plusHours(PIN_FREEZE_HOURS).toUtcMillis())
+
                 eventLogger.log(
                     type = SystemEventType.PIN_CHANGE_SUCCESS,
                     userId = userId,
@@ -178,23 +215,21 @@ fun Route.partnerRoutes(
             }
 
             post("/pin/reset") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
                 val request = call.receive<ResetPinRequest>()
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
 
                 if (!request.confirm) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Reset confirmation required")
                 }
-
-                partnerRepository.clearPartnerPin(partner.id)
-                val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
-                userRepository.setFrozenUntil(userId, freezeUntil)
+                partnerRepository.clearPartnerPin(workspaceId)
+                userRepository.setFrozenUntil(userId, nowUtc().plusHours(PIN_FREEZE_HOURS).toUtcMillis())
                 
                 eventLogger.log(
                     type = SystemEventType.PIN_RESET_SUCCESS,
                     userId = userId,
-                    partnerId = partner.id,
+                    partnerId = workspaceId,
                     payload = "Owner PIN reset (cleared)"
                 )
 
@@ -202,16 +237,15 @@ fun Route.partnerRoutes(
             }
 
             post("/pin/reset/request") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-                val user = userRepository.getUserById(userId) ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
+                val user = userRepository.getUserById(userId)!!
                 val email = user.email ?: throw LoyaltyException(AppErrorCode.EMAIL_NOT_SET, "Email is required for PIN reset")
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
 
-                pinResetTokenRepository.revokeAll(userId)
+                pinResetTokenRepository.revokeAll(workspaceId)
                 val rawToken = SecurityUtils.generateToken()
-                val expiresAt = System.currentTimeMillis() + PIN_RESET_TOKEN_TTL
-                pinResetTokenRepository.createToken(userId, rawToken, expiresAt)
+                pinResetTokenRepository.createToken(workspaceId, rawToken, nowUtc().plusHours(PIN_RESET_TTL_HOURS).toUtcMillis())
 
                 val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
                 emailService.sendPinResetEmail(email, resetLink)
@@ -219,7 +253,7 @@ fun Route.partnerRoutes(
                 eventLogger.log(
                     type = SystemEventType.PIN_RESET_REQUEST,
                     userId = userId,
-                    partnerId = partner.id,
+                    partnerId = workspaceId,
                     payload = "PIN reset link sent to email"
                 )
 
@@ -228,152 +262,131 @@ fun Route.partnerRoutes(
 
             route("/support") {
                 get("/thread") {
-                    val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@get
-                    val partner = partnerRepository.getPartnerForMember(userId)
-                    // Managers are allowed to read support threads
+                    val workspaceId = call.getWorkspaceIdOrThrow()
+                    val userId = call.getUserIdOrRespond(accessControlService, allowFrozenActions = true) ?: return@get
+                    accessControlService.requirePartnerAccess(userId,workspaceId, true)
 
-                    val response = supportChatService.getPartnerThread(partner.id)
+                    val response = supportChatService.getPartnerThread(workspaceId)
                     call.respond(response)
                 }
 
                 post("/messages") {
-                    val userId = call.getUserIdOrRespond(userRepository, allowFrozenActions = true) ?: return@post
+                    val workspaceId = call.getWorkspaceIdOrThrow()
+                    val userId = call.getUserIdOrRespond(accessControlService, allowFrozenActions = true) ?: return@post
+                    accessControlService.requirePartnerAccess(userId,workspaceId, true)
+
                     val payload = call.receive<SendSupportMessageRequest>()
                     val text = payload.content.trim()
                     if (text.isEmpty()) {
                         throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Message cannot be empty")
                     }
 
-                    val partner = partnerRepository.getPartnerForMember(userId)
-                    // Managers are allowed to send support messages
-
-                    supportChatService.sendPartnerMessage(partner.id, userId, UserRole.PARTNER_ADMIN, text)
+                    supportChatService.sendPartnerMessage(workspaceId, userId, text)
                     call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Message sent"))
                 }
             }
 
             post("/join") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
-
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<JoinTradingPointRequest>()
-
-                // 1. Ищем точку
-                val point = partnerRepository.findTradingPointByInvite(request.inviteCode)
-
-                // 2. Проверяем дубли
-                if (partnerRepository.isUserCashierAtPoint(userId, point.id)) {
-                    throw LoyaltyException(AppErrorCode.ALREADY_JOINED)
-                }
-
-                // 3. Получаем PartnerID
-                val partnerId = partnerRepository.getPartnerIdByPoint(point.id)
-
-                // 4. Добавляем
-                partnerRepository.addCashier(userId, point.id, partnerId)
-
+                val point = tradingPointRepository.findTradingPointByInvite(request.inviteCode)
+                val partnerId = tradingPointRepository.getPartnerIdByPointId(point.id)
+                partnerStaffRepository.addCashier(userId, point.id, partnerId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Success! Joined ${point.name}"))
             }
 
             get("/points") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                try {
-                    val partner = partnerRepository.getPartnerForMember(userId)
-                    val points = partnerRepository.getPointsByPartnerId(partner.id)
-                    call.respond(points)
-                } catch (e: LoyaltyException){
-                    if (e.code == AppErrorCode.BUSINESS_NOT_FOUND){
-                        call.respond(listOf<TradingPointDto>())
-                    } else throw e
-                }
-
-
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
+                val points = tradingPointRepository.getPointsByPartnerId(workspaceId)
+                call.respond(points)
             }
 
-            // --- NEW: Point Management ---
-
             get("/points/{pointId}") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 val pointId = call.parameters["pointId"]!!
-                
-                requirePointReadAccess(partnerRepository, userId, pointId)
 
-                val point = partnerRepository.getPointById(pointId)
-                val settings = partnerRepository.getSettingsByPointId(pointId)
+                val details = tradingPointRepository.getPointDetails(pointId, workspaceId)
                 
-                call.respond(TradingPointDetailsDto(point, settings))
+                call.respond(details)
             }
 
             put("/points/{pointId}") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@put
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@put
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 val pointId = call.parameters["pointId"]!!
-                
-                requirePointWriteAccess(partnerRepository, userId, pointId)
-                
+
+                partnerRepository.getPartnerByIdOrThrow(workspaceId)
+
                 val req = call.receive<UpdateTradingPointRequest>()
-                
+
                 req.contactPhone?.takeIf { it.isNotBlank() }?.let { phone ->
-                    val error = io.loyaltyloop.server.utils.validatePhoneNumber(phone)
-                    if (error != null) {
-                        throw LoyaltyException(AppErrorCode.INVALID_PHONE_NUMBER, "$error (received: '$phone')")
-                    }
+                    validatePhoneNumber(phone)
                 }
 
-                validateTierSettings(req.settings)
-                partnerRepository.updateTradingPoint(pointId, req)
+                tradingPointRepository.updateTradingPoint(pointId, req)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
 
             delete("/points/{pointId}") {
-                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@delete
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
                  val pointId = call.parameters["pointId"]!!
-                 
-                 requirePointWriteAccess(partnerRepository, userId, pointId)
-                 
-                 partnerRepository.deleteTradingPoint(pointId)
+
+                 tradingPointRepository.deleteTradingPoint(pointId)
                  call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
             
             get("/points/{pointId}/cashiers") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 val pointId = call.parameters["pointId"]!!
+
                 
-                requirePointReadAccess(partnerRepository, userId, pointId)
-                
-                val list = partnerRepository.getCashiersByPoint(pointId)
+                val list = partnerStaffRepository.getCashiersByPoint(pointId)
                 call.respond(list)
             }
 
-            delete("/cashiers/{cashierId}") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+            delete("/cashiers/{pointId}/{cashierId}") {
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@delete
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
                 val cashierId = call.parameters["cashierId"]!!
+                val pointId = call.parameters["pointId"]!!
 
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-                
                 // Найти точку или партнера, к которому относится кассир
-                if (!partnerRepository.isCassierRecordOfPartner(cashierId, partner.id)) {
+                if (!partnerStaffRepository.isHasCassierOfPartner(cashierId, workspaceId)) {
                     call.respond(HttpStatusCode.NotFound, ApiMessage(AppErrorCode.USER_NOT_FOUND, "Cashier not found in your business"))
                     return@delete
                 }
                 
-                requirePartnerWriteAccess(partnerRepository, userId, partner.id)
-                
-                partnerRepository.deleteCashier(cashierId)
+                partnerStaffRepository.removeStaffMember(requesterUserId = userId,  partnerId = workspaceId, targetUserId = cashierId, targetPointId = pointId, targetRole = UserRole.CASHIER)
+                deviceTokenRepository.deleteToken(userId, DevicePlatform.ANDROID, UserRole.CASHIER, pointId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
 
             get("/me") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-                call.respond(partner)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
+                val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId)
+                val warnings = subscriptionRepository.getExpiringPointsForPartner(workspaceId)
+                val response = partner.copy(subscriptionWarnings = warnings)
+                call.respond(response)
             }
 
             // PUT /partners/me - Обновить настройки
             put("/me") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@put
-
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val timezone = call.getTimezone()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@put
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
                 val request = call.receive<UpdatePartnerRequest>()
                 
                 if (request.businessName.isBlank()) {
@@ -382,92 +395,77 @@ fun Route.partnerRoutes(
                 if (request.defaultVisitsTarget < 1) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Default visits target must be at least 1")
                 }
-                
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-
-                partnerRepository.updatePartner(userId, request)
+                if (request.baseCurrency.isEmpty()) {
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Base currency is required")
+                }
+                partnerRepository.updatePartner(workspaceId, timezone, request)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Settings saved"))
+
             }
 
             post("/points") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
 
                 val request = call.receive<CreateTradingPointRequest>()
                 validateBaseCashback(request.baseCashback)
 
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-
-                partnerRepository.createTradingPoint(
-                    partnerId = partner.id,
+                tradingPointRepository.createTradingPoint(
+                    partnerId = workspaceId,
                     request = request,
                 )
-
                 call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created"))
             }
 
             // --- MANAGERS & CASHIERS ---
 
-            post("/managers/invite") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+            get("/managers/invite") {
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
+
+                val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
                 
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-                
-                val code = partnerRepository.generateManagerInvite(partner.id)
+                val code = partnerRepository.getManagerInvite(partner.ownerId)
                 call.respond(mapOf("inviteCode" to code))
             }
             
             post("/managers/join") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<JoinTradingPointRequest>() 
                 
-                val partnerId = partnerRepository.findPartnerByManagerInvite(request.inviteCode) 
+                val partnerId = partnerRepository.findPartnerByManagerInvite(request.inviteCode)
                     ?: throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE)
-                
-                if (partnerRepository.isUserManager(userId, partnerId)) {
-                     throw LoyaltyException(AppErrorCode.ALREADY_JOINED, "Already a manager")
-                }
-                
-                partnerRepository.addManager(userId, partnerId)
+
+                partnerStaffRepository.addManager(userId, partnerId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Joined as Manager!"))
             }
             
             get("/managers") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-                
-                val list = partnerRepository.getManagers(partner.id)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, false)
+
+                val list = partnerStaffRepository.getManagers(workspaceId)
                 call.respond(list)
             }
             
             delete("/managers/{id}") {
-                 val userId = call.getUserIdOrRespond(userRepository) ?: return@delete
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@delete
+                 accessControlService.requirePartnerAccess(userId,workspaceId, false)
                  val managerId = call.parameters["id"]!!
                  
-                 val partner = partnerRepository.getPartnerForMember(userId)
-                 ensureOwner(partner, userId)
-                 
-                // Проверить, принадлежит ли менеджер этому партнеру (по записи менеджера)
-                if (!partnerRepository.isManagerRecordOfPartner(managerId, partner.id)) {
-                    call.respond(HttpStatusCode.NotFound, ApiMessage(AppErrorCode.USER_NOT_FOUND, "Manager not found in your business"))
-                    return@delete
-                }
-
-                requirePartnerWriteAccess(partnerRepository, userId, partner.id)
-                 
-                 partnerRepository.deleteManager(managerId)
+                 partnerStaffRepository.removeStaffMember(userId, workspaceId, managerId, UserRole.PARTNER_MANAGER)
                  call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
 
             get("/cashiers") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val partner = partnerRepository.getPartnerForMember(userId)
-                ensureOwner(partner, userId)
-                
-                val list = partnerRepository.getAllCashiers(partner.id)
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
+                val list = partnerStaffRepository.getAllCashiers(workspaceId)
                 call.respond(list)
             }
         }
@@ -487,47 +485,22 @@ fun Route.partnerRoutes(
                 throw LoyaltyException(AppErrorCode.INVALID_RESET_TOKEN, "Token expired")
             }
 
-            val user = userRepository.getUserById(record.userId)
-                ?: throw LoyaltyException(AppErrorCode.USER_NOT_FOUND)
-
-            val partner = partnerRepository.getPartnerForMember(record.userId)
+            val partner = partnerRepository.getPartnerByIdOrThrow(record.partnerId, false)
 
             partnerRepository.updatePartnerPin(partner.id, request.newPin)
+
             pinResetTokenRepository.markUsed(record.id)
-            val freezeUntil = System.currentTimeMillis() + PIN_FREEZE_MS
-            userRepository.setFrozenUntil(record.userId, freezeUntil)
+
+            userRepository.setFrozenUntil(partner.ownerId, nowUtc().plusHours(PIN_FREEZE_HOURS).toUtcMillis())
 
             eventLogger.log(
                 type = SystemEventType.PIN_RESET_SUCCESS,
-                userId = record.userId,
+                userId = partner.ownerId,
                 partnerId = partner.id,
                 payload = "PIN reset confirmed via email token"
             )
 
             call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN updated"))
-        }
-    }
-}
-
-private fun ensureOwner(partner: PartnerEntity, userId: String) {
-    if (partner.ownerId != userId) {
-        throw LoyaltyException(AppErrorCode.FORBIDDEN, "Only owner can manage this partner")
-    }
-}
-
-private fun validateTierSettings(settings: UpdateLoyaltySettingsRequest) {
-    if (settings.programType == LoyaltyProgramType.TIERED_LTV || settings.programType == LoyaltyProgramType.HYBRID) {
-        if (settings.tiers.isEmpty()) {
-            throw LoyaltyException(AppErrorCode.INVALID_TIER_VALUE, "At least one tier is required")
-        }
-        settings.tiers.forEach { tier ->
-            val label = tier.loyaltyTier.descr ?: tier.loyaltyTier.level.name
-            if (tier.threshold.isNaN() || tier.threshold < 0) {
-                throw LoyaltyException(AppErrorCode.INVALID_TIER_VALUE, "Threshold cannot be negative for $label")
-            }
-            if (tier.cashbackPercent.isNaN() || tier.cashbackPercent < 0) {
-                throw LoyaltyException(AppErrorCode.INVALID_TIER_VALUE, "Cashback percent cannot be negative for $label")
-            }
         }
     }
 }

@@ -55,6 +55,6 @@ fun CountryCode.toCurrency(): Currency{
 }
 
 enum class Currency{
-    KGS, KZT, UZS,BYN
+    KGS, KZT, UZS, BYN
 }
 

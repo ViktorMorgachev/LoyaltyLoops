@@ -38,6 +38,7 @@ const performLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('workspaces'); // Не забываем чистить воркспейсы
+    localStorage.removeItem('currentWorkspaceId'); // Clean up workspace
     window.location.href = '/login';
 };
 
@@ -128,6 +129,12 @@ api.interceptors.request.use((config) => {
         config.headers['X-Timezone-Id'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
     } catch (e) {
         config.headers['X-Timezone-Id'] = 'UTC';
+    }
+
+    // Workspace ID
+    const currentWorkspaceId = localStorage.getItem('currentWorkspaceId');
+    if (currentWorkspaceId && !config.headers['X-Workspace-Id']) {
+        config.headers['X-Workspace-Id'] = currentWorkspaceId;
     }
 
     return config;

@@ -10,6 +10,7 @@ import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.models.Currency
 import io.loyaltyloop.shared.models.NetworkResult
 import io.loyaltyloop.shared.models.ScanQrResponse
 import io.loyaltyloop.shared.models.TransactionCalculationDto
@@ -30,7 +31,6 @@ import loyaltyloop.composeapp.generated.resources.error_server
 
 class TerminalResultScreenModel(
     private val scanData: ScanQrResponse,
-    private val tradingPointId: String,
     private val initialStrategy: TransactionStrategy,
     private val repository: PartnerRepository
 ) : ScreenModel {
@@ -54,13 +54,11 @@ class TerminalResultScreenModel(
         data object NavigateBack : Event
         data class NavigateToConfirmation(
             val calculation: TransactionCalculationDto,
-            val tradingPointId: String,
             val cardId: String,
             val userId: String,
             val strategy: TransactionStrategy,
-            val currency: String
         ) : Event
-        data class NavigateToRating(val userId: String, val tradingPointId: String) : Event
+        data class NavigateToRating(val userId: String) : Event
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
@@ -95,7 +93,6 @@ class TerminalResultScreenModel(
             _state.update { it.copy(isLoading = true) }
 
             repository.processTransaction(
-                tradingPointId = tradingPointId,
                 cardId = scanData.cardId,
                 amount = 0.0,
                 strategy = TransactionStrategy.VISIT
@@ -103,8 +100,8 @@ class TerminalResultScreenModel(
                 .onSuccess { result ->
                     log.write("Visit processed successfully")
                     _events.send(Event.ShowMessage(TransactionResultMapper.getMessage(result), SnackbarType.Success))
-                    delay(1000)
-                    _events.send(Event.NavigateToRating(scanData.userId, tradingPointId))
+                     delay(2000)
+                    _events.send(Event.NavigateToRating(scanData.userId))
                 }
                 .onFailure { exception ->
                     log.write("Visit failed", LogType.Error, exception)
@@ -126,7 +123,6 @@ class TerminalResultScreenModel(
             _state.update { it.copy(isLoading = true) }
 
             repository.calculateTransaction(
-                tradingPointId = tradingPointId,
                 cardId = scanData.cardId,
                 amount = amount,
                 strategy = _state.value.strategy
@@ -136,11 +132,9 @@ class TerminalResultScreenModel(
                     _events.send(
                         Event.NavigateToConfirmation(
                             calculation = calculation,
-                            tradingPointId = tradingPointId,
                             cardId = scanData.cardId,
                             userId = scanData.userId,
                             strategy = _state.value.strategy,
-                            currency = scanData.currency
                         )
                     )
                 }

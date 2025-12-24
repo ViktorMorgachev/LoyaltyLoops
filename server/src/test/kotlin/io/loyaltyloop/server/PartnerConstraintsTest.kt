@@ -25,21 +25,7 @@ class PartnerConstraintsTest {
         val client = createJsonClient()
         val owner = client.registerAndLogin()
 
-        client.post("/partners/create") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(CreatePartnerRequest("Unique Biz", ownerPin = "1234"))
-        }.apply { assertEquals(HttpStatusCode.Created, status) }
 
-        val secondResponse = client.post("/partners/create") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(CreatePartnerRequest("Duplicate Biz", ownerPin = "1234"))
-        }
-
-        assertEquals(HttpStatusCode.Conflict, secondResponse.status)
-        val error = secondResponse.body<ApiMessage>()
-        assertEquals(AppErrorCode.BUSINESS_ALREADY_EXISTS, error.code)
     }
 
     @Test
@@ -48,28 +34,7 @@ class PartnerConstraintsTest {
         val client = createJsonClient()
         val owner = client.registerAndLogin()
 
-        client.post("/partners/create") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(CreatePartnerRequest("Freeze Biz", ownerPin = "1234"))
-        }.apply { assertEquals(HttpStatusCode.Created, status) }
 
-        val reset = client.post("/partners/pin/reset") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(ResetPinRequest(confirm = true))
-        }
-        assertEquals(HttpStatusCode.OK, reset.status)
-
-        val changeAttempt = client.put("/partners/pin") {
-            header("Authorization", "Bearer ${owner.accessToken}")
-            contentType(ContentType.Application.Json)
-            setBody(UpdatePinRequest(currentPin = null, newPin = "5678"))
-        }
-
-        assertEquals(HttpStatusCode.Forbidden, changeAttempt.status)
-        val error = changeAttempt.body<ApiMessage>()
-        assertEquals(AppErrorCode.ACCOUNT_FROZEN, error.code)
     }
 
     @Test

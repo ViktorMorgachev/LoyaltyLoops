@@ -9,7 +9,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.TokenService
-import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
@@ -18,7 +17,6 @@ import io.loyaltyloop.shared.models.AuthResponse
 import io.loyaltyloop.shared.models.RefreshTokenRequest
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.VerifyCodeRequest
-import java.util.UUID
 import io.loyaltyloop.shared.models.SendCodeRequest
 
 import io.loyaltyloop.shared.models.ConfirmAccountDeletionRequest
@@ -31,18 +29,25 @@ import io.loyaltyloop.shared.models.TelegramAuthStartResponse
 import io.loyaltyloop.shared.models.AuthSessionStatusResponse
 import io.loyaltyloop.server.service.TelegramAuthService
 import io.loyaltyloop.server.repository.AuthSessionRepository
-import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.RefreshTokenRepository
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.utils.extractSignals
 import io.loyaltyloop.server.utils.long
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUtcMillis
+import io.loyaltyloop.server.utils.validatePhoneNumber
 
+// TODO checked
 fun Route.authRoutes(
     repository: UserRepository,
-    partnerRepository: PartnerRepository,
     tokenService: TokenService,
     smsService: SmsService,
     eventLogger: EventLogger,
     applicationConfig: ApplicationConfig,
     telegramAuthService: TelegramAuthService,
-    authSessionRepository: AuthSessionRepository
+    authSessionRepository: AuthSessionRepository,
+    refreshTokenRepository: RefreshTokenRepository,
+    accessControlService: AccessControlService,
 ) {
 
     route("/auth") {
@@ -64,15 +69,23 @@ fun Route.authRoutes(
 
                 if (session.status == "CONFIRMED") {
                     val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
-                    
+
+                    if (session.phone == null) {
+                        call.respond(HttpStatusCode.InternalServerError, "Session confirmed but phone number is missing")
+                        return@get
+                    }
                     val user = repository.getUserById(userId)
                     if (user == null) {
                         call.respond(HttpStatusCode.NotFound, "User not found")
                         return@get
                     }
+                    if (user.isDeleted) {
+                        throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
+                    }
+
                     val (access, refresh) = tokenService.generateTokens(user)
                     val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
-                    repository.saveRefreshToken(refresh, user.id, expiresAt)
+                    refreshTokenRepository.saveRefreshToken(refresh, user.id, expiresAt)
                     val workspaces = repository.getUserWorkspaces(user.id)
 
                     call.respond(AuthSessionStatusResponse(
@@ -87,16 +100,11 @@ fun Route.authRoutes(
 
         post("/send-code") {
             val request = call.receive<SendCodeRequest>()
-
-            val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
-            if (error != null) {
-                throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
-            }
+            validatePhoneNumber(request.phone)
             val existingUser = repository.getUserByPhone(request.phone)
             if (existingUser != null && existingUser.isDeleted) {
                 throw LoyaltyException(AppErrorCode.ACCOUNT_DELETED, "Account deleted")
             }
-
 
             val signals = call.extractSignals()
             val verificationId = smsService.startVerification(phone = request.phone, userId = existingUser?.id, signals = signals)
@@ -105,7 +113,7 @@ fun Route.authRoutes(
                 mapOf(
                     "status" to "Code sent",
                     "verificationId" to verificationId,
-                    "debugCode" to verificationId // For backward compatibility if client used this
+                    "debugCode" to verificationId
                 )
             )
         }
@@ -113,11 +121,7 @@ fun Route.authRoutes(
         post("/login") {
             val request = call.receive<VerifyCodeRequest>()
             val lang = call.resolveLanguage()
-
-            val error = io.loyaltyloop.server.utils.validatePhoneNumber(request.phone)
-            if (error != null) {
-                throw LoyaltyException(AppErrorCode.INVALID_PHONE, error)
-            }
+            validatePhoneNumber(request.phone)
 
             val verificationId = request.verificationId ?: request.phone
 
@@ -125,21 +129,26 @@ fun Route.authRoutes(
                 var user = repository.getUserByPhone(request.phone)
 
                 val isNew = user == null
-                if (user == null) {
+                if (isNew) {
                     user = UserDto(
-                        id = UUID.randomUUID().toString(),
+                        id = "will_ignore",
                         phoneNumber = request.phone,
                         countryCode = request.countryCode.name,
                         language = lang,
                         qrSecret = tokenService.generateQrSecret(),
-                        firstName = null
+                        firstName = null,
+                        createdAt = nowUtc().toUtcMillis()
                     )
-                    if (repository.createUser(user).insertedCount == 0) {
-                        throw LoyaltyException(AppErrorCode.USER_CREATION_FAILED, "DB Error")
+                    val userId  = repository.createUser(user)
+
+                    if (repository.getUserById(userId) == null){
+                        throw LoyaltyException(AppErrorCode.INTERNAL_ERROR, "User is not created in database")
                     }
+
+                    user = user.copy(id = userId)
                     eventLogger.log(
                         type = SystemEventType.REGISTER,
-                        userId = user.id,
+                        userId = userId,
                         userPhone = request.phone,
                         payload = "User registered via phone"
                     )
@@ -153,11 +162,10 @@ fun Route.authRoutes(
                     }
                 }
 
-
                 val workspaces = repository.getUserWorkspaces(user.id)
                 val (access, refresh) = tokenService.generateTokens(user)
                 val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
-                repository.saveRefreshToken(refresh, user.id, expiresAt)
+                refreshTokenRepository.saveRefreshToken(refresh, user.id, expiresAt)
                 
                 eventLogger.log(
                     type = SystemEventType.LOGIN,
@@ -165,18 +173,11 @@ fun Route.authRoutes(
                     userPhone = request.phone,
                     payload = "User logged in"
                 )
-
                 call.respond(AuthResponse(access, refresh, user.id, isNew, workspaces, qrSecret = user.qrSecret))
-
 
             } else {
                 throw LoyaltyException(AppErrorCode.INVALID_CODE)
             }
-        }
-
-        get("/users") {
-            val users = repository.getAllUsers()
-            call.respond(users)
         }
 
         post("/refresh") {
@@ -186,16 +187,16 @@ fun Route.authRoutes(
             val userIdFromToken = tokenService.validateRefreshToken(oldRefreshToken)
 
             if (userIdFromToken != null) {
-                val dbUserId = repository.findRefreshToken(oldRefreshToken)
+                val dbUserId = refreshTokenRepository.findUserIdByToken(oldRefreshToken)
 
                 if (dbUserId != null && dbUserId == userIdFromToken) {
-                    repository.deleteRefreshToken(oldRefreshToken)
+                    refreshTokenRepository.deleteRefreshToken(oldRefreshToken)
 
                     val user = repository.getUserById(userIdFromToken)!!
                     val (newAccess, newRefresh) = tokenService.generateTokens(user)
 
                     val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
-                    repository.saveRefreshToken(newRefresh, user.id, expiresAt)
+                    refreshTokenRepository.saveRefreshToken(newRefresh, user.id, expiresAt)
 
                     val workspaces = repository.getUserWorkspaces(user.id)
 
@@ -210,8 +211,6 @@ fun Route.authRoutes(
                         )
                     )
                 } else {
-                    // Токен валиден по подписи, но его нет в базе (значит, уже использован или отозван)
-                    // Это признак кражи токена! В идеале тут можно сбросить все сессии юзера.
                     call.respond(HttpStatusCode.Unauthorized, "Token revoked or already used")
                 }
             } else {
@@ -222,35 +221,15 @@ fun Route.authRoutes(
         post("/logout") {
             val request = call.receiveNullable<RefreshTokenRequest>()
             if (request != null) {
-                repository.deleteRefreshToken(request.refreshToken)
+                refreshTokenRepository.deleteRefreshToken(request.refreshToken)
             }
             call.respond(HttpStatusCode.OK)
         }
 
         authenticate("auth-jwt") {
-            post("/verify-pin") {
-                val userId = call.getUserIdOrRespond(repository, allowFrozenActions = true) ?: return@post
-                val request = call.receive<io.loyaltyloop.shared.models.VerifyPinRequest>()
-
-                // TODO проверить что пользователь не кассир и не обычный пользователь и имеет доступ к workspaceId
-
-                val partner = partnerRepository.getPartnerById(request.workspaceId)
-
-                val isValid = partnerRepository.verifyPartnerPin(partner.id, request.pin)
-                if (isValid) call.respond(HttpStatusCode.OK)
-                else {
-                    eventLogger.log(
-                        type = SystemEventType.PIN_VERIFICATION_FAILED,
-                        userId = userId,
-                        partnerId = partner.id,
-                        payload = "Invalid PIN verification attempt"
-                    )
-                    throw LoyaltyException(AppErrorCode.INVALID_PIN, "Invalid PIN")
-                }
-            }
 
             post("/account/delete/request") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val user = repository.getUserById(userId)!!
 
                 val signals = call.extractSignals()
@@ -260,18 +239,17 @@ fun Route.authRoutes(
             }
 
             post("/account/delete/confirm") {
-                val userId = call.getUserIdOrRespond(repository) ?: return@post
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val user = repository.getUserById(userId)!!
                 val request = call.receive<ConfirmAccountDeletionRequest>()
 
                 val verificationId = request.verificationId ?: user.phoneNumber
 
                 if (smsService.checkCode(verificationId, user.phoneNumber, request.code)) {
-                    repository.markUserDeleted(userId, request.reason)
-                    repository.deleteAllTokensForUser(userId)
+                    repository.deleteUser(userId, request.reason)
 
                     eventLogger.log(
-                        type = SystemEventType.INFO,
+                        type = SystemEventType.DELETING,
                         userId = userId,
                         userPhone = user.phoneNumber,
                         payload = "Account deleted. Reason: ${request.reason}"
@@ -284,15 +262,4 @@ fun Route.authRoutes(
             }
         }
     }
-}
-
-private fun ApplicationCall.extractSignals(): VerificationSignals {
-    return VerificationSignals(
-        ip = request.header("X-Forwarded-For")?.split(",")?.firstOrNull() ?: request.local.remoteHost,
-        deviceId = request.header("X-Device-Id"),
-        platform = request.header("X-Device-Platform"),
-        deviceModel = request.header("X-Device-Model"),
-        osVersion = request.header("X-Os-Version"),
-        appVersion = request.header("X-App-Version")
-    )
 }

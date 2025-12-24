@@ -147,6 +147,7 @@
     <string name="profile_language_dialog_cancel">Адмена</string>
     <string name="profile_language_updated">Мова абноўлена</string>
     <string name="language_ru">Руская</string>
+    <string name="language_en">Англійская</string>
     <string name="language_ky">Кыргызская</string>
     <string name="language_kk">Казахская</string>
     <string name="language_uz">Узбекская</string>
@@ -240,7 +241,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">АКЦЫЯ: </string>
     <string name="term_res_visit_action_suffix">-ы тавар у падарунак</string>
-    <string name="term_res_next_free">НАСТУПНЫ ВІЗІТ - ПРЫЗАВЫ! 🎁</string>
+    <string name="term_res_next_free">ГЭТЫ ВІЗІТ — ПРЫЗАВЫ! 🎁</string>
     <string name="term_res_btn_add_visit">Залічыць візіт (+1)</string>
 
     <!-- Tiered Strategy -->

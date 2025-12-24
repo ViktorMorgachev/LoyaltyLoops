@@ -13,6 +13,25 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  parameters:
+    WorkspaceIdHeader:
+      name: X-Workspace-Id
+      in: header
+      required: true
+      description: >
+        ID текущего рабочего пространства.
+        Для владельца/менеджера — PartnerId,
+        для кассира — TradingPointId.
+      schema:
+        type: string
+    TimezoneHeader:
+      name: X-Timezone-Id
+      in: header
+      required: false
+      description: "Часовой пояс клиента, например Asia/Bishkek (используется в терминале и аналитике)"
+      schema:
+        type: string
   
   schemas:
     # --- COMMON ---
@@ -76,6 +95,102 @@ components:
         pointId: { type: string }
         pointName: { type: string }
         endDate: { type: integer, format: int64 }
+
+    # --- ANALYTICS & RATINGS ---
+    AnalyticsResponse:
+      type: object
+      properties:
+        totalRevenue: { type: number, format: double, example: 12345.67 }
+        totalTransactions: { type: integer, example: 128 }
+        averageCheck: { type: number, format: double, example: 96.4 }
+        chartData:
+          type: array
+          items:
+            type: object
+            properties:
+              date: { type: string, example: "2025-12-22" }
+              revenue: { type: number, format: double, example: 2500.0 }
+              transactionsCount: { type: integer, example: 14 }
+
+    ReviewSummaryDto:
+      type: object
+      properties:
+        avgRating: { type: number, format: double, example: 4.6 }
+        totalReviews: { type: integer, example: 320 }
+        stars:
+          type: array
+          items:
+            type: object
+            properties:
+              stars: { type: integer, example: 5 }
+              count: { type: integer, example: 210 }
+
+    ServiceReviewDto:
+      type: object
+      properties:
+        id: { type: string }
+        partnerId: { type: string }
+        tradingPointId: { type: string, nullable: true }
+        userId: { type: string }
+        rating: { type: integer, example: 5 }
+        comment: { type: string, nullable: true, example: "Отличный сервис!" }
+        createdAt: { type: integer, format: int64 }
+
+    ClientRatingDto:
+      type: object
+      properties:
+        id: { type: string }
+        partnerId: { type: string }
+        tradingPointId: { type: string }
+        cashierId: { type: string }
+        userId: { type: string }
+        score: { type: integer, example: 4 }
+        reason: { type: string, nullable: true, example: "Вежливый клиент" }
+        createdAt: { type: integer, format: int64 }
+
+    CashierDailyStatsDto:
+      type: object
+      properties:
+        revenue: { type: number, format: double, example: 5400.0 }
+        transactions: { type: integer, example: 32 }
+
+    # --- SUPPORT ---
+    SupportMessageDto:
+      type: object
+      properties:
+        id: { type: string }
+        senderId: { type: string }
+        isFromPartner: { type: boolean }
+        content: { type: string, example: "Нужна помощь с тарифом" }
+        createdAt: { type: integer, format: int64 }
+    SupportThreadDto:
+      type: object
+      properties:
+        id: { type: string }
+        partnerId: { type: string }
+        partnerName: { type: string, nullable: true }
+        lastMessageSnippet: { type: string, nullable: true }
+        lastMessageAt: { type: integer, format: int64, nullable: true }
+        unreadForPartner: { type: integer }
+        unreadForAdmin: { type: integer }
+        isClosed: { type: boolean }
+        createdAt: { type: integer, format: int64 }
+    SupportThreadResponse:
+      type: object
+      properties:
+        thread: { $ref: '#/components/schemas/SupportThreadDto' }
+        messages:
+          type: array
+          items: { $ref: '#/components/schemas/SupportMessageDto' }
+
+    # --- MAP ---
+    TradingPointSearchResponse:
+      type: object
+      properties:
+        total: { type: integer, example: 42 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/TradingPointDto' }
 
     # --- AUTH & USERS ---
     UserDto:
@@ -746,9 +861,12 @@ paths:
   /partners/analytics:
     get:
       tags: [Partner]
-      summary: Get revenue analytics
+      summary: Получить аналитику по выручке/транзакциям
+      description: Требуется X-Workspace-Id (PartnerId) и корректный timezone (X-Timezone-Id).
       security: [{ bearerAuth: [] }]
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
         - in: query
           name: period
           schema: { type: string, enum: [WEEK, MONTH, SIX_MONTHS, YEAR], default: WEEK }
@@ -757,12 +875,30 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/AnalyticsResponse' }
+              examples:
+                week:
+                  summary: Пример за неделю
+                  value:
+                    totalRevenue: 12345.67
+                    totalTransactions: 128
+                    averageCheck: 96.4
+                    chartData:
+                      - { date: "2025-12-16", revenue: 2100.0, transactionsCount: 12 }
+                      - { date: "2025-12-17", revenue: 1800.0, transactionsCount: 10 }
+                      - { date: "2025-12-18", revenue: 2400.0, transactionsCount: 14 }
+                      - { date: "2025-12-19", revenue: 2600.0, transactionsCount: 15 }
+                      - { date: "2025-12-20", revenue: 1900.0, transactionsCount: 11 }
+                      - { date: "2025-12-21", revenue: 1500.0, transactionsCount: 9 }
+                      - { date: "2025-12-22", revenue: 2045.67, transactionsCount: 9 }
 
   /partners/history:
     get:
       tags: [Partner]
-      summary: Get transaction history for my business
+      summary: История транзакций по бизнесу
+      description: Требуется X-Workspace-Id (PartnerId).
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           content:
@@ -774,8 +910,11 @@ paths:
   /partners/points:
     get:
       tags: [Partner]
-      summary: List my trading points
+      summary: Список точек текущего бизнеса
+      description: Требуется X-Workspace-Id (PartnerId).
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           content:
@@ -802,6 +941,7 @@ paths:
       tags: [Partner]
       security: [{ bearerAuth: [] }]
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - in: path
           name: id
           schema: { type: string }
@@ -843,6 +983,7 @@ paths:
       tags: [Partner]
       security: [{ bearerAuth: [] }]
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - in: path
           name: id
           schema: { type: string }
@@ -854,12 +995,424 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/CashierDto' }
+
+  /partners/verify-pin:
+    post:
+      tags: [Partner]
+      summary: Проверка PIN владельца/менеджера
+      description: Требуется X-Workspace-Id (PartnerId). Возвращает 200 если PIN корректен.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VerifyPinRequest' }
+      responses:
+        '200': { description: OK }
+        '401': { description: Invalid PIN }
+
+  /partners/reviews/summary:
+    get:
+      tags: [Partner]
+      summary: Сводка отзывов/рейтингов по бизнесу
+      description: Требуется X-Workspace-Id (PartnerId) и X-Timezone-Id. Опционально можно передать период.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
+        - in: query
+          name: from
+          schema: { type: integer, format: int64, nullable: true }
+        - in: query
+          name: to
+          schema: { type: integer, format: int64, nullable: true }
+        - in: query
+          name: pointId
+          schema: { type: string, nullable: true }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewSummaryDto' }
+              examples:
+                default:
+                  value:
+                    avgRating: 4.6
+                    totalReviews: 320
+                    stars:
+                      - { stars: 5, count: 210 }
+                      - { stars: 4, count: 70 }
+                      - { stars: 3, count: 25 }
+                      - { stars: 2, count: 10 }
+                      - { stars: 1, count: 5 }
+
+  /partners/reviews:
+    get:
+      tags: [Partner]
+      summary: Список отзывов (service reviews)
+      description: Требуется X-Workspace-Id (PartnerId).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ServiceReviewDto' }
+              examples:
+                default:
+                  value:
+                    - id: "rev-1"
+                      partnerId: "partner-uuid"
+                      tradingPointId: "point-uuid"
+                      userId: "user-uuid"
+                      rating: 5
+                      comment: "Отличный сервис"
+                      createdAt: 1703200000000
+                    - id: "rev-2"
+                      partnerId: "partner-uuid"
+                      tradingPointId: null
+                      userId: "user-uuid-2"
+                      rating: 4
+                      comment: "Вкусный кофе"
+                      createdAt: 1703210000000
+
+  /partners/client-ratings:
+    get:
+      tags: [Partner]
+      summary: Список клиентских рейтингов
+      description: Требуется X-Workspace-Id (PartnerId).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/ClientRatingDto' }
+              examples:
+                default:
+                  value:
+                    - id: "cr-1"
+                      partnerId: "partner-uuid"
+                      tradingPointId: "point-uuid"
+                      cashierId: "cashier-uuid"
+                      userId: "client-uuid"
+                      score: 4
+                      reason: "Вежливый клиент"
+                      createdAt: 1703220000000
+                    - id: "cr-2"
+                      partnerId: "partner-uuid"
+                      tradingPointId: "point-uuid"
+                      cashierId: "cashier-uuid"
+                      userId: "client-uuid-2"
+                      score: 2
+                      reason: "Конфликт"
+                      createdAt: 1703230000000
+
+  /partners/support/thread:
+    get:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      summary: Получить тред поддержки для партнёра
+      description: Требуется X-Workspace-Id (PartnerId). Возвращает тред и последние сообщения.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupportThreadResponse' }
+              examples:
+                default:
+                  value:
+                    thread:
+                      id: "thr-1"
+                      partnerId: "partner-uuid"
+                      partnerName: "Coffee Corp"
+                      lastMessageSnippet: "Добрый день!"
+                      lastMessageAt: 1703240000000
+                      unreadForPartner: 0
+                      unreadForAdmin: 1
+                      isClosed: false
+                      createdAt: 1703200000000
+                    messages:
+                      - id: "msg-1"
+                        senderId: "partner-owner"
+                        isFromPartner: true
+                        content: "Добрый день!"
+                        createdAt: 1703200000000
+                      - id: "msg-2"
+                        senderId: "admin-1"
+                        isFromPartner: false
+                        content: "Здравствуйте, чем помочь?"
+                        createdAt: 1703210000000
+
+  /partners/support/messages:
+    post:
+      tags: [Partner]
+      security: [{ bearerAuth: [] }]
+      summary: Отправить сообщение в поддержку платформы
+      description: Требуется X-Workspace-Id (PartnerId). Создаёт тред при первом сообщении.
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SendSupportMessageRequest' }
+            examples:
+              default:
+                value:
+                  content: "Подскажите, как сменить тариф?"
+      responses:
+        '201':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiMessage' }
+
+  # --- MAPS ---
+  /map/partners/points:
+    get:
+      tags: [Map]
+      summary: Точки партнёра (для менеджера)
+      description: Возвращает точки партнёра, к которому принадлежит текущий пользователь (менеджер). Требует авторизацию.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/TradingPointDto' }
+
+  /map/points/search:
+    get:
+      tags: [Map]
+      summary: Поиск публичных точек рядом
+      description: Требует авторизацию. Параметры lat/lon обязательны.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: lat
+          required: true
+          schema: { type: number, format: double }
+        - in: query
+          name: lon
+          required: true
+          schema: { type: number, format: double }
+        - in: query
+          name: radius
+          schema: { type: integer, default: 2000, description: "радиус в метрах" }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: query
+          schema: { type: string, nullable: true }
+        - in: query
+          name: openNow
+          schema: { type: boolean, default: false }
+        - in: query
+          name: includeInactive
+          schema: { type: boolean, default: false }
+        - in: query
+          name: minRating
+          schema: { type: number, format: double, nullable: true, minimum: 0, maximum: 5 }
+        - in: query
+          name: type
+          explode: true
+          schema:
+            type: array
+            items: { type: string, description: "TradingPointType" }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TradingPointSearchResponse' }
+              examples:
+                default:
+                  value:
+                    total: 2
+                    items:
+                      - id: "point-1"
+                        name: "Coffee Bar"
+                        address: "Чуй 123"
+                        latitude: 42.874
+                        longitude: 74.612
+                        rating: 4.8
+                        ratingCount: 120
+                        currency: "KGS"
+                        partnerId: "partner-uuid"
+                      - id: "point-2"
+                        name: "Bakery"
+                        address: "Абдымомунова 45"
+                        latitude: 42.87
+                        longitude: 74.61
+                        rating: 4.5
+                        ratingCount: 60
+                        currency: "KGS"
+                        partnerId: "partner-uuid"
+
+  /partners/pin:
+    put:
+      tags: [Partner]
+      summary: Обновить PIN владельца
+      description: Требуется X-Workspace-Id (PartnerId), роль PARTNER_ADMIN.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePinRequest' }
+      responses:
+        '200': { description: PIN updated }
+
+  /partners/pin/reset:
+    post:
+      tags: [Partner]
+      summary: Сбросить PIN (очистить)
+      description: Требуется X-Workspace-Id (PartnerId), роль PARTNER_ADMIN.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPinRequest' }
+      responses:
+        '200': { description: PIN cleared and account frozen }
+
+  /partners/pin/reset/request:
+    post:
+      tags: [Partner]
+      summary: Запросить ссылку для сброса PIN (на email)
+      description: Требуется X-Workspace-Id (PartnerId), роль PARTNER_ADMIN.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ResetPinRequest' }
+      responses:
+        '200': { description: Reset link sent }
+
+  /partners/pin/reset/confirm:
+    post:
+      tags: [Partner]
+      summary: Подтвердить сброс PIN по токену
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PinResetConfirmRequest' }
+      responses:
+        '200': { description: PIN updated }
+
+  /partners/me:
+    get:
+      tags: [Partner]
+      summary: Получить данные текущего бизнеса
+      description: Требуется X-Workspace-Id (PartnerId).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PartnerEntity' }
+
+    put:
+      tags: [Partner]
+      summary: Обновить настройки текущего бизнеса
+      description: Требуется X-Workspace-Id (PartnerId).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdatePartnerRequest' }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiMessage' }
+
+  /partners/create:
+    post:
+      tags: [Partner]
+      summary: Создать новый бизнес (partner)
+      description: Требует тело CreatePartnerRequest. X-Workspace-Id не нужен (бизнес ещё не создан).
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreatePartnerRequest' }
+      responses:
+        '201': { description: Partner created }
+
+  /partners/join:
+    post:
+      tags: [Partner]
+      summary: Присоединиться как кассир по инвайт-коду точки
+      description: Передайте inviteCode точки. Workspace не требуется.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinTradingPointRequest' }
+      responses:
+        '200': { description: Joined as cashier }
+
+  /partners/managers/join:
+    post:
+      tags: [Partner]
+      summary: Присоединиться как менеджер по инвайт-коду бизнеса
+      description: Invite-code из `/partners/managers/invite`. Workspace не требуется для запроса.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/JoinTradingPointRequest' }
+      responses:
+        '200': { description: Joined }
+        '404': { description: Invalid Code }
+        '409': { description: Already Manager }
 
   /partners/cashiers:
     get:
       tags: [Partner]
-      summary: List all cashiers of the partner
+      summary: Получить список всех кассиров партнера
+      description: >
+        Возвращает агрегированный список кассиров по бизнесу.
+        Требуется заголовок X-Workspace-Id (PartnerId).
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           content:
@@ -868,18 +1421,26 @@ paths:
                 type: array
                 items: { $ref: '#/components/schemas/CashierDto' }
 
-  /partners/cashiers/{id}:
+  /partners/cashiers/{pointId}/{cashierId}:
     delete:
       tags: [Partner]
-      summary: Fire cashier
+      summary: Удалить кассира из конкретной торговой точки
+      description: Требует роль PARTNER_ADMIN. Указывайте ID точки и ID пользователя-кассира.
       security: [{ bearerAuth: [] }]
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - in: path
-          name: id
+          name: pointId
           schema: { type: string }
           required: true
+          description: ID торговой точки
+        - in: path
+          name: cashierId
+          schema: { type: string }
+          required: true
+          description: ID пользователя-кассира
       responses:
-        '200': { description: Fired }
+        '200': { description: Кассир удалён }
 
   /partners/join:
     post:
@@ -899,8 +1460,11 @@ paths:
   /partners/managers:
     get:
       tags: [Partner]
-      summary: List partner managers
+      summary: Список менеджеров партнера
+      description: Требует X-Workspace-Id (PartnerId). Доступно для PARTNER_ADMIN.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           content:
@@ -910,10 +1474,13 @@ paths:
                 items: { $ref: '#/components/schemas/CashierDto' }
 
   /partners/managers/invite:
-    post:
+    get:
       tags: [Partner]
-      summary: Generate invite code for a manager
+      summary: Получить актуальный инвайт-код менеджера
+      description: Возвращает текущий код приглашения менеджера для бизнеса. Требует X-Workspace-Id = PartnerId.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
       responses:
         '200':
           content:
@@ -940,9 +1507,11 @@ paths:
   /partners/managers/{id}:
     delete:
       tags: [Partner]
-      summary: Fire manager
+      summary: Удалить менеджера
+      description: Требует X-Workspace-Id (PartnerId). Доступно для PARTNER_ADMIN.
       security: [{ bearerAuth: [] }]
       parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
         - in: path
           name: id
           required: true
@@ -954,8 +1523,12 @@ paths:
   /terminal/scan:
     post:
       tags: [Terminal]
-      summary: Scan Client QR
+      summary: Сканировать QR клиента
+      description: Требуется заголовок X-Workspace-Id (TradingPointId). Валидирует кассира и статус точки.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
       requestBody:
         content:
           application/json:
@@ -973,8 +1546,12 @@ paths:
   /terminal/calculate:
     post:
       tags: [Terminal]
-      summary: Pre-calculate transaction details
+      summary: Предварительный расчёт транзакции
+      description: Требуется X-Workspace-Id (TradingPointId). Возвращает расчет лояльности без записи транзакции.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
       requestBody:
         content:
           application/json:
@@ -989,8 +1566,12 @@ paths:
   /terminal/process:
     post:
       tags: [Terminal]
-      summary: Execute Transaction (Earn/Spend)
+      summary: Провести транзакцию (списание/начисление)
+      description: Требуется X-Workspace-Id (TradingPointId). Выполняет запись в историю и возвращает результат для кассира/клиента.
       security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
       requestBody:
         content:
           application/json:
@@ -1002,6 +1583,42 @@ paths:
               schema: { $ref: '#/components/schemas/TransactionResult' }
         '400': { description: Logic Error }
         '403': { description: Forbidden }
+
+  /terminal/stats:
+    get:
+      tags: [Terminal]
+      summary: Дневная статистика кассира
+      description: Требуется X-Workspace-Id (TradingPointId). Возвращает сумму/количество за текущие сутки.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CashierDailyStatsDto' }
+              examples:
+                default:
+                  value:
+                    revenue: 5400.0
+                    transactions: 32
+
+  /terminal/rate-client:
+    post:
+      tags: [Terminal]
+      summary: Оценить клиента (рейтинг кассира)
+      description: Требуется X-Workspace-Id (TradingPointId). Используется в терминале.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/WorkspaceIdHeader'
+        - $ref: '#/components/parameters/TimezoneHeader'
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateClientRatingDto' }
+      responses:
+        '200': { description: Rated }
 
   # --- ADMIN ---
   /admin/partners:
@@ -1164,6 +1781,61 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ApiMessage' }
+
+  # --- WEBSOCKETS ---
+  # Подключение по протоколу websocket (ws://). Авторизация через query-параметр token.
+  /ws/cards:
+    get:
+      tags: [WebSocket]
+      summary: WebSocket уведомления по картам (реалтайм)
+      description: |
+        Подключение: `GET /ws/cards?token=<accessToken>`
+        - token — Access Token (JWT) пользователя.
+        - Односторонний стрим от сервера к клиенту. Клиентские сообщения игнорируются.
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        '101': { description: WebSocket Upgrade }
+
+  /ws/support/partner:
+    get:
+      tags: [WebSocket]
+      summary: WebSocket поддержки для партнёров (владелец/менеджер)
+      description: |
+        Подключение: `GET /ws/support/partner?token=<accessToken>[&partnerId=<PartnerId>]`
+        - token — Access Token (JWT) пользователя.
+        - partnerId — опционально, если нужно слушать конкретный бизнес; иначе берётся первый доступный.
+        - Сообщения только на чтение; отправка идёт через REST (`/partners/support/messages`).
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+        - in: query
+          name: partnerId
+          required: false
+          schema: { type: string }
+      responses:
+        '101': { description: WebSocket Upgrade }
+
+  /ws/support/admin:
+    get:
+      tags: [WebSocket]
+      summary: WebSocket поддержки для админов платформы
+      description: |
+        Подключение: `GET /ws/support/admin?token=<accessToken>`
+        - token — Access Token (JWT) пользователя с ролью PLATFORM_*.
+        - Админы получают все новые сообщения партнёров.
+      parameters:
+        - in: query
+          name: token
+          required: true
+          schema: { type: string }
+      responses:
+        '101': { description: WebSocket Upgrade }
 
   # --- PLATFORM ---
   /platform/join:

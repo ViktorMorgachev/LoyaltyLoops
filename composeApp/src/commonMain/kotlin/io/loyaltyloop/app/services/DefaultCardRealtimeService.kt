@@ -26,6 +26,7 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.URLProtocol
 import io.ktor.http.encodedPath
 import io.ktor.http.takeFrom
+import io.loyaltyloop.app.utils.log
 
 class DefaultCardRealtimeService(
     private val httpClient: HttpClient
@@ -59,13 +60,15 @@ class DefaultCardRealtimeService(
                 url(url)
             }
         }.onFailure {
-            Logger.e(it) { "Failed to open realtime socket" }
+            Logger.e(it) { "Failed to open realtime socket: ${it.message}" }
         }.getOrNull()
 
         if (opened == null) {
+            Logger.e { "Connection failed (opened is null)" }
             return false
         }
 
+        Logger.d { "Realtime socket connected successfully" }
         session = opened
 
         listenJob = scope.launch {
@@ -73,16 +76,20 @@ class DefaultCardRealtimeService(
             try {
                 for (frame in ws.incoming) {
                     val text = (frame as? Frame.Text)?.readText() ?: continue
+                    Logger.d { "Received Frame: $text" }
                     try {
                         val payload = jsonParser.decodeFromString<CardRealtimePayload>(text)
-                        payload.toAnimationMessages().forEach { _events.emit(it) }
+                        val animationMessages = payload.toAnimationMessages()
+                        animationMessages.forEach { _events.emit(it) }
+                        Logger.d("Payload Transaction: ${animationMessages.joinToString(", ")}")
                     } catch (error: Exception) {
-                        Logger.e(error) { "Failed to parse realtime payload" }
+                        Logger.e(error) { "Failed to parse realtime payload: ${error.message}" }
                     }
                 }
             } catch (e: Exception) {
-                Logger.e(e) { "Realtime socket closed" }
+                Logger.e(e) { "Realtime socket closed with error" }
             } finally {
+                Logger.d { "Realtime socket session ended" }
                 session = null
                 onClosed?.invoke()
             }
@@ -134,8 +141,18 @@ class DefaultCardRealtimeService(
             CardRealtimeEventType.TRANSACTION -> toTransactionMessages()
         }
 
+    private fun parseAmount(arg: String?): Double {
+        if (arg == null) return 0.0
+        // Сначала пробуем спарсить как есть
+        arg.toDoubleOrNull()?.let { return it }
+
+        // Если не вышло, пробуем взять первое "слово", если формат "0.1 (~85 KGS)"
+        val firstPart = arg.split(" ").firstOrNull()
+        return firstPart?.toDoubleOrNull() ?: 0.0
+    }
+
     private fun CardRealtimePayload.toTransactionMessages(): List<CardAnimationMessage> {
-        val amount = args.firstOrNull()?.toDoubleOrNull() ?: 0.0
+        val amount = parseAmount(args.firstOrNull())
         val events = mutableListOf<CardAnimationMessage>()
         when (successType) {
             null -> return emptyList()
@@ -158,8 +175,8 @@ class DefaultCardRealtimeService(
             )
 
             TransactionSuccessType.POINTS_SPENT_EARNED -> {
-                val spent = args.getOrNull(0)?.toDoubleOrNull() ?: 0.0
-                val earned = args.getOrNull(1)?.toDoubleOrNull() ?: 0.0
+                val spent = parseAmount(args.getOrNull(0))
+                val earned = parseAmount(args.getOrNull(1))
                 if (spent > 0.0) {
                     events += CardAnimationMessage(
                         cardId,

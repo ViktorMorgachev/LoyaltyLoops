@@ -1,8 +1,11 @@
 package io.loyaltyloop.server.utils
 
+import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.Country
 
+// TODO checked
 private val EMAIL_REGEX = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$".toRegex()
+
 
 fun isValidEmail(email: String): Boolean {
     return email.isNotBlank() && email.matches(EMAIL_REGEX)
@@ -12,23 +15,18 @@ fun isValidEmail(email: String): Boolean {
  * @return null, если номер валиден.
  * @return Строку с ошибкой, если не валиден.
  */
-fun validatePhoneNumber(phone: String): String? {
-    // 1. Ищем страну по префиксу, сортируем по длине префикса (сначала более длинные), чтобы +998 не путался с +9 и т.д.
+
+fun validatePhoneNumber(phone: String) {
     val country = Country.entries
         .sortedByDescending { it.phonePrefix.length }
         .find { phone.startsWith(it.phonePrefix) }
 
     if (country == null) {
-        return "Неизвестный код страны (поддерживаются: KG, KZ, UZ, BY)"
+        throw LoyaltyException(AppErrorCode.INVALID_PHONE, "Неизвестный код страны (поддерживаются: KG, KZ, UZ, BY)")
     }
-
-    // 2. Отрезаем префикс, чтобы проверить длину
     val phoneBody = phone.removePrefix(country.phonePrefix)
 
-    // 3. Используем логику из Shared модуля
     if (!country.isValidNumber(phoneBody)) {
-        return "Некорректная длина номера для ${country.nameRu}"
+        throw LoyaltyException(AppErrorCode.INVALID_PHONE, "Некорректная длина номера для ${country.nameRu}")
     }
-
-    return null // Всё отлично
 }

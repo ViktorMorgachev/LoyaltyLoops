@@ -47,10 +47,12 @@ export const kk = {
       status_updated: "Мәртебе жаңартылды",
       status_changed: "Мәртебе өзгертілді",
       rows_per_page: "Беттегі жолдар:",
+      click_to_copy: "Көшіру үшін басыңыз"
     },
     errors: {
       INVALID_PHONE: "Телефон нөмірінің пішімі қате",
       INVALID_PHONE_NUMBER: "Телефон нөмірінің пішімі қате",
+      INVALID_EMAIL_FORMAT: "Электрондық пошта пішімі қате",
       INVALID_CODE: "Код қате",
       CODE_EXPIRED: "Код мерзімі өтті",
       USER_NOT_FOUND: "Пайдаланушы табылмады",
@@ -125,6 +127,13 @@ export const kk = {
       system_events: "Аудит",
       platform_staff: "Қызметкерлер",
       create_business: "Бизнес құру"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Серіктес менеджері ретінде қосылу",
@@ -255,6 +264,7 @@ export const kk = {
       label_target: "Мақсат (қанша жинау керек?)",
       label_cashback: "Бастапқы Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Негізгі валюта",
       timezone_label: "Уақыт белдеуі",
       country_label: "Ел",
       country_placeholder: "Елді таңдаңыз",
@@ -268,6 +278,7 @@ export const kk = {
       label_lvl_gold: "Алтын (%)",
       hint_target: "Мысалы: 6 (әрбір 6-шы тегін)",
       hint_cashback: "Мысалы: 5 (5% бастаймыз)",
+      hint_cashback_global: "Кэшбэк туралы ақпарат бизнес параметрлерінде орнатылады",
       hint_tiered_levels: "3 деңгей құрылады: Старт ({{base}}%), Күміс ({{mid}}%), Алтын ({{max}}%)",
       types: {
           COFFEE_SHOP: "Кофейня",
@@ -362,6 +373,8 @@ export const kk = {
       send: "Жіберу",
       sent: "Хабарлама жіберілді",
       validation_empty: "Хабарлама бос болмауы керек",
+      name_required: "Аты міндетті",
+      email_required: "Email міндетті",
       empty_state: "Хабарламалар жоқ",
       no_messages: "Әзірге хабарламалар жоқ",
       no_threads: "Диалогтар жоқ",
@@ -443,6 +456,7 @@ export const kk = {
       check_triggered: "Тексеру басталды"
     },
     point_details: {
+      admin_title: "Сауда нүктесінің детальдары",
       block_title: "Детальдар",
       title: "Нүктені басқару",
       tab_overview: "Шолу",
@@ -483,7 +497,6 @@ export const kk = {
       max_burn_hint: "Чектің қанша пайызын бонустармен жабуға болады (0-100)",
       map_location: "Картадағы орны",
       map_hint: "Координаттарды таңдау үшін картаны басыңыз.",
-      map_point_label: "Нүкте",
       latitude_label: "Ендік",
       longitude_label: "Ұзындық",
       coords_required: "Координаттар керек",
@@ -540,6 +553,9 @@ export const kk = {
       schedule_validation_range: "{{day}} уақытын тексеріңіз.",
       schedule_validation_lunch_pair: "{{day}} үшін үзіліс уақытын толық толтырыңыз.",
       schedule_validation_lunch_range: "Үзіліс жұмыс уақытының ішінде болуы керек.",
+      schedule_not_set: "Кесте орнатылмаған",
+      schedule_day: "Күн",
+      schedule_hours: "Жұмыс уақыты",
       pause_label: "Уақытша тоқтатылған",
       pause_helper: "Кассирлер операция жүргізе алмайды.",
       pause_warning: "Нүкте үзілісте. Клиенттер «Уақытша жабық» деп көреді.",
@@ -586,6 +602,8 @@ export const kk = {
       unit_km: "км",
       edit_forbidden: "Иесі ғана өзгерте алады.",
       readonly_hint: "Менеджер режимі: өзгерту мүмкін емес.",
+      status_label: "Мәртебесі",
+      map_point_label: "Координаттар",
       contacts_title: "Байланыстар",
       info_title: "Ақпарат",
       coming_soon: "Жақында",
@@ -620,7 +638,9 @@ export const kk = {
       amount_label: "Сома",
       duration_label: "Ұзақтығы",
       create_request_btn: "Сұраным құру",
-      creating: "Құрылуда..."
+      creating: "Құрылуда...",
+      point_details: "Сауда нүктесінің детальдары",
+      admin_title: "Сауда нүктесінің детальдары"
     },
     platform: {
       staff_title: "Платформа қызметкерлері",
@@ -849,6 +869,22 @@ export const kk = {
       desc: "Ұпай жинау, сыйлық алу және прогресті бақылау үшін қосымшаны орнатыңыз.",
       btn_apk: "APK жүктеу",
       requirements: "Android 8.0 немесе жоғары қажет"
+    },
+    client_onboarding: {
+      welcome_title: "LoyaltyLoop-қа қош келдіңіз",
+      welcome_subtitle: "Сіздің сүйікті орындарыңыз бір қосымшада. Ұпай жинап, сыйлықтар алыңыз.",
+      steps_title: "Бұл қалай жұмыс істейді?",
+      step_1: "Қосымшаны жүктеп алыңыз",
+      step_2: "Телефон нөміріңізбен тіркеліңіз",
+      step_3: "Әр сатып алуда QR-кодты көрсетіңіз",
+      download_title: "Қосымшаны орнату",
+      download_apk: "APK жүктеу (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Жақында",
+      version: "Нұсқа",
+      size: "Көлемі"
     }
   }
 };

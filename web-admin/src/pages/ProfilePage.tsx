@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress, Stack } from '@mui/material';
+import { Paper, Typography, Box, TextField, Button, IconButton, Tooltip, List, ListItem, ListItemText, ListItemAvatar, Avatar, Divider, Chip, Alert, LinearProgress, Stack, CircularProgress } from '@mui/material';
 import { ContentCopy as ContentCopyIcon, Store as StoreIcon, AdminPanelSettings as AdminIcon, CheckCircle as CheckIcon, InfoOutlined as InfoOutlinedIcon } from '@mui/icons-material';
 import { api } from '../api/axiosConfig';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ export const ProfilePage = () => {
     const [resetLoading, setResetLoading] = useState(false);
     const [hasOwnerPin, setHasOwnerPin] = useState<boolean | null>(null);
     const [pinMetaLoading, setPinMetaLoading] = useState(false);
+    const [saving, setSaving] = useState(false);
     const [subscriptionWarnings, setSubscriptionWarnings] = useState<any[]>([]); // Added
     const uniqueWorkspaces = useMemo(() => {
         const list: Workspace[] = [];
@@ -64,7 +65,9 @@ export const ProfilePage = () => {
         if (!isPartnerOwner) return;
         setPinMetaLoading(true);
         try {
-            const res = await api.get('/partners/me');
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            const res = await api.get('/partners/me', { headers });
             setHasOwnerPin(Boolean(res.data?.hasPin));
             setSubscriptionWarnings(res.data?.subscriptionWarnings || []); // Added
         } catch (error) {
@@ -73,7 +76,7 @@ export const ProfilePage = () => {
         } finally {
             setPinMetaLoading(false);
         }
-    }, [isPartnerOwner]);
+    }, [isPartnerOwner, workspaces]);
 
     useEffect(() => {
         if (isPartnerOwner) {
@@ -91,12 +94,26 @@ export const ProfilePage = () => {
     };
 
     const handleSave = async () => {
+        if (!profile.firstName?.trim()) {
+            showError(t('support.name_required'));
+            return;
+        }
+        
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!profile.email?.trim() || !emailRegex.test(profile.email)) {
+            showError(t('errors.INVALID_EMAIL_FORMAT'));
+            return;
+        }
+
         try {
+            setSaving(true);
             await api.post('/client/profile', { firstName: profile.firstName, email: profile.email });
             showSuccess(t('common.save') + " OK");
             await refreshUser();
         } catch (e: any) {
             showError(getErrorMessage(e));
+        } finally {
+            setSaving(false);
         }
     };
 
@@ -131,10 +148,13 @@ export const ProfilePage = () => {
         }
         setPinLoading(true);
         try {
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            
             await api.put('/partners/pin', {
                 currentPin: requiresCurrentPin ? pinForm.current : undefined,
                 newPin: pinForm.next
-            });
+            }, { headers });
             setPinForm({ current: '', next: '', confirm: '' });
             if (!requiresCurrentPin) {
                 setHasOwnerPin(true);
@@ -152,7 +172,10 @@ export const ProfilePage = () => {
     const handlePinResetRequest = async () => {
         setResetLoading(true);
         try {
-            await api.post('/partners/pin/reset/request');
+            const partnerWs = workspaces.find(ws => ws.role === 'PARTNER_ADMIN');
+            const headers = partnerWs ? { 'X-Workspace-Id': partnerWs.id } : undefined;
+            
+            await api.post('/partners/pin/reset/request', {}, { headers });
             showSuccess(t('profile.pin_reset_email_sent'));
         } catch (e: any) {
             showError(getErrorMessage(e));
@@ -244,7 +267,7 @@ export const ProfilePage = () => {
                 </Box>
 
                 <Box mt={4} display="flex" justifyContent="flex-end">
-                    <Button variant="contained" onClick={handleSave} size="large" sx={{ borderRadius: 2, px: 4 }}>
+                    <Button variant="contained" onClick={handleSave} size="large" sx={{ borderRadius: 2, px: 4 }} disabled={saving} startIcon={saving ? <CircularProgress size={20} color="inherit" /> : null}>
                     {t('profile.save_btn')}
                 </Button>
                 </Box>
@@ -310,7 +333,7 @@ export const ProfilePage = () => {
                             </Box>
 
                             <Box display="flex" gap={2} flexWrap="wrap">
-                                <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled} sx={{ borderRadius: 2 }}>
+                                <Button variant="contained" onClick={handlePinChange} disabled={pinInputsDisabled} sx={{ borderRadius: 2 }} startIcon={pinLoading ? <CircularProgress size={20} color="inherit" /> : null}>
                                 {pinLoading ? t('common.loading') : hasOwnerPin === false ? t('profile.pin_set_btn') : t('profile.pin_change_btn')}
                             </Button>
                             {requiresCurrentPin && (
@@ -319,6 +342,7 @@ export const ProfilePage = () => {
                                         variant="text"
                                         onClick={handlePinResetRequest}
                                         disabled={resetLoading || !hasEmail || isFrozen || pinMetaLoading}
+                                        startIcon={resetLoading ? <CircularProgress size={20} color="inherit" /> : null}
                                     >
                                         {resetLoading ? t('common.loading') : t('profile.pin_reset_btn')}
                                     </Button>

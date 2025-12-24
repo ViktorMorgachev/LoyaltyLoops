@@ -8,49 +8,54 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
-import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.MapRepository
 import io.loyaltyloop.server.models.TradingPointSearchCriteria
+import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.utils.bool
+import io.loyaltyloop.server.utils.getTimezone
 import io.loyaltyloop.server.utils.getUserIdOrRespond
+import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow
 import io.loyaltyloop.server.utils.int
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
 
+// TODO checked
 fun Route.mapsRoutes(
     applicationConfig: ApplicationConfig,
     partnerRepository: PartnerRepository,
-    userRepository: UserRepository
+    userRepository: UserRepository,
+    tradingPointRepository: TradingPointRepository,
+    mapRepository: MapRepository,
+    accessControlService: AccessControlService,
 ) {
     val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", 50)
     val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", 2000)
     val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", 15000)
 
-
     authenticate("auth-jwt") {
         route("/map") {
-            // Новый эндпоинт для получения точек текущего партнера
-            get("/partners/points") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
 
+            get("/partners/points") {
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 try {
-                    // Пытаемся найти партнера по userId
-                    val partner = partnerRepository.getPartnerForMember(userId)
-                    // Если нашли - возвращаем его точки
-                    val points = partnerRepository.getPointsByPartnerId(partner.id)
+                    val points = tradingPointRepository.getPointsByPartnerId(workspaceId)
                     call.respond(points)
                 } catch (e: Exception) {
-                    // Если пользователь не партнер (или ошибка) - возвращаем пустой список
-                    // Чтобы на фронте кнопка "Мои филиалы" просто не работала, но не крашила интерфейс
                     call.respond(emptyList<TradingPointDto>())
                 }
             }
 
             get("/points/search") {
-                val userId = call.getUserIdOrRespond(userRepository) ?: return@get
+                val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 val user = userRepository.getUserById(userId)
+                val timezone = call.getTimezone()
 
                 if (user == null){
                     call.respond(HttpStatusCode.Unauthorized, "User not found")
@@ -99,7 +104,7 @@ fun Route.mapsRoutes(
                     includeInactive = includeInactive
                 )
 
-                val response = partnerRepository.searchPublicPoints(criteria)
+                val response = mapRepository.searchPublicPoints(criteria, offset = 0, timezone)
                 call.respond(response)
             }
         }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
 
+// TODO checked
 class EventLogger(
     private val repository: SystemEventRepository
 ) {
@@ -20,11 +21,9 @@ class EventLogger(
         partnerId: String? = null,
         payload: String? = null
     ) {
-        // Fire and forget in coroutine to not block main flow
         scope.launch {
             try {
                 repository.logEvent(type, userId, userPhone, partnerId, payload)
-                // Optionally log to stdout/file as well
                 logger.info("EVENT [${type.name}] User: $userId/$userPhone Partner: $partnerId Payload: $payload")
             } catch (e: Exception) {
                 logger.error("Failed to log system event", e)

@@ -6,7 +6,7 @@ import {
   Table, TableHead, TableRow, TableCell, TableBody, Chip,
   Select, MenuItem, FormControl, InputLabel, Switch, FormControlLabel,
   Alert, Divider, Dialog, DialogTitle, DialogContent, DialogActions,
-  List, ListItem, ListItemText
+  List, ListItem, ListItemText, CircularProgress, Skeleton
 } from '@mui/material';
 import { Delete as DeleteIcon, Save as SaveIcon } from '@mui/icons-material';
 import { api } from '../../api/axiosConfig';
@@ -217,6 +217,8 @@ export const PointDetailsPage = () => {
 
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [details, setDetails] = useState<any>(null);
   const [cashiers, setCashiers] = useState<any[]>([]);
   const [mapPreviewOpen, setMapPreviewOpen] = useState(false);
@@ -305,19 +307,8 @@ export const PointDetailsPage = () => {
     return trimmed;
   };
 
-  const updateTierValue = (index: number, field: 'threshold' | 'cashbackPercent', value: string) => {
-    setTiers((prev) =>
-      prev.map((tier, idx) => (idx === index ? { ...tier, [field]: value } : tier))
-    );
-  };
-
-  const clampTierValue = (index: number, field: 'threshold' | 'cashbackPercent', value: string) => {
-    if (value === '') return;
-    const numeric = sanitizeNumber(value);
-    updateTierValue(index, field, numeric.toString());
-  };
-
   const [scheduleDialogOpen, setScheduleDialogOpen] = useState(false);
+  const [partnerBaseCurrency, setPartnerBaseCurrency] = useState<string>(''); // Base currency of partner for thresholds
 
   const renderTierLabel = (tier: any) => {
     if (!tier) return '-';
@@ -350,6 +341,7 @@ export const PointDetailsPage = () => {
       });
       
       setProgramType(data.settings.programType);
+      setPartnerBaseCurrency(data.baseCurrency || '');
       setMaxBurnPercentage(data.settings.maxBurnPercentage || 100);
 
       const backendCurrency = data.point.currency?.trim();
@@ -463,6 +455,7 @@ export const PointDetailsPage = () => {
         return;
      }
      try {
+        setSaving(true);
         const validationError = getScheduleValidationError(scheduleState, t);
         if (validationError) {
             showError(validationError);
@@ -507,6 +500,8 @@ export const PointDetailsPage = () => {
         loadData();
      } catch (e: any) {
         showError(getErrorMessage(e));
+     } finally {
+        setSaving(false);
      }
   };
 
@@ -517,11 +512,13 @@ export const PointDetailsPage = () => {
       }
       if (confirm(t('point_details.confirm_delete'))) {
           try {
+            setDeleting(true);
             await api.delete(`/partners/points/${id}`);
             showSuccess(t('point_details.delete_success'));
             navigate('/partner/points'); // Back to list
           } catch (e: any) {
             showError(getErrorMessage(e));
+            setDeleting(false);
           }
       }
   };
@@ -533,7 +530,7 @@ export const PointDetailsPage = () => {
        }
        if (confirm(t('point_details.confirm_delete'))) {
           try {
-            await api.delete(`/partners/cashiers/${cashierId}`);
+            await api.delete(`/partners/cashiers/${id}/${cashierId}`);
             showSuccess(t('point_details.fire_success'));
             loadCashiers();
           } catch (e: any) {
@@ -542,7 +539,19 @@ export const PointDetailsPage = () => {
       }
   };
 
-  if (loading) return <Container sx={{ mt: 4 }}><Typography>{t('common.loading')}</Typography></Container>;
+  if (loading) return (
+      <Container sx={{ mt: 4 }}>
+          <Box display="flex" justifyContent="space-between" mb={4}>
+              <Box>
+                  <Skeleton variant="text" width={300} height={60} />
+                  <Skeleton variant="text" width={200} />
+              </Box>
+              <Skeleton variant="rectangular" width={120} height={80} sx={{ borderRadius: 3 }} />
+          </Box>
+          <Skeleton variant="rectangular" height={60} sx={{ mb: 4, borderRadius: 3 }} />
+          <Skeleton variant="rectangular" height={400} sx={{ borderRadius: 4 }} />
+      </Container>
+  );
   if (!details) return <Container sx={{ mt: 4 }}><Typography>Not found</Typography></Container>;
 
   return (
@@ -906,6 +915,9 @@ export const PointDetailsPage = () => {
                     </Box>
 
                     <Typography variant="subtitle1" gutterBottom sx={{ mt: 3, fontWeight: 600 }}>{t('point_details.levels_config')}</Typography>
+                    <Alert severity="info" sx={{ mb: 2 }}>
+                        {t('point_details.levels_locked_hint', 'Уровни и пороги задаются в настройках бизнеса (личный кабинет). На уровне торговой точки они доступны только для просмотра.')}
+                    </Alert>
                     <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
                     <Table size="small">
                             <TableHead sx={{ bgcolor: 'grey.100' }}>
@@ -920,28 +932,14 @@ export const PointDetailsPage = () => {
                                 <TableRow key={idx}>
                                     <TableCell>{renderTierLabel(tier)}</TableCell>
                                     <TableCell>
-                                        <TextField 
-                                            type="number"
-                                            size="small" 
-                                            value={tier.threshold}
-                                            disabled={tier.levelIndex === 1}
-                                            inputProps={{ min: 0, inputMode: 'decimal' }}
-                                            onChange={(e) => updateTierValue(idx, 'threshold', e.target.value)}
-                                            onBlur={(e) => clampTierValue(idx, 'threshold', e.target.value)}
-                                                sx={{ maxWidth: 120 }}
-                                        />
+                                        <Typography variant="body2">
+                                            {tier.threshold} {partnerBaseCurrency || ''}
+                                        </Typography>
                                     </TableCell>
                                     <TableCell>
-                                        <TextField 
-                                            type="number"
-                                            size="small"
-                                            value={tier.cashbackPercent}
-                                            inputProps={{ min: 0, inputMode: 'decimal' }}
-                                            onChange={(e) => updateTierValue(idx, 'cashbackPercent', e.target.value)}
-                                            onBlur={(e) => clampTierValue(idx, 'cashbackPercent', e.target.value)}
-                                                InputProps={{ endAdornment: <span style={{marginLeft: 4, fontSize: '0.8rem', color: 'gray'}}>%</span> }}
-                                                sx={{ maxWidth: 100 }}
-                                        />
+                                        <Typography variant="body2">
+                                            {tier.cashbackPercent}%
+                                        </Typography>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -952,10 +950,10 @@ export const PointDetailsPage = () => {
             )}
             
             <Box mt={6} display="flex" justifyContent="space-between" alignItems="center" pt={4} borderTop="1px solid" borderColor="divider">
-                <Button color="error" onClick={handleDeletePoint} startIcon={<DeleteIcon />}>
+                <Button color="error" onClick={handleDeletePoint} startIcon={deleting ? <CircularProgress size={20} color="inherit" /> : <DeleteIcon />} disabled={deleting || saving}>
                     {t('point_details.delete_point')}
                 </Button>
-                <Button variant="contained" onClick={handleSaveSettings} startIcon={<SaveIcon />} disabled={!canEdit} size="large" sx={{ px: 4, borderRadius: 2 }}>
+                <Button variant="contained" onClick={handleSaveSettings} startIcon={saving ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />} disabled={!canEdit || saving || deleting} size="large" sx={{ px: 4, borderRadius: 2 }}>
                     {t('common.save')}
                 </Button>
             </Box>
@@ -983,7 +981,7 @@ export const PointDetailsPage = () => {
                                  <TableCell>{c.name}</TableCell>
                                  <TableCell>{c.phone}</TableCell>
                                  <TableCell align="right">
-                                     <Button color="error" size="small" variant="outlined" onClick={() => handleFireCashier(c.id)}>
+                                     <Button color="error" size="small" variant="outlined" onClick={() => handleFireCashier(c.userId)}>
                                         {t('point_details.fire_cashier')}
                                      </Button>
                                  </TableCell>

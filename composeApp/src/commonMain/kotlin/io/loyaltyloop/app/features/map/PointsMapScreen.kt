@@ -241,6 +241,9 @@ class PointsMapScreen : Screen {
                         modifier = Modifier.fillMaxSize(),
                         cameraPosition = state.cameraPosition,
                         markers = state.markers,
+                        userLocation = state.userLocation,
+                        searchAreaCenter = state.searchCenter,
+                        searchRadius = state.radiusMeters,
                         onMapClick = {
                             // 3. ПЛАВНОЕ ЗАКРЫТИЕ ПО КЛИКУ НА КАРТУ
                             viewModel.onMapClicked() // Сброс выделения
@@ -261,7 +264,7 @@ class PointsMapScreen : Screen {
                         modifier = Modifier
                             .align(Alignment.TopCenter)
                             .statusBarsPadding()
-                            .padding(top = 16.dp)
+                            .padding(top = 8.dp)
                     ) {
                         Surface(
                             modifier = Modifier

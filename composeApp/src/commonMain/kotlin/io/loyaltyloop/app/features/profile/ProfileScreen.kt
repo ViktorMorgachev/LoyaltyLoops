@@ -241,6 +241,7 @@ private data class LanguageOption(val code: String, val labelRes: StringResource
 
 private val languageOptions = listOf(
     LanguageOption("ru", Res.string.language_ru),
+    LanguageOption("en", Res.string.language_en),
     LanguageOption("ky", Res.string.language_ky),
     LanguageOption("kk", Res.string.language_kk),
     LanguageOption("uz", Res.string.language_uz),

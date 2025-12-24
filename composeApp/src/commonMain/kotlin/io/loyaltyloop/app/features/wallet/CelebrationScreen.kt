@@ -47,6 +47,7 @@ import io.loyaltyloop.app.ui.components.CelebrationOverlay
 import io.loyaltyloop.app.ui.components.LoyaltyButton
 import io.loyaltyloop.shared.models.CreateServiceReviewDto
 import io.loyaltyloop.shared.models.ServiceReviewTag
+import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
 import io.loyaltyloop.shared.models.onSuccess
 import kotlinx.coroutines.delay
@@ -277,6 +278,8 @@ fun RateServiceDialog(
                                     ).onSuccess {
                                         onSubmit()
                                     }.onFailure {
+                                        isLoading = false
+                                    }.onError { _, _ ->
                                         isLoading = false
                                     }
                                 }

@@ -68,11 +68,11 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material3.ColorScheme
 
-data class RateClientScreen(val userId: String, val tradingPointId: String) : Screen {
+data class RateClientScreen(val userId: String) : Screen {
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<RateClientScreenModel> { parametersOf(userId, tradingPointId) }
+        val viewModel = koinScreenModel<RateClientScreenModel> { parametersOf(userId) }
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -249,7 +249,6 @@ data class RateClientScreen(val userId: String, val tradingPointId: String) : Sc
 
 class RateClientScreenModel(
     private val userId: String,
-    private val tradingPointId: String,
     private val repository: PartnerRepository
 ) : ScreenModel {
 
@@ -302,7 +301,6 @@ class RateClientScreenModel(
             repository.rateClient(
                 CreateClientRatingDto(
                     userId = userId,
-                    tradingPointId = tradingPointId,
                     rating = _state.value.rating,
                     tags = _state.value.selectedTags.toList()
                 )

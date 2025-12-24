@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ScanQrRequest(
     val qrContent: String, // "loyalty_v1:userid:timestamp"
-    val tradingPointId: String
 )
 
 @Serializable

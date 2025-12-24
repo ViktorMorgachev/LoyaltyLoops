@@ -23,23 +23,39 @@ data class LoyaltyTierDto(
 }
 
 
+fun indexToLoyaltyLevel(index: Int): LoyaltyTierDto.LoyaltyLevel {
+    return when (index) {
+        1 -> LoyaltyTierDto.LoyaltyLevel.Base
+        2 -> LoyaltyTierDto.LoyaltyLevel.Silver
+        else -> LoyaltyTierDto.LoyaltyLevel.Gold
+    }
+}
+
+
+
 
 
 
 @Serializable
 data class LoyaltySettingsDto(
     val settingsId: String,
-    val programType: LoyaltyProgramType,
     val tradingPointId: String,
-    val tiers: List<LoyaltyTierDto>, // Для TIERED
-    val visitsTarget: Int,   // Для VISIT_COUNTER
-    val visitsReward: String? = null, // Описание награды
 
-    // Политика сгорания
-    val burnBonusesAfterDays: Int? = null, // Сгорание бонусов (дней)
-    val downgradeTierAfterDays: Int? = null, // Сброс уровня при неактивности (дней)
-    val maxBurnPercentage: Int = 100, // Макс % списания
-    val awardOnMixedPayment: Boolean = false // Начислять бонусы на оплачиваемую деньгами часть
+    // ЛОКАЛЬНЫЕ настройки (могут отличаться на разных точках)
+    val programType: LoyaltyProgramType, // На этой точке копим визиты или деньги?
+    val currency: String,                // Валюта этой точки (KGS)
+
+    // ГЛОБАЛЬНЫЕ настройки (Транслируем из Партнера)
+    val visitsTarget: Int,               // Общая цель (10)
+    val visitsReward: String? = null,    // Описание награды (из настроек точки или общее)
+    val tiers: List<LoyaltyTierDto>,     // Общая сетка уровней
+
+    val burnBonusesAfterDays: Int?,      // Общее правило
+    val downgradeTierAfterDays: Int?,    // Общее правило
+
+    // Политика списания (обычно локальная, но можно сделать глобальной)
+    val maxBurnPercentage: Int,
+    val awardOnMixedPayment: Boolean
 )
 
 @Serializable
@@ -62,10 +78,6 @@ data class UpdateTradingPointRequest(
 @Serializable
 data class UpdateLoyaltySettingsRequest(
     val programType: LoyaltyProgramType,
-    val tiers: List<LoyaltyTierDto>,
-    val visitsTarget: Int? = null,
-    val burnBonusesAfterDays: Int? = null,
-    val downgradeTierAfterDays: Int? = null,
     val maxBurnPercentage: Int = 100,
     val awardOnMixedPayment: Boolean = false
 )

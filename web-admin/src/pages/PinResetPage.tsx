@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Paper, Typography, TextField, Button, Avatar } from '@mui/material';
+import { Box, Paper, Typography, TextField, Button, Avatar, CircularProgress } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { useNotification } from '../context/NotificationContext';
 import { getErrorMessage } from '../utils/errorHandler';
@@ -110,6 +110,7 @@ export const PinResetPage = () => {
           sx={{ mt: 4, borderRadius: 3, py: 1.5, fontSize: '1.1rem' }}
           onClick={handleSubmit}
           disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
         >
           {loading ? t('common.loading') : t('pin_reset.submit')}
         </Button>

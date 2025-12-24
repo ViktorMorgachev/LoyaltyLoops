@@ -1,15 +1,21 @@
 package io.loyaltyloop.server.repository
 
+import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.SystemEventsTable
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEvent
 import io.loyaltyloop.server.models.SystemEventFilter
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUUID
+import io.loyaltyloop.server.utils.toUtcLocalDateTime
+import io.loyaltyloop.server.utils.toUtcMillis
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.util.*
 
+// TODO checked
 class SystemEventRepository {
 
     suspend fun logEvent(
@@ -18,59 +24,90 @@ class SystemEventRepository {
         userPhone: String? = null,
         partnerId: String? = null,
         payload: String? = null
-    ): SystemEvent = newSuspendedTransaction(Dispatchers.IO) {
-        val newId = UUID.randomUUID().toString()
-        val now = System.currentTimeMillis()
+    ): SystemEvent = dbQuery {
+        val userUuid = try { userId?.let { UUID.fromString(it) } } catch (_: Exception) { null }
+        val partnerUuid = try { partnerId?.let { UUID.fromString(it) } } catch (_: Exception) { null }
+        val now = nowUtc()
 
-        SystemEventsTable.insert {
-            it[id] = newId
-            it[this.type] = type.name
-            it[this.userId] = userId
-            it[this.userPhone] = userPhone
-            it[this.partnerId] = partnerId
+        val newId = SystemEventsTable.insertAndGetId {
+            it[this.type] = type
+            it[this.user] = userUuid
+            it[this.partner] = partnerUuid
+            it[this.userPhoneSnapshot] = userPhone
             it[this.payload] = payload
-            it[this.timestamp] = now
+            it[this.createdAt] = now
         }
 
-        SystemEvent(newId, type, userId, userPhone, partnerId, payload, now)
+        SystemEvent(
+            id = newId.value.toString(),
+            type = type,
+            userId = userId,
+            userPhone = userPhone,
+            partnerId = partnerId,
+            payload = payload,
+            timestamp = now.toUtcMillis()
+        )
     }
 
     suspend fun countEvents(
         type: SystemEventType,
         userPhone: String,
         since: Long
-    ): Long = newSuspendedTransaction(Dispatchers.IO) {
+    ): Long = dbQuery {
+        val sinceDate = since.toUtcLocalDateTime()
+
         SystemEventsTable
-            .selectAll()
-            .where {
-                (SystemEventsTable.type eq type.name) and
-                (SystemEventsTable.userPhone eq userPhone) and
-                (SystemEventsTable.timestamp greaterEq since)
+            .select {
+                (SystemEventsTable.type eq type) and
+                        (SystemEventsTable.userPhoneSnapshot eq userPhone) and
+                        (SystemEventsTable.createdAt greaterEq sinceDate)
             }
             .count()
     }
 
-    suspend fun getEvents(filter: SystemEventFilter): List<SystemEvent> = newSuspendedTransaction(Dispatchers.IO) {
+
+    suspend fun getEvents(filter: SystemEventFilter): List<SystemEvent> = dbQuery {
         val query = SystemEventsTable.selectAll()
 
-        filter.type?.let { query.andWhere { SystemEventsTable.type eq it.name } }
-        filter.userId?.let { query.andWhere { SystemEventsTable.userId like "%$it%" } }
-        filter.userPhone?.let { query.andWhere { SystemEventsTable.userPhone like "%$it%" } }
-        filter.partnerId?.let { query.andWhere { SystemEventsTable.partnerId eq it } }
-        filter.from?.let { query.andWhere { SystemEventsTable.timestamp greaterEq it } }
-        filter.to?.let { query.andWhere { SystemEventsTable.timestamp lessEq it } }
+        if (filter.type != null) {
+            query.andWhere { SystemEventsTable.type eq filter.type }
+        }
+        if (filter.userId != null) {
+            try {
+                query.andWhere { SystemEventsTable.user eq filter.userId.toUUID() }
+            } catch (e: Exception) {
+                query.andWhere { Op.FALSE }
+            }
+        }
+        if (filter.partnerId != null) {
+            try {
+                query.andWhere { SystemEventsTable.partner eq filter.partnerId.toUUID() }
+            } catch (e: Exception) {
+                query.andWhere { Op.FALSE }
+            }
+        }
+        if (filter.userPhone != null) {
+            query.andWhere { SystemEventsTable.userPhoneSnapshot like "%${filter.userPhone}%" }
+        }
 
-        query.orderBy(SystemEventsTable.timestamp to SortOrder.DESC)
+        if (filter.from != null) {
+            query.andWhere { SystemEventsTable.createdAt greaterEq filter.from.toUtcLocalDateTime() }
+        }
+        if (filter.to != null) {
+            query.andWhere { SystemEventsTable.createdAt lessEq filter.to.toUtcLocalDateTime() }
+        }
+
+        query.orderBy(SystemEventsTable.createdAt to SortOrder.DESC)
             .limit(filter.limit, offset = filter.offset)
-            .map {
+            .map { row ->
                 SystemEvent(
-                    id = it[SystemEventsTable.id],
-                    type = SystemEventType.valueOf(it[SystemEventsTable.type]),
-                    userId = it[SystemEventsTable.userId],
-                    userPhone = it[SystemEventsTable.userPhone],
-                    partnerId = it[SystemEventsTable.partnerId],
-                    payload = it[SystemEventsTable.payload],
-                    timestamp = it[SystemEventsTable.timestamp]
+                    id = row[SystemEventsTable.id].value.toString(),
+                    type = row[SystemEventsTable.type],
+                    userId = row[SystemEventsTable.user]?.value?.toString(),
+                    userPhone = row[SystemEventsTable.userPhoneSnapshot],
+                    partnerId = row[SystemEventsTable.partner]?.value?.toString(),
+                    payload = row[SystemEventsTable.payload],
+                    timestamp = row[SystemEventsTable.createdAt].toUtcMillis()
                 )
             }
     }

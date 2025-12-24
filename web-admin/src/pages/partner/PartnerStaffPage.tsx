@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../../api/axiosConfig';
 import { Add as AddIcon } from '@mui/icons-material';
 import { useUser } from '../../context/UserContext';
+import { TableSkeleton } from '../../components/common/TableSkeleton';
 
 export const PartnerStaffPage = () => {
     const { t } = useTranslation();
@@ -18,6 +19,8 @@ export const PartnerStaffPage = () => {
     const [cashiers, setCashiers] = useState<any[]>([]);
     const [inviteCode, setInviteCode] = useState<string | null>(null);
     const [openInvite, setOpenInvite] = useState(false);
+    const [loadingManagers, setLoadingManagers] = useState(true);
+    const [loadingCashiers, setLoadingCashiers] = useState(false);
 
     useEffect(() => {
         loadManagers();
@@ -31,19 +34,25 @@ export const PartnerStaffPage = () => {
 
     const loadManagers = async () => {
         try {
+            setLoadingManagers(true);
             const res = await api.get('/partners/managers');
             setManagers(res.data);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoadingManagers(false);
         }
     };
 
     const loadCashiers = async () => {
         try {
+            setLoadingCashiers(true);
             const res = await api.get('/partners/cashiers');
             setCashiers(res.data);
         } catch (e) {
             console.error(e);
+        } finally {
+            setLoadingCashiers(false);
         }
     };
 
@@ -62,7 +71,7 @@ export const PartnerStaffPage = () => {
             }
             const entry = map.get(c.userId);
             if (c.pointName) {
-                entry.points.push({ name: c.pointName, id: c.id });
+                entry.points.push({ name: c.pointName, id: c.tradingPointId });
             }
         });
         return Array.from(map.values());
@@ -70,7 +79,7 @@ export const PartnerStaffPage = () => {
 
     const handleGenerateInvite = async () => {
         try {
-            const res = await api.post('/partners/managers/invite');
+            const res = await api.get('/partners/managers/invite');
             setInviteCode(res.data.inviteCode);
             setOpenInvite(true);
         } catch (e) {
@@ -93,7 +102,8 @@ export const PartnerStaffPage = () => {
         if (!confirm(t('staff.confirm_fire'))) return;
         try {
             // Delete all cashier entries for this user
-            await Promise.all(user.points.map((p: any) => api.delete(`/partners/cashiers/${p.id}`)));
+            // API now requires pointId for deletion: DELETE /cashiers/{pointId}/{cashierId}
+            await Promise.all(user.points.map((p: any) => api.delete(`/partners/cashiers/${p.id}/${user.userId}`)));
             loadCashiers();
         } catch (e) {
             console.error(e);
@@ -131,10 +141,12 @@ export const PartnerStaffPage = () => {
                                 <TableCell align="right" sx={{ fontWeight: 600 }}>{t('staff.staff_actions')}</TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
-                            {managers.length === 0 ? (
-                                <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_managers')}</TableCell></TableRow>
-                            ) : (
+                            <TableBody>
+                                {loadingManagers ? (
+                                    <TableSkeleton rows={3} cols={5} />
+                                ) : managers.length === 0 ? (
+                                    <TableRow><TableCell colSpan={5} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_managers')}</TableCell></TableRow>
+                                ) : (
                                 managers.map((m) => (
                                     <TableRow key={m.id} hover>
                                         <TableCell>{m.name}</TableCell>
@@ -148,7 +160,7 @@ export const PartnerStaffPage = () => {
                                             />
                                         </TableCell>
                                         <TableCell align="right">
-                                            <Button color="error" size="small" disabled={!canManage} onClick={() => handleFireManager(m.id)}>
+                                            <Button color="error" size="small" disabled={!canManage} onClick={() => handleFireManager(m.userId)}>
                                                 {t('staff.fire')}
                                             </Button>
                                         </TableCell>
@@ -173,10 +185,12 @@ export const PartnerStaffPage = () => {
                                 <TableCell align="right" sx={{ fontWeight: 600 }}>{t('staff.staff_actions')}</TableCell>
                             </TableRow>
                         </TableHead>
-                        <TableBody>
-                            {uniqueCashiers.length === 0 ? (
-                                <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_cashiers')}</TableCell></TableRow>
-                            ) : (
+                            <TableBody>
+                                {loadingCashiers ? (
+                                    <TableSkeleton rows={3} cols={6} />
+                                ) : uniqueCashiers.length === 0 ? (
+                                    <TableRow><TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>{t('staff.empty_cashiers')}</TableCell></TableRow>
+                                ) : (
                                 uniqueCashiers.map((u: any) => (
                                     <TableRow key={u.userId} hover>
                                         <TableCell>{u.name}</TableCell>

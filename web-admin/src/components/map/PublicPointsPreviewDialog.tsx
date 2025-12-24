@@ -17,7 +17,6 @@ import InfoIcon from '@mui/icons-material/Info';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
-import StarIcon from '@mui/icons-material/Star';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import TelegramIcon from '@mui/icons-material/Telegram';
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
@@ -651,12 +650,11 @@ export const PublicPointsPreviewDialog: React.FC<PublicPointsPreviewDialogProps>
                                 <Divider sx={{ mb: 2 }} >
                                     <Typography variant="caption" color="text.secondary">{t('point_details.coming_soon', { defaultValue: 'Soon available' })}</Typography>
                                 </Divider>
-                                <Box display="grid" gridTemplateColumns="1fr 1fr" gap={2}>
+                                <Box display="grid" gridTemplateColumns="1fr 1fr 1fr" gap={2}>
                                     {[
                                         { icon: <PhotoCameraIcon />, label: t('point_details.coming_photos', { defaultValue: 'Photos' }) },
                                         { icon: <RestaurantMenuIcon />, label: t('point_details.coming_menu', { defaultValue: 'Menu & Prices' }) },
                                         { icon: <LocalOfferIcon />, label: t('point_details.coming_promos', { defaultValue: 'Promos' }) },
-                                        { icon: <StarIcon />, label: t('point_details.coming_reviews', { defaultValue: 'Reviews' }) },
                                     ].map((item, i) => (
                                         <Paper key={i} variant="outlined" sx={{ p: 1.5, display: 'flex', alignItems: 'center', gap: 1.5, borderRadius: 2, opacity: 0.6, bgcolor: 'grey.50', cursor: 'not-allowed' }}>
                                             <Box sx={{ color: 'text.secondary' }}>{item.icon}</Box>

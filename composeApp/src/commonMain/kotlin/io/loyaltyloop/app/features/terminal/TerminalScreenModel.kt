@@ -3,6 +3,7 @@ package io.loyaltyloop.app.features.terminal
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import io.loyaltyloop.app.data.SessionManager
+import io.loyaltyloop.app.data.TokenStorage
 import io.loyaltyloop.app.repository.PartnerRepository
 import io.loyaltyloop.app.ui.components.SnackbarType
 import io.loyaltyloop.app.utils.LogType
@@ -28,12 +29,14 @@ import loyaltyloop.composeapp.generated.resources.*
 
 class TerminalScreenModel(
     private val repository: PartnerRepository,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val tokenStorage: TokenStorage,
 ) : ScreenModel {
 
     data class State(
         val isLoading: Boolean = false,
         val manualInput: String = "",
+        val storeUrl: String,
         val showHybridDialog: Boolean = false,
         val pendingScanData: ScanQrResponse? = null
     )
@@ -52,7 +55,7 @@ class TerminalScreenModel(
         data class ShowMessage(val message: UiText, val type: SnackbarType) : Event
     }
 
-    private val _state = MutableStateFlow(State())
+    private val _state = MutableStateFlow(State(storeUrl = tokenStorage.getAppStoreUrl()))
     val state = _state.asStateFlow()
 
     private val _events = Channel<Event>()
@@ -96,8 +99,7 @@ class TerminalScreenModel(
             log.write("Scanning QR in point: ${currentWorkspace.id}")
 
             val request = ScanQrRequest(
-                qrContent = qrContent,
-                tradingPointId = currentWorkspace.id
+                qrContent = qrContent
             )
 
             repository.scanQr(request)

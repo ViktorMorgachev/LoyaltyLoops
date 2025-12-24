@@ -142,6 +142,7 @@
     <string name="profile_language_dialog_cancel">Cancel</string>
     <string name="profile_language_updated">Language updated</string>
     <string name="language_ru">Russian</string>
+    <string name="language_en">English</string>
     <string name="language_ky">Kyrgyz</string>
     <string name="language_kk">Kazakh</string>
     <string name="language_uz">Uzbek</string>
@@ -235,7 +236,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">PROMO: </string>
     <string name="term_res_visit_action_suffix">-th item free</string>
-    <string name="term_res_next_free">NEXT VISIT - REWARD! 🎁</string>
+    <string name="term_res_next_free">THIS VISIT IS A REWARD! 🎁</string>
     <string name="term_res_btn_add_visit">Add Visit (+1)</string>
 
     <!-- Tiered Strategy -->

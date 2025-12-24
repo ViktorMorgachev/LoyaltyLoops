@@ -47,10 +47,12 @@ export const be = {
       status_updated: "Статус абноўлены",
       status_changed: "Статус зменены",
       rows_per_page: "Радкоў на старонцы:",
+      click_to_copy: "Націсніце для капіявання"
     },
     errors: {
       INVALID_PHONE: "Няправільны фармат нумара",
       INVALID_PHONE_NUMBER: "Няправільны фармат нумара тэлефона",
+      INVALID_EMAIL_FORMAT: "Няправільны фармат электроннай пошты",
       INVALID_CODE: "Няправільны код",
       CODE_EXPIRED: "Код пратэрмінаваны",
       USER_NOT_FOUND: "Карыстальнік не знойдзены",
@@ -125,6 +127,13 @@ export const be = {
       system_events: "Аўдыт",
       platform_staff: "Супрацоўнікі",
       create_business: "Стварыць Бізнес"
+    },
+    currency: {
+        USD: "USD (Даляр)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тэнге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубель)"
     },
     join_partner: {
       title: "Далучыцца як мэнэджар партнёра",
@@ -255,6 +264,7 @@ export const be = {
       label_target: "Мэта (колькі сабраць?)",
       label_cashback: "Пачатковы Кэшбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Базавая валюта",
       timezone_label: "Гадзінны пояс",
       country_label: "Краіна",
       country_placeholder: "Выберыце краіну",
@@ -268,7 +278,8 @@ export const be = {
       label_lvl_gold: "Золата (%)",
       hint_target: "Напрыклад: 6 (кожны 6-ы бясплатна)",
       hint_cashback: "Напрыклад: 5 (пачнем з 5%)",
-      hint_tiered_levels: "Будуць створаны 3 узроўні: Старт ({{base}}%), Серабро ({{mid}}%), Золата ({{max}}%)",
+      hint_cashback_global: "Інфармацыя па кэшбэку задаецца ў наладах бізнесу",
+      hint_tiered_levels: "Будуць створаны 3 узроўні: Старт ({{base}}%), Срэбра ({{mid}}%), Золата ({{max}}%)",
       types: {
           COFFEE_SHOP: "Кавярня",
           RESTAURANT: "Рэстаран",
@@ -362,6 +373,8 @@ export const be = {
       send: "Адправіць",
       sent: "Паведамленне адпраўлена",
       validation_empty: "Паведамленне не можа быць пустым",
+      name_required: "Імя абавязкова",
+      email_required: "Email абавязкова",
       empty_state: "Паведамленняў пакуль няма",
       no_messages: "Пакуль без паведамленняў",
       no_threads: "Дыялогаў пакуль няма",
@@ -443,6 +456,7 @@ export const be = {
       check_triggered: "Праверка запушчана"
     },
     point_details: {
+      admin_title: "Дэталі гандлёвага пункта",
       block_title: "Дэталі",
       title: "Кіраванне Філіялам",
       tab_overview: "Агляд",
@@ -473,7 +487,7 @@ export const be = {
       overview_currency: "Валюта",
       status_active: "Актыўны",
       status_inactive: "Не актыўны",
-      address_label: "Адрас (увядзіце ўручную)",
+      address_label: "Адрас",
       contact_phone_label: "Кантактны тэлефон",
       contact_link_label: "Спасылка для сувязі",
       contact_link_hint: "Напрыклад: https://t.me/brand або https://wa.me/996...",
@@ -483,7 +497,6 @@ export const be = {
       max_burn_hint: "Колькі працэнтаў ад чэка можна пакрыць бонусамі (0-100)",
       map_location: "Месцазнаходжанне на карце",
       map_hint: "Націсніце на карту, каб выбраць каардынаты. Адрас можна адрэдагаваць уручную.",
-      map_point_label: "Пункт",
       latitude_label: "Шырата",
       longitude_label: "Даўгата",
       coords_required: "Укажыце каардынаты (шырату і даўгату)",
@@ -540,6 +553,9 @@ export const be = {
       schedule_validation_range: "Праверце час для дня {{day}} — пачатак павінен быць раней заканчэння.",
       schedule_validation_lunch_pair: "Запоўніце абедзве мяжы перапынку або пакіньце поле пустым для {{day}}.",
       schedule_validation_lunch_range: "Перапынак у {{day}} павінен знаходзіцца ўнутры працоўнага часу і мець карэктны інтэрвал.",
+      schedule_not_set: "Расклад не зададзены",
+      schedule_day: "Дзень",
+      schedule_hours: "Гадзіны працы",
       pause_label: "Часова прыпынена",
       pause_helper: "Касіры не змогуць праводзіць аперацыі, пакуль пункт на паўзе.",
       pause_warning: "Пункт знаходзіцца ў рэжыме паўзы. Кліенты ўбачаць статус «Часова закрыта».",
@@ -586,6 +602,8 @@ export const be = {
       unit_km: "км",
       edit_forbidden: "Толькі ўладальнік бізнесу можа змяняць або выдаляць пункт.",
       readonly_hint: "Вы працуеце як мэнэджар: дзеянні па змене налад і звальненні супрацоўнікаў недаступныя.",
+      status_label: "Статус",
+      map_point_label: "Каардынаты",
       contacts_title: "Кантакты",
       info_title: "Інфармацыя",
       coming_soon: "Хутка",
@@ -620,7 +638,9 @@ export const be = {
       amount_label: "Сума",
       duration_label: "Працягласць",
       create_request_btn: "Стварыць заяўку",
-      creating: "Стварэнне..."
+      creating: "Стварэнне...",
+      point_details: "Дэталі гандлёвага пункта",
+      admin_title: "Дэталі гандлёвага пункта"
     },
     platform: {
       staff_title: "Супрацоўнікі Платформы",
@@ -849,6 +869,22 @@ export const be = {
       desc: "Усталюйце дадатак, каб збіраць балы, атрымліваць узнагароды і адсочваць свой прагрэс.",
       btn_apk: "Спампаваць APK",
       requirements: "Патрабуецца Android 8.0 або вышэй"
+    },
+    client_onboarding: {
+      welcome_title: "Сардэчна запрашаем у LoyaltyLoop",
+      welcome_subtitle: "Вашы любімыя ўстановы ў адным дадатку. Збірайце балы і атрымлівайце падарункі.",
+      steps_title: "Як гэта працуе?",
+      step_1: "Спампуйце дадатак",
+      step_2: "Зарэгіструйцеся па нумары тэлефона",
+      step_3: "Паказвайце QR-код пры кожнай пакупцы",
+      download_title: "Усталяваць дадатак",
+      download_apk: "Спампаваць APK (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Хутка",
+      version: "Версія",
+      size: "Памер"
     }
   }
 };

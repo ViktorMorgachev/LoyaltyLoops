@@ -4,7 +4,7 @@ import {
     Container, Typography, Box, Paper, Tabs, Tab, 
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, 
     Chip, LinearProgress, Card, CardContent,
-    FormControl, InputLabel, Select, MenuItem, OutlinedInput, Stack, Checkbox, Button, Dialog, DialogTitle, DialogContent, TextField
+    FormControl, InputLabel, Select, MenuItem, OutlinedInput, Stack, Checkbox, Button, Dialog, DialogTitle, DialogContent, TextField, Skeleton
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { api } from '../../api/axiosConfig';
 import type { AnalyticsDataDto, ReviewDto } from '../../types/reviews';
 import { Star, StarBorder } from '@mui/icons-material';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { TableSkeleton } from '../../components/common/TableSkeleton';
 
 // Helpers to avoid TZ shift for date inputs
 const formatLocalDate = (d: Date) => {
@@ -70,8 +71,8 @@ export const ReviewsPage = () => {
         setDateFrom(fromStr);
         setDateTo(toStr);
 
-        // Мгновенный первичный запрос
-        loadData(fromDefault, today, "ALL");
+        // Мгновенный первичный запрос НЕ НУЖЕН, так как useEffect ниже сработает при изменении dateFrom/dateTo
+        // loadData(fromDefault, today, "ALL");
 
         // DEBUG: Check raw data types
         api.get('/partners/reviews/summary')
@@ -97,6 +98,9 @@ export const ReviewsPage = () => {
             fallbackFrom.setDate(today.getDate() - 30);
             const fromDate = from || (dateFrom ? parseLocalDate(dateFrom) : fallbackFrom);
             const toDate = to || (dateTo ? parseLocalDate(dateTo) : today);
+            
+            // Важно: Устанавливаем конец дня для "toDate", иначе данные за "сегодня" не попадут
+            toDate.setHours(23, 59, 59, 999);
 
             const qs: string[] = [];
             qs.push(`from=${fromDate.getTime()}`);
@@ -146,7 +150,7 @@ export const ReviewsPage = () => {
                         setWeekLabel(label || weekKey);
                         setDateFrom(startIso);
                         setDateTo(endIso);
-                        setTabValue(1); 
+                        // setTabValue(1); // Не переключаем вкладку, чтобы остаться на дашборде
                         setOpenWeekDialog(true);
                     }}
                     onPointClick={(pointId, pointName) => {
@@ -177,6 +181,7 @@ export const ReviewsPage = () => {
                     dateFrom={dateFrom}
                     dateTo={dateTo}
                     onFilterChange={{ setTagFilter, setRatingFilter, setSortOrder, setWeekFilter, setDateFrom, setDateTo }}
+                    loading={loading}
                 />
             </TabPanel>
 
@@ -193,6 +198,7 @@ export const ReviewsPage = () => {
                     dateFrom={dateFrom}
                     dateTo={dateTo}
                     onFilterChange={{ setTagFilter, setRatingFilter, setSortOrder, setWeekFilter, setDateFrom, setDateTo }}
+                    loading={loading}
                 />
             </TabPanel>
 
@@ -261,91 +267,103 @@ const DashboardView = ({
             {/* KPI Cards */}
             <Grid container spacing={3} mb={4}>
                 <Grid item xs={12} md={4}>
-                    <KpiCard 
-                        title={t('analytics.nps_title')} 
-                        value={analytics.nps} 
-                        color={analytics.nps > 50 ? '#2e7d32' : analytics.nps > 0 ? '#ed6c02' : '#d32f2f'} 
-                        suffix="%"
-                    />
-                    <Typography variant="caption" color="text.secondary">{t('analytics.nps_hint')}</Typography>
+                    {analytics ? (
+                        <>
+                        <KpiCard 
+                            title={t('analytics.nps_title')} 
+                            value={analytics.nps} 
+                            color={analytics.nps > 50 ? '#2e7d32' : analytics.nps > 0 ? '#ed6c02' : '#d32f2f'} 
+                            suffix="%"
+                        />
+                         <Typography variant="caption" color="text.secondary">{t('analytics.nps_hint')}</Typography>
+                         </>
+                    ) : <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 4 }} />}
                 </Grid>
                 <Grid item xs={12} md={4}>
-                    <KpiCard 
-                        title={t('analytics.avg_rating')} 
-                        value={analytics.averageRating.toFixed(1)} 
-                        icon={<Star sx={{ color: '#ffc107' }} />}
-                    />
+                    {analytics ? (
+                        <KpiCard 
+                            title={t('analytics.avg_rating')} 
+                            value={analytics.averageRating.toFixed(1)} 
+                            icon={<Star sx={{ color: '#ffc107' }} />}
+                        />
+                    ) : <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 4 }} />}
                 </Grid>
                 <Grid item xs={12} md={4}>
+                    {analytics ? (
                     <KpiCard 
                         title={t('analytics.total_reviews')} 
                         value={analytics.totalReviews} 
                     />
+                    ) : <Skeleton variant="rectangular" height={100} sx={{ borderRadius: 4 }} />}
                 </Grid>
             </Grid>
 
             {/* NPS Trend */}
             <Paper sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', mb: 4 }} elevation={0}>
-                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={2} alignItems="flex-start">
-                    <TextField
-                        size="small"
-                        type="date"
-                        label={t('analytics.filters.date_from')}
-                        InputLabelProps={{ shrink: true }}
-                        value={dateFrom}
-                        onChange={(e) => {
-                            const from = parseLocalDate(e.target.value);
-                            const to = parseLocalDate(dateTo);
-                            onRangeChange(from, to, analyticsPoint);
-                        }}
-                    />
-                    <TextField
-                        size="small"
-                        type="date"
-                        label={t('analytics.filters.date_to')}
-                        InputLabelProps={{ shrink: true }}
-                        value={dateTo}
-                        onChange={(e) => {
-                            const to = parseLocalDate(e.target.value);
-                            const from = parseLocalDate(dateFrom);
-                            onRangeChange(from, to, analyticsPoint);
-                        }}
-                    />
-                    <FormControl size="small" sx={{ minWidth: 180 }}>
-                        <InputLabel>{t('analytics.filters.point')}</InputLabel>
-                        <Select
-                            value={analyticsPoint}
-                            label={t('analytics.filters.point')}
+                {analytics ? (
+                    <>
+                    <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} mb={2} alignItems="flex-start">
+                        <TextField
+                            size="small"
+                            type="date"
+                            label={t('analytics.filters.date_from')}
+                            InputLabelProps={{ shrink: true }}
+                            value={dateFrom}
                             onChange={(e) => {
-                                const from = parseLocalDate(dateFrom);
+                                const from = parseLocalDate(e.target.value);
                                 const to = parseLocalDate(dateTo);
-                                onRangeChange(from, to, e.target.value);
+                                onRangeChange(from, to, analyticsPoint);
                             }}
-                        >
-                            {pointOptions.map(p => (
-                                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </Stack>
-                {analytics.series && analytics.series.length > 0 ? (
-                    <Box sx={{ height: 320 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={analytics.series}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="date" tickFormatter={(v: number) => new Date(v).toLocaleDateString()} />
-                                <YAxis yAxisId="left" label={{ value: 'NPS', angle: -90, position: 'insideLeft' }} />
-                                <YAxis yAxisId="right" orientation="right" label={{ value: t('analytics.avg_rating'), angle: -90, position: 'insideRight' }} />
-                                <Tooltip labelFormatter={(v) => new Date(Number(v)).toLocaleString()} />
-                                <Legend />
-                                <Line yAxisId="left" type="monotone" dataKey="nps" stroke="#1976d2" dot={false} name="NPS" />
-                                <Line yAxisId="right" type="monotone" dataKey="averageRating" stroke="#ffa000" dot={false} name={t('analytics.avg_rating')} />
-                            </LineChart>
-                        </ResponsiveContainer>
-                    </Box>
-                ) : (
-                    <Typography color="text.secondary">{t('analytics.empty_reviews')}</Typography>
-                )}
+                        />
+                        <TextField
+                            size="small"
+                            type="date"
+                            label={t('analytics.filters.date_to')}
+                            InputLabelProps={{ shrink: true }}
+                            value={dateTo}
+                            onChange={(e) => {
+                                const to = parseLocalDate(e.target.value);
+                                const from = parseLocalDate(dateFrom);
+                                onRangeChange(from, to, analyticsPoint);
+                            }}
+                        />
+                        <FormControl size="small" sx={{ minWidth: 180 }}>
+                            <InputLabel>{t('analytics.filters.point')}</InputLabel>
+                            <Select
+                                value={analyticsPoint}
+                                label={t('analytics.filters.point')}
+                                onChange={(e) => {
+                                    const from = parseLocalDate(dateFrom);
+                                    const to = parseLocalDate(dateTo);
+                                    onRangeChange(from, to, e.target.value);
+                                }}
+                            >
+                                {pointOptions.map(p => (
+                                    <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Stack>
+                    {analytics.series && analytics.series.length > 0 ? (
+                        <Box sx={{ height: 320 }}>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={analytics.series}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="date" tickFormatter={(v: number) => new Date(v).toLocaleDateString()} />
+                                    <YAxis yAxisId="left" label={{ value: 'NPS', angle: -90, position: 'insideLeft' }} />
+                                    <YAxis yAxisId="right" orientation="right" label={{ value: t('analytics.avg_rating'), angle: -90, position: 'insideRight' }} />
+                                    <Tooltip labelFormatter={(v) => new Date(Number(v)).toLocaleString()} />
+                                    <Legend />
+                                    <Line yAxisId="left" type="monotone" dataKey="nps" stroke="#1976d2" dot={false} name="NPS" />
+                                    <Line yAxisId="right" type="monotone" dataKey="averageRating" stroke="#ffa000" dot={false} name={t('analytics.avg_rating')} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </Box>
+                    ) : (
+                        <Typography color="text.secondary">{t('analytics.empty_reviews')}</Typography>
+                    )}
+                    </>
+                ) : <Skeleton variant="rectangular" height={400} />}
             </Paper>
 
             {/* Heatmap */}
@@ -354,7 +372,8 @@ const DashboardView = ({
             
             <Box sx={{ maxHeight: 420, overflowY: 'auto', pr: 1 }}>
                 <Grid container spacing={3}>
-                    {analytics.heatmap.map(point => (
+                    {analytics ? (
+                        analytics.heatmap.map(point => (
                         <Grid item xs={12} md={6} key={point.pointId}>
                             <Card 
                                 variant="outlined" 
@@ -378,7 +397,14 @@ const DashboardView = ({
                                 </CardContent>
                             </Card>
                         </Grid>
-                    ))}
+                    ))
+                    ) : (
+                        Array.from({ length: 4 }).map((_, i) => (
+                            <Grid item xs={12} md={6} key={i}>
+                                <Skeleton variant="rectangular" height={150} sx={{ borderRadius: 3 }} />
+                            </Grid>
+                        ))
+                    )}
                 </Grid>
             </Box>
 
@@ -386,25 +412,27 @@ const DashboardView = ({
             <Box mt={5}>
                 <Typography variant="h6" fontWeight="bold" mb={2}>{t('analytics.weekly_title')}</Typography>
                 <Typography variant="body2" color="text.secondary" mb={3}>{t('analytics.weekly_subtitle')}</Typography>
-                {weekly.length === 0 ? (
-                    <Typography color="text.secondary">{t('analytics.empty_reviews')}</Typography>
-                ) : (
-                    <Grid container spacing={2}>
-                        {weekly.map(week => (
-                            <Grid item xs={12} md={4} key={week.key}>
-                                <Paper 
-                                    sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', cursor: 'pointer' }} 
-                                    elevation={0}
-                                    onClick={() => onWeekClick(week.key, week.startIso, week.endIso, week.label)}
-                                >
-                                    <Typography variant="subtitle1" fontWeight="700">{week.label}</Typography>
-                                    <Typography variant="body2" color="text.secondary" mb={1}>{t('analytics.weekly_count')}: {week.count}</Typography>
-                                    <Typography variant="body2" color="text.secondary">{t('analytics.weekly_avg')}: {week.avg.toFixed(1)}</Typography>
-                                </Paper>
-                            </Grid>
-                        ))}
-                    </Grid>
-                )}
+                {analytics ? (
+                    weekly.length === 0 ? (
+                        <Typography color="text.secondary">{t('analytics.empty_reviews')}</Typography>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {weekly.map(week => (
+                                <Grid item xs={12} md={4} key={week.key}>
+                                    <Paper 
+                                        sx={{ p: 2, borderRadius: 3, border: '1px solid', borderColor: 'divider', cursor: 'pointer' }} 
+                                        elevation={0}
+                                        onClick={() => onWeekClick(week.key, week.startIso, week.endIso, week.label)}
+                                    >
+                                        <Typography variant="subtitle1" fontWeight="700">{week.label}</Typography>
+                                        <Typography variant="body2" color="text.secondary" mb={1}>{t('analytics.weekly_count')}: {week.count}</Typography>
+                                        <Typography variant="body2" color="text.secondary">{t('analytics.weekly_avg')}: {week.avg.toFixed(1)}</Typography>
+                                    </Paper>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )
+                ) : <Skeleton variant="rectangular" height={100} />}
             </Box>
         </Box>
     );
@@ -434,7 +462,8 @@ const ReviewsTable = ({
     weekFilter = null,
     dateFrom,
     dateTo,
-    onFilterChange
+    onFilterChange,
+    loading
 }: { 
     reviews: ReviewDto[], 
     t: any, 
@@ -445,8 +474,31 @@ const ReviewsTable = ({
     weekFilter?: string | null,
     dateFrom?: string,
     dateTo?: string,
-    onFilterChange?: { setTagFilter: (v: string[]) => void; setRatingFilter: (v: string) => void; setSortOrder: (v: 'DESC' | 'ASC') => void; setWeekFilter?: (v: string | null) => void; setDateFrom?: (v: string) => void; setDateTo?: (v: string) => void }
+    onFilterChange?: { setTagFilter: (v: string[]) => void; setRatingFilter: (v: string) => void; setSortOrder: (v: 'DESC' | 'ASC') => void; setWeekFilter?: (v: string | null) => void; setDateFrom?: (v: string) => void; setDateTo?: (v: string) => void },
+    loading?: boolean
 }) => {
+    if (loading) {
+        return (
+            <TableContainer component={Paper} elevation={0} sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 3 }}>
+                <Table>
+                    <TableHead sx={{ bgcolor: '#f8fafc' }}>
+                        <TableRow>
+                             <TableCell width="15%">{t('analytics.reviews_table.date')}</TableCell>
+                             <TableCell width="15%">{isClientRating ? t('staff.role_cashier') : t('analytics.reviews_table.author')}</TableCell>
+                             {isClientRating && <TableCell width="15%">{t('analytics.reviews_table.target')}</TableCell>}
+                             <TableCell width="15%">{t('analytics.reviews_table.point')}</TableCell>
+                             <TableCell width="10%">{t('analytics.reviews_table.rating')}</TableCell>
+                             <TableCell width="30%">{t('analytics.reviews_table.comment')} / {t('analytics.reviews_table.tags')}</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                         <TableSkeleton cols={isClientRating ? 6 : 5} rows={5} />
+                    </TableBody>
+                </Table>
+            </TableContainer>
+        );
+    }
+
     if (!reviews.length) {
         return <Typography color="text.secondary" align="center" py={4}>{t('analytics.empty_reviews')}</Typography>;
     }
@@ -581,12 +633,12 @@ const ReviewsTable = ({
                             <TableCell>{new Date(row.createdAt).toLocaleDateString()}</TableCell>
                             <TableCell>
                                 <Typography variant="body2" fontWeight="600">{row.authorName}</Typography>
-                                {row.authorPhone && <Typography variant="caption" color="text.secondary">{row.authorPhone}</Typography>}
+                                {/* Removed author phone for privacy */}
                             </TableCell>
                             {isClientRating && (
                                 <TableCell>
                                     <Typography variant="body2" fontWeight="600">{row.targetName || 'Client'}</Typography>
-                                    {row.targetPhone && <Typography variant="caption" color="text.secondary">{row.targetPhone}</Typography>}
+                                    {/* Removed target phone for privacy */}
                                 </TableCell>
                             )}
                             <TableCell>{row.pointName}</TableCell>
