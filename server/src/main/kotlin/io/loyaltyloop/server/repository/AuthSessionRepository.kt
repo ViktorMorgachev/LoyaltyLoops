@@ -8,9 +8,12 @@ import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AuthSession
+import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.slf4j.LoggerFactory
+import java.sql.Connection
 import java.time.temporal.ChronoUnit
 
 // TODO checked
@@ -28,7 +31,7 @@ class AuthSessionRepository {
         newId.value.toString()
     }
 
-    suspend fun getSession(uuid: String): AuthSession? = dbQuery {
+    suspend fun getSession(uuid: String): AuthSession? = newSuspendedTransaction(Dispatchers.IO, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED) {
         val sessionUuid = uuid.toUUID()
 
         AuthSessionsTable.selectAll()
