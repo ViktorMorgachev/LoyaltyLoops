@@ -87,6 +87,7 @@ fun TerminalContent(
 
     if (showDownloadSheet) {
         ModalBottomSheet(
+            containerColor = Color.White,
             onDismissRequest = { showDownloadSheet = false },
             sheetState = sheetState
         ) {
@@ -97,17 +98,6 @@ fun TerminalContent(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = stringResource(Res.string.terminal_download_title),
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = stringResource(Res.string.terminal_download_subtitle),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center
-                )
                 val painter = rememberQrCodePainter(
                     data = state.storeUrl,
                     shapes = QrShapes(
