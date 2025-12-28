@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   Container, Button, Box, Typography, Paper, Table, TableHead, TableRow, TableCell, TableBody, Chip,
   Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControl, InputLabel, Select, MenuItem,
-  Alert, Switch, FormControlLabel
+  Alert, Switch, FormControlLabel, Skeleton, CircularProgress
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -43,12 +43,15 @@ export const PointsPage = () => {
 
   const [strategy, setStrategy] = useState('TIERED_LTV');
   const [defaultVisitsTarget, setDefaultVisitsTarget] = useState('10');
-  const [cashback, setCashback] = useState('5');
+  const [businessTiers, setBusinessTiers] = useState<any[]>([]);
+  const [baseCurrency, setBaseCurrency] = useState<string>('USD');
   const [locationDialogOpen, setLocationDialogOpen] = useState(false);
   const [mapSearch, setMapSearch] = useState('');
   const [tempCoords, setTempCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [tempAddress, setTempAddress] = useState('');
   const [awardOnMixedPayment, setAwardOnMixedPayment] = useState(false);
+  const [loadingPoints, setLoadingPoints] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     loadPoints();
@@ -57,21 +60,37 @@ export const PointsPage = () => {
 
   const loadPoints = async () => {
     try {
+      setLoadingPoints(true);
       const res = await api.get('/partners/points');
       setPoints(res.data);
     } catch (e: any) {
       if (e.response && e.response.status !== 404) {
           showError(getErrorMessage(e));
       }
+    } finally {
+      setLoadingPoints(false);
     }
   };
 
   const loadPartnerDefaults = async () => {
     try {
       const res = await api.get('/partners/me');
-      const target = res.data?.defaultVisitsTarget;
+      const data = res.data;
+      const target = data?.defaultVisitsTarget;
       if (target !== undefined && target !== null) {
         setDefaultVisitsTarget(String(target));
+      }
+      if (data?.baseCurrency) {
+        setBaseCurrency(data.baseCurrency);
+      }
+      if (Array.isArray(data?.tiers)) {
+        const sorted = [...data.tiers].sort((a: any, b: any) => a.levelIndex - b.levelIndex);
+        const normalized = sorted.map((t: any) => ({
+          ...t,
+          threshold: t.threshold,
+          cashbackPercent: t.cashbackPercent,
+        }));
+        setBusinessTiers(normalized);
       }
     } catch (_ignored) {
       // Managers may not have access; ignore errors here
@@ -198,29 +217,35 @@ export const PointsPage = () => {
       return;
     }
     try {
+      setCreating(true);
       if (!name.trim()) {
         showError(`${t('dashboard.label_point_name')}: ${t('common.required', 'Required')}`);
+        setCreating(false);
         return;
       }
       if (!address.trim()) {
         showError(`${t('point_details.address_label')}: ${t('common.required', 'Required')}`);
+        setCreating(false);
         return;
       }
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (isNaN(lat) || isNaN(lng)) {
         showError(t('point_details.map_required', 'Please select a location on the map'));
+        setCreating(false);
         return;
       }
 
       const isTiered = strategy === 'TIERED_LTV' || strategy === 'HYBRID';
-      const baseCashbackValue = parseFloat(cashback || '0') || 0;
+      const baseCashbackValue = isTiered
+        ? Number(businessTiers?.[0]?.cashbackPercent) || 0
+        : 0;
 
       const visitsGoal = Math.max(1, parseInt(defaultVisitsTarget || '10', 10) || 10);
       const visitTargetForPayload = (strategy === 'VISIT_COUNTER' || strategy === 'HYBRID') ? visitsGoal : undefined;
       const trimmedPhone = contactPhone.trim();
       const trimmedLink = contactLink.trim();
-      const trimmedInfo = additionalInfo.trim().slice(0, 20);
+      const trimmedInfo = additionalInfo.trim().slice(0, 30);
 
       const payload = {
         name,
@@ -229,13 +254,14 @@ export const PointsPage = () => {
         latitude: lat,
         longitude: lng,
         currency,
-        timezone, // Added
+        timezone,
         programType: strategy,
         baseCashback: isTiered ? baseCashbackValue : 0,
         awardOnMixedPayment,
         contactPhone: trimmedPhone || undefined,
         contactLink: trimmedLink || undefined,
         additionalInfo: trimmedInfo ? trimmedInfo : undefined,
+        maxBurnPercentage: 100,
         ...(visitTargetForPayload !== undefined ? { visitsTarget: visitTargetForPayload } : {})
       };
 
@@ -255,6 +281,8 @@ export const PointsPage = () => {
       loadPoints();
     } catch (e: any) {
       showError(getErrorMessage(e));
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -268,9 +296,13 @@ export const PointsPage = () => {
       return t(`dashboard.types.${typeEnum}`, typeEnum);
   };
 
-  const base = parseFloat(cashback || '0') || 0;
-  const mid = base + 2;
-  const max = base + 5;
+  const loyaltyLevels = businessTiers.length
+    ? businessTiers.map((t) => ({
+        name: t.loyaltyTier?.descr || t.loyaltyTier?.level || `Tier ${t.levelIndex}`,
+        threshold: t.threshold,
+        cashback: t.cashbackPercent,
+      }))
+    : [];
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
@@ -295,44 +327,54 @@ export const PointsPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {points.length === 0 && (
+            {loadingPoints ? (
+              Array.from({ length: 4 }).map((_, idx) => (
+                <TableRow key={`skeleton-${idx}`}>
+                  <TableCell><Skeleton variant="text" width="70%" /></TableCell>
+                  <TableCell><Skeleton variant="text" width="50%" /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={120} height={28} /></TableCell>
+                  <TableCell><Skeleton variant="rectangular" width={90} height={28} /></TableCell>
+                </TableRow>
+              ))
+            ) : points.length === 0 ? (
               <TableRow>
                     <TableCell colSpan={4} align="center" sx={{ py: 8, color: 'text.secondary' }}>
                         {t('dashboard.empty')}
                     </TableCell>
               </TableRow>
-            )}
-            {points.map((p) => (
-              <TableRow 
-                key={p.id} 
-                hover 
-                onClick={() => navigate(`/partner/points/${p.id}`)} 
-                sx={{ cursor: 'pointer' }}
-              >
-                <TableCell>{p.name}</TableCell>
-                <TableCell>{getLocalizedType(p.type)}</TableCell>
-                <TableCell>
-                  {p.inviteCode ? (
+            ) : (
+              points.map((p) => (
+                <TableRow 
+                  key={p.id} 
+                  hover 
+                  onClick={() => navigate(`/partner/points/${p.id}`)} 
+                  sx={{ cursor: 'pointer' }}
+                >
+                  <TableCell>{p.name}</TableCell>
+                  <TableCell>{getLocalizedType(p.type)}</TableCell>
+                  <TableCell>
+                    {p.inviteCode ? (
+                      <Chip
+                        label={p.inviteCode}
+                        onClick={(e) => copyInvite(e, p.inviteCode)}
+                        icon={<ContentCopyIcon />}
+                        color="primary"
+                        clickable
+                        variant="outlined"
+                        size="small"
+                      />
+                    ) : "—"}
+                  </TableCell>
+                  <TableCell>
                     <Chip
-                      label={p.inviteCode}
-                      onClick={(e) => copyInvite(e, p.inviteCode)}
-                      icon={<ContentCopyIcon />}
-                      color="primary"
-                      clickable
-                      variant="outlined"
-                          size="small"
+                      label={p.active ? t('common.status_active') : t('common.status_not_paid')}
+                      color={p.active ? "success" : "error"}
+                      size="small"
                     />
-                  ) : "—"}
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={p.active ? t('common.status_active') : t('common.status_not_paid')}
-                    color={p.active ? "success" : "error"}
-                    size="small"
-                  />
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
         </Box>
@@ -374,9 +416,9 @@ export const PointsPage = () => {
             fullWidth
             value={additionalInfo}
             onChange={(e) => setAdditionalInfo(e.target.value)}
-            helperText={`${t('point_details.additional_info_hint')} (${additionalInfo.length}/20)`}
+            helperText={`${t('point_details.additional_info_hint')} (${additionalInfo.length}/30)`}
             sx={{ mt: 1 }}
-            inputProps={{ maxLength: 20 }}
+            inputProps={{ maxLength: 30 }}
         />
           <Box mt={1} display="flex" flexDirection="column" gap={1}>
               <Button variant="outlined" onClick={openLocationDialog}>
@@ -469,17 +511,47 @@ export const PointsPage = () => {
 
             {(strategy === 'TIERED_LTV' || strategy === 'HYBRID') && (
                 <>
-                    <TextField
-                        label={t('dashboard.label_cashback')}
-                        type="number"
-                        value={cashback}
-                        onChange={e => setCashback(e.target.value)}
-                        helperText={t('dashboard.hint_cashback')}
-                        sx={{ mt: 1 }}
-                    />
                     <Alert severity="info" sx={{ mt: 1 }}>
-                        {t('dashboard.hint_tiered_levels', { base: base, mid: mid, max: max })}
+                        {t('dashboard.hint_tiered_levels', {
+                            base: loyaltyLevels[0]?.cashback ?? 0,
+                            mid: loyaltyLevels[1]?.cashback ?? 0,
+                            max: loyaltyLevels[2]?.cashback ?? 0
+                        })}
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                            {t('dashboard.hint_cashback_global')}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 0.5 }}>
+                            {t('point_details.levels_locked_hint', 'Уровни и пороги берутся из настроек бизнеса и недоступны для изменения на уровне торговой точки. Изменить можно в разделе «Настройки бизнеса».')}
+                        </Typography>
                     </Alert>
+                    {loyaltyLevels.length > 0 && (
+                      <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden', mt: 2 }}>
+                        <Table size="small">
+                          <TableHead sx={{ bgcolor: 'grey.100' }}>
+                            <TableRow>
+                              <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_name')}</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_threshold')}</TableCell>
+                              <TableCell sx={{ fontWeight: 600 }}>{t('point_details.lvl_percent')}</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {loyaltyLevels.map((lvl, idx) => (
+                              <TableRow key={idx}>
+                                <TableCell>{lvl.name}</TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">
+                                    {lvl.threshold} {baseCurrency}
+                                  </Typography>
+                                </TableCell>
+                                <TableCell>
+                                  <Typography variant="body2">{lvl.cashback}%</Typography>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </Paper>
+                    )}
                     <FormControlLabel
                         control={
                             <Switch
@@ -501,8 +573,10 @@ export const PointsPage = () => {
 
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
-            <Button onClick={handleCreatePoint} variant="contained">{t('common.add')}</Button>
+            <Button onClick={() => setOpen(false)} disabled={creating}>{t('common.cancel')}</Button>
+            <Button onClick={handleCreatePoint} variant="contained" disabled={creating} startIcon={creating ? <CircularProgress size={20} color="inherit" /> : null}>
+                {t('common.add')}
+            </Button>
         </DialogActions>
       </Dialog>
 

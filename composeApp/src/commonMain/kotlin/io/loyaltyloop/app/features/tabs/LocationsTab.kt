@@ -25,7 +25,7 @@ object LocationsTab : Tab {
             val title = stringResource(Res.string.tab_locations)
             val icon = rememberVectorPainter(Icons.Default.Place)
 
-            return remember {
+            return remember(title) {
                 TabOptions(
                     index = 1u,
                     title = title,

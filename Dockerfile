@@ -12,7 +12,10 @@ RUN chmod +x ./gradlew
 RUN ./gradlew :server:installDist --no-daemon -PserverBuild=true
 
 # --- Этап 2: Запуск (Run) ---
-FROM eclipse-temurin:17-jre
+
+FROM eclipse-temurin:17-jdk-jammy
+ENV TZ=UTC
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=UTC"
 
 WORKDIR /app
 

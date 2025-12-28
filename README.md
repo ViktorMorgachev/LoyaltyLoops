@@ -100,6 +100,10 @@ lsof -i :8080 -t | xargs kill -9
 ./gradlew :composeApp:installDebug
 adb shell monkey -p io.loyaltyloop.app 1
 ```
+### 5. Билд релизного приложения
+```bash
+./gradlew :composeApp:assembleLoyaltyloopRelease -Penv=prod
+```
 
 **iOS:**
 1. Убедитесь, что установлены CocoaPods.

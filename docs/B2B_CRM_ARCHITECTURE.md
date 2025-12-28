@@ -80,15 +80,6 @@
     *   Обновляет `TradingPoint.isActive = true`.
     *   Обновляет `Partner.status = ACTIVE`.
 
-### Б. Истечение срока (Фоновая задача)
-1.  `LoyaltyEngineService` запускается ежедневно.
-2.  Проверяет `PlatformSubscriptionsTable`, где `endDate < now`.
-    *   *Расчет даты*: Используется Java Time API для точного учета дней в месяце и високосных годов.
-3.  Если найдено:
-    *   Устанавливает `Subscription.isActive = false`.
-    *   Устанавливает `TradingPoint.isActive = false`.
-    *   Логирует Системное Событие (Уведомление).
-
 ## 4. API Эндпоинты
 
 ### `/platform/requests`

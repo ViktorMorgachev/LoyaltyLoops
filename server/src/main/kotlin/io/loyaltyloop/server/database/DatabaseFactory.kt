@@ -4,15 +4,12 @@ import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.ktor.server.config.*
-import io.loyaltyloop.server.database.tables.PartnerCashiersTable
-import io.loyaltyloop.server.database.tables.LoyaltyCardTable
 import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.RefreshTokensTable
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
-import io.loyaltyloop.server.database.tables.PartnerManagersTable
 import io.loyaltyloop.server.database.tables.DeviceTokensTable
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
 import io.loyaltyloop.server.database.tables.SupportMessagesTable
@@ -33,6 +30,9 @@ import io.loyaltyloop.server.database.tables.ClientRatingsTable
 import io.loyaltyloop.server.database.tables.ServiceReviewsTable
 import io.loyaltyloop.server.database.tables.WaitlistTable
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
+import io.loyaltyloop.server.database.tables.ExchangeRatesTable
+import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
 
 object DatabaseFactory {
 
@@ -49,6 +49,7 @@ object DatabaseFactory {
             maximumPoolSize = 10
             maxLifetime = 300_000
             isAutoCommit = false
+            connectionInitSql = "SET TIME ZONE 'UTC'"
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
         }
@@ -70,14 +71,12 @@ object DatabaseFactory {
                 UsersTable,
                 PartnersTable,
                 TradingPointsTable,
-                PartnerCashiersTable,
-                LoyaltyCardTable,
                 RefreshTokensTable,
                 LoyaltySettingsTable,
                 LoyaltyTiersTable,
+                PartnerStaffTable,
                 SystemStaffTable,
                 TransactionsHistoryTable,
-                PartnerManagersTable,
                 PinResetTokensTable,
                 SupportThreadsTable,
                 SupportMessagesTable,
@@ -89,7 +88,9 @@ object DatabaseFactory {
                 ClientRatingsTable,
                 ServiceReviewsTable,
                 WaitlistTable,
-                AuthSessionsTable
+                AuthSessionsTable,
+                ExchangeRatesTable,
+                LoyaltyCardsTable
             )
         }
     }
@@ -121,28 +122,41 @@ object DatabaseFactory {
                 UsersTable,
                 PartnersTable,
                 TradingPointsTable,
-                PartnerCashiersTable,
-                LoyaltyCardTable,
+                RefreshTokensTable,
                 LoyaltySettingsTable,
                 LoyaltyTiersTable,
+                PartnerStaffTable,
                 SystemStaffTable,
                 TransactionsHistoryTable,
-                PartnerManagersTable,
                 PinResetTokensTable,
                 SupportThreadsTable,
                 SupportMessagesTable,
                 DeviceTokensTable,
                 SystemEventsTable,
-                WaitlistTable
+                PlatformSubscriptionsTable,
+                PlatformRequestsTable,
+                PlatformInvitesTable,
+                ClientRatingsTable,
+                ServiceReviewsTable,
+                WaitlistTable,
+                AuthSessionsTable,
+                ExchangeRatesTable,
+                LoyaltyCardsTable
             )
         }
     }
 
-    suspend fun <T> dbQuery(block: suspend () -> T): T =
-        newSuspendedTransaction(Dispatchers.IO) {
-            // --- ВКЛЮЧАЕМ ЛОГИ SQL ---
-          //  addLogger(StdOutSqlLogger)
-            // ------------------------
+    suspend fun <T> dbQuery(block: suspend () -> T): T {
+        val transaction = TransactionManager.currentOrNull()
+        return if (transaction != null && !transaction.connection.isClosed) {
             block()
+        } else {
+            newSuspendedTransaction(Dispatchers.IO) {
+                // --- ВКЛЮЧАЕМ ЛОГИ SQL ---
+                //  addLogger(StdOutSqlLogger)
+                // ------------------------
+                block()
+            }
         }
+    }
 }

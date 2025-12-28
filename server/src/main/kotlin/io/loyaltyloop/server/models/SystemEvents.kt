@@ -5,20 +5,44 @@ import kotlinx.serialization.Serializable
 enum class SystemEventType {
     LOGIN,
     REGISTER,
-    SMS_REQUEST,
+    DELETING,
+    SMS_REQUEST, // Added
+    OTP_VERIFICATION_FAILED,
+
+    // Transactions
     ACCRUAL,
     REDEMPTION,
     TIER_CHANGE,
     VISIT,
-    ERROR,
-    INFO,
-    WARNING, // Added
-    OTP_VERIFICATION_FAILED,
+
+    // Security
     PIN_CHANGE_SUCCESS,
+    TIER_UPGRADED,
     PIN_RESET_REQUEST,
     PIN_RESET_SUCCESS,
     PIN_VERIFICATION_FAILED,
-    USER_BANNED
+
+    // System
+    ERROR,
+    INFO,
+    WARNING,
+    NOTIFICATION_SENT,
+
+    // [NEW] B2B / Platform Events (из нашей новой логики)
+    PARTNER_BLOCKED,
+    PARTNER_UNBLOCKED,
+
+    POINT_ACTIVATED,
+    POINT_DEACTIVATED,
+    POINT_ACTIVATION_REJECTED,
+    POINT_ACTIVATION_CONFIRMED,
+
+    SUBSCRIPTION_EXPIRED,
+    SUBSCRIPTION_ACTIVATED,
+    SUBSCRIPTION_CREATED,
+    SUBSCRIPTION_REJECTED,
+    SUBSCRIPTION_WARNING_SENT, // Письмо за 3 дня
+
 }
 
 @Serializable

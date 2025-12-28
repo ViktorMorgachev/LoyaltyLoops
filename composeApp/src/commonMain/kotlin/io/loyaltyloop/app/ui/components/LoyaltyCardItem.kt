@@ -82,9 +82,8 @@ import loyaltyloop.composeapp.generated.resources.wallet_card_reward_badge
 import loyaltyloop.composeapp.generated.resources.wallet_card_type
 import loyaltyloop.composeapp.generated.resources.wallet_card_visits
 import org.jetbrains.compose.resources.stringResource
+import io.loyaltyloop.shared.utils.LoyaltyFormatter
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import kotlin.math.abs
-import kotlin.math.roundToInt
 
 @Composable
 @Preview
@@ -100,9 +99,18 @@ fun LoyaltyCardItemPreview() {
             tierLevel = 2,
             partnerName = "Hybrid Coffee",
             cardColor = "#5C6AC4",
-            logoUrl = null,
+            logoUrl = "",
             block = null,
-            pause = null
+            pause = null,
+            partnerBaseCurrency = "USD",
+            estimatedValue = 45.0,
+            estimatedCurrency = "KGS",
+            visitsTarget = 10,
+            trustScore = 4.8,
+            totalScore = 100,
+            fraudFlag = false,
+            riskLevel = io.loyaltyloop.shared.models.RiskLevel.GREEN
+
         ),
         isFlipped = false,
         onFlipToggle = {},
@@ -143,10 +151,18 @@ fun LoyaltyCardItem(
     }
     val tierBorderColor = remember(card.tierLevel) { TierColors.forTier(card.tierLevel) }
     val cornerShape = RoundedCornerShape(20.dp)
+
     val animatedBalance by animateFloatAsState(
         targetValue = card.balance.toFloat(),
         animationSpec = tween(durationMillis = 450),
         label = "balanceAnim"
+    )
+
+    // Анимируем и estimatedValue, если оно меняется
+    val animatedEstimated by animateFloatAsState(
+        targetValue = card.estimatedValue.toFloat(),
+        animationSpec = tween(durationMillis = 450),
+        label = "estimatedAnim"
     )
 
     LaunchedEffect(card.id, eventFlow, pointsSuffix, newLevelLabel, visitSuffix, rewardLabel) {
@@ -231,6 +247,7 @@ fun LoyaltyCardItem(
                     tierBorderColor = tierBorderColor,
                     cornerShape = cornerShape,
                     animatedBalance = animatedBalance,
+                    animatedEstimated = animatedEstimated,
                     safeHighlight = safeHighlight
                 )
             } else {
@@ -257,6 +274,7 @@ private fun LoyaltyCardFront(
     tierBorderColor: Color?,
     cornerShape: RoundedCornerShape,
     animatedBalance: Float,
+    animatedEstimated: Float,
     safeHighlight: Float
 ) {
     val gradientColors = remember(cardColor, safeHighlight) {
@@ -321,11 +339,21 @@ private fun LoyaltyCardFront(
                         color = Color.White.copy(alpha = 0.8f)
                     )
                     Text(
-                        text = "${formatBalance(animatedBalance.toDouble())} $pointsSuffix",
+                        text = "${LoyaltyFormatter.format(animatedBalance.toDouble())} $pointsSuffix",
                         style = MaterialTheme.typography.displaySmall,
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
+                    if (card.estimatedCurrency != card.partnerBaseCurrency) {
+                        val symbol = LoyaltyFormatter.getCurrencySymbol(card.estimatedCurrency)
+                        val valueStr = LoyaltyFormatter.format(animatedEstimated.toDouble())
+                        
+                        Text(
+                            text = "≈ $valueStr $symbol",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = Color.White.copy(alpha = 0.7f)
+                        )
+                    }
                 }
         }
 
@@ -584,13 +612,6 @@ private fun parseCardColor(hexColor: String, fallback: Color): Color =
     } catch (_: Exception) {
         fallback
     }
-
-private fun formatBalance(balance: Double): String {
-    val scaled = (balance * 10).roundToInt()
-    val integerPart = scaled / 10
-    val fraction = abs(scaled % 10)
-    return if (fraction == 0) integerPart.toString() else "$integerPart.$fraction"
-}
 
 private fun formatBlockedUntil(epochMillis: Long): String {
     val dateTime = Instant.fromEpochMilliseconds(epochMillis)

@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
-
+import java.util.Properties
+import java.io.FileInputStream
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -126,9 +127,27 @@ kotlin {
     }
 }
 
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 android {
     namespace = "io.loyaltyloop.app"
     compileSdk = 35
+
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"] as String?
+            keyPassword = keystoreProperties["keyPassword"] as String?
+            storeFile = file(keystoreProperties["storeFile"] as String? ?: "loyalty_release.jks")
+            storePassword = keystoreProperties["storePassword"] as String?
+
+            // ВАЖНО: Включаем обе схемы для совместимости
+            enableV1Signing = true // Jar Signature (для старых Android)
+            enableV2Signing = true // Full APK Signature (для новых Android и Play Protect)
+        }
+    }
 
     defaultConfig {
         applicationId = "io.loyaltyloop.app"
@@ -140,6 +159,7 @@ android {
     }
 
     flavorDimensions += "brand"
+
     productFlavors {
         create("loyaltyloop") { dimension = "brand" }
     }
@@ -149,12 +169,53 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
         }
         create("stage") {
-            //initWith(getByName("release"))
-           // applicationIdSuffix = ".stage"
+            initWith(getByName("release"))
+            applicationIdSuffix = ".stage"
             matchingFallbacks.add("release")
             signingConfig = signingConfigs.getByName("debug")
+        }
+    }
+
+    applicationVariants.all {
+        val variant = this
+        if (buildType.name == "release") {
+            outputs.all {
+                // Меняем имя файла на LoyaltyLoop.apk
+                (this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl)?.outputFileName = "LoyaltyLoop.apk"
+            }
+
+            // Копируем APK в нужные папки после сборки
+            assembleProvider.configure {
+                doLast {
+                    variant.outputs.forEach { output ->
+                        val apkFile = output.outputFile
+                        if (apkFile != null && apkFile.exists() && apkFile.name.endsWith(".apk")) {
+                            val rootDir = project.rootDir
+
+                            // 1. Копируем в composeApp/apk
+                            val destDirApk = project.file("apk")
+                            copy {
+                                from(apkFile)
+                                into(destDirApk)
+                            }
+
+                            // 2. Копируем в web-admin/public (для скачивания с сайта)
+                            val destDirWeb = rootDir.resolve("web-admin/public")
+                            copy {
+                                from(apkFile)
+                                into(destDirWeb)
+                            }
+
+                            println("✅ Release APK copied to:")
+                            println("   - ${destDirApk.absolutePath}/${apkFile.name}")
+                            println("   - ${destDirWeb.absolutePath}/${apkFile.name}")
+                        }
+                    }
+                }
+            }
         }
     }
 }

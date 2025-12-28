@@ -47,10 +47,12 @@ export const en = {
       status_updated: "Status updated",
       status_changed: "Status changed",
       rows_per_page: "Rows per page:",
+      click_to_copy: "Click to copy"
     },
     errors: {
       INVALID_PHONE: "Invalid phone format",
       INVALID_PHONE_NUMBER: "Invalid phone number format",
+      INVALID_EMAIL_FORMAT: "Invalid email format",
       INVALID_CODE: "Invalid code",
       CODE_EXPIRED: "Code expired",
       USER_NOT_FOUND: "User not found",
@@ -136,6 +138,13 @@ export const en = {
       system_events: "Audit",
       platform_staff: "Platform Staff",
       create_business: "Create Business"
+    },
+    currency: {
+        USD: "USD (Dollar)",
+        KGS: "KGS (Som)",
+        KZT: "KZT (Tenge)",
+        UZS: "UZS (Sum)",
+        BYN: "BYN (Bel. ruble)"
     },
     join_partner: {
       title: "Join as Partner Manager",
@@ -269,6 +278,7 @@ export const en = {
       label_target: "Target (how many?)",
       label_cashback: "Initial Cashback (%)",
       label_currency: "Currency",
+      label_base_currency: "Base Currency",
       timezone_label: "Timezone", // Added
       country_label: "Country",
       country_placeholder: "Select country",
@@ -282,6 +292,7 @@ export const en = {
       label_lvl_gold: "Gold (%)",
       hint_target: "Example: 6 (every 6th free)",
       hint_cashback: "Example: 5 (start with 5%)",
+      hint_cashback_global: "Cashback information is set in business settings",
       hint_tiered_levels: "3 levels created: Start ({{base}}%), Silver ({{mid}}%), Gold ({{max}}%)",
       types: {
           COFFEE_SHOP: "Coffee Shop",
@@ -376,6 +387,8 @@ export const en = {
       send: "Send",
       sent: "Message sent",
       validation_empty: "Message cannot be empty",
+      name_required: "Name is required",
+      email_required: "Email is required",
       empty_state: "No messages yet",
       no_messages: "No messages",
       no_threads: "No threads yet",
@@ -457,6 +470,7 @@ export const en = {
       check_triggered: "Check triggered"
     },
     point_details: {
+      admin_title: "Trading Point Details",
       block_title: "Details",
       title: "Point Management",
       tab_overview: "Overview",
@@ -497,7 +511,6 @@ export const en = {
       max_burn_hint: "Max % of bill payable with points (0-100)",
       map_location: "Map Location",
       map_hint: "Click map to select coords.",
-      map_point_label: "Point",
       latitude_label: "Lat",
       longitude_label: "Lng",
       coords_required: "Coords required",
@@ -554,6 +567,9 @@ export const en = {
       schedule_validation_range: "Check time for {{day}}.",
       schedule_validation_lunch_pair: "Fill both break times for {{day}}.",
       schedule_validation_lunch_range: "Break must be within working hours.",
+      schedule_not_set: "Schedule not set",
+      schedule_day: "Day",
+      schedule_hours: "Hours",
       pause_label: "Temporarily Paused",
       pause_helper: "Cashiers cannot process ops.",
       pause_warning: "Point paused. Clients see 'Temporarily Closed'.",
@@ -600,6 +616,8 @@ export const en = {
       unit_km: "km",
       edit_forbidden: "Only owner can edit.",
       readonly_hint: "Manager mode: read-only.",
+      status_label: "Status",
+      map_point_label: "Coordinates",
       contacts_title: "Contacts",
       info_title: "Info",
       coming_soon: "Soon",
@@ -634,7 +652,9 @@ export const en = {
       amount_label: "Amount",
       duration_label: "Duration",
       create_request_btn: "Create Request",
-      creating: "Creating..."
+      creating: "Creating...",
+      point_details: "Trading Point Details",
+      admin_title: "Trading Point Details"
     },
     platform: {
       staff_title: "Platform Staff",
@@ -926,6 +946,22 @@ export const en = {
       desc: "Get the app to collect points, get rewards, and track your progress.",
       btn_apk: "Download APK",
       requirements: "Requires Android 8.0 or later"
+    },
+    client_onboarding: {
+      welcome_title: "Welcome to LoyaltyLoop",
+      welcome_subtitle: "Your favorite places in one app. Collect points and get rewards.",
+      steps_title: "How it works?",
+      step_1: "Download the app",
+      step_2: "Sign up with your phone number",
+      step_3: "Show QR code at every purchase",
+      download_title: "Install App",
+      download_apk: "Download APK (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Soon",
+      version: "Version",
+      size: "Size"
     }
   }
 };

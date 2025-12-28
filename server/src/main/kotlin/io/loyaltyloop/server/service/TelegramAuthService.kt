@@ -2,8 +2,12 @@ package io.loyaltyloop.server.service
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
+import io.loyaltyloop.server.models.AuthSessionStatus
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.utils.SecurityUtils
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUtcMillis
 import kotlinx.coroutines.*
 import kotlinx.serialization.json.*
 import okhttp3.*
@@ -16,7 +20,9 @@ import org.slf4j.LoggerFactory
 import java.util.concurrent.TimeUnit
 import io.loyaltyloop.shared.models.UserDto
 import org.jetbrains.exposed.sql.SortOrder
+import java.util.UUID
 
+// TODO checked
 class TelegramAuthService(
     private val authSessionRepository: AuthSessionRepository,
     private val userRepository: UserRepository,
@@ -92,7 +98,6 @@ class TelegramAuthService(
                     // Идем на новый круг без задержки.
                     continue
                 } catch (e: Exception) {
-                    // Реальная ошибка (нет сети, неверный токен и т.д.)
                     logger.error("Telegram Polling Error: ${e.message}")
                     delay(4000) // Пауза, чтобы не спамить логами
                 }
@@ -119,7 +124,6 @@ class TelegramAuthService(
         }
     }
 
-    // --- LOCALIZATION ---
     private fun getMsg(map: Map<String, String>, lang: String): String = map[lang] ?: map["en"]!!
 
     private val MSG_HELLO = mapOf(
@@ -188,7 +192,6 @@ class TelegramAuthService(
         val from = message["from"]?.jsonObject
         val languageCode = from?.get("language_code")?.jsonPrimitive?.content ?: "en"
 
-        // 1. /start login_UUID
         if (text?.startsWith("/start login_") == true) {
             val uuid = text.removePrefix("/start login_").trim()
             handleStartLogin(chatId, uuid, languageCode)
@@ -203,13 +206,11 @@ class TelegramAuthService(
     private suspend fun handleStartLogin(chatId: Long, uuid: String, languageCode: String) {
         val user = userRepository.getUserByTelegramId(chatId)
         if (user != null) {
-            // Instant login
             authSessionRepository.confirmSession(uuid, chatId, user.phoneNumber, user.id)
             sendSuccessMessage(chatId, languageCode, uuid)
         } else {
-            // Need phone. Link session to chat_id for now.
             dbQuery {
-                AuthSessionsTable.update({ AuthSessionsTable.id eq uuid }) {
+                AuthSessionsTable.update({ AuthSessionsTable.id eq UUID.fromString(uuid) }) {
                     it[telegramId] = chatId
                 }
             }
@@ -226,14 +227,13 @@ class TelegramAuthService(
         val rawPhone = contact["phone_number"]?.jsonPrimitive?.content ?: return
         val phone = if (rawPhone.startsWith("+")) rawPhone else "+$rawPhone"
 
-        // Find pending session for this chat
         val session = dbQuery {
              AuthSessionsTable.select {
                 (AuthSessionsTable.telegramId eq chatId) and
-                (AuthSessionsTable.status eq "PENDING")
+                (AuthSessionsTable.status eq AuthSessionStatus.PENDING)
             }.orderBy(AuthSessionsTable.createdAt to SortOrder.DESC)
             .limit(1)
-            .map { it[AuthSessionsTable.id] }
+            .map { it[AuthSessionsTable.id].toString() }
             .singleOrNull()
         }
 
@@ -245,16 +245,15 @@ class TelegramAuthService(
         var user = userRepository.getUserByPhone(phone)
         
         if (user == null) {
-             // Create new user if not found
-             val newUserId = java.util.UUID.randomUUID().toString()
              val newUser = UserDto(
-                 id = newUserId,
+                 id = "will_ignore",
                  phoneNumber = phone,
                  countryCode = "KG", // Default
                  firstName = contact["first_name"]?.jsonPrimitive?.content,
                  lastName = contact["last_name"]?.jsonPrimitive?.content,
-                 qrSecret = io.loyaltyloop.server.utils.SecurityUtils.generateToken(), // Generate QR secret
-                 telegramId = chatId
+                 qrSecret = SecurityUtils.generateToken(),
+                 telegramId = chatId,
+                 createdAt = nowUtc().toUtcMillis()
              )
              userRepository.createUser(newUser)
              user = newUser

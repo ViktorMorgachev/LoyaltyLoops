@@ -6,71 +6,89 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.server.service.TransactionService
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.service.AnalyticsService
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.shared.models.CalculateTransactionRequest
 import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.server.service.TransactionService
+import io.loyaltyloop.server.utils.getCurrencyForTimezone
+import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow
 import io.loyaltyloop.shared.models.CreateClientRatingDto
 
+// TODO checked
 fun Route.terminalRoutes(
-    userRepository: UserRepository,
     transactionService: TransactionService,
-    ratingService: RatingService
+    ratingService: RatingService,
+    analyticsService: AnalyticsService,
+    accessControlService: AccessControlService
 ) {
     route("/terminal") {
         authenticate("auth-jwt") {
             
             post("/scan") {
-                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<ScanQrRequest>()
-                
-                val response = transactionService.scanQr(cashierUserId, request)
+                val timezoneCurrency = call.getCurrencyForTimezone()
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                accessControlService.requirePointAccess(cashierUserId, workspaceId)
+                val response = transactionService.scanQr(cashierUserId, workspaceId, timezoneCurrency, request)
                 call.respond(response)
             }
 
             post("/calculate") {
-                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<CalculateTransactionRequest>()
-
+                val timezoneCurrency = call.getCurrencyForTimezone()
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                accessControlService.requirePointAccess(cashierUserId, workspaceId)
                 val result = transactionService.calculateTransaction(
                     cashierUserId = cashierUserId,
-                    tradingPointId = request.tradingPointId,
+                    tradingPointId = workspaceId,
                     cardId = request.cardId,
                     purchaseAmount = request.purchaseAmount,
-                    strategy = request.strategy
+                    strategy = request.strategy,
+                    estimatedCurrency = timezoneCurrency
                 )
                 
                 call.respond(result)
             }
 
             post("/process") {
-                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<ProcessTransactionRequest>()
+                val timezoneCurrency = call.getCurrencyForTimezone()
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                accessControlService.requirePointAccess(cashierUserId, workspaceId)
 
                 val result = transactionService.processTransaction(
                     cashierUserId = cashierUserId,
-                    tradingPointId = request.tradingPointId,
+                    tradingPointId = workspaceId,
                     cardId = request.cardId,
                     purchaseAmount = request.purchaseAmount,
-                    strategy = request.strategy
+                    strategy = request.strategy,
+                    estimatedCurrency = timezoneCurrency
                 )
                 
                 call.respond(result)
             }
             
             get("/stats") {
-                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@get
-                val stats = transactionService.getCashierDailyStats(cashierUserId)
+                val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@get
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                val stats = analyticsService.getCashierDailyStats(cashierUserId, workspaceId)
                 call.respond(stats)
             }
 
             post("/rate-client") {
-                val cashierUserId = call.getUserIdOrRespond(userRepository) ?: return@post
+                val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<CreateClientRatingDto>()
-                
-                val result = ratingService.rateClient(cashierUserId, request)
+                val timezoneCurrency = call.getCurrencyForTimezone()
+                val workspaceId = call.getWorkspaceIdOrThrow()
+                accessControlService.requirePointAccess(cashierUserId, workspaceId)
+                val result = ratingService.rateClient(cashierUserId, request, workspaceId,timezoneCurrency)
                 call.respond(result)
             }
         }

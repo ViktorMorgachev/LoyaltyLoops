@@ -12,6 +12,7 @@ import platform.Foundation.NSString
 import platform.UIKit.*
 import platform.CoreGraphics.CGPointMake
 import platform.darwin.NSObject
+import io.loyaltyloop.shared.models.GeoLocation
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -19,6 +20,9 @@ actual fun YandexMap(
     modifier: Modifier,
     cameraPosition: CameraPosition,
     markers: List<MapMarker>,
+    userLocation: GeoLocation?,
+    searchAreaCenter: GeoLocation?,
+    searchRadius: Int?,
     onMapClick: () -> Unit,
     onMarkerClick: (String) -> Unit
 ) {
@@ -60,6 +64,50 @@ actual fun YandexMap(
             animationType = YMKAnimation(YMKAnimationType.YMKAnimationTypeSmooth, 0.5f),
             cameraCallback = null
         )
+    }
+
+    // Отрисовка радиуса
+    val searchCircle = remember { mutableStateOf<YMKCircleMapObject?>(null) }
+    val strokeColor = remember { UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0) }
+    val fillColor = remember { UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 0.1) }
+
+    LaunchedEffect(searchAreaCenter, searchRadius) {
+        if (searchAreaCenter != null && searchRadius != null) {
+            val center = YMKPoint.pointWithLatitude(searchAreaCenter.lat, longitude = searchAreaCenter.lon)
+            val circleGeom = YMKCircle.circleWithCenter(center, radius = searchRadius.toFloat())
+
+            if (searchCircle.value == null) {
+                val c = mapObjects.addCircleWithCircle(circleGeom, strokeColor, 1.5f, fillColor)
+                searchCircle.value = c
+            } else {
+                searchCircle.value?.geometry = circleGeom
+            }
+        } else {
+            searchCircle.value?.let { mapObjects.removeWithMapObject(it) }
+            searchCircle.value = null
+        }
+    }
+
+    // Отрисовка локации
+    val userLocationPlacemark = remember { mutableStateOf<YMKPlacemarkMapObject?>(null) }
+    LaunchedEffect(userLocation) {
+        if (userLocation != null) {
+            val point = YMKPoint.pointWithLatitude(userLocation.lat, longitude = userLocation.lon)
+            val image = generateUserLocationImage()
+            val provider = YMKImageProvider.fromImage(image)
+
+            if (userLocationPlacemark.value == null) {
+                val p = mapObjects.addPlacemarkWithPoint(point, image = provider)
+                p.zIndex = 100.0f
+                userLocationPlacemark.value = p
+            } else {
+                userLocationPlacemark.value?.geometry = point
+                userLocationPlacemark.value?.setIconWithImage(provider)
+            }
+        } else {
+            userLocationPlacemark.value?.let { mapObjects.removeWithMapObject(it) }
+            userLocationPlacemark.value = null
+        }
     }
 
     // Отрисовка маркеров
@@ -235,4 +283,26 @@ private fun generatePinImage(marker: MapMarker): UIImage {
     UIGraphicsEndImageContext()
 
     return finalImage ?: UIImage()
+}
+
+@OptIn(ExperimentalForeignApi::class)
+private fun generateUserLocationImage(): UIImage {
+    val size = CGSizeMake(24.0, 24.0)
+    UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
+
+    // White stroke/bg
+    val white = UIColor.whiteColor
+    white.setFill()
+    val rect = CGRectMake(0.0, 0.0, 24.0, 24.0)
+    UIBezierPath.bezierPathWithRoundedRect(rect, cornerRadius = 12.0).fill()
+
+    // Blue dot
+    val blue = UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0) // #2563EB
+    blue.setFill()
+    val dotRect = CGRectMake(4.0, 4.0, 16.0, 16.0)
+    UIBezierPath.bezierPathWithRoundedRect(dotRect, cornerRadius = 8.0).fill()
+
+    val img = UIGraphicsGetImageFromCurrentImageContext()
+    UIGraphicsEndImageContext()
+    return img ?: UIImage()
 }

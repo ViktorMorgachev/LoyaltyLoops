@@ -147,6 +147,7 @@
     <string name="profile_language_dialog_cancel">Болдырмау</string>
     <string name="profile_language_updated">Тіл жаңартылды</string>
     <string name="language_ru">Орысша</string>
+    <string name="language_en">Ағылшынша</string>
     <string name="language_ky">Қырғызша</string>
     <string name="language_kk">Қазақша</string>
     <string name="language_uz">Өзбекше</string>
@@ -240,7 +241,7 @@
     <!-- Visits Strategy -->
     <string name="term_res_visit_action_prefix">НАУҚАН: </string>
     <string name="term_res_visit_action_suffix">-тауар сыйлыққа</string>
-    <string name="term_res_next_free">КЕЛЕСІ КЕЛУ - СЫЙЛЫҚПЕН! 🎁</string>
+    <string name="term_res_next_free">БҰЛ КЕЛУ — СЫЙЛЫҚПЕН! 🎁</string>
     <string name="term_res_btn_add_visit">Келу қосу (+1)</string>
 
     <!-- Tiered Strategy -->

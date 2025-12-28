@@ -64,14 +64,14 @@ import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 import kotlinx.coroutines.launch
-import io.loyaltyloop.shared.utils.getCurrencySymbol
 import io.loyaltyloop.app.features.terminal.rating.RateClientScreen
+import io.loyaltyloop.shared.utils.LoyaltyFormatter
 
-data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId: String, val strategy: TransactionStrategy) : Screen {
+data class TerminalResultScreen(val scanData: ScanQrResponse, val strategy: TransactionStrategy) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<TerminalResultScreenModel> { parametersOf(scanData, tradingPointId, strategy) }
+        val viewModel = koinScreenModel<TerminalResultScreenModel> { parametersOf(scanData, strategy) }
         val state by viewModel.state.collectAsState()
         val navigator = LocalNavigator.current
         val snackbarHostState = remember { SnackbarHostState() }
@@ -86,17 +86,15 @@ data class TerminalResultScreen(val scanData: ScanQrResponse, val tradingPointId
                         navigator?.pop()
                     }
                     is TerminalResultScreenModel.Event.NavigateToRating -> {
-                        navigator?.replace(RateClientScreen(event.userId, event.tradingPointId))
+                        navigator?.replace(RateClientScreen(event.userId))
                     }
                     is TerminalResultScreenModel.Event.NavigateToConfirmation -> {
                         navigator?.push(
                             TransactionConfirmationScreen(
                                 calculation = event.calculation,
-                                tradingPointId = event.tradingPointId,
                                 cardId = event.cardId,
                                 userId = event.userId,
                                 strategy = event.strategy,
-                                currency = event.currency
                             )
                         )
                     }
@@ -313,7 +311,7 @@ fun TieredContent(
             modifier = Modifier.fillMaxWidth(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
             textStyle = MaterialTheme.typography.headlineSmall,
-            suffix = { Text(getCurrencySymbol(state.data.currency), style = MaterialTheme.typography.headlineSmall) }
+            suffix = { Text(LoyaltyFormatter.getCurrencySymbol(state.data.currency), style = MaterialTheme.typography.headlineSmall) }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -337,7 +335,7 @@ fun TieredContent(
                 Spacer(modifier = Modifier.width(12.dp))
                 Column {
                     Text(stringResource(Res.string.term_res_spend_title), style = MaterialTheme.typography.bodyLarge)
-                    val balanceText = "${stringResource(Res.string.term_res_spend_available)} ${state.data.currentBalance.toInt()}"
+                    val balanceText = "${stringResource(Res.string.term_res_spend_available)}  ${LoyaltyFormatter.format(state.data.currentBalance)}"
                     if (state.isSpendingPoints) {
                         // Можно показать подсказку "Будут списаны доступные баллы"
                         Text(balanceText, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)

@@ -47,10 +47,12 @@ export const ru = {
       status_updated: "Статус обновлен",
       status_changed: "Статус изменен",
       rows_per_page: "Строк на странице:",
+      click_to_copy: "Нажмите для копирования"
     },
     errors: {
       INVALID_PHONE: "Неверный формат номера",
       INVALID_PHONE_NUMBER: "Неверный формат номера телефона",
+      INVALID_EMAIL_FORMAT: "Неверный формат электронной почты",
       INVALID_CODE: "Неверный код",
       CODE_EXPIRED: "Код истек",
       USER_NOT_FOUND: "Пользователь не найден",
@@ -136,6 +138,13 @@ export const ru = {
       system_events: "Аудит",
       platform_staff: "Сотрудники",
       create_business: "Создать Бизнес"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Присоединиться как менеджер партнёра",
@@ -269,6 +278,7 @@ export const ru = {
       label_target: "Цель (сколько собрать?)",
       label_cashback: "Начальный Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Базовая валюта",
       timezone_label: "Часовой пояс",
       country_label: "Страна",
       country_placeholder: "Выберите страну",
@@ -282,6 +292,7 @@ export const ru = {
       label_lvl_gold: "Золото (%)",
       hint_target: "Например: 6 (каждый 6-й бесплатно)",
       hint_cashback: "Например: 5 (начнем с 5%)",
+      hint_cashback_global: "Информация по кешбэкам задается в настройках бизнеса",
       hint_tiered_levels: "Будут созданы 3 уровня: Старт ({{base}}%), Серебро ({{mid}}%), Золото ({{max}}%)",
       types: {
           COFFEE_SHOP: "Кофейня",
@@ -376,6 +387,8 @@ export const ru = {
       send: "Отправить",
       sent: "Сообщение отправлено",
       validation_empty: "Сообщение не может быть пустым",
+      name_required: "Имя обязательно для заполнения",
+      email_required: "Email обязательно для заполнения",
       empty_state: "Сообщений пока нет",
       no_messages: "Пока без сообщений",
       no_threads: "Диалогов пока нет",
@@ -457,6 +470,7 @@ export const ru = {
       check_triggered: "Проверка запущена"
     },
     point_details: {
+      admin_title: "Детали торговой точки",
       block_title: "Детали",
       title: "Управление Филиалом",
       tab_overview: "Обзор",
@@ -487,7 +501,7 @@ export const ru = {
       overview_currency: "Валюта",
       status_active: "Активен",
       status_inactive: "Не активен",
-      address_label: "Адрес (введите вручную)",
+      address_label: "Адрес",
       contact_phone_label: "Контактный телефон",
       contact_link_label: "Ссылка для связи",
       contact_link_hint: "Например: https://t.me/brand или https://wa.me/996...",
@@ -497,7 +511,6 @@ export const ru = {
       max_burn_hint: "Сколько процентов от чека можно покрыть бонусами (0-100)",
       map_location: "Местоположение на карте",
       map_hint: "Нажмите на карту, чтобы выбрать координаты. Адрес можно отредактировать вручную.",
-      map_point_label: "Точка",
       latitude_label: "Широта",
       longitude_label: "Долгота",
       coords_required: "Укажите координаты (широту и долготу)",
@@ -554,6 +567,9 @@ export const ru = {
       schedule_validation_range: "Проверьте время для дня {{day}} — начало должно быть раньше окончания.",
       schedule_validation_lunch_pair: "Заполните обе границы перерыва или оставьте поле пустым для {{day}}.",
       schedule_validation_lunch_range: "Перерыв в {{day}} должен находиться внутри рабочего времени и иметь корректный интервал.",
+      schedule_not_set: "Расписание не задано",
+      schedule_day: "День",
+      schedule_hours: "Часы работы",
       pause_label: "Временно приостановлена",
       pause_helper: "Кассиры не смогут проводить операции, пока точка на паузе.",
       pause_warning: "Точка находится в режиме паузы. Клиенты увидят статус «Временно закрыто».",
@@ -600,6 +616,8 @@ export const ru = {
       unit_km: "км",
       edit_forbidden: "Только владелец бизнеса может изменять или удалять точку.",
       readonly_hint: "Вы работаете как менеджер: действия по изменению настроек и увольнению сотрудников недоступны.",
+      status_label: "Статус",
+      map_point_label: "Координаты",
       contacts_title: "Контакты",
       info_title: "Информация",
       coming_soon: "Скоро",
@@ -634,7 +652,9 @@ export const ru = {
       amount_label: "Сумма",
       duration_label: "Длительность",
       create_request_btn: "Создать заявку",
-      creating: "Создание..."
+      creating: "Создание...",
+      point_details: "Детали торговой точки",
+      admin_title: "Детали торговой точки"
     },
     platform: {
       staff_title: "Сотрудники Платформы",
@@ -923,6 +943,22 @@ export const ru = {
       desc: "Установите приложение, чтобы копить баллы, получать награды и отслеживать свой прогресс.",
       btn_apk: "Скачать APK",
       requirements: "Требуется Android 8.0 или выше"
+    },
+    client_onboarding: {
+      welcome_title: "Добро пожаловать в LoyaltyLoop",
+      welcome_subtitle: "Ваши любимые заведения в одном приложении. Копите баллы и получайте подарки.",
+      steps_title: "Как это работает?",
+      step_1: "Скачайте приложение",
+      step_2: "Зарегистрируйтесь по номеру телефона",
+      step_3: "Показывайте QR-код при каждой покупке",
+      download_title: "Установить приложение",
+      download_apk: "Скачать APK (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Скоро",
+      version: "Версия",
+      size: "Размер"
     }
   }
 };

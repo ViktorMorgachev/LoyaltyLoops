@@ -20,7 +20,7 @@ object WalletTab : Tab {
             val title = stringResource(Res.string.tab_wallet)
             val icon = rememberVectorPainter(Icons.Default.QrCode)
 
-            return remember {
+            return remember(title) {
                 TabOptions(
                     index = 0u,
                     title = title,

@@ -47,10 +47,12 @@ export const ky = {
       status_updated: "Абалы жаңыртылды",
       status_changed: "Абалы өзгөртүлдү",
       rows_per_page: "Барактагы саптар:",
+      click_to_copy: "Көчүрүү үчүн басыңыз"
     },
     errors: {
       INVALID_PHONE: "Телефон номеринин форматы туура эмес",
       INVALID_PHONE_NUMBER: "Телефон номеринин форматы туура эмес",
+      INVALID_EMAIL_FORMAT: "Электрондук почтанын форматы туура эмес",
       INVALID_CODE: "Код туура эмес",
       CODE_EXPIRED: "Коддун мөөнөтү бүттү",
       USER_NOT_FOUND: "Колдонуучу табылган жок",
@@ -125,6 +127,13 @@ export const ky = {
       system_events: "Аудит",
       platform_staff: "Кызматкерлер",
       create_business: "Бизнес түзүү"
+    },
+    currency: {
+        USD: "USD (Доллар)",
+        KGS: "KGS (Сом)",
+        KZT: "KZT (Тенге)",
+        UZS: "UZS (Сум)",
+        BYN: "BYN (Бел. рубль)"
     },
     join_partner: {
       title: "Өнөктөш менеджери катары кошулуу",
@@ -255,6 +264,7 @@ export const ky = {
       label_target: "Максат (канчоо чогултуу керек?)",
       label_cashback: "Баштапкы Кешбэк (%)",
       label_currency: "Валюта",
+      label_base_currency: "Негизги валюта",
       timezone_label: "Убакыт алкагы",
       country_label: "Өлкө",
       country_placeholder: "Өлкөнү тандаңыз",
@@ -268,6 +278,7 @@ export const ky = {
       label_lvl_gold: "Алтын (%)",
       hint_target: "Мисалы: 6 (ар бир 6-чы бекер)",
       hint_cashback: "Мисалы: 5 (5% менен баштайбыз)",
+      hint_cashback_global: "Кэшбэк маалыматы бизнес жөндөөлөрүндө коюлат",
       hint_tiered_levels: "3 деңгээл түзүлөт: Старт ({{base}}%), Күмүш ({{mid}}%), Алтын ({{max}}%)",
       types: {
           COFFEE_SHOP: "Кофейня",
@@ -362,6 +373,8 @@ export const ky = {
       send: "Жөнөтүү",
       sent: "Билдирүү жөнөтүлдү",
       validation_empty: "Билдирүү бош болбошу керек",
+      name_required: "Аты милдеттүү",
+      email_required: "Email милдеттүү",
       empty_state: "Билдирүүлөр жок",
       no_messages: "Азырынча билдирүүлөр жок",
       no_threads: "Диалогдор жок",
@@ -443,6 +456,7 @@ export const ky = {
       check_triggered: "Текшерүү башталды"
     },
     point_details: {
+      admin_title: "Соода түйүнүнүн деталдары",
       block_title: "Деталдар",
       title: "Түйүндү башкаруу",
       tab_overview: "Обзор",
@@ -483,7 +497,6 @@ export const ky = {
       max_burn_hint: "Чектин канча пайызын бонустар менен жабууга болот (0-100)",
       map_location: "Картадагы орду",
       map_hint: "Координаттарды тандоо үчүн картаны басыңыз.",
-      map_point_label: "Түйүн",
       latitude_label: "Кеңдик",
       longitude_label: "Узундук",
       coords_required: "Координаттар керек",
@@ -540,6 +553,9 @@ export const ky = {
       schedule_validation_range: "{{day}} убактысын текшериңиз.",
       schedule_validation_lunch_pair: "{{day}} үчүн тыныгуу убактысын толук толтуруңуз.",
       schedule_validation_lunch_range: "Тыныгуу жумуш убактысынын ичинде болушу керек.",
+      schedule_not_set: "Күн тартиби коюлган эмес",
+      schedule_day: "Күн",
+      schedule_hours: "Иш убактысы",
       pause_label: "Убактылуу токтотулган",
       pause_helper: "Кассирлер операция жүргүзө албайт.",
       pause_warning: "Түйүн тыныгууда. Кардарлар «Убактылуу жабык» деп көрөт.",
@@ -586,6 +602,8 @@ export const ky = {
       unit_km: "км",
       edit_forbidden: "Ээси гана өзгөртө алат.",
       readonly_hint: "Менеджер режими: өзгөртүү мүмкүн эмес.",
+      status_label: "Абалы",
+      map_point_label: "Координаттар",
       contacts_title: "Байланыштар",
       info_title: "Маалымат",
       coming_soon: "Жакында",
@@ -620,7 +638,9 @@ export const ky = {
       amount_label: "Сумма",
       duration_label: "Узактыгы",
       create_request_btn: "Сурам түзүү",
-      creating: "Түзүлүүдө..."
+      creating: "Түзүлүүдө...",
+      point_details: "Соода түйүнүнүн деталдары",
+      admin_title: "Соода түйүнүнүн деталдары"
     },
     platform: {
       staff_title: "Платформа кызматкерлери",
@@ -849,6 +869,22 @@ export const ky = {
       desc: "Упай топтоо, белек алуу жана прогрессти көзөмөлдөө үчүн тиркемени орнотуңуз.",
       btn_apk: "APK жүктөө",
       requirements: "Android 8.0 же андан жогору талап кылынат"
+    },
+    client_onboarding: {
+      welcome_title: "LoyaltyLoop-ко кош келиңиз",
+      welcome_subtitle: "Сүйүктүү жайларыңыз бир тиркемеде. Упай топтоп, белектерди алыңыз.",
+      steps_title: "Бул кантип иштейт?",
+      step_1: "Тиркемени жүктөп алыңыз",
+      step_2: "Телефон номериңиз менен катталыңыз",
+      step_3: "Ар бир сатып алууда QR-кодду көрсөтүңүз",
+      download_title: "Тиркемени орнотуу",
+      download_apk: "APK жүктөө (Android)",
+      download_google: "Google Play",
+      download_apple: "App Store",
+      download_rustore: "RuStore",
+      soon: "Жакында",
+      version: "Версия",
+      size: "Өлчөмү"
     }
   }
 };

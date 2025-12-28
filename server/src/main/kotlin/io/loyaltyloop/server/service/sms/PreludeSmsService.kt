@@ -17,7 +17,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.*
 import org.slf4j.LoggerFactory
 import so.prelude.sdk.client.PreludeClient
 import so.prelude.sdk.core.JsonValue
@@ -27,6 +27,7 @@ import so.prelude.sdk.models.VerificationCreateParams
 import java.io.IOException
 
 
+// TODO checked
 class PreludeSmsService(
     private val apiKey: String,
     private val preludeClient: PreludeClient,
@@ -128,10 +129,6 @@ class PreludeSmsService(
             builder.putAdditionalBodyProperty("signals", JsonValue.from(signalsMap))
         }
 
-        // Smart Channel Selection
-        // Based on region, we can suggest a preferred channel to Prelude.
-        // NOTE: Verify usually optimizes this automatically, but we can hint preference if API supports it.
-        // Using "preferred_channel" similar to Notify API.
         val preferredChannel = when {
             phone.startsWith("+996") -> "whatsapp" // Kyrgyzstan
             else -> null // Let Prelude decide (usually SMS)
@@ -200,21 +197,20 @@ class PreludeSmsService(
 
     private suspend fun notifyAdmins(code: String, body: String) {
         val recipients: List<String> = dbQuery {
-            val superAdmins = UsersTable
-                .selectAll()
-                .where { UsersTable.isSuperAdmin eq true }
-                .mapNotNull { it[UsersTable.email] }
-            val superManagers = SystemStaffTable
+            val superUsers = SystemStaffTable
                 .join(
                     UsersTable,
-                    org.jetbrains.exposed.sql.JoinType.INNER,
-                    SystemStaffTable.userId,
+                    JoinType.INNER,
+                    SystemStaffTable.user,
                     UsersTable.id
                 )
                 .selectAll()
-                .where { SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER }
+                .where {
+                    (SystemStaffTable.role eq UserRole.PLATFORM_SUPER_MANAGER) or
+                            (SystemStaffTable.role eq UserRole.PLATFORM_SUPER_ADMIN)
+                }
                 .mapNotNull { it[UsersTable.email] }
-            (superAdmins + superManagers).filter { it.isNotBlank() }.distinct()
+            superUsers.filter { it.isNotBlank() }.distinct()
         }
         if (recipients.isEmpty()) return
         val subject = "Prelude alert: $code"

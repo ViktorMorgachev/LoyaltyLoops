@@ -38,6 +38,7 @@ class PointsMapScreenModel(
         val searchCenter: GeoLocation = bishkekLocation,
 
         // Данные
+        val userLocation: GeoLocation? = null,
         val points: List<TradingPointDto> = emptyList(),
         val markers: List<MapMarker> = emptyList(),
         val visiblePoints: List<TradingPointDto> = emptyList(),
@@ -132,6 +133,7 @@ class PointsMapScreenModel(
             if (location != null) {
                 _state.update {
                     it.copy(
+                        userLocation = location, // Запоминаем где юзер
                         searchCenter = location, // Обновляем центр поиска
                         cameraPosition = CameraPosition(location.lat, location.lon, 15f), // И камеру
                         selectedPointId = null,

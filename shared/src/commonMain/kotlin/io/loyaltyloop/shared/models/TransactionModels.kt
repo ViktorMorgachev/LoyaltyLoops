@@ -9,9 +9,22 @@ enum class TransactionStrategy {
     VISIT   // Визит
 }
 
+enum class TransactionTypeHistory {
+    VISIT,
+    EARN,
+    CHARGE,
+    VISIT_REWARD,
+    VISIT_PROGRESS,
+    POINTS_SPENT_EARNED,
+    POINTS_SPENT,
+    POINTS_EARNED,
+    BALANCE_INFO,
+    EXPIRATION,      // Полное сгорание бонусов
+    TIER_DOWNGRADE
+}
+
 @Serializable
 data class ProcessTransactionRequest(
-    val tradingPointId: String,
     val cardId: String,
     val purchaseAmount: Double = 0.0,
     val strategy: TransactionStrategy
@@ -35,6 +48,7 @@ enum class TransactionSuccessType {
 data class TransactionResult(
     val cardId: String,
     val newBalance: Double,
+    val currency: String,
     val newVisits: Int,
     val type: TransactionSuccessType = TransactionSuccessType.SUCCESS_DEFAULT,
     val args: List<String> = emptyList()
@@ -48,12 +62,13 @@ data class TransactionHistoryDto(
     val type: String,      // VISIT, EARN, SPEND
     val amount: Double,    // Сумма покупки
     val pointsDelta: Double, // Баллы (+/-)
-    val visitsDelta: Int     // Визиты (+/-)
+    val visitsDelta: Int,    // Визиты (+/-)
+    val currency: String? = null, // Валюта транзакции
+    val exchangeRateSnapshot: Double = 1.0 // Курс на момент операции (Base -> Tx)
 )
 
 @Serializable
 data class CalculateTransactionRequest(
-    val tradingPointId: String,
     val cardId: String,
     val purchaseAmount: Double = 0.0,
     val strategy: TransactionStrategy
@@ -68,9 +83,11 @@ data class TransactionCalculationDto(
     val moneyPaid: Double,     // Сколько денег платить
     val newBalance: Double,    // Прогноз баланса
     val newVisits: Int, // Прогноз визитов
-    val message: LoyaltyMessage
-){
-    enum class LoyaltyMessage{
+    val message: LoyaltyMessage,
+    val currency: String,      // Пример: "KGS", "USD", "RUB"
+    val exchangeRate: Double = 1.0  // Пример: 85.0 (Курс Base -> Terminal)
+) {
+    enum class LoyaltyMessage {
         VISIT,
         VISIT_REWARD,
         NEXT_REWARD,
@@ -78,7 +95,10 @@ data class TransactionCalculationDto(
         TIERED_ERROR_AMOUNT,
         TIERED_CHARGE,
         TIERED_CHARGE_CHANGE_TIER,
-        TIERED_SPEND
+        TIERED_SPEND;
 
+        fun isVisit(): Boolean {
+            return this == VISIT || this == VISIT_REWARD || this == NEXT_REWARD
+        }
     }
 }

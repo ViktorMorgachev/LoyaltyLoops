@@ -19,6 +19,7 @@ import io.loyaltyloop.shared.models.ClientRatingTag
 import io.loyaltyloop.shared.models.ServiceReviewTag
 import io.loyaltyloop.server.utils.double
 
+//TODO  Checked
 fun Route.configRoutes(
     applicationConfig: ApplicationConfig,
 ) {
@@ -26,8 +27,6 @@ fun Route.configRoutes(
     val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", 2000)
     val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", 15000)
 
-
-    // Этот роут должен быть ПУБЛИЧНЫМ, так как он вызывается при старте приложения до логина
     get("/config") {
         
         val features = FeatureToggleDto(

@@ -196,7 +196,7 @@ key,ru,en
 "pin_reset.title","Сброс PIN","Reset PIN"
 "pin_reset.token_label","Токен из письма","Token from email"
 "pin_reset.token_required","Укажите токен из письма","Please provide the token from your email"
-"point_details.address_label","Адрес (введите вручную)","Address (manual entry)"
+"point_details.address_label","Адрес","Address"
 "point_details.award_mixed_hint","Если клиент списывает бонусы и доплачивает деньгами — начислять кешбэк на денежную часть","Accrue bonuses on the cash portion even if the client redeems points"
 "point_details.award_mixed_label","Начислять кешбэк при смешанной оплате","Award cashback on mixed payment"
 "point_details.block_title","Детали","Details"

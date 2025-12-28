@@ -3,6 +3,7 @@ package io.loyaltyloop.server
 import io.loyaltyloop.server.service.LoyaltyCalculator
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.RiskLevel
 import io.loyaltyloop.shared.models.TransactionCalculationDto
 import io.loyaltyloop.shared.models.TransactionStrategy
 import kotlin.test.Test
@@ -44,7 +45,18 @@ class LoyaltyCalculatorTest {
         visitsCount = 0,
         tierLevel = tierLevel,
         block = null,
-        pause = null
+        pause = null,
+        partnerName = "",
+        visitsTarget = 10,
+        riskLevel = RiskLevel.GREEN,
+        partnerBaseCurrency = "USD",
+        estimatedValue = balance,
+        estimatedCurrency = "KGS",
+        cardColor = "#FFFFFF",
+        logoUrl = null,
+        trustScore = 5.0,
+        totalScore = 100,
+        fraudFlag = false
     )
 
     @Test

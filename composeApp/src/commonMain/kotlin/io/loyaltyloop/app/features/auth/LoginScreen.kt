@@ -136,7 +136,7 @@ fun LoginScreenContent(
                         ),
                         enabled = !state.isLoading
                     ) {
-                        Icon(Icons.Default.Send, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(stringResource(Res.string.auth_telegram_btn))
                     }
@@ -451,7 +451,7 @@ fun TelegramConnectingAnimation() {
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send, // Или вектор Telegram
+                    imageVector = Icons.AutoMirrored.Filled.Send, // Или вектор Telegram
                     contentDescription = null,
                     tint = Color.White,
                     modifier = Modifier

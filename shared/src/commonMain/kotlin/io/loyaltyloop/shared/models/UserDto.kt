@@ -1,5 +1,6 @@
 package io.loyaltyloop.shared.models
 
+import io.ktor.util.toUpperCasePreservingASCIIRules
 import kotlinx.serialization.Serializable
 
 enum class UserRole {
@@ -11,8 +12,21 @@ enum class UserRole {
     // Системные роли
     PLATFORM_SUPER_ADMIN, // Бог
     PLATFORM_SUPER_MANAGER, // Руководитель отдела продаж
-    PLATFORM_MANAGER      // Менеджер поддержки / Продаж
+    PLATFORM_MANAGER;   // Менеджер поддержки / Продаж
+
+    fun getDescription(): String {
+        return when(this){
+            CLIENT, CASHIER -> this.name.lowercase()
+            PARTNER_ADMIN -> "Partner"
+            PARTNER_MANAGER -> "Partner manager"
+            PLATFORM_SUPER_ADMIN -> "Owner"
+            PLATFORM_SUPER_MANAGER -> "Super manager"
+            PLATFORM_MANAGER -> "Manager"
+        }
+    }
 }
+
+
 
 @Serializable
 data class UserDto(
@@ -23,6 +37,7 @@ data class UserDto(
     val lastName: String? = null,
     val email: String? = null,
     val qrSecret: String,
+    val createdAt: Long,
     val language: String = "ru",
     val isFrozenUntil: Long? = null,
     val isDeleted: Boolean = false,

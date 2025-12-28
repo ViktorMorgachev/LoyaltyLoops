@@ -13,6 +13,7 @@ import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.callloging.processingTimeMillis
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
@@ -25,7 +26,6 @@ import io.ktor.server.request.httpMethod
 import io.ktor.server.request.uri
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PlatformRepository
-import io.loyaltyloop.server.repository.TransactionRepository
 import io.loyaltyloop.server.repository.PinResetTokenRepository
 import io.loyaltyloop.server.routes.adminRoutes
 import io.loyaltyloop.server.routes.adminPlatformRoutes
@@ -35,20 +35,16 @@ import io.loyaltyloop.server.routes.partnerRoutes
 import io.loyaltyloop.server.routes.terminalRoutes
 import io.loyaltyloop.server.routes.configRoutes
 import io.loyaltyloop.server.routes.appRoutes
-import io.loyaltyloop.server.service.OtpService
 import io.loyaltyloop.server.service.CardRealtimeService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
-import io.loyaltyloop.server.service.email.ConsoleEmailService
 import io.loyaltyloop.server.repository.DeviceTokenRepository
-import io.loyaltyloop.server.repository.SupportChatRepository
 import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.shared.models.HealthResponse
 import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import kotlinx.coroutines.launch
 import org.slf4j.event.*
 import io.loyaltyloop.server.utils.handleError
-import io.loyaltyloop.server.utils.int
 import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
@@ -56,22 +52,42 @@ import io.ktor.server.websocket.*
 import io.ktor.websocket.*
 import io.loyaltyloop.server.routes.mapsRoutes
 import io.loyaltyloop.server.routes.publicRoutes
-import io.loyaltyloop.server.service.sms.ConsoleSmsService
 import io.loyaltyloop.server.repository.WaitlistRepository
-import io.loyaltyloop.server.service.sms.SmsRateLimits
 import java.time.Duration
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.ktor.server.plugins.ratelimit.*
 import io.loyaltyloop.server.utils.bool
 import kotlin.time.Duration.Companion.seconds
-import io.loyaltyloop.server.service.sms.PreludeSmsService
 import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.service.RatingService
 import io.loyaltyloop.server.utils.string
-import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.service.TelegramAuthService
+import io.loyaltyloop.server.repository.MapRepository
+import io.loyaltyloop.server.repository.RefreshTokenRepository
+import io.loyaltyloop.server.repository.SubscriptionRepository
+import io.loyaltyloop.server.service.email.EmailTemplateService
+import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.toUtcMillis
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.di.appModule
+import io.loyaltyloop.server.di.repositoriesModule
+import io.loyaltyloop.server.di.serviceModule
+import io.loyaltyloop.server.repository.LoyaltyCardRepository
+import io.loyaltyloop.server.repository.PartnerStaffRepository
+import io.loyaltyloop.server.repository.SystemStaffRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.service.AnalyticsService
+import io.loyaltyloop.server.service.ExchangeRateService
+import io.loyaltyloop.server.service.LoyaltyEngineService
+import io.loyaltyloop.server.service.email.EmailService
+import io.loyaltyloop.server.service.sms.SmsService
+import io.loyaltyloop.shared.models.UserDto
+import io.loyaltyloop.shared.models.UserRole
+import org.koin.ktor.plugin.Koin
+import org.koin.ktor.ext.inject
+import org.koin.logger.slf4jLogger
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -103,43 +119,13 @@ fun Application.module() {
         allowHeader("X-Os-Version")
         allowHeader("X-App-Version")
         allowHeader("X-Timezone-Id")
+        allowHeader("X-Workspace-Id")
 
         // Разрешаем куки/токены
         allowCredentials = true
         allowNonSimpleContentTypes = true
 
         anyHost()
-//        // --- ЛОГИКА ПРОВЕРКИ ДОМЕНОВ ---
-//
-//        // Читаем список разрешенных доменов из ENV
-//        // Превращаем в список и чистим от пробелов
-//
-//        // 2. Разрешаем домены из ENV (Production/Stage)
-//        val envHostsString = System.getenv("CORS_ALLOWED_HOSTS") ?: ""
-//        val allowedHosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }.toSet()
-//
-//        println("🛡️ CORS Configured. Allowed hosts from ENV: $allowedHosts")
-//
-//        // Используем allowHost c ЛЯМБДОЙ (Предикатом).
-//        // В переменную 'host' Ktor передает только домен (без https://), например "loyaltyloop.up.railway.app"
-//
-//
-//
-//        // Разбиваем строку по запятой и убираем пробелы
-//        val hosts = envHostsString.split(",").map { it.trim() }.filter { it.isNotEmpty() }
-//
-//        if (hosts.isNotEmpty()) {
-//            println("🛡️ CORS: Adding allowed hosts from ENV: $hosts")
-//
-//            hosts.forEach { host ->
-//                // САМЫЙ ВАЖНЫЙ МОМЕНТ:
-//                // Мы разрешаем этот домен И для http, И для https.
-//                // Это решает проблему, когда Railway внутри своей сети обращается к контейнеру по http.
-//                allowHost(host, schemes = listOf("http", "https"))
-//            }
-//        } else {
-//            println("⚠️ CORS: Variable CORS_ALLOWED_HOSTS is empty! External requests might be blocked.")
-//        }
     }
 
 
@@ -160,7 +146,11 @@ fun Application.module() {
         }
     }
 
-
+    // 1. Install Koin
+    install(Koin) {
+        slf4jLogger()
+        modules(appModule(environment.config), repositoriesModule, serviceModule)
+    }
 
     val envConfig = environment.config
 
@@ -171,78 +161,54 @@ fun Application.module() {
 
     DatabaseFactory.init(envConfig)
 
-    // Создаем экземпляр репозитория
-    val userRepository = UserRepository()
-    val partnerRepository = PartnerRepository()
-    val platformRepository = PlatformRepository()
-    val transactionRepository = TransactionRepository()
-    val pinResetTokenRepository = PinResetTokenRepository()
-    val supportChatRepository = SupportChatRepository()
-    val deviceTokenRepository = DeviceTokenRepository()
-    val ratingRepository = RatingRepository()
-    val systemEventRepository = SystemEventRepository()
-    val waitlistRepository = WaitlistRepository()
-    val eventLogger = EventLogger(systemEventRepository)
+    // 2. Inject Dependencies
+    val partnerRepository by inject<PartnerRepository>()
+    val partnerStaffRepository by inject<PartnerStaffRepository>()
+    val tradingPointRepository by inject<TradingPointRepository>()
+    val mapRepository by inject<MapRepository>()
+    val systemEventRepository by inject<SystemEventRepository>()
 
-    val tokenService = TokenService(envConfig)
-    val otpService = OtpService(envConfig)
-    val cardRealtimeService = CardRealtimeService()
-    
-    val ratingService = RatingService(ratingRepository, transactionRepository, eventLogger, envConfig)
-    
-    val transactionService = TransactionService(
-        userRepository,
-        transactionRepository,
-        partnerRepository,
-        cardRealtimeService,
-        eventLogger,
-    )
+    val exchangeRateService by inject<ExchangeRateService>()
+    val loyaltyCardRepository by inject<LoyaltyCardRepository>()
+    val userRepository by inject<UserRepository>()
+    val platformRepository by inject<PlatformRepository>()
+    val systemStaffRepository by inject<SystemStaffRepository>()
+    val subscriptionRepository by inject<SubscriptionRepository>()
+    val pinResetTokenRepository by inject<PinResetTokenRepository>()
+    val deviceTokenRepository by inject<DeviceTokenRepository>()
+    val ratingRepository by inject<RatingRepository>()
+    val waitlistRepository by inject<WaitlistRepository>()
+    val eventLogger by inject<EventLogger>()
+    val tokenService by inject<TokenService>()
+    val cardRealtimeService by inject<CardRealtimeService>()
+    val ratingService by inject<RatingService>()
+    val accessControlService by inject<AccessControlService>()
+    val supportChatService by inject<SupportChatService>()
+    val emailService by inject<EmailService>()
+    val supportChatWebSocketHandler by inject<SupportChatWebSocketHandler>()
+    val smsService by inject<SmsService>()
+    val authSessionRepository by inject<AuthSessionRepository>()
+    val telegramAuthService by inject<TelegramAuthService>()
+    val refreshTokenRepository by inject<RefreshTokenRepository>()
+    val emailTemplatesService by inject<EmailTemplateService>()
+    val transactionService by inject<TransactionService>()
+    val analyticsService by inject<AnalyticsService>()
+    val loyaltyEngine by inject<LoyaltyEngineService>()
 
-    val supportChatService = SupportChatService(supportChatRepository)
-    val emailService = ConsoleEmailService()
-
-    var webBaseUrl = envConfig.string("app.webBaseUrl",  "http://localhost:3000")
+    var webBaseUrl = envConfig.string("app.webBaseUrl", "http://localhost:3000")
 
     // Fix common configuration error where protocol is missing
     if (!webBaseUrl.startsWith("http://") && !webBaseUrl.startsWith("https://")) {
         webBaseUrl = "https://$webBaseUrl"
     }
 
-    val supportChatWebSocketHandler = SupportChatWebSocketHandler(
-        tokenService = tokenService,
-        partnerRepository = partnerRepository,
-        userRepository = userRepository,
-        supportChatService = supportChatService
-    )
-
-    val smsProvider = envConfig.string("sms.smsProvider", "internal")
-    val preludeApiKey = envConfig.string("sms.prelude_conf.apiKey", "")
-    val smsRateLimits = SmsRateLimits(
-        maxPerMinute = envConfig.int("sms.limits.perMinute", 1),
-        maxPerHour = envConfig.int("sms.limits.perHour", 5),
-        maxFailedAttempts = envConfig.int("sms.limits.maxOtpAttempts", 3),
-        blockDurationMs = envConfig.long("sms.limits.blockDurationMs", 3_600_000L)
-    )
-
-    val smsService = if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
-        PreludeSmsService(preludeApiKey, PreludeOkHttpClient.builder()
-            .apiToken(preludeApiKey)
-            .build(), eventLogger, emailService)
-    } else {
-        ConsoleSmsService(otpService, eventLogger, systemEventRepository, smsRateLimits)
-    }
-
-    val authSessionRepository = AuthSessionRepository()
-    val botToken = envConfig.string("telegram.botToken", "")
-    val botUsername = envConfig.string("telegram.botUsername", "")
     val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
-    val web = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
-    val telegramAuthService = TelegramAuthService(authSessionRepository, userRepository, botToken, botUsername, webBaseUrl)
-    telegramAuthService.start(autoCleanupSession)
 
-    // Start Background Jobs
-    val loyaltyEngine = io.loyaltyloop.server.service.LoyaltyEngineService(smsService, emailService, systemEventRepository)
-    loyaltyEngine.start(this)
+    // Start services
+    telegramAuthService.start(autoCleanupSession)
+    exchangeRateService.start()
+    loyaltyEngine.start()
+
 
     install(ContentNegotiation) {
         json(Json {
@@ -263,7 +229,7 @@ fun Application.module() {
             )
 
             validate { credential ->
-                if (credential.payload.getClaim("id").asString() != "") {
+                if (!credential.payload.getClaim("id").asString().isNullOrBlank()) {
                     JWTPrincipal(credential.payload)
                 } else {
                     null
@@ -282,8 +248,15 @@ fun Application.module() {
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value
             val userAgent = call.request.headers["User-Agent"]
-            val origin = call.request.headers["Origin"]
-            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | UA: $userAgent | Origin: $origin"
+            val timeZone = call.request.headers["X-Timezone-Id"]
+            val deviceId = call.request.headers["X-Device-Id"]
+            val devicePlatform = call.request.headers["X-Device-Platform"]
+            val deviceModel = call.request.headers["X-Device-Model"]
+            val osVersion = call.request.headers["X-Os-Version"]
+            val appVersion = call.request.headers["X-App-Version"]
+            val dateTime = java.time.Instant.now().toString()
+            val duration = call.processingTimeMillis()
+            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
         }
     }
 
@@ -297,7 +270,7 @@ fun Application.module() {
     val defaultPin = envConfig.string("admin.defaultPin", "").ifEmpty { null }
 
 
-    
+
     if (superPhone != null) {
         launch {
             // 1. Пытаемся найти
@@ -305,93 +278,130 @@ fun Application.module() {
 
             if (user == null) {
                 println("🚀 SEEDING: Creating Super User $superPhone...")
-                val newId = java.util.UUID.randomUUID().toString()
-                val newUser = io.loyaltyloop.shared.models.UserDto(
-                    id = newId,
+                val newUser = UserDto(
+                    id = "will_ignored",
                     phoneNumber = superPhone,
                     countryCode = "KG",
                     firstName = null,
                     qrSecret = tokenService.generateQrSecret(),
-                    language = "ru"
+                    language = "ru",
+                    createdAt = nowUtc().toUtcMillis()
                 )
-                userRepository.createUser(newUser)
-                user = userRepository.getUserById(newId)
+                val userId = userRepository.createUser(newUser)
+                user = userRepository.getUserById(userId)
             }
 
             // 3. Выдаем права
             if (user != null) {
-                val created = try {
-                    platformRepository.createSystemStaff(
+                try {
+                    systemStaffRepository.createSystemStaff(
                         userId = user.id,
-                        role = io.loyaltyloop.shared.models.UserRole.PLATFORM_SUPER_ADMIN,
+                        role = UserRole.PLATFORM_SUPER_ADMIN,
                         defaultPinHash = defaultPin
                     )
+                    println("✅ SEEDING: Admin rights granted.")
                 } catch (ex: LoyaltyException) {
                     if (ex.code != AppErrorCode.ALREADY_JOINED) {
                         throw ex
                     }
-                    false
                 }
-                if (created) println("✅ SEEDING: Admin rights granted.")
             }
         }
     }
 
     routing {
-        val enableSwagger =  envConfig.bool("features.enableSwagger", false)
+        val enableSwagger = envConfig.bool("features.enableSwagger", false)
         if (enableSwagger) {
             swaggerUI(path = "swagger", swaggerFile = "openapi/documentation.yaml")
         }
 
         // Подключаем наши новые маршруты
         rateLimit(RateLimitName("auth")) {
-            authRoutes(userRepository, partnerRepository, tokenService, smsService, eventLogger, envConfig, telegramAuthService, authSessionRepository)
+            authRoutes(
+                userRepository,
+                tokenService,
+                smsService,
+                eventLogger,
+                envConfig,
+                telegramAuthService,
+                authSessionRepository,
+                refreshTokenRepository,
+                accessControlService
+            )
         }
 
         rateLimit {
+
             configRoutes(
                 applicationConfig = environment!!.config,
             )
+
             mapsRoutes(
                 applicationConfig = environment!!.config,
                 partnerRepository = partnerRepository,
-                userRepository = userRepository
-            )
-            publicRoutes(waitlistRepository)
-            clientRoutes(userRepository,
-                deviceTokenRepository,
-                ratingService)
-            terminalRoutes(
                 userRepository = userRepository,
-                transactionService = transactionService,
-                ratingService = ratingService
+                tradingPointRepository = tradingPointRepository,
+                mapRepository = mapRepository,
+                accessControlService = accessControlService
             )
+
+            publicRoutes(waitlistRepository = waitlistRepository)
+
+            clientRoutes(
+                userRepository = userRepository,
+                deviceTokenRepository = deviceTokenRepository,
+                ratingService = ratingService,
+                loyaltyCardRepository = loyaltyCardRepository,
+                accessControlService = accessControlService
+            )
+
+            terminalRoutes(
+                transactionService = transactionService,
+                ratingService = ratingService,
+                analyticsService = analyticsService,
+                accessControlService = accessControlService
+            )
+
             partnerRoutes(
                 userRepository = userRepository,
                 partnerRepository = partnerRepository,
+                partnerStaffRepository = partnerStaffRepository,
+                tradingPointRepository = tradingPointRepository,
                 transactionService = transactionService,
                 pinResetTokenRepository = pinResetTokenRepository,
                 emailService = emailService,
                 webBaseUrl = webBaseUrl,
                 supportChatService = supportChatService,
                 eventLogger = eventLogger,
-                ratingRepository = ratingRepository
+                ratingRepository = ratingRepository,
+                deviceTokenRepository = deviceTokenRepository,
+                accessControlService = accessControlService,
+                analyticsService = analyticsService,
+                subscriptionRepository = subscriptionRepository
             )
-        adminRoutes(
-            applicationConfig = environment!!.config,
-            userRepo = userRepository,
-            partnerRepo = partnerRepository,
-            supportChatService = supportChatService,
-            systemEventRepository = systemEventRepository
-        )
+
+            adminRoutes(
+                partnerRepository = partnerRepository,
+                supportChatService = supportChatService,
+                systemEventRepository = systemEventRepository,
+                accessControlService = accessControlService,
+                tradingPointRepository = tradingPointRepository,
+                analyticsService = analyticsService,
+                platformRepository = platformRepository
+            )
+
             adminPlatformRoutes(
                 platformRepository = platformRepository,
-                userRepository = userRepository,
-                emailService = emailService
+                systemStaffRepository = systemStaffRepository,
+                accessControlService = accessControlService,
+                subscriptionRepository = subscriptionRepository
             )
+
             appRoutes(environment!!.config)
         }
-        val enableTestSupport = environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()?.toBoolean() ?: false
+        val enableTestSupport =
+            environment?.config?.propertyOrNull("features.enableTestSupport")?.getString()
+                ?.toBoolean() ?: false
         if (enableTestSupport) {
 
             get("/health") {
@@ -406,7 +416,8 @@ fun Application.module() {
 
                 // 3. Выбираем HTTP код
                 // Если база лежит - возвращаем 500 (Service Unavailable), чтобы мониторинг забил тревогу
-                val status = if (isDbAlive) HttpStatusCode.OK else HttpStatusCode.InternalServerError
+                val status =
+                    if (isDbAlive) HttpStatusCode.OK else HttpStatusCode.InternalServerError
 
                 call.respond(status, response)
             }

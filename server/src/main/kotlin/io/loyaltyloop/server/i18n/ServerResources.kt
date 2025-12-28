@@ -1,102 +1,232 @@
 package io.loyaltyloop.server.i18n
 
+
 object ServerResources {
+    /**
+     * Arguments used in templates:
+     * {partnerName} - Название бизнеса
+     * {pointName}   - Название точки
+     * {date}        - Дата (форматированная)
+     * {amount}      - Сумма (для заявок)
+     * {type}        - Тип заявки
+     * {requester}   - Имя менеджера
+     * {reason}      - Причина отказа/блока
+     */
     private val templates = mapOf(
-        // Русский (Russian)
+        // =====================================================================
+        // 🇷🇺 RUSSIAN (Русский)
+        // =====================================================================
         "ru" to mapOf(
+            // --- Welcome ---
+            "welcome_subject" to "Добро пожаловать в LoyaltyLoop!",
+            "welcome_body" to "Поздравляем! Ваш бизнес \"{partnerName}\" успешно зарегистрирован. Теперь вы можете добавлять торговые точки и запускать программу лояльности.",
+            "welcome_btn" to "Перейти в Кабинет",
+
+            // --- Point Created ---
+            "point_created_subject" to "Новая торговая точка создана",
+            "point_created_body" to "Точка \"{pointName}\" успешно добавлена. Не забудьте активировать подписку, чтобы начать работу.",
+
+            // --- Request (To Admin) ---
+            "request_new_subject" to "Новая заявка: {type}",
+            "request_new_body" to "Поступила новая заявка от \"{partnerName}\".\nТип: {type}\nСумма: {amount}\nМенеджер: {requester}",
+
+            // --- Request Decisions (To User) ---
+            "request_approved_subject" to "Ваша заявка одобрена! ✅",
+            "request_approved_body" to "Отличные новости! Ваша заявка ({type}) для \"{pointName}\" была одобрена. Сервисы активированы.",
+            "request_rejected_subject" to "Заявка отклонена ❌",
+            "request_rejected_body" to "Ваша заявка ({type}) была отклонена администратором.\nПричина: {reason}",
+
+            // --- Subscriptions (Warnings) ---
             "sub_expiring_subject" to "Истекает подписка",
-            "sub_expiring_body" to "Внимание LoyaltyLoop: Подписка для точки \"{pointName}\" истекает {date}. Пожалуйста, продлите!",
-            "sub_expiring_1day_subject" to "СРОЧНО LoyaltyLoop: Остался 1 день!",
-            "sub_expiring_1day_body" to "Критическое предупреждение: Подписка для точки \"{pointName}\" истекает через 24 часа ({date}). Точка будет отключена!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Внимание: Подписка для точки \"{pointName}\" (Партнер: {partnerName}) истекает {date}.",
-            "sub_expiring_1day_manager_body" to "СРОЧНО: Подписка для точки \"{pointName}\" (Партнер: {partnerName}) истекает через 24 часа! Требуется продление."
+            "sub_expiring_body" to "Внимание: Подписка для точки \"{pointName}\" истекает {date}. Пожалуйста, продлите во избежание отключения.",
+            "sub_expiring_manager_body" to "Напоминание: Подписка для \"{pointName}\" (Партнер: {partnerName}) заканчивается {date}.",
+
+            // --- Subscriptions (Critical 1 Day) ---
+            "sub_critical_subject" to "🔥 СРОЧНО: Осталось 24 часа!",
+            "sub_critical_body" to "Критическое предупреждение! Точка \"{pointName}\" будет отключена завтра ({date}). Продлите подписку сейчас!",
+            "sub_critical_manager_body" to "СРОЧНО: Подписка \"{pointName}\" (Партнер: {partnerName}) истекает завтра! Свяжитесь с владельцем.",
+
+            // --- Subscriptions (Expired) ---
+            "sub_expired_subject" to "❌ Точка отключена",
+            "sub_expired_body" to "Срок действия подписки для \"{pointName}\" истек ({date}). Точка временно деактивирована.",
+
+            // --- Support ---
+            "support_reply_subject" to "Новое сообщение от Поддержки",
+            "support_reply_body" to "Вам ответили в чате поддержки: \"{messageSnippet}...\""
         ),
-        // English
+
+        // =====================================================================
+        // 🇺🇸 ENGLISH (International)
+        // =====================================================================
         "en" to mapOf(
+            "welcome_subject" to "Welcome to LoyaltyLoop!",
+            "welcome_body" to "Congratulations! Your business \"{partnerName}\" has been registered. You can now add trading points and launch your loyalty program.",
+            "welcome_btn" to "Go to Dashboard",
+
+            "point_created_subject" to "New Trading Point Created",
+            "point_created_body" to "Point \"{pointName}\" has been added. Don't forget to activate a subscription to start working.",
+
+            "request_new_subject" to "New Request: {type}",
+            "request_new_body" to "New request received from \"{partnerName}\".\nType: {type}\nAmount: {amount}\nRequester: {requester}",
+
+            "request_approved_subject" to "Request Approved! ✅",
+            "request_approved_body" to "Great news! Your request ({type}) for \"{pointName}\" has been approved. Services are active.",
+            "request_rejected_subject" to "Request Rejected ❌",
+            "request_rejected_body" to "Your request ({type}) was rejected by the administrator.\nReason: {reason}",
+
             "sub_expiring_subject" to "Subscription Expiring",
-            "sub_expiring_body" to "LoyaltyLoop Alert: Subscription for point \"{pointName}\" expires on {date}. Please renew!",
-            "sub_expiring_1day_subject" to "URGENT LoyaltyLoop: 1 Day Left!",
-            "sub_expiring_1day_body" to "Critical Alert: Subscription for point \"{pointName}\" expires in 24 hours ({date}). The point will be deactivated!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Attention: Subscription for point \"{pointName}\" (Partner: {partnerName}) expires on {date}.",
-            "sub_expiring_1day_manager_body" to "URGENT: Subscription for point \"{pointName}\" (Partner: {partnerName}) expires in 24 hours! Renewal required."
+            "sub_expiring_body" to "Attention: Subscription for \"{pointName}\" expires on {date}. Please renew to avoid interruption.",
+            "sub_expiring_manager_body" to "Reminder: Subscription for \"{pointName}\" (Partner: {partnerName}) ends on {date}.",
+
+            "sub_critical_subject" to "🔥 URGENT: 24 Hours Left!",
+            "sub_critical_body" to "Critical Alert! Point \"{pointName}\" will be deactivated tomorrow ({date}). Renew now!",
+            "sub_critical_manager_body" to "URGENT: Subscription for \"{pointName}\" (Partner: {partnerName}) expires tomorrow! Contact the owner.",
+
+            "sub_expired_subject" to "❌ Point Deactivated",
+            "sub_expired_body" to "Subscription for \"{pointName}\" has expired on {date}. The point is temporarily inactive.",
+
+            "support_reply_subject" to "New Message from Support",
+            "support_reply_body" to "You have a new reply in support chat: \"{messageSnippet}...\""
         ),
-        // Кыргызча (Kyrgyz)
+
+        // =====================================================================
+        // 🇰🇬 KYRGYZ (Кыргызча)
+        // =====================================================================
         "ky" to mapOf(
+            "welcome_subject" to "LoyaltyLoop'ко кош келиңиз!",
+            "welcome_body" to "Куттуктайбыз! Сиздин \"{partnerName}\" бизнесиңиз ийгиликтүү катталды. Эми соода түйүндөрүн кошуп, лоялдуулук программасын баштасаңыз болот.",
+            "welcome_btn" to "Кабинетке кирүү",
+
+            "point_created_subject" to "Жаңы соода түйүнү түзүлдү",
+            "point_created_body" to "\"{pointName}\" түйүнү кошулду. Ишти баштоо үчүн жазылууну активдештирүүнү унутпаңыз.",
+
+            "request_approved_subject" to "Өтүнмөңүз кабыл алынды! ✅",
+            "request_approved_body" to "Жакшы жаңылык! \"{pointName}\" үчүн өтүнмөңүз ({type}) жактырылды. Кызматтар иштеп баштады.",
+            "request_rejected_subject" to "Өтүнмө четке кагылды ❌",
+            "request_rejected_body" to "Сиздин өтүнмөңүз ({type}) администратор тарабынан четке кагылды.\nСебеби: {reason}",
+
             "sub_expiring_subject" to "Жазылуу мөөнөтү бүтүп баратат",
-            "sub_expiring_body" to "LoyaltyLoop: \"{pointName}\" соода түйүнүнүн жазылуу мөөнөтү {date} күнү бүтөт. Сураныч, жазылууну узартыңыз!",
-            "sub_expiring_1day_subject" to "ШАШЫЛЫШ LoyaltyLoop: 1 күн калды!",
-            "sub_expiring_1day_body" to "Критикалык эскертүү: \"{pointName}\" үчүн жазылуу 24 сааттын ичинде бүтөт ({date})! Түйүн өчүрүлөт!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Көңүл буруңуз: \"{pointName}\" (Өнөктөш: {partnerName}) үчүн жазылуу мөөнөтү {date} күнү бүтөт.",
-            "sub_expiring_1day_manager_body" to "ШАШЫЛЫШ: \"{pointName}\" (Өнөктөш: {partnerName}) үчүн жазылуу мөөнөтү 24 сааттын ичинде бүтөт! Узартуу талап кылынат."
+            "sub_expiring_body" to "Көңүл буруңуз: \"{pointName}\" үчүн жазылуу {date} күнү бүтөт. Үзгүлтүккө учурабаш үчүн узартыңыз.",
+            "sub_expiring_manager_body" to "Эскертүү: \"{pointName}\" (Өнөктөш: {partnerName}) жазылуусу {date} күнү аяктайт.",
+
+            "sub_critical_subject" to "🔥 ШАШЫЛЫШ: 24 саат калды!",
+            "sub_critical_body" to "Критикалык билдирүү! \"{pointName}\" түйүнү эртең ({date}) өчүрүлөт. Тез арада узартыңыз!",
+            "sub_critical_manager_body" to "ШАШЫЛЫШ: \"{pointName}\" (Өнөктөш: {partnerName}) жазылуусу эртең бүтөт! Ээси менен байланышыңыз.",
+
+            "sub_expired_subject" to "❌ Түйүн өчүрүлдү",
+            "sub_expired_body" to "\"{pointName}\" үчүн жазылуу мөөнөтү бүттү ({date}). Түйүн убактылуу токтотулду.",
+
+            "support_reply_subject" to "Колдоо кызматынан жаңы билдирүү",
+            "support_reply_body" to "Сизге жооп келди: \"{messageSnippet}...\""
         ),
-        "kg" to mapOf( // Alias for country code
-            "sub_expiring_subject" to "Жазылуу мөөнөтү бүтүп баратат",
-            "sub_expiring_body" to "LoyaltyLoop: \"{pointName}\" соода түйүнүнүн жазылуу мөөнөтү {date} күнү бүтөт. Сураныч, жазылууну узартыңыз!",
-            "sub_expiring_1day_subject" to "ШАШЫЛЫШ LoyaltyLoop: 1 күн калды!",
-            "sub_expiring_1day_body" to "Критикалык эскертүү: \"{pointName}\" үчүн жазылуу 24 сааттын ичинде бүтөт ({date})! Түйүн өчүрүлөт!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Көңүл буруңуз: \"{pointName}\" (Өнөктөш: {partnerName}) үчүн жазылуу мөөнөтү {date} күнү бүтөт.",
-            "sub_expiring_1day_manager_body" to "ШАШЫЛЫШ: \"{pointName}\" (Өнөктөш: {partnerName}) үчүн жазылуу мөөнөтү 24 сааттын ичинде бүтөт! Узартуу талап кылынат."
-        ),
-        // Қазақша (Kazakh)
+
+        // =====================================================================
+        // 🇰🇿 KAZAKH (Қазақша)
+        // =====================================================================
         "kk" to mapOf(
+            "welcome_subject" to "LoyaltyLoop-қа қош келдіңіз!",
+            "welcome_body" to "Құттықтаймыз! \"{partnerName}\" бизнесіңіз сәтті тіркелді. Енді сауда нүктелерін қосып, адалдық бағдарламасын іске қоса аласыз.",
+            "welcome_btn" to "Кабинетке өту",
+
+            "point_created_subject" to "Жаңа сауда нүктесі құрылды",
+            "point_created_body" to "\"{pointName}\" нүктесі қосылды. Жұмысты бастау үшін жазылымды белсендіруді ұмытпаңыз.",
+
+            "request_approved_subject" to "Өтінім мақұлданды! ✅",
+            "request_approved_body" to "Керемет жаңалық! \"{pointName}\" үшін өтініміңіз ({type}) мақұлданды. Қызметтер қосылды.",
+            "request_rejected_subject" to "Өтінім қабылданбады ❌",
+            "request_rejected_body" to "Сіздің өтініміңіз ({type}) әкімші тарапынан қабылданбады.\nСебебі: {reason}",
+
             "sub_expiring_subject" to "Жазылым мерзімі аяқталуда",
-            "sub_expiring_body" to "LoyaltyLoop: \"{pointName}\" сауда нүктесінің жазылымы {date} күні аяқталады. Жазылымды ұзартыңыз!",
-            "sub_expiring_1day_subject" to "ШҰҒЫЛ LoyaltyLoop: 1 күн қалды!",
-            "sub_expiring_1day_body" to "Маңызды ескерту: \"{pointName}\" үшін жазылым 24 сағат ішінде аяқталады ({date})! Нүкте өшіріледі!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Назар аударыңыз: \"{pointName}\" (Серіктес: {partnerName}) үшін жазылым мерзімі {date} күні аяқталады.",
-            "sub_expiring_1day_manager_body" to "ШҰҒЫЛ: \"{pointName}\" (Серіктес: {partnerName}) үшін жазылым мерзімі 24 сағат ішінде аяқталады! Ұзарту қажет."
+            "sub_expiring_body" to "Назар аударыңыз: \"{pointName}\" үшін жазылым {date} күні аяқталады. Өшіп қалмас үшін ұзартыңыз.",
+            "sub_expiring_manager_body" to "Ескерту: \"{pointName}\" (Серіктес: {partnerName}) жазылымы {date} күні бітеді.",
+
+            "sub_critical_subject" to "🔥 ШҰҒЫЛ: 24 сағат қалды!",
+            "sub_critical_body" to "Маңызды хабарлама! \"{pointName}\" нүктесі ертең ({date}) өшіріледі. Қазір ұзартыңыз!",
+            "sub_critical_manager_body" to "ШҰҒЫЛ: \"{pointName}\" (Серіктес: {partnerName}) жазылымы ертең бітеді! Иесімен хабарласыңыз.",
+
+            "sub_expired_subject" to "❌ Нүкте өшірілді",
+            "sub_expired_body" to "\"{pointName}\" үшін жазылым мерзімі аяқталды ({date}). Нүкте уақытша тоқтатылды.",
+
+            "support_reply_subject" to "Қолдау қызметінен жаңа хабарлама",
+            "support_reply_body" to "Сізге жауап келді: \"{messageSnippet}...\""
         ),
-        "kz" to mapOf( // Alias for country code
-            "sub_expiring_subject" to "Жазылым мерзімі аяқталуда",
-            "sub_expiring_body" to "LoyaltyLoop: \"{pointName}\" сауда нүктесінің жазылымы {date} күні аяқталады. Жазылымды ұзартыңыз!",
-            "sub_expiring_1day_subject" to "ШҰҒЫЛ LoyaltyLoop: 1 күн қалды!",
-            "sub_expiring_1day_body" to "Маңызды ескерту: \"{pointName}\" үшін жазылым 24 сағат ішінде аяқталады ({date})! Нүкте өшіріледі!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Назар аударыңыз: \"{pointName}\" (Серіктес: {partnerName}) үшін жазылым мерзімі {date} күні аяқталады.",
-            "sub_expiring_1day_manager_body" to "ШҰҒЫЛ: \"{pointName}\" (Серіктес: {partnerName}) үшін жазылым мерзімі 24 сағат ішінде аяқталады! Ұзарту қажет."
-        ),
-        // O'zbekcha (Uzbek)
+
+        // =====================================================================
+        // 🇺🇿 UZBEK (O'zbekcha)
+        // =====================================================================
         "uz" to mapOf(
+            "welcome_subject" to "LoyaltyLoop-ga xush kelibsiz!",
+            "welcome_body" to "Tabriklaymiz! \"{partnerName}\" biznesingiz muvaffaqiyatli ro'yxatdan o'tdi. Endi savdo nuqtalarini qo'shib, sodiqlik dasturini ishga tushirishingiz mumkin.",
+            "welcome_btn" to "Kabinetga o'tish",
+
+            "point_created_subject" to "Yangi savdo nuqtasi yaratildi",
+            "point_created_body" to "\"{pointName}\" nuqtasi qo'shildi. Ishni boshlash uchun obunani faollashtirishni unutmang.",
+
+            "request_approved_subject" to "Arizangiz tasdiqlandi! ✅",
+            "request_approved_body" to "Ajoyib yangilik! \"{pointName}\" uchun arizangiz ({type}) tasdiqlandi. Xizmatlar faollashdi.",
+            "request_rejected_subject" to "Ariza rad etildi ❌",
+            "request_rejected_body" to "Sizning arizangiz ({type}) administrator tomonidan rad etildi.\nSababi: {reason}",
+
             "sub_expiring_subject" to "Obuna muddati tugamoqda",
-            "sub_expiring_body" to "LoyaltyLoop: \"{pointName}\" savdo nuqtasi uchun obuna muddati {date} da tugaydi. Iltimos, obunani uzaytiring!",
-            "sub_expiring_1day_subject" to "SHOSHILINCH LoyaltyLoop: 1 kun qoldi!",
-            "sub_expiring_1day_body" to "Muhim ogohlantirish: \"{pointName}\" uchun obuna 24 soat ichida tugaydi ({date})! Nuqta o'chiriladi!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Diqqat: \"{pointName}\" (Hamkor: {partnerName}) uchun obuna {date} da tugaydi.",
-            "sub_expiring_1day_manager_body" to "SHOSHILINCH: \"{pointName}\" (Hamkor: {partnerName}) uchun obuna 24 soat ichida tugaydi! Uzaytirish talab qilinadi."
+            "sub_expiring_body" to "Diqqat: \"{pointName}\" uchun obuna {date} da tugaydi. Uzilish bo'lmasligi uchun uzaytiring.",
+            "sub_expiring_manager_body" to "Eslatma: \"{pointName}\" (Hamkor: {partnerName}) obunasi {date} da tugaydi.",
+
+            "sub_critical_subject" to "🔥 SHOSHILINCH: 24 soat qoldi!",
+            "sub_critical_body" to "Muhim ogohlantirish! \"{pointName}\" nuqtasi ertaga ({date}) o'chiriladi. Hozir uzaytiring!",
+            "sub_critical_manager_body" to "SHOSHILINCH: \"{pointName}\" (Hamkor: {partnerName}) obunasi ertaga tugaydi! Egasi bilan bog'laning.",
+
+            "sub_expired_subject" to "❌ Nuqta o'chirildi",
+            "sub_expired_body" to "\"{pointName}\" uchun obuna muddati tugadi ({date}). Nuqta vaqtincha faol emas.",
+
+            "support_reply_subject" to "Qo'llab-quvvatlash xizmatidan yangi xabar",
+            "support_reply_body" to "Sizga javob keldi: \"{messageSnippet}...\""
         ),
-        // Беларуская (Belarusian)
+
+        // =====================================================================
+        // 🇧🇾 BELARUSIAN (Беларуская)
+        // =====================================================================
         "be" to mapOf(
+            "welcome_subject" to "Сардэчна запрашаем у LoyaltyLoop!",
+            "welcome_body" to "Віншуем! Ваш бізнес \"{partnerName}\" паспяхова зарэгістраваны. Цяпер вы можаце дадаваць гандлёвыя кропкі і запускаць праграму лаяльнасці.",
+            "welcome_btn" to "Перайсці ў Кабінет",
+
+            "point_created_subject" to "Новая гандлёвая кропка створана",
+            "point_created_body" to "Кропка \"{pointName}\" паспяхова дададзена. Не забудзьцеся актываваць падпіску, каб пачаць працу.",
+
+            "request_approved_subject" to "Ваша заяўка ўхвалена! ✅",
+            "request_approved_body" to "Выдатныя навіны! Ваша заяўка ({type}) для \"{pointName}\" была ўхвалена. Сэрвісы актываваны.",
+            "request_rejected_subject" to "Заяўка адхілена ❌",
+            "request_rejected_body" to "Ваша заяўка ({type}) была адхілена адміністратарам.\nПрычына: {reason}",
+
             "sub_expiring_subject" to "Тэрмін падпіскі заканчваецца",
-            "sub_expiring_body" to "Увага LoyaltyLoop: Тэрмін падпіскі для кропкі \"{pointName}\" заканчваецца {date}. Калі ласка, падоўжыце яе!",
-            "sub_expiring_1day_subject" to "ТЭРМІНОВА LoyaltyLoop: Застаўся 1 дзень!",
-            "sub_expiring_1day_body" to "Крытычнае папярэджанне: Падпіска для кропкі \"{pointName}\" заканчваецца праз 24 гадзіны ({date})! Кропка будзе адключана!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Увага: Падпіска для кропкі \"{pointName}\" (Партнёр: {partnerName}) заканчваецца {date}.",
-            "sub_expiring_1day_manager_body" to "ТЭРМІНОВА: Падпіска для кропкі \"{pointName}\" (Партнёр: {partnerName}) заканчваецца праз 24 гадзіны! Патрабуецца падаўжэнне."
-        ),
-        "by" to mapOf( // Alias for country code
-            "sub_expiring_subject" to "Тэрмін падпіскі заканчваецца",
-            "sub_expiring_body" to "Увага LoyaltyLoop: Тэрмін падпіскі для кропкі \"{pointName}\" заканчваецца {date}. Калі ласка, падоўжыце яе!",
-            "sub_expiring_1day_subject" to "ТЭРМІНОВА LoyaltyLoop: Застаўся 1 дзень!",
-            "sub_expiring_1day_body" to "Крытычнае папярэджанне: Падпіска для кропкі \"{pointName}\" заканчваецца праз 24 гадзіны ({date})! Кропка будзе адключана!",
-            // Manager specific
-            "sub_expiring_manager_body" to "Увага: Падпіска для кропкі \"{pointName}\" (Партнёр: {partnerName}) заканчваецца {date}.",
-            "sub_expiring_1day_manager_body" to "ТЭРМІНОВА: Падпіска для кропкі \"{pointName}\" (Партнёр: {partnerName}) заканчваецца праз 24 гадзіны! Патрабуецца падаўжэнне."
+            "sub_expiring_body" to "Увага: Падпіска для кропкі \"{pointName}\" заканчваецца {date}. Калі ласка, падоўжыце, каб пазбегнуць адключэння.",
+            "sub_expiring_manager_body" to "Напамін: Падпіска для \"{pointName}\" (Партнёр: {partnerName}) заканчваецца {date}.",
+
+            "sub_critical_subject" to "🔥 ТЭРМІНОВА: Засталося 24 гадзіны!",
+            "sub_critical_body" to "Крытычнае папярэджанне! Кропка \"{pointName}\" будзе адключана заўтра ({date}). Падоўжыце падпіску зараз!",
+            "sub_critical_manager_body" to "ТЭРМІНОВА: Падпіска \"{pointName}\" (Партнёр: {partnerName}) заканчваецца заўтра! Звяжыцеся з уладальнікам.",
+
+            "sub_expired_subject" to "❌ Кропка адключана",
+            "sub_expired_body" to "Тэрмін дзеяння падпіскі для \"{pointName}\" скончыўся ({date}). Кропка часова неактыўная.",
+
+            "support_reply_subject" to "Новае паведамленне ад Падтрымкі",
+            "support_reply_body" to "Вам адказалі ў чаце падтрымкі: \"{messageSnippet}...\""
         )
     )
 
+    // Alias mappings for country codes
+    init {
+        (templates as MutableMap)["kg"] = templates["ky"]!!
+        templates["kz"] = templates["kk"]!!
+        templates["by"] = templates["be"]!!
+    }
+
     fun get(lang: String?, key: String, args: Map<String, String> = emptyMap()): String {
-        val effectiveLang = lang?.lowercase() ?: "ru"
-        
-        // Priority: Requested Lang -> English -> Russian -> Key itself
-        val template = templates[effectiveLang]?.get(key) 
-            ?: templates["en"]?.get(key) 
+        val effectiveLang = lang?.lowercase()?.take(2) ?: "ru"
+
+        // Priority: Lang -> English -> Russian -> Key
+        val template = templates[effectiveLang]?.get(key)
+            ?: templates["en"]?.get(key)
             ?: templates["ru"]?.get(key)
             ?: return key
 

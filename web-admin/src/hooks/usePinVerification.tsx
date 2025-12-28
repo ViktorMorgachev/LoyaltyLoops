@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { api } from '../api/axiosConfig';
 import { getErrorMessage } from '../utils/errorHandler';
 
-const PIN_BYPASS_ROLES = new Set(['PLATFORM_SUPER_ADMIN', 'PLATFORM_MANAGER']);
+const PIN_BYPASS_ROLES = new Set(['PLATFORM_SUPER_ADMIN', 'PLATFORM_MANAGER', 'PLATFORM_SUPER_MANAGER']);
 
 export const usePinVerification = (
   onVerified: (workspace: Workspace) => void
@@ -61,9 +61,13 @@ export const usePinVerification = (
     }
     setLoading(true);
     try {
-      await api.post('/auth/verify-pin', {
+      await api.post('/partners/verify-pin', {
         workspaceId: dialogWorkspace.id,
         pin: trimmed
+      }, {
+        headers: {
+            'X-Workspace-Id': dialogWorkspace.id
+        }
       });
       showSuccess(t('profile.pin_modal_success'));
       const target = dialogWorkspace;
@@ -88,16 +92,21 @@ export const usePinVerification = (
   ]);
 
   const handleSendReset = useCallback(async () => {
+    if (!dialogWorkspace) return;
     setResetLoading(true);
     try {
-      await api.post('/partners/pin/reset/request');
+      await api.post('/partners/pin/reset/request', {}, {
+        headers: {
+            'X-Workspace-Id': dialogWorkspace.id
+        }
+      });
       showSuccess(t('profile.pin_reset_email_sent'));
     } catch (error) {
       showError(getErrorMessage(error));
     } finally {
       setResetLoading(false);
     }
-  }, [showError, showSuccess, t]);
+  }, [dialogWorkspace, showError, showSuccess, t]);
 
   const dialog = useMemo(() => {
     const open = Boolean(dialogWorkspace);

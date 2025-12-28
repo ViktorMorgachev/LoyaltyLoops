@@ -9,6 +9,7 @@ import { useNotification } from '../../context/NotificationContext';
 import { getErrorMessage } from '../../utils/errorHandler';
 import { useUser } from '../../context/UserContext';
 import { maskPhone } from '../../utils/maskPhone';
+import { TableSkeleton } from '../../components/common/TableSkeleton';
 
 export const AllPartnersPage = () => {
   const { t } = useTranslation();
@@ -16,15 +17,19 @@ export const AllPartnersPage = () => {
   const { showError, showSuccess } = useNotification();
   const { isSuperAdmin } = useUser();
   const [partners, setPartners] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadPartners(); }, []);
 
   const loadPartners = async () => {
     try {
+      setLoading(true);
       const res = await api.get('/admin/partners');
       setPartners(res.data);
     } catch (e: any) {
       showError(getErrorMessage(e));
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,7 +64,16 @@ export const AllPartnersPage = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {partners.map((p) => (
+            {loading ? (
+                <TableSkeleton cols={5} />
+            ) : partners.length === 0 ? (
+                <TableRow>
+                    <TableCell colSpan={5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
+                        {t('admin.no_partners', 'No partners found')}
+                    </TableCell>
+                </TableRow>
+            ) : (
+                partners.map((p) => (
                   <TableRow key={p.id} hover>
                     <TableCell sx={{ fontWeight: 500 }}>{p.businessName || p.name || t('dashboard.table_name')}</TableCell>
                 <TableCell>{p.countryCode}</TableCell>
@@ -95,14 +109,7 @@ export const AllPartnersPage = () => {
                   </Box>
                 </TableCell>
               </TableRow>
-            ))}
-                {partners.length === 0 && (
-                    <TableRow>
-                        <TableCell colSpan={5} align="center" sx={{ py: 8, color: 'text.secondary' }}>
-                            {t('admin.no_partners', 'No partners found')}
-                        </TableCell>
-                    </TableRow>
-                )}
+            )))}
           </TableBody>
         </Table>
         </Box>

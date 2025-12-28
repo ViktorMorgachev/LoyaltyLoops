@@ -34,7 +34,7 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import io.loyaltyloop.app.ui.components.LoyaltyButton
-import io.loyaltyloop.shared.utils.formatCurrency
+import io.loyaltyloop.shared.utils.LoyaltyFormatter.formatCurrency
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.stats_title
 import loyaltyloop.composeapp.generated.resources.stats_transactions

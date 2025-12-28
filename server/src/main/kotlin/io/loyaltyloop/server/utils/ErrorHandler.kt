@@ -33,6 +33,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                 AppErrorCode.POINT_PAUSED,
                 AppErrorCode.EMAIL_NOT_SET,
                 AppErrorCode.CODE_EXPIRED,
+                AppErrorCode.WAS_FIRED,
+                AppErrorCode.WORKSPACE_ID_MISSING,
                 AppErrorCode.INVALID_PIN -> HttpStatusCode.Forbidden
 
                 AppErrorCode.NOT_FOUND,
@@ -62,6 +64,8 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
 
                 AppErrorCode.SMS_PROVIDER_ERROR -> HttpStatusCode.ServiceUnavailable
 
+                AppErrorCode.CURRENCY_RATE_NOT_FOUND -> HttpStatusCode.InternalServerError
+
                 AppErrorCode.OTP_ATTEMPTS_EXCEEDED ,  AppErrorCode.RATE_LIMIT_EXCEEDEG, AppErrorCode.TOO_MANY_REQUESTS -> HttpStatusCode.TooManyRequests
 
                 AppErrorCode.SECURITY_QR_SECRET_MISSING,
@@ -82,7 +86,6 @@ suspend fun handleError(call: ApplicationCall, exception: Throwable) {
                     )
                     return
                 }
-
             }
 
             call.respond(

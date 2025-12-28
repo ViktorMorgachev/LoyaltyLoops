@@ -11,6 +11,7 @@ data class SupportThreadDto(
     val lastMessageAt: Long? = null,
     val unreadForPartner: Int = 0,
     val unreadForAdmin: Int = 0,
+    val createdAt: Long,
     val isClosed: Boolean = false
 )
 

@@ -55,8 +55,12 @@
 # Ensure your ScreenModels are kept if they are accessed via reflection (Koin often does this)
 -keep class * extends cafe.adriel.voyager.core.model.ScreenModel { <init>(...); }
 
+# Ignore the missing StaticLoggerBinder, which is a known pattern for the SLF4J facade.
+-dontwarn org.slf4j.impl.StaticLoggerBinder
+
+
 # --- Data Classes (Optional, safer for JSON parsing) ---
 # If you have specific data classes that are parsed via reflection (not compile-time serialization), keep them:
-# -keep class io.loyaltyloop.shared.models.** { *; }
+-keep class io.loyaltyloop.shared.models.** { *; }
 
 

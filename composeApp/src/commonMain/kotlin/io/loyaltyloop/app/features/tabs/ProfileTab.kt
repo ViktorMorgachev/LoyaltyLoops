@@ -20,7 +20,7 @@ object ProfileTab : Tab {
             val title = stringResource(Res.string.tab_profile)
             val icon = rememberVectorPainter(Icons.Default.Person)
 
-            return remember {
+            return remember(title) {
                 TabOptions(
                     index = 2u,
                     title = title,

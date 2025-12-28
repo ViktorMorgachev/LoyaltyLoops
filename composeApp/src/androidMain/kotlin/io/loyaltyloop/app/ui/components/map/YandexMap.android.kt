@@ -31,11 +31,18 @@ import loyaltyloop.composeapp.generated.resources.map_type_flowers
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
+import com.yandex.mapkit.map.CircleMapObject
+import com.yandex.mapkit.geometry.Circle
+import io.loyaltyloop.shared.models.GeoLocation
+
 @Composable
 actual fun YandexMap(
     modifier: Modifier,
     cameraPosition: CameraPosition,
     markers: List<MapMarker>,
+    userLocation: GeoLocation?,
+    searchAreaCenter: GeoLocation?,
+    searchRadius: Int?,
     onMapClick: () -> Unit,
     onMarkerClick: (String) -> Unit
 ) {
@@ -105,7 +112,54 @@ actual fun YandexMap(
         )
     }
 
+    // Отрисовка радиуса поиска
+    val searchCircle = remember { mutableStateOf<CircleMapObject?>(null) }
+    val strokeColor = remember { "#2563EB".toColorInt() }
+    val fillColor = remember { "#1A2563EB".toColorInt() }
 
+    LaunchedEffect(searchAreaCenter, searchRadius) {
+        if (searchAreaCenter != null && searchRadius != null) {
+            val circleGeom = Circle(
+                Point(searchAreaCenter.lat, searchAreaCenter.lon),
+                searchRadius.toFloat()
+            )
+
+            if (searchCircle.value == null) {
+                val c = mapObjects.addCircle(circleGeom)
+                c.strokeColor = strokeColor
+                c.strokeWidth = 1.5f * density.density
+                c.fillColor = fillColor
+                searchCircle.value = c
+            } else {
+                searchCircle.value?.geometry = circleGeom
+            }
+        } else {
+            searchCircle.value?.let { mapObjects.remove(it) }
+            searchCircle.value = null
+        }
+    }
+
+    // Отрисовка локации пользователя
+    val userLocationPlacemark = remember { mutableStateOf<PlacemarkMapObject?>(null) }
+    LaunchedEffect(userLocation) {
+        if (userLocation != null) {
+            val point = Point(userLocation.lat, userLocation.lon)
+            val bitmap = generateUserLocationBitmap(density)
+            val imageProvider = ImageProvider.fromBitmap(bitmap)
+
+            if (userLocationPlacemark.value == null) {
+                val p = mapObjects.addPlacemark(point, imageProvider)
+                p.zIndex = 100f
+                userLocationPlacemark.value = p
+            } else {
+                userLocationPlacemark.value?.geometry = point
+                userLocationPlacemark.value?.setIcon(imageProvider)
+            }
+        } else {
+            userLocationPlacemark.value?.let { mapObjects.remove(it) }
+            userLocationPlacemark.value = null
+        }
+    }
 
     // Отрисовка маркеров
     LaunchedEffect(markers){
@@ -233,6 +287,34 @@ private suspend fun generatePinBitmap(density: Density, marker: MapMarker): Bitm
         val textY = (height / 2) - ((paintText.descent() + paintText.ascent()) / 2)
         canvas.drawText(text, textX, textY, paintText)
     }
+
+    return bitmap
+}
+
+private fun generateUserLocationBitmap(density: Density): Bitmap {
+    val floatDensity = density.density
+    val size = 24 * floatDensity
+    val bitmap = createBitmap(size.toInt(), size.toInt())
+    val canvas = Canvas(bitmap)
+
+    val centerX = size / 2
+    val centerY = size / 2
+    val radius = size / 2
+
+    // Белая обводка
+    val paintWhite = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.FILL
+        setShadowLayer(4 * floatDensity, 0f, 2 * floatDensity, "#40000000".toColorInt())
+    }
+    canvas.drawCircle(centerX, centerY, radius - (2 * floatDensity), paintWhite)
+
+    // Синяя точка
+    val paintBlue = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = "#2563EB".toColorInt()
+        style = Paint.Style.FILL
+    }
+    canvas.drawCircle(centerX, centerY, radius - (5 * floatDensity), paintBlue)
 
     return bitmap
 }

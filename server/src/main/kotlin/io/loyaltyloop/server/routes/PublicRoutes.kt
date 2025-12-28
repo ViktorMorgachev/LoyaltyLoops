@@ -11,6 +11,7 @@ import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import kotlinx.serialization.Serializable
 
+// TODO Checked
 @Serializable
 data class WaitlistRequest(val email: String)
 

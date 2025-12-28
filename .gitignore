@@ -30,6 +30,7 @@ captures/
 .externalNativeBuild/
 .cxx/
 *.apk
+!web-admin/public/*.apk
 *.ap_
 
 # --- iOS ---

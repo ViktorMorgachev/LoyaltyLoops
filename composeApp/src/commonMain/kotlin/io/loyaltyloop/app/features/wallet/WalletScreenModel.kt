@@ -71,6 +71,7 @@ class WalletScreenModel(
     private val _cardEvents = MutableSharedFlow<CardAnimationMessage>(extraBufferCapacity = 32)
     val cardEvents = _cardEvents.asSharedFlow()
 
+    private val _celebrationQueue = Channel<CelebrationState>(Channel.UNLIMITED)
     private val _celebrationState = MutableStateFlow<CelebrationState?>(null)
     val celebrationState = _celebrationState.asStateFlow()
 
@@ -88,16 +89,30 @@ class WalletScreenModel(
 
     fun onAction(action: Action) {
         when (action) {
-            is Action.OnRefresh -> loadCards()
+            is Action.OnRefresh -> loadCards(forceReconnect = true)
             is Action.OnQrCodeClicked -> startQrGenerator()
         }
     }
 
     init {
-        loadCards()
+        loadCards(forceReconnect = true)
+        processCelebrationQueue()
     }
 
-    fun loadCards() {
+    private fun processCelebrationQueue() {
+        screenModelScope.launch {
+            for (celebration in _celebrationQueue) {
+                _celebrationState.value = celebration
+                // Wait until current celebration is consumed (value becomes null)
+                while (_celebrationState.value != null) {
+                    delay(100)
+                }
+                delay(500) // Increased pause to prevent overlap feeling
+            }
+        }
+    }
+
+    fun loadCards(forceReconnect: Boolean = false) {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
@@ -105,7 +120,7 @@ class WalletScreenModel(
                 .onSuccess { cards ->
                     emitCardDiffs(cards)
                     _state.update { it.copy(cards = cards, isLoading = false) }
-                    connectRealtimeIfNeeded(cards)
+                    connectRealtimeIfNeeded(cards, force = forceReconnect)
                 }
                 .onFailure { exception ->
                     log.write("Failed to load cards", LogType.Error, exception)
@@ -120,7 +135,7 @@ class WalletScreenModel(
         }
     }
 
-    private suspend fun connectRealtimeIfNeeded(cards: List<LoyaltyCardDto>) {
+    private suspend fun connectRealtimeIfNeeded(cards: List<LoyaltyCardDto>, force: Boolean = false) {
         val token = tokenStorage.getAccessToken() ?: return
         if (cards.isEmpty()) {
             disconnectRealtime()
@@ -130,7 +145,8 @@ class WalletScreenModel(
 
         val targetIds = cards.map { it.id }
         val idSet = targetIds.toSet()
-        if (realtimeConnected && idSet == subscribedCardIds) {
+        
+        if (!force && realtimeConnected && idSet == subscribedCardIds) {
             return
         }
 
@@ -141,10 +157,38 @@ class WalletScreenModel(
         if (realtimeCollectorJob?.isActive == true) return
         realtimeCollectorJob = screenModelScope.launch {
             realtimeService.events.collect { message ->
+                // Check if card snapshot has higher tier than local state, emit upgrade event if so
+                detectTierUpgradeFromSnapshot(message)
+
                 _cardEvents.emit(message)
                 handleCelebration(message)
                 applyRealtimeSnapshot(message)
             }
+        }
+    }
+
+    private fun detectTierUpgradeFromSnapshot(message: CardAnimationMessage) {
+        val snapshot = message.card ?: return
+        // We use lastCardsSnapshot or current state to find the 'old' version of this card
+        // If we haven't seen this card before, we can't detect an upgrade from 'old' state.
+        val oldCard = lastCardsSnapshot[snapshot.id] ?: _state.value.cards.find { it.id == snapshot.id } ?: return
+
+        if (snapshot.tierLevel > oldCard.tierLevel) {
+            // Found a tier upgrade in the snapshot!
+            // Emit a synthetic local event for the celebration/animation logic.
+            val upgradeEvent = CardAnimationMessage(
+                cardId = snapshot.id,
+                event = CardAnimationEvent.TierUpgrade(snapshot.tierLevel),
+                card = snapshot,
+                newBalance = message.newBalance,
+                newVisits = message.newVisits,
+                tradingPointId = message.tradingPointId
+            )
+            // Emit this BEFORE the main message so it queues up or is handled
+            screenModelScope.launch {
+                _cardEvents.emit(upgradeEvent)
+            }
+            handleCelebration(upgradeEvent)
         }
     }
 
@@ -252,10 +296,26 @@ class WalletScreenModel(
                     }
 
                     val base = current.cards[index]
-                    val updated = snapshot ?: base.copy(
+                    
+                    // Если у нас нет полного снэпшота карты, а только дельта по балансу, 
+                    // нужно пересчитать estimatedValue
+                    var updated = snapshot ?: base.copy(
                         balance = newBalance ?: base.balance,
                         visitsCount = newVisits ?: base.visitsCount
                     )
+                    
+                    // Если баланс изменился, а estimatedValue старый (потому что snapshot == null),
+                    // пытаемся пересчитать estimatedValue, если знаем rate.
+                    // К сожалению, rate нигде явно не хранится в LoyaltyCardDto, 
+                    // но мы можем "угадать" его по старым значениям: rate = estimated / balance
+                    if (snapshot == null && newBalance != null && base.balance > 0.0) {
+                        val rate = base.estimatedValue / base.balance
+                        if (rate > 0) {
+                             val newEst = newBalance * rate
+                             updated = updated.copy(estimatedValue = newEst)
+                        }
+                    }
+
                     if (updated == base) return@update current
 
                     val nextCards = current.cards.toMutableList().also { it[index] = updated }
@@ -420,7 +480,19 @@ class WalletScreenModel(
 
         val card = message.card ?: _state.value.cards.find { it.id == message.cardId } ?: return
         val celebration = CelebrationState.from(card, message.event, message.newBalance, message.newVisits, message.tradingPointId) ?: return
-        _celebrationState.value = celebration
+        
+        // Если событие о повышении уровня, то обновляем tierLevel в lastCardsSnapshot,
+        // чтобы при следующем рефреше/realtime-синхронизации не сработал emitCardDiffs повторно.
+        if (message.event is CardAnimationEvent.TierUpgrade) {
+            val tier = message.event.newLevel
+            lastCardsSnapshot[message.cardId]?.let { current ->
+                if (current.tierLevel < tier) {
+                    lastCardsSnapshot = lastCardsSnapshot + (message.cardId to current.copy(tierLevel = tier))
+                }
+            }
+        }
+
+        _celebrationQueue.trySend(celebration)
     }
 
     fun consumeCelebration() {
