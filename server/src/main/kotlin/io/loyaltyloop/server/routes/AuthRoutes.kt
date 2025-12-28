@@ -63,8 +63,7 @@ fun Route.authRoutes(
                 val uuid = call.parameters["uuid"]!!
                 val session = authSessionRepository.getSession(uuid)
                 if (session == null) {
-                    call.respond(HttpStatusCode.NotFound, "Session not found")
-                    return@get
+                    throw LoyaltyException(AppErrorCode.NOT_FOUND, "Session not found")
                 }
 
                 if (session.status == "CONFIRMED") {
