@@ -45,8 +45,8 @@ buildConfig {
         "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
         else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
     }
-    stringField("SERVER_URL", "https://server-loyalityloop-stage.up.railway.app")
-    stringField("WEB_URL", "https://loyalityloop-beta.up.railway.app")
+    stringField("SERVER_URL", serverUrl)
+    stringField("WEB_URL", webUrl)
 }
 
 kotlin {

@@ -16,7 +16,8 @@
       "namespace": "android_app",
       "package_name": "io.loyaltyloop.app.stage",
       "sha256_cert_fingerprints": [
-        "89:8F:BA:B0:CE:A2:23:3D:37:24:44:03:91:6F:9D:15:66:83:43:79:A4:A7:D2:D5:6D:4B:33:BE:D8:32:B3:6F"
+        "89:8F:BA:B0:CE:A2:23:3D:37:24:44:03:91:6F:9D:15:66:83:43:79:A4:A7:D2:D5:6D:4B:33:BE:D8:32:B3:6F",
+        "56:62:8E:07:8E:A8:73:78:17:FE:86:CA:C9:D7:E2:B8:81:5F:3B:58:97:CE:C2:AC:B9:FA:C0:F5:43:E5:DA:8B"
       ]
     }
   }

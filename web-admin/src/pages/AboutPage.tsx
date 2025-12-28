@@ -145,7 +145,7 @@ export const AboutPage = () => {
 
     const roadmapSteps = useMemo(() => ([
         {
-            status: 'in_progress',
+            status: 'done',
             label: t('landing.roadmap.steps.mvp_label'),
             desc: t('landing.roadmap.steps.mvp_desc'),
             date: 'Q4 2025'
@@ -486,6 +486,7 @@ export const AboutPage = () => {
                     </Box>
 
                     {/* WAITLIST */}
+                    {false && (
                     <Box mb={16} textAlign="center" maxWidth="800px" mx="auto">
                         <Paper 
                             elevation={4} 
@@ -568,6 +569,7 @@ export const AboutPage = () => {
                              )}
                         </Paper>
                     </Box>
+                    )}
 
                     {/* CTA FINAL */}
                     <Box textAlign="center">

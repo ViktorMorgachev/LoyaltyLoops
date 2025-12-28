@@ -9,6 +9,7 @@ import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
 import GetAppIcon from '@mui/icons-material/GetApp'; // Fallback for RuStore if custom icon not used
+import { useEffect, useState } from 'react';
 
 export const DownloadPage = () => {
     const { t } = useTranslation();
@@ -16,6 +17,27 @@ export const DownloadPage = () => {
     
     // TODO: Replace with actual APK link when hosted
     const apkUrl = "/LoyaltyLoop.apk"; 
+    const [apkSize, setApkSize] = useState<string | null>(null);
+    const appVersion = __APP_VERSION__; // Injected by Vite from build.gradle.kts
+
+    useEffect(() => {
+        const fetchSize = async () => {
+            try {
+                const response = await fetch(apkUrl, { method: 'HEAD' });
+                if (response.ok) {
+                    const length = response.headers.get('Content-Length');
+                    if (length) {
+                        const bytes = parseInt(length, 10);
+                        const mb = (bytes / (1024 * 1024)).toFixed(1);
+                        setApkSize(`~${mb} MB`);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to fetch APK size", e);
+            }
+        };
+        fetchSize();
+    }, []);
 
     const steps = [
         {
@@ -165,7 +187,10 @@ export const DownloadPage = () => {
                         </Stack>
 
                         <Box sx={{ mt: 2 }}>
-                            <Chip label={`${t('client_onboarding.version')} 1.0.0 • ${t('client_onboarding.size')} ~30 MB`} size="small" />
+                            <Chip 
+                                label={`${t('client_onboarding.version')} ${appVersion} • ${t('client_onboarding.size')} ${apkSize || '...'}`} 
+                                size="small" 
+                            />
                         </Box>
 
                     </Stack>
