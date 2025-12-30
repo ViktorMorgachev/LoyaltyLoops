@@ -22,8 +22,8 @@ fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String,
 buildConfig {
     packageName("io.loyaltyloop.shared")
 
-    stringField("APP_VERSION", "1.0.0")
-    buildConfigField("int", "VERSION_CODE", "1")
+    stringField("APP_VERSION", "1.1.0")
+    buildConfigField("int", "VERSION_CODE", "110")
     buildConfigField("boolean", "IS_PROD", "${activeEnv == "prod"}")
     stringField("ENV_NAME", activeEnv)
 }

@@ -487,10 +487,8 @@
     <string name="whats_new_btn_awesome">Zo‘r!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Endi xizmatni tashrifdan keyin baholash mumkin
-        • Mijozni baholash ekrani yangilandi
-        • Android-dagi skaner xatolari tuzatildi
-        • Yangilanish bildirishnomalari qo‘shildi
+        • RF qo‘llovi qo‘shildi (+7 telefon, ₽ valyuta)
+        • Ilova barqarorligi oshirildi
     </string>
 
     <!-- Coming Soon Placeholder -->

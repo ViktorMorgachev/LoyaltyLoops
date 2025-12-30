@@ -487,10 +487,8 @@
     <string name="whats_new_btn_awesome">Сонун!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Эми сервисти баалоого болот
-        • Кардарды баалоо экраны жаңыртылды
-        • Android'деги сканер каталары оңдолду
-        • Жаңыртуу билдирмелери кошулду
+        • РФ колдоосу кошулду (+7 телефон, ₽ валюта)
+        • Тиркеме туруктуулугу жогорулатылды
     </string>
 
     <!-- Coming Soon Placeholder -->

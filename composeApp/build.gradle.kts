@@ -23,8 +23,8 @@ val activeEnv = project.findProperty("env") as? String
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
-val currentVersionCode = 1
-val currentVersionName = "1.0"
+val currentVersionCode = 110
+val currentVersionName = "1.1.0"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
