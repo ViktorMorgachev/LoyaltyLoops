@@ -23,6 +23,9 @@ services:
       retries: 5
 
   server:
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     build:
       context: .
       dockerfile: server/Dockerfile
