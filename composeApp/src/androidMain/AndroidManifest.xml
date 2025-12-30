@@ -51,11 +51,19 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
-                <data android:scheme="http" />
                 <data android:scheme="https" />
-
                 <data android:host="loyalityloop.up.railway.app" />
+                <data android:pathPrefix="/auth" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data android:scheme="https" />
                 <data android:host="loyalityloop-beta.up.railway.app" />
+                <data android:pathPrefix="/auth" />
             </intent-filter>
         </activity>
 
