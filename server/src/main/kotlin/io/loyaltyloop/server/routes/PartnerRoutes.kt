@@ -177,9 +177,9 @@ fun Route.partnerRoutes(
                 
                 // Send Welcome Email
                 val user = userRepository.getUserById(userId)
-                if (user?.email != null) {
+                user?.email?.let {
                     emailService.sendEmail(
-                        to = user.email!!,
+                        to = it,
                         template = EmailTemplate.PartnerWelcome(
                             name = request.businessName,
                             loginUrl = "$webBaseUrl/login"
@@ -187,7 +187,8 @@ fun Route.partnerRoutes(
                         lang = user.language
                     )
                 }
-                
+
+
                 call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Business created: $partnerId"))
             }
 
@@ -428,10 +429,10 @@ fun Route.partnerRoutes(
                 
                 // Email notification about new point
                 val user = userRepository.getUserById(userId)
-                if (user != null && user.email != null) {
-                    val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
+                val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
+                user?.email?.let {
                     emailService.sendEmail(
-                        to = user.email!!,
+                        to = it,
                         template = EmailTemplate.PointCreated(
                             pointName = request.name,
                             partnerName = partner.businessName
@@ -439,7 +440,6 @@ fun Route.partnerRoutes(
                         lang = user.language
                     )
                 }
-
                 call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created"))
             }
 
