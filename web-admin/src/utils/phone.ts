@@ -8,6 +8,7 @@ export interface CountryConfig {
 
 export const COUNTRY_CODES: CountryConfig[] = [
     { code: 'KG', dial: '+996', mask: '999 99-99-99', name: 'Kyrgyzstan', emoji: '🇰🇬' },
+    { code: 'RU', dial: '+7', mask: '999 999-99-99', name: 'Russia', emoji: '🇷🇺' },
     { code: 'KZ', dial: '+7', mask: '777 777-77-77', name: 'Kazakhstan', emoji: '🇰🇿' },
     { code: 'UZ', dial: '+998', mask: '99 999-99-99', name: 'Uzbekistan', emoji: '🇺🇿' },
     { code: 'BY', dial: '+375', mask: '99 999-99-99', name: 'Belarus', emoji: '🇧🇾' },
@@ -59,10 +60,21 @@ export const detectCountry = (fullPhone: string): CountryConfig | undefined => {
 
     if (candidates.length === 1) return candidates[0];
     if (candidates.length > 1) {
-        // Конфликт (например KZ и еще кто-то с +7).
-        // Сейчас только KZ с +7.
+        // Конфликт (например KZ и RU с +7).
         // KZ: +7 7...
-        // Если вдруг появится еще кто-то, логику усложним.
+        // RU: +7 9... (обычно мобильные)
+        if (fullPhone.startsWith('+7')) {
+            // Если введен 3-й символ (после +7)
+            if (fullPhone.length > 2) {
+                const nextDigit = fullPhone[2];
+                // Если +7 7..., то скорее всего KZ
+                if (nextDigit === '7') {
+                    return candidates.find(c => c.code === 'KZ');
+                }
+            }
+            // Иначе (или пока не введено) дефолт RU
+            return candidates.find(c => c.code === 'RU');
+        }
         return candidates[0];
     }
 

@@ -1,5 +1,6 @@
 package io.loyaltyloop.server.service.sms
 
+import io.ktor.server.config.ApplicationConfig
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.UsersTable
@@ -9,6 +10,8 @@ import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.bool
+import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.UserRole
 import kotlinx.serialization.json.buildJsonObject
@@ -21,23 +24,30 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.jetbrains.exposed.sql.*
 import org.slf4j.LoggerFactory
 import so.prelude.sdk.client.PreludeClient
+import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 import so.prelude.sdk.core.JsonValue
 import so.prelude.sdk.models.VerificationCheckParams
 import so.prelude.sdk.models.VerificationCheckResponse
 import so.prelude.sdk.models.VerificationCreateParams
 import java.io.IOException
+import kotlin.collections.contains
 
 
 // TODO checked
 class PreludeSmsService(
-    private val apiKey: String,
-    private val preludeClient: PreludeClient,
+    private val config: ApplicationConfig,
     private val eventLogger: EventLogger,
     private val emailService: EmailService,
 ) : SmsService {
     private val client = OkHttpClient()
 
-    private val logger = LoggerFactory.getLogger("PreludeNotify")
+    private val isDev: Boolean = config.bool("sms.prelude_conf.isDev", true)
+
+    private val testPhone = "+996554190030"
+    private val apiKey = config.string("sms.prelude_conf.apiKey", "")
+
+    private val preludeClient: PreludeClient =  PreludeOkHttpClient.builder().apiToken(apiKey).build()
+
     private val criticalCodes = setOf("insufficient_balance", "suspended_account")
     private val userCodes = setOf(
         "unsupported_country",
@@ -53,17 +63,20 @@ class PreludeSmsService(
         // Endpoint: POST https://api.prelude.dev/v2/messages
 
         // Smart Channel Selection
-        val preferredChannel = when {
-            phone.startsWith("+996") -> "whatsapp" // Kyrgyzstan -> WhatsApp
-            else -> throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, "try_later")
-        }
+        val preferredChannel = "whatsapp"
 
         val jsonBody = buildJsonObject {
             putJsonObject("to") {
                 put("type", "phone_number")
-                put("value", phone)
+                if (isDev) {
+                    put("value", testPhone)
+                    put("text", "$text for $phone")
+                } else {
+                    put("value", phone)
+                    put("text", text)
+                }
             }
-            put("text", text)
+
             put("preferred_channel", preferredChannel)
         }.toString()
 
@@ -79,27 +92,33 @@ class PreludeSmsService(
                     val bodyStr = response.body?.string().orEmpty()
                     val code = extractPreludeCode(bodyStr)
                     if (code in criticalCodes) {
-                        logger.error("Prelude Notify critical error: code=$code, body=$bodyStr")
-                        eventLogger.log(
-                            type = SystemEventType.ERROR,
-                            payload = "Prelude notify critical error code=$code for phone=$phone"
-                        )
                         notifyAdmins(code ?: "insufficient_balance", bodyStr)
-                        throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
                     }
-                    if (code in userCodes) {
-                        logger.warn("Prelude Notify user-facing error: code=$code, body=$bodyStr")
-                        throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
-                    }
-                    logger.error("Failed to send message via Prelude (Channel: $preferredChannel): ${response.code} $bodyStr")
+                    val errorInfo = " (Channel: $preferredChannel), error: code=$code, body=$bodyStr"
+                    verificationError(code, errorInfo)
+
                     throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, "try_later")
                 } else {
                     true
                 }
             }
-        } catch (e: IOException) {
-            logger.error("Exception sending message via Prelude", e)
-            throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, "try_later")
+        } catch (t: Throwable) {
+            handlePreludeError(t, if (isDev) testPhone else phone)
+            false
+        }
+    }
+
+    private  fun verificationError(code: String?, errorInfo: String) {
+        if (code in criticalCodes) {
+            eventLogger.log(
+                type = SystemEventType.SMS_SEND_ERROR,
+                payload = "Prelude send message critical $errorInfo"
+            )
+            throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
+        }
+        if (code in userCodes) {
+            eventLogger.log(type = SystemEventType.SMS_SEND_ERROR, payload = "Prelude send message user-facing $errorInfo")
+            throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
         }
     }
 
@@ -142,8 +161,8 @@ class PreludeSmsService(
         return try {
             val response = preludeClient.verification().create(builder.build())
             response.id()
-        } catch (e: Exception) {
-            handlePreludeError(e, phone)
+        } catch (t: Throwable) {
+            handlePreludeError(t, phone)
         }
     }
 
@@ -170,23 +189,14 @@ class PreludeSmsService(
         }
     }
 
-    private suspend fun handlePreludeError(e: Exception, phone: String): String {
-        val message = e.message.orEmpty()
+    private suspend fun handlePreludeError(t: Throwable, phone: String): String {
+        val message = t.message.orEmpty()
         val code = extractPreludeCode(message)
+        val errorInfo = "code=$code for phone=$phone: $message\""
         if (code in criticalCodes) {
-            logger.error("Prelude critical error: code=$code, message=$message")
-            eventLogger.log(
-                type = SystemEventType.ERROR,
-                payload = "Prelude critical error code=$code for phone=$phone: $message"
-            )
             notifyAdmins(code ?: "insufficient_balance", message)
-            throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
         }
-        if (code in userCodes) {
-            logger.warn("Prelude user-facing error: code=$code, message=$message")
-            throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, code ?: "try_later")
-        }
-        logger.warn("Prelude error (non-critical): $message")
+        verificationError(code, errorInfo)
         throw LoyaltyException(AppErrorCode.SMS_PROVIDER_ERROR, "try_later")
     }
 
@@ -215,9 +225,9 @@ class PreludeSmsService(
             superUsers.filter { it.isNotBlank() }.distinct()
         }
         if (recipients.isEmpty()) return
-        
+
         val template = EmailTemplate.SmsProviderAlert(code, body)
-        
+
         recipients.forEach { email ->
             emailService.sendEmail(email, template, "ru") // System alerts in English
         }

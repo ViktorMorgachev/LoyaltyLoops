@@ -426,7 +426,12 @@ fun Route.partnerRoutes(
                 val request = call.receive<CreateTradingPointRequest>()
                 validateBaseCashback(request.baseCashback)
 
-                
+                // Create trading point
+                val pointId = tradingPointRepository.createTradingPoint(
+                    partnerId = workspaceId,
+                    request = request,
+                )
+
                 // Email notification about new point
                 val user = userRepository.getUserById(userId)
                 val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
@@ -440,7 +445,7 @@ fun Route.partnerRoutes(
                         lang = user.language
                     )
                 }
-                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created"))
+                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created: $pointId"))
             }
 
             // --- MANAGERS & CASHIERS ---

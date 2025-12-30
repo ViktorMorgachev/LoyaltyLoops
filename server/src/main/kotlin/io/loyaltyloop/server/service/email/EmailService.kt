@@ -2,8 +2,12 @@ package io.loyaltyloop.server.service.email
 
 import io.ktor.server.config.ApplicationConfig
 import io.loyaltyloop.server.models.ResendEmailRequest
+import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.service.EventLogger
+import io.loyaltyloop.server.utils.bool
+import io.loyaltyloop.server.utils.json
+import io.loyaltyloop.server.utils.string
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -42,13 +46,15 @@ class ConsoleEmailService(
 class ResendEmailService(
     private val config: ApplicationConfig,
     private val okHttpClient: OkHttpClient,
+    private val eventLogger: EventLogger,
     private val templateService: EmailTemplateService = EmailTemplateService()
 ) : EmailService {
+    private val apiKey = config.string("email.resend.apiKey", "")
+    private val fromAddress = config.string("email.fromAddress", "")
 
-    private val logger = LoggerFactory.getLogger(ResendEmailService::class.java)
-    private val apiKey = config.property("email.resend.apiKey").getString()
-    private val fromAddress = config.property("email.fromAddress").getString()
-    private val json = Json { ignoreUnknownKeys = true }
+    private val isDev: Boolean = config.bool("email.resend.isDev")
+
+    private val email = "morgachev.v.s@gmail.com"
 
 
     override suspend fun sendEmail(to: String, template: EmailTemplate, lang: String?) {
@@ -58,7 +64,7 @@ class ResendEmailService(
         try {
             val requestBody = ResendEmailRequest(
                 from = fromAddress,
-                to = listOf("morgachev.v.s@gmail.com"),
+                to = if (isDev) listOf(email) else listOf(to),
                 subject = subject,
                 html = body
             )
@@ -75,13 +81,19 @@ class ResendEmailService(
             val response = okHttpClient.newCall(request).execute()
 
             if (response.isSuccessful) {
-                logger.info("📧 Email sent to $to via Resend")
+                if (isDev){
+                    eventLogger.log(type = SystemEventType.EMAIL_SEND_SUCCESS, payload = "📧 Email sent to  $email via Resend")
+                } else eventLogger.log(type = SystemEventType.EMAIL_SEND_SUCCESS, payload = "📧 Email sent to  $to via Resend")
+
             } else {
-                logger.error("❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")
+                eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")
             }
             response.close()
         } catch (e: Exception) {
-            logger.error("❌ Exception sending email to $to", e)
+            if (isDev){
+                eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Exception sending email to $email ${e.message}")
+            } else
+                eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Exception sending email to $to, ${e.message}")
         }
     }
 }

@@ -32,6 +32,7 @@ import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.RefreshTokenRepository
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.utils.extractSignals
+import io.loyaltyloop.server.utils.getCountryCodeForTimezone
 import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
@@ -120,6 +121,7 @@ fun Route.authRoutes(
         post("/login") {
             val request = call.receive<VerifyCodeRequest>()
             val lang = call.resolveLanguage()
+            val countryCode = call.getCountryCodeForTimezone()
             validatePhoneNumber(request.phone)
 
             val verificationId = request.verificationId ?: request.phone
@@ -132,7 +134,7 @@ fun Route.authRoutes(
                     user = UserDto(
                         id = "will_ignore",
                         phoneNumber = request.phone,
-                        countryCode = request.countryCode.name,
+                        countryCode = countryCode.name,
                         language = lang,
                         qrSecret = tokenService.generateQrSecret(),
                         firstName = null,

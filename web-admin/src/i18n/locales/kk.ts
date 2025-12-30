@@ -130,6 +130,7 @@ export const kk = {
     },
     currency: {
         USD: "USD (Доллар)",
+        RUB: "RUB (Рубль)",
         KGS: "KGS (Сом)",
         KZT: "KZT (Тенге)",
         UZS: "UZS (Сум)",
@@ -309,6 +310,7 @@ export const kk = {
     },
     countries: {
       KG: "Қырғызстан",
+      RU: "Ресей",
       KZ: "Қазақстан",
       UZ: "Өзбекстан",
       BY: "Беларусь"
