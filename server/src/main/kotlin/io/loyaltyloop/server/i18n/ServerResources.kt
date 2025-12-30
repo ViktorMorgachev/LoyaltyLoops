@@ -52,7 +52,13 @@ object ServerResources {
 
             // --- Support ---
             "support_reply_subject" to "Новое сообщение от Поддержки",
-            "support_reply_body" to "Вам ответили в чате поддержки: \"{messageSnippet}...\""
+            "support_reply_body" to "Вам ответили в чате поддержки: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "Сброс ПИН-кода",
+            "pin_reset_body" to "Вы запросили сброс ПИН-кода. Нажмите на ссылку ниже, чтобы задать новый ПИН:\n{resetLink}\nЕсли вы этого не делали, проигнорируйте это письмо.",
+            "pin_reset_partner_subject" to "Сброс ПИН-кода для Партнера",
+            "pin_reset_partner_body" to "Вы запросили сброс ПИН-кода для вашего партнерского аккаунта. Нажмите на ссылку ниже, чтобы задать новый ПИН:\n{resetLink}\nЕсли вы этого не делали, проигнорируйте это письмо."
         ),
 
         // =====================================================================
@@ -86,7 +92,13 @@ object ServerResources {
             "sub_expired_body" to "Subscription for \"{pointName}\" has expired on {date}. The point is temporarily inactive.",
 
             "support_reply_subject" to "New Message from Support",
-            "support_reply_body" to "You have a new reply in support chat: \"{messageSnippet}...\""
+            "support_reply_body" to "You have a new reply in support chat: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "PIN Reset",
+            "pin_reset_body" to "You have requested a PIN reset. Click the link below to set a new PIN:\n{resetLink}\nIf you did not request this, please ignore this email.",
+            "pin_reset_partner_subject" to "Partner PIN Reset",
+            "pin_reset_partner_body" to "You have requested a PIN reset for your partner account. Click the link below to set a new PIN:\n{resetLink}\nIf you did not request this, please ignore this email."
         ),
 
         // =====================================================================
@@ -117,7 +129,13 @@ object ServerResources {
             "sub_expired_body" to "\"{pointName}\" үчүн жазылуу мөөнөтү бүттү ({date}). Түйүн убактылуу токтотулду.",
 
             "support_reply_subject" to "Колдоо кызматынан жаңы билдирүү",
-            "support_reply_body" to "Сизге жооп келди: \"{messageSnippet}...\""
+            "support_reply_body" to "Сизге жооп келди: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "ПИН-кодду алмаштыруу",
+            "pin_reset_body" to "Сиз ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү шилтемени басыңыз:\n{resetLink}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз.",
+            "pin_reset_partner_subject" to "Өнөктөштүн ПИН-кодун алмаштыруу",
+            "pin_reset_partner_body" to "Сиз өнөктөштүк аккаунтуңуз үчүн ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү шилтемени басыңыз:\n{resetLink}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз."
         ),
 
         // =====================================================================
@@ -148,7 +166,13 @@ object ServerResources {
             "sub_expired_body" to "\"{pointName}\" үшін жазылым мерзімі аяқталды ({date}). Нүкте уақытша тоқтатылды.",
 
             "support_reply_subject" to "Қолдау қызметінен жаңа хабарлама",
-            "support_reply_body" to "Сізге жауап келді: \"{messageSnippet}...\""
+            "support_reply_body" to "Сізге жауап келді: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "ПИН-кодты қалпына келтіру",
+            "pin_reset_body" to "Сіз ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі сілтемені басыңыз:\n{resetLink}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз.",
+            "pin_reset_partner_subject" to "Серіктестің ПИН-кодын қалпына келтіру",
+            "pin_reset_partner_body" to "Сіз серіктестік аккаунтыңыз үшін ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі сілтемені басыңыз:\n{resetLink}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз."
         ),
 
         // =====================================================================
@@ -179,7 +203,13 @@ object ServerResources {
             "sub_expired_body" to "\"{pointName}\" uchun obuna muddati tugadi ({date}). Nuqta vaqtincha faol emas.",
 
             "support_reply_subject" to "Qo'llab-quvvatlash xizmatidan yangi xabar",
-            "support_reply_body" to "Sizga javob keldi: \"{messageSnippet}...\""
+            "support_reply_body" to "Sizga javob keldi: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "PIN-kodni tiklash",
+            "pin_reset_body" to "Siz PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi havolani bosing:\n{resetLink}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.",
+            "pin_reset_partner_subject" to "Hamkor uchun PIN-kodni tiklash",
+            "pin_reset_partner_body" to "Siz hamkorlik hisobingiz uchun PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi havolani bosing:\n{resetLink}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring."
         ),
 
         // =====================================================================
@@ -210,7 +240,13 @@ object ServerResources {
             "sub_expired_body" to "Тэрмін дзеяння падпіскі для \"{pointName}\" скончыўся ({date}). Кропка часова неактыўная.",
 
             "support_reply_subject" to "Новае паведамленне ад Падтрымкі",
-            "support_reply_body" to "Вам адказалі ў чаце падтрымкі: \"{messageSnippet}...\""
+            "support_reply_body" to "Вам адказалі ў чаце падтрымкі: \"{messageSnippet}...\"",
+
+            // --- Pin Reset ---
+            "pin_reset_subject" to "Скід ПІН-кода",
+            "pin_reset_body" to "Вы запрасілі скід ПІН-кода. Націсніце на спасылку ніжэй, каб задаць новы ПІН:\n{resetLink}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст.",
+            "pin_reset_partner_subject" to "Скід ПІН-кода для Партнёра",
+            "pin_reset_partner_body" to "Вы запрасілі скід ПІН-кода для вашага партнёрскага акаўнта. Націсніце на спасылку ніжэй, каб задаць новы ПІН:\n{resetLink}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст."
         )
     )
 

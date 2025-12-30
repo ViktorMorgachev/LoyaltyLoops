@@ -7,6 +7,7 @@ import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.models.VerificationSignals
+import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.UserRole
@@ -195,6 +196,7 @@ class PreludeSmsService(
         return regex.find(message)?.groupValues?.getOrNull(1)
     }
 
+
     private suspend fun notifyAdmins(code: String, body: String) {
         val recipients: List<String> = dbQuery {
             val superUsers = SystemStaffTable
@@ -213,10 +215,11 @@ class PreludeSmsService(
             superUsers.filter { it.isNotBlank() }.distinct()
         }
         if (recipients.isEmpty()) return
-        val subject = "Prelude alert: $code"
-        val msg = "Critical Prelude error: $code\nBody: $body"
+        
+        val template = EmailTemplate.SmsProviderAlert(code, body)
+        
         recipients.forEach { email ->
-            emailService.sendEmail(email, subject, msg)
+            emailService.sendEmail(email, template, "ru") // System alerts in English
         }
     }
 }

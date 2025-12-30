@@ -113,7 +113,7 @@ kotlin {
                 // Firebase & Updates
                 implementation(project.dependencies.platform(libs.firebase.bom))
                 implementation(libs.firebase.messaging)
-                implementation("com.google.firebase:firebase-crashlytics-ktx") // Лучше тоже вынести в toml
+                implementation(libs.firebase.crashlytics)
                 implementation(libs.play.app.update.ktx)
 
                 // CameraX Bundle
