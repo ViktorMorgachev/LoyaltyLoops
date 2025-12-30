@@ -262,7 +262,7 @@ fun Route.partnerRoutes(
                 pinResetTokenRepository.createToken(workspaceId, rawToken, nowUtc().plusHours(PIN_RESET_TTL_HOURS).toUtcMillis())
 
                 val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
-                emailService.sendEmail(email, EmailTemplate.PinResetRequested(resetLink), user.language)
+                emailService.sendEmail(email, EmailTemplate.PartnerPinResetRequested(resetLink), user.language)
 
                 eventLogger.log(
                     type = SystemEventType.PIN_RESET_REQUEST,

@@ -81,12 +81,6 @@ sealed class EmailTemplate {
     }
 
     /**
-     * 🔐 **Сброс ПИН-кода**
-     * Отправляется Кассиру/Сотруднику, когда они запросили сброс ПИН-кода.
-     */
-    data class PinResetRequested(val resetLink: String) : EmailTemplate()
-
-    /**
      * 🔐 **Сброс ПИН-кода (Партнер)**
      * Отправляется Владельцу/Менеджеру (Партнеру), когда они запросили сброс ПИН-кода.
      */
@@ -127,7 +121,6 @@ class EmailTemplateService {
 
             is EmailTemplate.SubscriptionExpired -> ServerResources.get(lang, "sub_expired_subject")
             is EmailTemplate.SuperAdminSummaryReport -> "📊 LoyaltyLoop: Daily Summary Report"
-            is EmailTemplate.PinResetRequested -> ServerResources.get(lang, "pin_reset_subject")
             is EmailTemplate.PartnerPinResetRequested -> ServerResources.get(lang, "pin_reset_partner_subject")
 
             is EmailTemplate.SmsProviderAlert -> "🚨 SMS Provider Alert: ${template.code}"
@@ -193,12 +186,6 @@ class EmailTemplateService {
                 lang, "sub_expired_body", mapOf(
                     "pointName" to template.pointName,
                     "date" to template.date
-                )
-            )
-
-            is EmailTemplate.PinResetRequested -> ServerResources.get(
-                lang, "pin_reset_body", mapOf(
-                    "resetLink" to template.resetLink
                 )
             )
 
