@@ -870,7 +870,9 @@ export const be = {
       title: "Спампаваць LoyaltyLoop",
       desc: "Усталюйце дадатак, каб збіраць балы, атрымліваць узнагароды і адсочваць свой прагрэс.",
       btn_apk: "Спампаваць APK",
-      requirements: "Патрабуецца Android 8.0 або вышэй"
+      requirements: "Патрабуецца Android 8.0 або вышэй",
+      rustore_scan: "Адсканіруйце або клікніце, каб адкрыць у RuStore",
+      rustore_hover: "Навядзіце, каб паказаць QR"
     },
     client_onboarding: {
       welcome_title: "Сардэчна запрашаем у LoyaltyLoop",
@@ -883,7 +885,7 @@ export const be = {
       download_apk: "Спампаваць APK (Android)",
       download_google: "Google Play",
       download_apple: "App Store",
-      download_rustore: "RuStore",
+      download_rustore: "Ru Store",
       soon: "Хутка",
       version: "Версія",
       size: "Памер"

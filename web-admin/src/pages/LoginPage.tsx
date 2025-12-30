@@ -13,8 +13,9 @@ import { BrandLogo } from '../components/BrandLogo';
 import { PhoneInput } from '../components/inputs/PhoneInput';
 import { parsePhoneNumber, isValidPhone } from '../utils/phone';
 import { Analytics } from '../utils/analytics';
-import { QRCodeSVG } from 'qrcode.react';
 import TelegramIcon from '@mui/icons-material/Telegram';
+import DownloadIcon from '@mui/icons-material/Download';
+import { QRCodeSVG } from 'qrcode.react';
 
 export const LoginPage = () => {
   const { t } = useTranslation(); 
@@ -293,6 +294,17 @@ export const LoginPage = () => {
             >
                 {t('menu.about_project', 'О проекте')}
             </Button>
+
+            <Button
+              fullWidth
+              variant="text"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ mt: 1, textTransform: 'none', fontWeight: 600 }}
+              onClick={() => navigate('/download')}
+            >
+              {t('auth.open_download', 'Перейти на страницу загрузки')}
+            </Button>
           </Box>
         ) : (
           <Box width="100%">
@@ -320,6 +332,17 @@ export const LoginPage = () => {
 
             <Button fullWidth sx={{ mt: 1 }} onClick={() => setStep(1)} disabled={loading}>
               {t('auth.change_number')}
+            </Button>
+
+            <Button
+              fullWidth
+              variant="text"
+              size="small"
+              startIcon={<DownloadIcon />}
+              sx={{ mt: 1, textTransform: 'none', fontWeight: 600 }}
+              onClick={() => navigate('/download')}
+            >
+              {t('auth.open_download', 'Перейти на страницу загрузки')}
             </Button>
           </Box>
         )}

@@ -628,6 +628,17 @@ export const AboutPage = () => {
                              </Box>
                              {/* Removed 14 days trial text as per request */}
                         </Stack>
+
+                        <Box textAlign="center" mt={6}>
+                            <Button
+                                variant="outlined"
+                                size="large"
+                                onClick={() => navigate('/download')}
+                                sx={{ px: 4, borderRadius: 3, fontWeight: 700 }}
+                            >
+                                {t('client_onboarding.download_title', 'Download the mobile app')}
+                            </Button>
+                        </Box>
                     </Box>
                 </Container>
             </Box>

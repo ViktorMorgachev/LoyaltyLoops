@@ -870,7 +870,9 @@ export const uz = {
       title: "LoyaltyLoop yuklab olish",
       desc: "Ballar to'plash, sovg'a olish va progressni kuzatish uchun ilovani o'rnating.",
       btn_apk: "APK yuklash",
-      requirements: "Android 8.0 yoki undan yuqori talab qilinadi"
+      requirements: "Android 8.0 yoki undan yuqori talab qilinadi",
+      rustore_scan: "RuStore ochish uchun skanerlang yoki bosing",
+      rustore_hover: "QR ko‘rish uchun kursorni olib boring"
     },
     client_onboarding: {
       welcome_title: "LoyaltyLoop-ga xush kelibsiz",
@@ -883,7 +885,7 @@ export const uz = {
       download_apk: "APK yuklab olish (Android)",
       download_google: "Google Play",
       download_apple: "App Store",
-      download_rustore: "RuStore",
+      download_rustore: "Ru Store",
       soon: "Tez orada",
       version: "Versiya",
       size: "Hajmi"

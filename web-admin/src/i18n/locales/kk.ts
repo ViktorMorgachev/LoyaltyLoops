@@ -870,7 +870,9 @@ export const kk = {
       title: "LoyaltyLoop жүктеп алу",
       desc: "Ұпай жинау, сыйлық алу және прогресті бақылау үшін қосымшаны орнатыңыз.",
       btn_apk: "APK жүктеу",
-      requirements: "Android 8.0 немесе жоғары қажет"
+      requirements: "Android 8.0 немесе жоғары қажет",
+      rustore_scan: "RuStore ашу үшін сканерлеңіз не басыңыз",
+      rustore_hover: "QR көрсету үшін меңзерді апарыңыз"
     },
     client_onboarding: {
       welcome_title: "LoyaltyLoop-қа қош келдіңіз",
@@ -883,7 +885,7 @@ export const kk = {
       download_apk: "APK жүктеу (Android)",
       download_google: "Google Play",
       download_apple: "App Store",
-      download_rustore: "RuStore",
+      download_rustore: "Ru Store",
       soon: "Жақында",
       version: "Нұсқа",
       size: "Көлемі"
