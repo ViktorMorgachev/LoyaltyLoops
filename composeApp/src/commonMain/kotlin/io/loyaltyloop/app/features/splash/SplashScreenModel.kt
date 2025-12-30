@@ -11,6 +11,7 @@ import io.loyaltyloop.app.utils.UiText
 import io.loyaltyloop.app.utils.log
 import io.loyaltyloop.app.utils.toResource
 import io.loyaltyloop.app.utils.write
+import io.loyaltyloop.shared.models.AppVersionResponse
 import io.loyaltyloop.shared.models.onError
 import io.loyaltyloop.shared.models.onFailure
 import io.loyaltyloop.shared.models.onSuccess
@@ -49,9 +50,18 @@ class SplashScreenModel(
         data object NavigateToHome : Event
         data object NavigateToOnboarding : Event
         data class NavigateToForceUpdate(val url: String) : Event
+        data class NavigateToShowNeedUpdate(
+            val storeUrl: String,
+            val whatsNew: List<String>,
+            val next: NavigationTarget
+        ) : Event
         data object NavigateToWhatsNew : Event
     }
     // ----------------
+
+    enum class NavigationTarget {
+        Home, Login, Onboarding, WhatsNew
+    }
 
     private val _state = MutableStateFlow(State())
     val state = _state.asStateFlow()
@@ -74,9 +84,14 @@ class SplashScreenModel(
             val versionResult = appRepository.getAppVersion(platform = platformName)
             versionResult.onSuccess { versionInfo ->
                 tokenStorage.setAppStoreUrl(versionInfo.storeUrl)
-                if (versionInfo.force && versionInfo.latestVersionCode > BuildAppConfig.VERSION_CODE) {
-                    _events.send(Event.NavigateToForceUpdate(versionInfo.storeUrl))
-                    return@launch
+
+                if (versionInfo.latestVersionCode > BuildAppConfig.VERSION_CODE) {
+                    if (versionInfo.force){
+                        _events.send(Event.NavigateToForceUpdate(versionInfo.storeUrl))
+                        return@launch
+                    } else {
+                        continueFlow(versionInfo)
+                    }
                 }
 
             }.onFailure {
@@ -84,36 +99,41 @@ class SplashScreenModel(
                 log.write("Version check failed: ${it.message}", LogType.Warning)
             }
 
-            // Минимальная задержка, чтобы логотип не мигал
-            delay(1000)
 
-            val hasToken = tokenStorage.getAccessToken() != null
-            log.write("Check Session: Token present? $hasToken", LogType.Debug)
+        }
+    }
 
-            if (!hasToken) {
-                log.write("No token found -> Navigate to Login")
-                _events.send(Event.NavigateToLogin)
-                return@launch
-            }
+    private suspend fun continueFlow(optionalUpdate: AppVersionResponse?) {
+        // Минимальная задержка, чтобы логотип не мигал
+        delay(1000)
 
+        val hasToken = tokenStorage.getAccessToken() != null
+        log.write("Check Session: Token present? $hasToken", LogType.Debug)
+
+        val navTarget = if (!hasToken) {
+            log.write("No token found -> Navigate to Login")
+            NavigationTarget.Login
+        } else {
+            var target: NavigationTarget? = null
             repository.getProfile()
                 .onSuccess { profile ->
                     sessionManager.updateWorkspaces(profile.workspaces)
                     pushService.register()
-                    if (profile.firstName.isNullOrBlank()) {
-                        log.write("Profile incomplete -> Go to Onboarding")
-                        _events.send(Event.NavigateToOnboarding)
-                    } else {
-                        // Check if we need to show What's New
-                        val lastShownVersion = tokenStorage.getLastShownWhatsNewVersion()
-                        val currentVersion = BuildAppConfig.VERSION_CODE
-                        
-                        if (currentVersion > lastShownVersion) {
-                            log.write("New version detected ($currentVersion > $lastShownVersion) -> Show What's New")
-                            _events.send(Event.NavigateToWhatsNew)
-                        } else {
-                            log.write("Session valid -> Go to Home")
-                            _events.send(Event.NavigateToHome)
+                    target = when {
+                        profile.firstName.isNullOrBlank() -> {
+                            log.write("Profile incomplete -> Go to Onboarding")
+                            NavigationTarget.Onboarding
+                        }
+                        else -> {
+                            val lastShownVersion = BuildAppConfig.VERSION_CODE
+                            val lastShown = tokenStorage.getLastShownWhatsNewVersion()
+                            if (lastShownVersion > lastShown) {
+                                log.write("New version detected ($lastShownVersion > $lastShown) -> Show What's New")
+                                NavigationTarget.WhatsNew
+                            } else {
+                                log.write("Session valid -> Go to Home")
+                                NavigationTarget.Home
+                            }
                         }
                     }
                 }
@@ -125,6 +145,28 @@ class SplashScreenModel(
                     log.write("Profile check failed: $code", LogType.Error)
                     _state.value = State(isLoading = false, error = UiText.Resource(code.toResource(msg)))
                 }
+
+            target
+        }
+
+        if (navTarget == null) return
+
+        optionalUpdate?.let { versionInfo ->
+            _events.send(
+                Event.NavigateToShowNeedUpdate(
+                    storeUrl = versionInfo.storeUrl,
+                    whatsNew = versionInfo.whatsNew,
+                    next = navTarget
+                )
+            )
+            return
+        }
+
+        when (navTarget) {
+            NavigationTarget.Home -> _events.send(Event.NavigateToHome)
+            NavigationTarget.Login -> _events.send(Event.NavigateToLogin)
+            NavigationTarget.Onboarding -> _events.send(Event.NavigateToOnboarding)
+            NavigationTarget.WhatsNew -> _events.send(Event.NavigateToWhatsNew)
         }
     }
 }

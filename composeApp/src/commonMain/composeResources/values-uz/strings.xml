@@ -482,6 +482,16 @@
     <string name="force_update_message">Biz yangi funksiyalar qo‘shdik va xatolarni tuzatdik. Iltimos, davom etish uchun ilovani yangilang.</string>
     <string name="force_update_btn">Yangilash</string>
 
+    <!-- Optional update -->
+    <string name="need_update_title">Yangi versiya mavjud</string>
+    <string name="need_update_subtitle">Hoziroq yangilasangiz yoki joriy versiyada davom ettirsangiz bo‘ladi.</string>
+    <string name="need_update_btn_update">Yangilash</string>
+    <string name="need_update_btn_continue">Davom etish</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Ilova ishga tushmoqda</string>
+    <string name="splash_subtitle">Yangilanishlarni tekshirib, akkauntingizni tayyorlayapmiz</string>
+
     <!-- What's New -->
     <string name="whats_new_title">Yangiliklar</string>
     <string name="whats_new_btn_awesome">Zo‘r!</string>

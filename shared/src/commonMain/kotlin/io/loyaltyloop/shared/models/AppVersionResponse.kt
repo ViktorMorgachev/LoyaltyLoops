@@ -7,7 +7,8 @@ data class AppVersionResponse(
     val platform: String,
     val latestVersionCode: Int,
     val storeUrl: String,
-    val force: Boolean = false
+    val force: Boolean = false,
+    val whatsNew: List<String> = emptyList()
 )
 
 

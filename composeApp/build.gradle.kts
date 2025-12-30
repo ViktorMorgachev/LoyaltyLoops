@@ -34,8 +34,8 @@ buildConfig {
     packageName("io.loyaltyloop.app.config")
     className("AppConfig")
 
-    buildConfigField("int", "VERSION_CODE", "1")
-    stringField("VERSION_NAME", "1.0")
+    buildConfigField("int", "VERSION_CODE", "$currentVersionCode")
+    stringField("VERSION_NAME", currentVersionName)
     buildConfigField("boolean", "IS_PROD", "$isProd")
     stringField("ENV_NAME", activeEnv)
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
@@ -59,13 +59,14 @@ kotlin {
         cocoapods {
             summary = "LoyaltyLoop Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
-            version = "1.0.0"
+            version = "1.1.0"
             ios.deploymentTarget = "14.0"
             framework {
                 baseName = "LoyaltyLoop"
                 isStatic = true
                 export(compose.components.resources)
             }
+
             pod("YandexMapsMobile") {
                 version = "4.5.1-lite"
                 extraOpts += listOf("-compiler-option", "-fmodules")
@@ -134,7 +135,7 @@ if (keystorePropertiesFile.exists()) {
 }
 android {
     namespace = "io.loyaltyloop.app"
-    compileSdk = 35
+    compileSdk = 36
 
     signingConfigs {
         create("release") {
@@ -195,14 +196,6 @@ android {
                         if (apkFile != null && apkFile.exists() && apkFile.name.endsWith(".apk")) {
                             val rootDir = project.rootDir
 
-                            // 1. Копируем в composeApp/apk
-                            val destDirApk = project.file("apk")
-                            copy {
-                                from(apkFile)
-                                into(destDirApk)
-                            }
-
-                            // 2. Копируем в web-admin/public (для скачивания с сайта)
                             val destDirWeb = rootDir.resolve("web-admin/public")
                             copy {
                                 from(apkFile)
@@ -210,7 +203,6 @@ android {
                             }
 
                             println("✅ Release APK copied to:")
-                            println("   - ${destDirApk.absolutePath}/${apkFile.name}")
                             println("   - ${destDirWeb.absolutePath}/${apkFile.name}")
                         }
                     }
