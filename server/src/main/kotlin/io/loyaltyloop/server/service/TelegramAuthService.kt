@@ -41,6 +41,17 @@ class TelegramAuthService(
 
     private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    private suspend fun pingBot() {
+        val url = "https://api.telegram.org/bot$botToken/getMe"
+        val request = Request.Builder().url(url).build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw IllegalStateException("Telegram getMe failed: ${response.code}")
+            }
+        }
+    }
+
     fun start(autoCleanupSessionInMillis: Long = 60_000) {
 
         if (botToken.isBlank()) {
@@ -71,6 +82,19 @@ class TelegramAuthService(
                     logger.error("Session cleanup error: ${e.message}")
                 }
                 delay(autoCleanupSessionInMillis) // Ждем минуту перед следующей чисткой
+            }
+        }
+
+        // 1b. HEALTHCHECK: пингуем Telegram каждые 5 минут
+        scope.launch {
+            while (isActive) {
+                try {
+                    pingBot()
+                    logger.debug("Telegram getMe OK")
+                } catch (e: Exception) {
+                    logger.error("Telegram health-check failed: ${e.message}")
+                }
+                delay(5 * 60 * 1000L) // 5 минут
             }
         }
 

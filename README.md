@@ -105,6 +105,12 @@ adb shell monkey -p io.loyaltyloop.app 1
 ./gradlew :composeApp:assembleLoyaltyloopRelease -Penv=prod
 ```
 
+### 5. Билд релизного приложения в сторы
+```bash
+./gradlew bundleRelease -Penv=prod
+```
+
+
 **iOS:**
 1. Убедитесь, что установлены CocoaPods.
 2. Перейдите в `iosApp` и установите поды (если требуется, обычно Gradle делает это автоматически при сборке через KMP плагин, но иногда требуется ручной `pod install`).
