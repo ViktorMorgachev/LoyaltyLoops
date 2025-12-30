@@ -241,6 +241,7 @@ fun TelegramAuthCard(
                                 uriHandler.openUri("https://t.me/$bot?start=login_$uuid")
                             }
                         }
+                        onAction.invoke(LoginScreenModel.Action.OnTelegramClicked)
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -257,7 +258,8 @@ fun TelegramAuthCard(
                         fontWeight = FontWeight.Bold
                     )
                 }
-                if (state.telegramStatus == "PENDING") {
+
+                if (state.telegramStatus == "PENDING" && state.authTelegramButtonClicked) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

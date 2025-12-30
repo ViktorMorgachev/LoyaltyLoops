@@ -51,6 +51,8 @@ class LoginScreenModel(
         val telegramUuid: String? = null,
         val telegramBot: String? = null,
         val telegramStatus: String = "PENDING",
+
+        val authTelegramButtonClicked: Boolean = false,
         val isTelegramStarting: Boolean = false
     )
 
@@ -66,6 +68,8 @@ class LoginScreenModel(
         object OnBackClicked : Action
         object OnResendClicked : Action
         object OnTelegramClicked : Action
+
+        object OnTelegramButtonClicked : Action
 
         data class OnAutoStartTelegram(val uuid: String) : Action
         object OnBackToPhoneClicked : Action
@@ -138,6 +142,10 @@ class LoginScreenModel(
            is  Action.OnAutoStartTelegram ->  {
               _state.value = _state.value.copy(telegramUuid = action.uuid, telegramMode = true)
                checkTelegramStatus(action.uuid)
+            }
+
+            Action.OnTelegramButtonClicked -> {
+                _state.value = _state.value.copy(authTelegramButtonClicked = true)
             }
         }
     }
