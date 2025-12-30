@@ -22,7 +22,7 @@ fun validatePhoneNumber(phone: String) {
         .find { phone.startsWith(it.phonePrefix) }
 
     if (country == null) {
-        throw LoyaltyException(AppErrorCode.INVALID_PHONE, "Неизвестный код страны (поддерживаются: KG, KZ, UZ, BY)")
+        throw LoyaltyException(AppErrorCode.INVALID_PHONE, "Неизвестный код страны (поддерживаются: KG, RU, KZ, UZ, BY)")
     }
     val phoneBody = phone.removePrefix(country.phonePrefix)
 

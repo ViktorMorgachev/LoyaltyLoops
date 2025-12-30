@@ -11,9 +11,11 @@ enum class Country(
     val flagEmoji: String
 ) {
     KYRGYZSTAN(CountryCode.KG, "Кыргызстан", "+996", "### ### ###", "🇰🇬"),
+    RUSSIA(CountryCode.RU, "Россия", "+7", "### ### ## ##", "🇷🇺"), // Добавлено
     KAZAKHSTAN(CountryCode.KZ, "Казахстан", "+7", "### ### ## ##", "🇰🇿"),
     UZBEKISTAN(CountryCode.UZ, "Узбекистан", "+998", "## ### ## ##", "🇺🇿"),
     BELARUS(CountryCode.BY, "Беларусь", "+375", "## ### ## ##", "🇧🇾");
+
 
     // Функция для получения чистого номера (без пробелов и скобок)
     fun getFullNumber(rawInput: String): String {
@@ -27,10 +29,8 @@ enum class Country(
 
         // Проверяем длину "тела" номера (без кода страны)
         val expectedLength = when(this) {
-            KYRGYZSTAN -> 9   // 996 (555 123 456)
-            UZBEKISTAN -> 9   // 998 (90 123 45 67)
-            BELARUS -> 9      // 375 (29 123 45 67)
-            KAZAKHSTAN -> 10  // 7 (777 123 45 67)
+            KYRGYZSTAN, UZBEKISTAN, BELARUS -> 9
+            KAZAKHSTAN, RUSSIA -> 10 // У РФ 10 цифр (9xx xxx xx xx)
         }
 
         return cleanPhone.length == expectedLength
@@ -42,7 +42,7 @@ enum class Country(
 }
 
 enum class CountryCode{
-    KG, KZ, UZ, BY
+    KG, KZ, UZ, BY, RU
 }
 
 fun CountryCode.toCurrency(): Currency{
@@ -51,10 +51,11 @@ fun CountryCode.toCurrency(): Currency{
         CountryCode.KZ -> Currency.KZT
         CountryCode.UZ -> Currency.UZS
         CountryCode.BY -> Currency.BYN
+        CountryCode.RU -> Currency.RUB
     }
 }
 
 enum class Currency{
-    KGS, KZT, UZS, BYN
+    KGS, KZT, UZS, BYN, RUB
 }
 
