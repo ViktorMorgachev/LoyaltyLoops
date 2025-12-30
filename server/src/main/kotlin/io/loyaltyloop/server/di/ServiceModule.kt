@@ -41,6 +41,7 @@ val serviceModule = module {
         if (emailProvider == "resend" && resendApiKey.isNotEmpty()) {
             ResendEmailService(
                 config = get(),
+                eventLogger = get(),
                 okHttpClient = get<OkHttpClient>()
             )
         } else ConsoleEmailService()
@@ -52,12 +53,10 @@ val serviceModule = module {
     single<SmsService> {
         val config = get<ApplicationConfig>()
         val smsProvider = config.string("sms.smsProvider", "internal")
-        val preludeApiKey = config.string("sms.prelude_conf.apiKey", "")
 
-        if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
+        if (smsProvider == "prelude") {
             PreludeSmsService(
-                apiKey = preludeApiKey,
-                preludeClient = PreludeOkHttpClient.builder().apiToken(preludeApiKey).build(),
+                config = get<ApplicationConfig>(),
                 eventLogger = get(),
                 emailService = get()
             )

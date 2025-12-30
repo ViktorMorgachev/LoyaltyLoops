@@ -190,6 +190,7 @@ export const BusinessSettingsPage = () => {
                         label={t('dashboard.label_base_currency', 'Base Currency')}
                         onChange={(e) => setBaseCurrency(e.target.value)}
                     >
+                    <MenuItem value="RUB">{t('currency.RUB', 'RUB (Рубль)')}</MenuItem>
                         <MenuItem value="USD">{t('currency.USD', 'USD (Доллар)')}</MenuItem>
                         <MenuItem value="KGS">{t('currency.KGS', 'KGS (Сом)')}</MenuItem>
                         <MenuItem value="KZT">{t('currency.KZT', 'KZT (Тенге)')}</MenuItem>

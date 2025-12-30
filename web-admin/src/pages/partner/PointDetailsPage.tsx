@@ -244,6 +244,7 @@ export const PointDetailsPage = () => {
   const [temporarilyPaused, setTemporarilyPaused] = useState(false);
   const countryOptions = React.useMemo(() => ([
     { code: 'KG', currency: 'KGS', label: t('countries.KG'), defaultTimezone: 'Asia/Bishkek' },
+    { code: 'RU', currency: 'RUB', label: t('countries.RU'), defaultTimezone: 'Europe/Moscow' },
     { code: 'KZ', currency: 'KZT', label: t('countries.KZ'), defaultTimezone: 'Asia/Almaty' },
     { code: 'UZ', currency: 'UZS', label: t('countries.UZ'), defaultTimezone: 'Asia/Tashkent' },
     { code: 'BY', currency: 'BYN', label: t('countries.BY'), defaultTimezone: 'Europe/Minsk' },
@@ -741,6 +742,7 @@ export const PointDetailsPage = () => {
                     onChange={(newTz) => {
                         setScheduleTimezone(newTz);
                         if (newTz.includes('Bishkek')) setCurrency('KGS');
+                        else if (newTz.includes('Moscow')) setCurrency('RUB');
                         else if (newTz.includes('Almaty')) setCurrency('KZT');
                         else if (newTz.includes('Tashkent')) setCurrency('UZS');
                         else if (newTz.includes('Minsk')) setCurrency('BYN');
@@ -757,6 +759,7 @@ export const PointDetailsPage = () => {
                     label={t('dashboard.label_currency', 'Currency')}
                     onChange={(e) => setCurrency(e.target.value)}
                 >
+                    <MenuItem value="RUB">RUB (Рубль)</MenuItem>
                     <MenuItem value="KGS">KGS (Сом)</MenuItem>
                     <MenuItem value="KZT">KZT (Тенге)</MenuItem>
                     <MenuItem value="UZS">UZS (Сум)</MenuItem>

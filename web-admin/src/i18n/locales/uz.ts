@@ -130,6 +130,7 @@ export const uz = {
     },
     currency: {
         USD: "USD (Dollar)",
+        RUB: "RUB (Rubl)",
         KGS: "KGS (Som)",
         KZT: "KZT (Tenge)",
         UZS: "UZS (So'm)",
@@ -309,6 +310,7 @@ export const uz = {
     },
     countries: {
       KG: "Qirg'iziston",
+      RU: "Rossiya",
       KZ: "Qozog'iston",
       UZ: "O'zbekiston",
       BY: "Belarus"

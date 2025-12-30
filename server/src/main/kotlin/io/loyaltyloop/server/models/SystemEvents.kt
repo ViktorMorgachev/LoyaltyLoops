@@ -12,6 +12,12 @@ enum class SystemEventType {
     // Transactions
     ACCRUAL,
     REDEMPTION,
+
+    EMAIL_SEND_SUCCESS,
+    EMAIL_SEND_ERROR,
+
+    SMS_SEND_SUCCESS,
+    SMS_SEND_ERROR,
     TIER_CHANGE,
     VISIT,
 
@@ -21,6 +27,7 @@ enum class SystemEventType {
     PIN_RESET_REQUEST,
     PIN_RESET_SUCCESS,
     PIN_VERIFICATION_FAILED,
+
 
     // System
     ERROR,
