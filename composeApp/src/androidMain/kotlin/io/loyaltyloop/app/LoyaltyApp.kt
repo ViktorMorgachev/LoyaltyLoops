@@ -37,8 +37,7 @@ class LoyaltyApp : Application() {
         // 1. Настраиваем Kermit писать в Logcat
         Logger.setLogWriters(LogcatWriter())
 
-        // 2. ВАЖНО: Разрешаем писать ВСЕ логи (даже самые мелкие)
-        Logger.setMinSeverity(Severity.Verbose)
+        Logger.setMinSeverity(Severity.Info)
 
         MapKitFactory.setApiKey(io.loyaltyloop.app.config.AppConfig.MAP_API_KEY)
         MapKitFactory.initialize(this)

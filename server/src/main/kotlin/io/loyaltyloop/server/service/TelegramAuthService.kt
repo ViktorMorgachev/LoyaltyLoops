@@ -138,13 +138,27 @@ class TelegramAuthService(
     private fun getUpdates(offset: Long): List<JsonObject> {
         val url = "https://api.telegram.org/bot$botToken/getUpdates?offset=$offset&timeout=50"
         val request = Request.Builder().url(url).build()
+
+        // logger.debug("Telegram polling: offset=$offset") 
         
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) return emptyList()
+            if (!response.isSuccessful) {
+                logger.warn("Telegram getUpdates failed: code=${response.code}, body=${response.body?.string()}")
+                return emptyList()
+            }
             val body = response.body?.string() ?: return emptyList()
+            // logger.trace("Telegram updates body: $body")
+
             val root = json.parseToJsonElement(body).jsonObject
-            if (root["ok"]?.jsonPrimitive?.boolean != true) return emptyList()
-            return root["result"]?.jsonArray?.map { it.jsonObject } ?: emptyList()
+            if (root["ok"]?.jsonPrimitive?.boolean != true) {
+                logger.warn("Telegram getUpdates returned ok=false: $body")
+                return emptyList()
+            }
+            val result = root["result"]?.jsonArray?.map { it.jsonObject } ?: emptyList()
+            if (result.isNotEmpty()) {
+                logger.info("Telegram received ${result.size} updates")
+            }
+            return result
         }
     }
 
@@ -208,48 +222,76 @@ class TelegramAuthService(
     )
 
     private suspend fun processUpdate(update: JsonObject) {
-        val message = update["message"]?.jsonObject ?: return
-        val chatId = message["chat"]?.jsonObject?.get("id")?.jsonPrimitive?.long ?: return
+        val updateId = update["update_id"]?.jsonPrimitive?.long
+        logger.info("Processing update: $updateId, content=$update")
+
+        val message = update["message"]?.jsonObject
+        if (message == null) {
+            logger.info("Update $updateId has no message. Skipping.")
+            return
+        }
+
+        val chatId = message["chat"]?.jsonObject?.get("id")?.jsonPrimitive?.long
+        if (chatId == null) {
+            logger.warn("Update $updateId message has no chat ID. Skipping.")
+            return
+        }
+
         val text = message["text"]?.jsonPrimitive?.content
         val contact = message["contact"]?.jsonObject
         
         val from = message["from"]?.jsonObject
         val languageCode = from?.get("language_code")?.jsonPrimitive?.content ?: "en"
 
+        logger.info("Message from chatId=$chatId, text='$text', hasContact=${contact != null}")
+
         if (text?.startsWith("/start login_") == true) {
             val uuid = text.removePrefix("/start login_").trim()
+            logger.info("Detected login start command with UUID: $uuid")
             handleStartLogin(chatId, uuid, languageCode)
         }
 
         // 2. Contact
         if (contact != null) {
+            logger.info("Detected contact sharing from chatId=$chatId")
             handleContact(chatId, contact, languageCode)
         }
     }
 
     private suspend fun handleStartLogin(chatId: Long, uuid: String, languageCode: String) {
-        val user = userRepository.getUserByTelegramId(chatId)
-        if (user != null) {
-            authSessionRepository.confirmSession(uuid, chatId, user.phoneNumber, user.id)
-            sendSuccessMessage(chatId, languageCode, uuid)
-        } else {
-            dbQuery {
-                AuthSessionsTable.update({ AuthSessionsTable.id eq UUID.fromString(uuid) }) {
-                    it[telegramId] = chatId
+        logger.info("handleStartLogin: chatId=$chatId, uuid=$uuid")
+        try {
+            val user = userRepository.getUserByTelegramId(chatId)
+            if (user != null) {
+                logger.info("User found by telegramId=$chatId (userId=${user.id}). Auto-confirming session.")
+                authSessionRepository.confirmSession(uuid, chatId, user.phoneNumber, user.id)
+                sendSuccessMessage(chatId, languageCode, uuid)
+            } else {
+                logger.info("User NOT found by telegramId=$chatId. Updating session with telegramId and requesting contact.")
+                val updatedCount = dbQuery {
+                    AuthSessionsTable.update({ AuthSessionsTable.id eq UUID.fromString(uuid) }) {
+                        it[telegramId] = chatId
+                    }
                 }
+                logger.info("Session updated rows: $updatedCount")
+                sendContactRequest(chatId, languageCode)
             }
-            sendContactRequest(chatId, languageCode)
+        } catch (e: Exception) {
+            logger.error("Error in handleStartLogin: ${e.message}", e)
         }
     }
     
     private suspend fun handleContact(chatId: Long, contact: JsonObject, languageCode: String) {
+        logger.info("handleContact: chatId=$chatId, contact=$contact")
         val contactUserId = contact["user_id"]?.jsonPrimitive?.long
         if (contactUserId != chatId) {
+            logger.warn("Contact user_id ($contactUserId) does not match sender chatId ($chatId). Rejecting.")
             sendMessage(chatId, getMsg(MSG_OWN_CONTACT, languageCode))
             return
         }
         val rawPhone = contact["phone_number"]?.jsonPrimitive?.content ?: return
         val phone = if (rawPhone.startsWith("+")) rawPhone else "+$rawPhone"
+        logger.info("Contact phone: $phone")
 
         val session = dbQuery {
              AuthSessionsTable.select {
@@ -262,13 +304,16 @@ class TelegramAuthService(
         }
 
         if (session == null) {
+            logger.warn("No PENDING session found for chatId=$chatId")
             sendMessage(chatId, getMsg(MSG_NO_SESSION, languageCode))
             return
         }
+        logger.info("Found pending session: $session")
 
         var user = userRepository.getUserByPhone(phone)
         
         if (user == null) {
+             logger.info("User not found by phone $phone. Creating new user.")
              val newUser = UserDto(
                  id = "will_ignore",
                  phoneNumber = phone,
@@ -282,16 +327,19 @@ class TelegramAuthService(
              userRepository.createUser(newUser)
              user = newUser
         } else {
+             logger.info("User found by phone $phone (id=${user.id}). Linking telegramId.")
              if (user.telegramId == null) {
                 userRepository.linkTelegram(user.id, chatId)
             }
         }
         
+        logger.info("Confirming session $session for userId=${user.id}")
         authSessionRepository.confirmSession(session, chatId, phone, user.id)
         sendSuccessMessage(chatId, languageCode, session)
     }
 
     private fun sendSuccessMessage(chatId: Long, languageCode: String, uuid: String) {
+        logger.info("Sending success message to chatId=$chatId")
         val url = "https://api.telegram.org/bot$botToken/sendMessage"
         val keyboard = JsonObject(mapOf(
             "inline_keyboard" to JsonArray(listOf(
@@ -323,6 +371,7 @@ class TelegramAuthService(
             
         try {
             client.newCall(request).execute().close()
+            logger.info("Success message sent to $chatId")
         } catch (e: Exception) {
             logger.error("Failed to send success message: ${e.message}")
         }
