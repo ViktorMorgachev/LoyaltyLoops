@@ -20,11 +20,21 @@ val activeEnv = project.findProperty("env") as? String
     ?: gradle.startParameter.taskNames.any { it.contains("stage", true) }.let { if (it) "stage" else null }
     ?: "dev"
 
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+fun getStringProp(key: String, default: String): String =
+    (keystoreProperties.getProperty(key) ?: default).toString()
+
+fun getIntProp(key: String, default: Int): Int =
+    getStringProp(key, default.toString()).toInt()
+
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
-val currentVersionCode = 110
-val currentVersionName = "1.1.0"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
@@ -34,8 +44,11 @@ buildConfig {
     packageName("io.loyaltyloop.app.config")
     className("AppConfig")
 
-    buildConfigField("int", "VERSION_CODE", "1")
-    stringField("VERSION_NAME", "1.0")
+    val versionCode = getIntProp("currentVersionCode", 1)
+    val versionName = getStringProp("currentVersionName", "1.0.0")
+
+    buildConfigField("int", "VERSION_CODE", "$versionCode")
+    stringField("VERSION_NAME", versionName)
     buildConfigField("boolean", "IS_PROD", "$isProd")
     stringField("ENV_NAME", activeEnv)
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
@@ -127,11 +140,7 @@ kotlin {
     }
 }
 
-val keystorePropertiesFile = rootProject.file("local.properties")
-val keystoreProperties = Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
+
 android {
     namespace = "io.loyaltyloop.app"
     compileSdk = 35
@@ -153,8 +162,8 @@ android {
         applicationId = "io.loyaltyloop.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = currentVersionCode
-        versionName = currentVersionName
+        versionCode = versionCode
+        versionName = versionName
         resourceConfigurations += setOf("en", "ru", "be", "kk", "ky", "uz")
     }
 
