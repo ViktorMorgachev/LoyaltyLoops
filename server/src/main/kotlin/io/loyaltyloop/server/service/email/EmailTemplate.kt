@@ -126,19 +126,16 @@ class EmailTemplateService {
             }
 
             is EmailTemplate.SubscriptionExpired -> ServerResources.get(lang, "sub_expired_subject")
-            is EmailTemplate.SuperAdminSummaryReport -> "📊 LoyaltyLoop: Daily Summary Report" // Internal, no translate
+            is EmailTemplate.SuperAdminSummaryReport -> "📊 LoyaltyLoop: Daily Summary Report"
             is EmailTemplate.PinResetRequested -> ServerResources.get(lang, "pin_reset_subject")
             is EmailTemplate.PartnerPinResetRequested -> ServerResources.get(lang, "pin_reset_partner_subject")
+
             is EmailTemplate.SmsProviderAlert -> "🚨 SMS Provider Alert: ${template.code}"
         }
     }
 
     fun buildBody(template: EmailTemplate, lang: String?): String {
-        return when (template) {
-            is EmailTemplate.PartnerWelcome -> ServerResources.get(
-                lang, "welcome_body", mapOf("partnerName" to template.name)
-            ) + "\n\n" + template.loginUrl
-
+        val content = when (template) {
             is EmailTemplate.PointCreated -> ServerResources.get(
                 lang, "point_created_body", mapOf("pointName" to template.pointName)
             )
@@ -198,7 +195,7 @@ class EmailTemplateService {
                     "date" to template.date
                 )
             )
-            
+
             is EmailTemplate.PinResetRequested -> ServerResources.get(
                 lang, "pin_reset_body", mapOf(
                     "resetLink" to template.resetLink
@@ -214,66 +211,10 @@ class EmailTemplateService {
             is EmailTemplate.SmsProviderAlert -> "Critical SMS Provider Error: ${template.code}\n\nDetails:\n${template.debugBody}"
 
             is EmailTemplate.SuperAdminSummaryReport -> buildAdminReport(template)
-        }
-    }
-
-    private fun buildAdminReport(report: EmailTemplate.SuperAdminSummaryReport): String {
-        val sb = StringBuilder()
-        sb.append("<h2>Daily Summary Report</h2>")
-
-        if (report.critical.isNotEmpty()) {
-            sb.append("<h3 style='color:red'>🔥 CRITICAL (<= 1 Day)</h3>")
-            sb.append("<ul>")
-            report.critical.forEach { item ->
-                sb.append("<li><b>${item.partner}</b> - ${item.point} (Expires: ${item.date})")
-                if (item.managerEmail != null) sb.append(" <br/>Manager: ${item.managerEmail}")
-                sb.append("</li>")
-            }
-            sb.append("</ul>")
-        }
-
-        if (report.warning.isNotEmpty()) {
-            sb.append("<h3 style='color:orange'>⚠️ WARNING (<= 3 Days)</h3>")
-            sb.append("<ul>")
-            report.warning.forEach { item ->
-                sb.append("<li><b>${item.partner}</b> - ${item.point} (Expires: ${item.date})</li>")
-            }
-            sb.append("</ul>")
-        }
-
-        if (report.critical.isEmpty() && report.warning.isEmpty()) {
-            sb.append("<p>✅ No critical subscriptions today.</p>")
-        }
-
-        return sb.toString()
-    }
-}return when (template) {
-            is EmailTemplate.PartnerWelcome -> ServerResources.get(lang, "welcome_subject")
-            is EmailTemplate.PointCreated -> ServerResources.get(lang, "point_created_subject")
-
-            // Системные уведомления (обычно на английском или дефолтном языке)
-            is EmailTemplate.SubscriptionRequestCreated -> "Action Required: New Request (${template.type})"
-            is EmailTemplate.SuperAdminSummaryReport -> "📊 Daily Subscription Health Check"
-
-            is EmailTemplate.RequestDecision -> if (template.isApproved)
-                ServerResources.get(lang, "request_approved_subject")
-            else
-                ServerResources.get(lang, "request_rejected_subject")
-
-            is EmailTemplate.SubscriptionExpired -> ServerResources.get(lang, "sub_expired_subject")
-
-            is EmailTemplate.SubscriptionAlert -> {
-                val key = if (template.isUrgent) "sub_critical_subject" else "sub_expiring_subject"
-                ServerResources.get(lang, key)
-            }
-        }
-    }
-
-    fun buildBody(template: EmailTemplate, lang: String?): String {
-        val content = when (template) {
 
             is EmailTemplate.PartnerWelcome -> {
-                val text = ServerResources.get(lang, "welcome_body", mapOf("partnerName" to template.name))
+                val text =
+                    ServerResources.get(lang, "welcome_body", mapOf("partnerName" to template.name))
                 val btn = ServerResources.get(lang, "welcome_btn")
                 """
                 <h2>$text</h2>
@@ -281,29 +222,12 @@ class EmailTemplateService {
                 """
             }
 
-
-            is EmailTemplate.SubscriptionRequestCreated -> """
-                <h3>New Request Pending</h3>
-                <table style="width:100%; text-align:left;">
-                    <tr><td><b>Type:</b></td><td>${template.type}</td></tr>
-                    <tr><td><b>Partner:</b></td><td>${template.partnerName}</td></tr>
-                    <tr><td><b>Amount:</b></td><td>${template.amount}</td></tr>
-                    <tr><td><b>By:</b></td><td>${template.requesterName}</td></tr>
-                </table>
-                <br>
-                <a href="https://admin.loyaltyloop.io/requests/${template.requestId}" class="button">Open Admin Panel</a>
-            """.trimIndent()
-
-            is EmailTemplate.SuperAdminSummaryReport -> buildSummaryReport(template)
-
             else -> "<p>Notification</p>"
         }
-
         return wrapHtml(content)
     }
 
-    // --- ГЕНЕРАТОР ОТЧЕТА ---
-    private fun buildSummaryReport(data: EmailTemplate.SuperAdminSummaryReport): String {
+    private fun buildAdminReport(data: EmailTemplate.SuperAdminSummaryReport): String {
         val sb = StringBuilder()
         sb.append("<h2>Daily Subscription Report</h2>")
         sb.append("<p>Here is the status of expiring subscriptions across the platform.</p>")

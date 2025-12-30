@@ -15,6 +15,7 @@ import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import io.ktor.server.config.ApplicationConfig
 import io.loyaltyloop.server.service.email.ResendEmailService
+import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 
@@ -24,7 +25,7 @@ val serviceModule = module {
         ExchangeRateService(
             redisService = get(),
             apiKey = get<ApplicationConfig>().string("keys.exchangeRate", ""),
-            get {  }
+            okHttpClient = get<OkHttpClient>()
         )
     }
     single { TokenService(get()) }
@@ -40,7 +41,7 @@ val serviceModule = module {
         if (emailProvider == "resend" && resendApiKey.isNotEmpty()) {
             ResendEmailService(
                 config = get(),
-                okHttpClient = get()
+                okHttpClient = get<OkHttpClient>()
             )
         } else ConsoleEmailService()
     }
@@ -99,7 +100,7 @@ val serviceModule = module {
 
     single {
         LoyaltyEngineService(
-            get(), get(), get(), get(), get()
+            get(), get(), get(), get()
         )
     }
 

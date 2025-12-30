@@ -425,14 +425,10 @@ fun Route.partnerRoutes(
                 val request = call.receive<CreateTradingPointRequest>()
                 validateBaseCashback(request.baseCashback)
 
-                val pointId = tradingPointRepository.createTradingPoint(
-                    partnerId = workspaceId,
-                    request = request,
-                )
                 
                 // Email notification about new point
                 val user = userRepository.getUserById(userId)
-                if (user?.email != null) {
+                if (user != null && user.email != null) {
                     val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
                     emailService.sendEmail(
                         to = user.email!!,

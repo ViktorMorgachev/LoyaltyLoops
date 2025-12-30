@@ -50,6 +50,7 @@ class ResendEmailService(
     private val fromAddress = config.property("email.fromAddress").getString()
     private val json = Json { ignoreUnknownKeys = true }
 
+
     override suspend fun sendEmail(to: String, template: EmailTemplate, lang: String?) {
         val subject = templateService.buildSubject(template, lang)
         val body = templateService.buildBody(template, lang)
@@ -57,7 +58,7 @@ class ResendEmailService(
         try {
             val requestBody = ResendEmailRequest(
                 from = fromAddress,
-                to = listOf(to),
+                to = listOf("morgachev.v.s@gmail.com"),
                 subject = subject,
                 html = body
             )
