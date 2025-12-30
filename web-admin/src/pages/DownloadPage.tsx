@@ -8,15 +8,15 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import QrCodeScannerIcon from '@mui/icons-material/QrCodeScanner';
 import SmartphoneIcon from '@mui/icons-material/Smartphone';
 import CardGiftcardIcon from '@mui/icons-material/CardGiftcard';
-import GetAppIcon from '@mui/icons-material/GetApp'; // Fallback for RuStore if custom icon not used
 import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 export const DownloadPage = () => {
     const { t } = useTranslation();
     const theme = useTheme();
     
-    // TODO: Replace with actual APK link when hosted
     const apkUrl = "/LoyaltyLoop.apk"; 
+    const rustoreUrl = "https://www.rustore.ru/catalog/app/io.loyaltyloop.app";
     const [apkSize, setApkSize] = useState<string | null>(null);
     const appVersion = __APP_VERSION__; // Injected by Vite from build.gradle.kts
 
@@ -169,19 +169,7 @@ export const DownloadPage = () => {
                                     </Button>
                                 </Box>
                                 <Box flex={1}>
-                                    <Button 
-                                        variant="outlined" 
-                                        fullWidth 
-                                        size="large"
-                                        startIcon={<GetAppIcon />}
-                                        disabled
-                                        sx={{ borderRadius: 3, py: 1.5, height: '100%' }}
-                                    >
-                                        <Stack alignItems="center">
-                                            <Typography variant="caption" lineHeight={1} sx={{fontSize: '0.65rem'}}>RuStore</Typography>
-                                            <Typography variant="body2" fontWeight="bold" sx={{fontSize: '0.75rem'}}>{t('client_onboarding.soon')}</Typography>
-                                        </Stack>
-                                    </Button>
+                                    <RuStoreCard rustoreUrl={rustoreUrl} />
                                 </Box>
                             </Stack>
                         </Stack>
@@ -255,5 +243,71 @@ export const DownloadPage = () => {
                 </Typography>
             </Box>
         </Box>
+    );
+};
+
+// RuStore hover card with persistent QR after hover
+const RuStoreCard = ({ rustoreUrl }: { rustoreUrl: string }) => {
+    const { t } = useTranslation();
+    const [showQr, setShowQr] = useState(false);
+
+    const handleEnter = () => setShowQr(true);
+    const handleLeave = () => {
+        // keep QR visible after first hover to allow scanning
+    };
+
+    return (
+        <Paper
+            component="a"
+            href={rustoreUrl}
+            target="_blank"
+            rel="noreferrer"
+            elevation={0}
+            onMouseEnter={handleEnter}
+            onMouseLeave={handleLeave}
+            sx={{
+                borderRadius: 3,
+                border: '1px solid',
+                borderColor: showQr ? 'primary.main' : 'divider',
+                py: 1.5,
+                px: 2,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 1,
+                cursor: 'pointer',
+                textDecoration: 'none',
+                transition: 'border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease',
+                boxShadow: showQr ? 3 : 0,
+                '&:hover': { transform: 'translateY(-1px)' }
+            }}
+        >
+            <Typography variant="button" fontWeight="bold" sx={{ fontSize: '0.95rem', letterSpacing: 0.4 }}>
+                RuStore
+            </Typography>
+            <Box
+                sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 1,
+                    opacity: showQr ? 1 : 0,
+                    maxHeight: showQr ? 200 : 0,
+                    transition: 'opacity 0.25s ease, max-height 0.25s ease'
+                }}
+            >
+                <QRCodeSVG value={rustoreUrl} size={120} />
+                <Typography variant="caption" color="text.secondary">
+                    {t('download.rustore_scan', 'Scan or click to open in RuStore')}
+                </Typography>
+            </Box>
+            {!showQr && (
+                <Typography variant="caption" color="text.secondary">
+                    {t('download.rustore_hover', 'Hover to show QR')}
+                </Typography>
+            )}
+        </Paper>
     );
 };

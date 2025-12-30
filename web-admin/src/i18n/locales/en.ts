@@ -947,7 +947,9 @@ export const en = {
       title: "Download LoyaltyLoop",
       desc: "Get the app to collect points, get rewards, and track your progress.",
       btn_apk: "Download APK",
-      requirements: "Requires Android 8.0 or later"
+      requirements: "Requires Android 8.0 or later",
+      rustore_scan: "Scan or click to open in RuStore",
+      rustore_hover: "Hover to show QR"
     },
     client_onboarding: {
       welcome_title: "Welcome to LoyaltyLoop",
@@ -960,7 +962,7 @@ export const en = {
       download_apk: "Download APK (Android)",
       download_google: "Google Play",
       download_apple: "App Store",
-      download_rustore: "RuStore",
+      download_rustore: "Ru Store",
       soon: "Soon",
       version: "Version",
       size: "Size"
