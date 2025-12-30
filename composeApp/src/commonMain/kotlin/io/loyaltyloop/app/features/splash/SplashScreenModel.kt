@@ -79,7 +79,7 @@ class SplashScreenModel(
     fun checkSession() {
         screenModelScope.launch {
             _state.value = State(isLoading = true, error = null)
-
+            var appVersionInfo: AppVersionResponse? = null
             // 1. Check Version
             val versionResult = appRepository.getAppVersion(platform = platformName)
             versionResult.onSuccess { versionInfo ->
@@ -90,14 +90,17 @@ class SplashScreenModel(
                         _events.send(Event.NavigateToForceUpdate(versionInfo.storeUrl))
                         return@launch
                     } else {
-                        continueFlow(versionInfo)
+                        appVersionInfo  = versionInfo
                     }
                 }
 
+            }.onError { code, string ->
+                _state.value = State(isLoading = false, error = UiText.Resource(code.toResource(string)))
             }.onFailure {
-                // Log error but continue
-                log.write("Version check failed: ${it.message}", LogType.Warning)
+                _state.value = State(isLoading = false, error = UiText.Resource(Res.string.error_network))
             }
+
+            continueFlow(appVersionInfo)
 
 
         }
