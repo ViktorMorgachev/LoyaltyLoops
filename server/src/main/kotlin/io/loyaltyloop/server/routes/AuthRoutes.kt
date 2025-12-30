@@ -57,15 +57,20 @@ fun Route.authRoutes(
             post("/start") {
                 val ttl = applicationConfig.long("telegram.ttl", default = 120_000L)
                 val uuid = authSessionRepository.createSession(ttl)
+                application.log.info("Created Telegram auth session: uuid=$uuid, ttl=$ttl")
                 call.respond(TelegramAuthStartResponse(uuid, telegramAuthService.botUsername, (ttl / 1000).toInt()))
             }
 
             get("/status/{uuid}") {
                 val uuid = call.parameters["uuid"]!!
+                application.log.info("Checking status for session uuid=$uuid")
                 val session = authSessionRepository.getSession(uuid)
                 if (session == null) {
+                    application.log.warn("Session not found: $uuid")
                     throw LoyaltyException(AppErrorCode.NOT_FOUND, "Session not found")
                 }
+                
+                application.log.info("Session status: ${session.status}, userId=${session.userId}")
 
                 if (session.status == "CONFIRMED") {
                     val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
