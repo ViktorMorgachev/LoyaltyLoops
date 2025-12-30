@@ -32,7 +32,6 @@ import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.service.email.EmailTemplateService
 import io.loyaltyloop.server.service.sms.SmsService
 import io.loyaltyloop.server.utils.nowUtc
-import io.loyaltyloop.server.utils.toUserDto
 import io.loyaltyloop.shared.models.TransactionTypeHistory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -44,7 +43,6 @@ import java.time.format.DateTimeFormatter
 class LoyaltyEngineService(
     val smsService: SmsService,
     val emailService: EmailService,
-    val emailTemplateService: EmailTemplateService,
     val systemEventRepository: SystemEventRepository,
     val refreshTokenRepository: RefreshTokenRepository,
 ) {
@@ -380,10 +378,7 @@ class LoyaltyEngineService(
                         isUrgent = isUrgent
                     )
 
-                    val subject = emailTemplateService.buildSubject(template, lang)
-                    val body = emailTemplateService.buildBody(template, lang)
-
-                    emailService.sendEmail(email, subject, body)
+                    emailService.sendEmail(email, template, lang)
                     logNotification("EMAIL", "Owner", partnerId.toString())
                 } catch (e: Exception) {
                     logger.error("Failed to send Email to owner $email", e)
@@ -412,10 +407,7 @@ class LoyaltyEngineService(
                         isUrgent = isUrgent
                     )
 
-                    val subject = emailTemplateService.buildSubject(template, mgrLang)
-                    val body = emailTemplateService.buildBody(template, mgrLang)
-
-                    emailService.sendEmail(mgrEmail, subject, body)
+                    emailService.sendEmail(mgrEmail, template, mgrLang)
                     logNotification("EMAIL", "Manager", partnerId.toString())
                 } catch (e: Exception) {
                     logger.error("Failed to send Email to manager $mgrEmail", e)
@@ -431,7 +423,7 @@ class LoyaltyEngineService(
         // 1. Находим получателей (Супер-Админы и Супер-Менеджеры)
         val admins = SystemStaffTable
             .innerJoin(UsersTable)
-            .slice(UsersTable.email)
+            .slice(UsersTable.email, UsersTable.language) // Added language here
             .select {
                 (SystemStaffTable.isActive eq true) and
                         (SystemStaffTable.role inList listOf(
@@ -439,8 +431,11 @@ class LoyaltyEngineService(
                             UserRole.PLATFORM_SUPER_MANAGER
                         ))
             }
-            .mapNotNull { it.toUserDto() }
-            .filter { !it.email.isNullOrEmpty() }
+            .mapNotNull {
+                val email = it[UsersTable.email]
+                val lang = it[UsersTable.language]
+                if (email.isNullOrEmpty()) null else email to lang
+            }
             .distinct()
 
         if (admins.isEmpty()) return@dbQuery
@@ -470,13 +465,11 @@ class LoyaltyEngineService(
 
 
         // 4. Рассылка
-        admins.forEach { admin ->
-            val subject = emailTemplateService.buildSubject(template, admin.language)
-            val body = emailTemplateService.buildBody(template, admin.language)
+        admins.forEach { (email, lang) ->
             try {
-                emailService.sendEmail(admin.email!!, subject, body)
+                emailService.sendEmail(email, template, lang)
             } catch (e: Exception) {
-                logger.error("Failed to send admin report to ${admin.email}", e)
+                logger.error("Failed to send admin report to $email", e)
             }
         }
 

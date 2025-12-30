@@ -482,10 +482,8 @@
     <string name="whats_new_btn_awesome">Awesome!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • You can now rate service after a visit
-        • Updated client rating screen design
-        • Fixed scanner bugs on Android
-        • Added update notifications
+        • Added Russia support (phone +7, RUB currency)
+        • Improved app stability
     </string>
 
     <!-- Coming Soon -->

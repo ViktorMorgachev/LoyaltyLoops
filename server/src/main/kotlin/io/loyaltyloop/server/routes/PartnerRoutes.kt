@@ -42,6 +42,7 @@ import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.repository.SubscriptionRepository
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.utils.getTimezone
 import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow
 import io.loyaltyloop.server.utils.nowUtc
@@ -174,6 +175,20 @@ fun Route.partnerRoutes(
 
                 val partnerId = partnerRepository.createPartner(userId, timeZone, request)
                 
+                // Send Welcome Email
+                val user = userRepository.getUserById(userId)
+                user?.email?.let {
+                    emailService.sendEmail(
+                        to = it,
+                        template = EmailTemplate.PartnerWelcome(
+                            name = request.businessName,
+                            loginUrl = "$webBaseUrl/login"
+                        ),
+                        lang = user.language
+                    )
+                }
+
+
                 call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Business created: $partnerId"))
             }
 
@@ -248,7 +263,7 @@ fun Route.partnerRoutes(
                 pinResetTokenRepository.createToken(workspaceId, rawToken, nowUtc().plusHours(PIN_RESET_TTL_HOURS).toUtcMillis())
 
                 val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
-                emailService.sendPinResetEmail(email, resetLink)
+                emailService.sendEmail(email, EmailTemplate.PartnerPinResetRequested(resetLink), user.language)
 
                 eventLogger.log(
                     type = SystemEventType.PIN_RESET_REQUEST,
@@ -411,11 +426,26 @@ fun Route.partnerRoutes(
                 val request = call.receive<CreateTradingPointRequest>()
                 validateBaseCashback(request.baseCashback)
 
-                tradingPointRepository.createTradingPoint(
+                // Create trading point
+                val pointId = tradingPointRepository.createTradingPoint(
                     partnerId = workspaceId,
                     request = request,
                 )
-                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created"))
+
+                // Email notification about new point
+                val user = userRepository.getUserById(userId)
+                val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
+                user?.email?.let {
+                    emailService.sendEmail(
+                        to = it,
+                        template = EmailTemplate.PointCreated(
+                            pointName = request.name,
+                            partnerName = partner.businessName
+                        ),
+                        lang = user.language
+                    )
+                }
+                call.respond(HttpStatusCode.Created, ApiMessage(AppErrorCode.SUCCESS, "Point created: $pointId"))
             }
 
             // --- MANAGERS & CASHIERS ---

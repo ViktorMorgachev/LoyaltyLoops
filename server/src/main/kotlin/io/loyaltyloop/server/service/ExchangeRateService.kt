@@ -27,19 +27,15 @@ import org.jetbrains.exposed.sql.select
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
-import java.util.concurrent.TimeUnit
 
 
 // TODO checked
 class ExchangeRateService(
     private val redisService: RedisService,
-    private val apiKey: String
+    private val apiKey: String,
+    private val okHttpClient: OkHttpClient,
 ) {
     private val logger = LoggerFactory.getLogger(ExchangeRateService::class.java)
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(10, TimeUnit.SECONDS)
-        .build()
 
     // 25 часов (чтобы пережить сбой крона, но удалять мусор)
     private val CACHE_TTL = 25 * 60 * 60
@@ -191,7 +187,7 @@ class ExchangeRateService(
         val url = "https://v6.exchangerate-api.com/v6/$apiKey/latest/$base"
         val request = Request.Builder().url(url).build()
 
-        client.newCall(request).execute().use { response ->
+        okHttpClient.newCall(request).execute().use { response ->
             if (!response.isSuccessful) throw Exception("API Error: ${response.code}")
 
             val bodyString = response.body?.string() ?: "{}"

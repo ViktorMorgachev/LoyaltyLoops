@@ -234,30 +234,34 @@ fun TelegramAuthCard(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Button(
-                    onClick = {
-                        state.telegramBot?.let { bot ->
-                            state.telegramUuid?.let { uuid ->
-                                uriHandler.openUri("https://t.me/$bot?start=login_$uuid")
+                if (!state.authTelegramButtonClicked){
+                    Button(
+                        onClick = {
+                            state.telegramBot?.let { bot ->
+                                state.telegramUuid?.let { uuid ->
+                                    uriHandler.openUri("https://t.me/$bot?start=login_$uuid")
+                                }
                             }
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF2AABEE),
-                        contentColor = Color.White
-                    ),
-                    shape = MaterialTheme.shapes.large
-                ) {
-                    Text(
-                        stringResource(Res.string.auth_telegram_open),
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
+                            onAction.invoke(LoginScreenModel.Action.OnTelegramButtonClicked)
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(56.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2AABEE),
+                            contentColor = Color.White
+                        ),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Text(
+                            stringResource(Res.string.auth_telegram_open),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-                if (state.telegramStatus == "PENDING") {
+
+                if (state.telegramStatus == "PENDING" && state.authTelegramButtonClicked) {
                     Spacer(modifier = Modifier.height(24.dp))
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

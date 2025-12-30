@@ -141,6 +141,7 @@ export const en = {
     },
     currency: {
         USD: "USD (Dollar)",
+        RUB: "RUB (Ruble)",
         KGS: "KGS (Som)",
         KZT: "KZT (Tenge)",
         UZS: "UZS (Sum)",
@@ -323,6 +324,7 @@ export const en = {
     },
     countries: {
       KG: "Kyrgyzstan",
+      RU: "Russia",
       KZ: "Kazakhstan",
       UZ: "Uzbekistan",
       BY: "Belarus"

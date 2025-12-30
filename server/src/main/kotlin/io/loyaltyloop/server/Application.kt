@@ -85,9 +85,11 @@ import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.service.sms.SmsService
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
+import okhttp3.OkHttpClient
 import org.koin.ktor.plugin.Koin
 import org.koin.ktor.ext.inject
 import org.koin.logger.slf4jLogger
+import java.util.concurrent.TimeUnit
 
 fun main(args: Array<String>) {
     // EngineMain автоматически ищет application.conf и загружает его
@@ -136,7 +138,6 @@ fun Application.module() {
         masking = false
     }
 
-
     install(RateLimit) {
         register {
             rateLimiter(limit = 300, refillPeriod = 60.seconds)
@@ -148,8 +149,13 @@ fun Application.module() {
 
     // 1. Install Koin
     install(Koin) {
+        val httpClient = OkHttpClient.Builder()
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(10, TimeUnit.SECONDS)
+            .build()
+
         slf4jLogger()
-        modules(appModule(environment.config), repositoriesModule, serviceModule)
+        modules(appModule(environment.config, okHttpClient = httpClient), repositoriesModule, serviceModule)
     }
 
     val envConfig = environment.config

@@ -487,10 +487,8 @@
     <string name="whats_new_btn_awesome">Керемет!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Енді қызметті келуден кейін бағалауға болады
-        • Клиентті бағалау экраны жаңартылды
-        • Android-тағы сканер қателіктері түзетілді
-        • Жаңарту хабарламалары қосылды
+        • РФ қолдауы қосылды (+7 телефон, ₽ валюта)
+        • Қолданба тұрақтылығы артты
     </string>
 
     <!-- Coming Soon Placeholder -->

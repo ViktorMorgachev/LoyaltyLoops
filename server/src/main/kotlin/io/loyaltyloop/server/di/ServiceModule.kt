@@ -14,6 +14,8 @@ import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import io.ktor.server.config.ApplicationConfig
+import io.loyaltyloop.server.service.email.ResendEmailService
+import okhttp3.OkHttpClient
 import org.koin.dsl.module
 import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 
@@ -22,7 +24,8 @@ val serviceModule = module {
     single {
         ExchangeRateService(
             redisService = get(),
-            apiKey = get<ApplicationConfig>().string("keys.exchangeRate", "")
+            apiKey = get<ApplicationConfig>().string("keys.exchangeRate", ""),
+            okHttpClient = get<OkHttpClient>()
         )
     }
     single { TokenService(get()) }
@@ -31,20 +34,29 @@ val serviceModule = module {
     single { EventLogger(get()) }
     single { EmailTemplateService() }
 
-    // Email Service (Interface binding)
-    single<EmailService> { ConsoleEmailService() }
+    single<EmailService> {
+        val config = get<ApplicationConfig>()
+        val emailProvider = config.string("email.provider", "console")
+        val resendApiKey = config.string("email.resend.apiKey", "")
+        if (emailProvider == "resend" && resendApiKey.isNotEmpty()) {
+            ResendEmailService(
+                config = get(),
+                eventLogger = get(),
+                okHttpClient = get<OkHttpClient>()
+            )
+        } else ConsoleEmailService()
+    }
+
 
     // SMS Service (Conditional binding logic is complex, usually handled in module or factory)
     // We can inject the dependencies to build it
     single<SmsService> {
         val config = get<ApplicationConfig>()
         val smsProvider = config.string("sms.smsProvider", "internal")
-        val preludeApiKey = config.string("sms.prelude_conf.apiKey", "")
 
-        if (smsProvider == "prelude" && preludeApiKey.isNotEmpty()) {
+        if (smsProvider == "prelude") {
             PreludeSmsService(
-                apiKey = preludeApiKey,
-                preludeClient = PreludeOkHttpClient.builder().apiToken(preludeApiKey).build(),
+                config = get<ApplicationConfig>(),
                 eventLogger = get(),
                 emailService = get()
             )
@@ -87,7 +99,7 @@ val serviceModule = module {
 
     single {
         LoyaltyEngineService(
-            get(), get(), get(), get(), get()
+            get(), get(), get(), get()
         )
     }
 

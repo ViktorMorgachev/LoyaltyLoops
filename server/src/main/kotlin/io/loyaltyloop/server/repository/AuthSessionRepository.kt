@@ -31,7 +31,7 @@ class AuthSessionRepository {
         newId.value.toString()
     }
 
-    suspend fun getSession(uuid: String): AuthSession? = newSuspendedTransaction(Dispatchers.IO, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED) {
+    suspend fun getSession(uuid: String): AuthSession? = dbQuery {
         val sessionUuid = uuid.toUUID()
 
         AuthSessionsTable.selectAll()

@@ -11,7 +11,6 @@ data class SendCodeRequest(
 data class VerifyCodeRequest(
     val phone: String,
     val code: String,
-    val countryCode: CountryCode = CountryCode.KG,
     val verificationId: String? = null
 )
 

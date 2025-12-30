@@ -13,6 +13,8 @@ import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.Country
+import io.loyaltyloop.shared.models.CountryCode
 import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.util.UUID
@@ -115,6 +117,13 @@ fun ApplicationCall.getCurrencyForTimezone(): String {
     return TimezoneUtils.getCurrencyForTimezone(getTimezone())
 }
 
+
+/**
+ * Получение кода страны на основе таймзоны из хедера.
+ */
+fun ApplicationCall.getCountryCodeForTimezone(): CountryCode {
+    return TimezoneUtils.getCountryForTimezone(getTimezone())
+}
 
 /**
  * Извлекает язык.

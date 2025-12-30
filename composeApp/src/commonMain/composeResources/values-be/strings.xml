@@ -487,10 +487,8 @@
     <string name="whats_new_btn_awesome">Крута!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Цяпер можна ацэньваць сэрвіс пасля візіту
-        • Абноўлены дызайн экрана ацэнкі кліента
-        • Выпраўлены памылкі сканера на Android
-        • Дададзены паведамленні пра абнаўленні
+        • Дададзена падтрымка РФ (+7 тэлефон, ₽ валюта)
+        • Павышана стабільнасць праграмы
     </string>
 
     <!-- Coming Soon Placeholder -->
