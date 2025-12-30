@@ -1,5 +1,6 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
-
+import java.util.Properties
+import java.io.FileInputStream
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 plugins {
@@ -15,15 +16,31 @@ val activeEnv = project.findProperty("env") as? String
         gradle.startParameter.taskNames.any { task -> task.contains(it, true) }
     } ?: "dev"
 
-// 2. Extension для чистоты
+// 2. Читаем версии из local.properties с безопасными дефолтами
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+fun getStringProp(key: String, default: String): String =
+    (keystoreProperties.getProperty(key) ?: default).toString()
+
+fun getIntProp(key: String, default: Int): Int =
+    getStringProp(key, default.toString()).toInt()
+
+// 3. Extension для чистоты
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
     buildConfigField("String", name, "\"$value\"")
 
 buildConfig {
     packageName("io.loyaltyloop.shared")
 
-    stringField("APP_VERSION", "1.1.0")
-    buildConfigField("int", "VERSION_CODE", "110")
+    val versionCode = getIntProp("currentVersionCode", 1)
+    val versionName = getStringProp("currentVersionName", "1.0.0")
+
+    stringField("APP_VERSION", versionName)
+    buildConfigField("int", "VERSION_CODE", "$versionCode")
     buildConfigField("boolean", "IS_PROD", "${activeEnv == "prod"}")
     stringField("ENV_NAME", activeEnv)
 }
