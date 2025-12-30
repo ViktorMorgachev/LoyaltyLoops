@@ -50,7 +50,7 @@ object DatabaseFactory {
             maxLifetime = 300_000
             isAutoCommit = false
             connectionInitSql = "SET TIME ZONE 'UTC'"
-            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+            transactionIsolation = "TRANSACTION_READ_COMMITTED"
             validate()
         }
     }
