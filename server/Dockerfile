@@ -5,7 +5,7 @@ RUN gradle :server:installDist --no-daemon
 
 FROM eclipse-temurin:17-jdk-jammy
 ENV TZ=UTC
-ENV JAVA_TOOL_OPTIONS="-Duser.timezone=UTC"
+ENV JAVA_TOOL_OPTIONS="-Duser.timezone=UTC -Djava.net.preferIPv4Stack=true"
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 EXPOSE 8080
 RUN mkdir /app
