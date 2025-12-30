@@ -482,6 +482,16 @@
     <string name="force_update_message">Мы дадалі новыя функцыі і выправілі памылкі. Калі ласка, абнавіце праграму, каб працягнуць выкарыстанне.</string>
     <string name="force_update_btn">Абнавіць</string>
 
+    <!-- Optional update -->
+    <string name="need_update_title">Даступная новая версія</string>
+    <string name="need_update_subtitle">Можна абнавіць зараз або працягнуць з бягучай версіяй.</string>
+    <string name="need_update_btn_update">Абнавіць</string>
+    <string name="need_update_btn_continue">Працягнуць</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Запускаем праграму</string>
+    <string name="splash_subtitle">Правяраем абнаўленні і рыхтуем ваш уліковы запіс</string>
+
     <!-- What's New -->
     <string name="whats_new_title">Што новага</string>
     <string name="whats_new_btn_awesome">Крута!</string>

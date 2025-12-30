@@ -483,6 +483,16 @@
     <string name="force_update_message">Мы добавили новые функции и исправили ошибки. Пожалуйста, обновите приложение, чтобы продолжить использование.</string>
     <string name="force_update_btn">Обновить</string>
 
+    <!-- Optional update -->
+    <string name="need_update_title">Доступна новая версия</string>
+    <string name="need_update_subtitle">Вы можете обновить сейчас или продолжить использование текущей версии.</string>
+    <string name="need_update_btn_update">Обновить</string>
+    <string name="need_update_btn_continue">Продолжить</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Запускаем сервис</string>
+    <string name="splash_subtitle">Проверяем обновления и готовим ваш аккаунт</string>
+
     <!-- What's New -->
     <string name="whats_new_title">Что нового</string>
     <string name="whats_new_btn_awesome">Круто!</string>

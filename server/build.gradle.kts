@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "io.loyaltyloop"
-version = "1.0.0"
+version = "1.1.0"
 
 application {
     mainClass.set("io.loyaltyloop.server.ApplicationKt")

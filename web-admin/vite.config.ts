@@ -1,23 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'path'
-import fs from 'fs'
 
 // Функция для получения версии приложения из build.gradle.kts
 const getAppVersion = () => {
-  try {
-    const gradlePath = path.resolve(__dirname, '../composeApp/build.gradle.kts');
-    if (fs.existsSync(gradlePath)) {
-      const content = fs.readFileSync(gradlePath, 'utf-8');
-      const match = content.match(/val currentVersionName = "([^"]+)"/);
-      if (match && match[1]) {
-        return match[1];
-      }
-    }
-  } catch (e) {
-    console.error('Failed to read app version from build.gradle.kts', e);
-  }
-  return '1.0.0'; // Fallback
+  return '1.1.0'; // Fallback
 };
 
 const appVersion = getAppVersion();

@@ -20,21 +20,11 @@ val activeEnv = project.findProperty("env") as? String
     ?: gradle.startParameter.taskNames.any { it.contains("stage", true) }.let { if (it) "stage" else null }
     ?: "dev"
 
-val keystorePropertiesFile = rootProject.file("local.properties")
-val keystoreProperties = Properties()
-if (keystorePropertiesFile.exists()) {
-    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
-}
-
-fun getStringProp(key: String, default: String): String =
-    (keystoreProperties.getProperty(key) ?: default).toString()
-
-fun getIntProp(key: String, default: Int): Int =
-    getStringProp(key, default.toString()).toInt()
-
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
+val currentVersionCode = 110
+val currentVersionName = "1.1.0"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
@@ -44,11 +34,8 @@ buildConfig {
     packageName("io.loyaltyloop.app.config")
     className("AppConfig")
 
-    val versionCode = getIntProp("currentVersionCode", 1)
-    val versionName = getStringProp("currentVersionName", "1.0.0")
-
-    buildConfigField("int", "VERSION_CODE", "$versionCode")
-    stringField("VERSION_NAME", versionName)
+    buildConfigField("int", "VERSION_CODE", "$currentVersionCode")
+    stringField("VERSION_NAME", currentVersionName)
     buildConfigField("boolean", "IS_PROD", "$isProd")
     stringField("ENV_NAME", activeEnv)
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
@@ -72,13 +59,14 @@ kotlin {
         cocoapods {
             summary = "LoyaltyLoop Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
-            version = "1.0.0"
+            version = "1.1.0"
             ios.deploymentTarget = "14.0"
             framework {
                 baseName = "LoyaltyLoop"
                 isStatic = true
                 export(compose.components.resources)
             }
+
             pod("YandexMapsMobile") {
                 version = "4.5.1-lite"
                 extraOpts += listOf("-compiler-option", "-fmodules")
@@ -140,10 +128,14 @@ kotlin {
     }
 }
 
-
+val keystorePropertiesFile = rootProject.file("local.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
 android {
     namespace = "io.loyaltyloop.app"
-    compileSdk = 35
+    compileSdk = 36
 
     signingConfigs {
         create("release") {
@@ -162,8 +154,8 @@ android {
         applicationId = "io.loyaltyloop.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = versionCode
-        versionName = versionName
+        versionCode = currentVersionCode
+        versionName = currentVersionName
         resourceConfigurations += setOf("en", "ru", "be", "kk", "ky", "uz")
     }
 
@@ -204,14 +196,6 @@ android {
                         if (apkFile != null && apkFile.exists() && apkFile.name.endsWith(".apk")) {
                             val rootDir = project.rootDir
 
-                            // 1. Копируем в composeApp/apk
-                            val destDirApk = project.file("apk")
-                            copy {
-                                from(apkFile)
-                                into(destDirApk)
-                            }
-
-                            // 2. Копируем в web-admin/public (для скачивания с сайта)
                             val destDirWeb = rootDir.resolve("web-admin/public")
                             copy {
                                 from(apkFile)
@@ -219,7 +203,6 @@ android {
                             }
 
                             println("✅ Release APK copied to:")
-                            println("   - ${destDirApk.absolutePath}/${apkFile.name}")
                             println("   - ${destDirWeb.absolutePath}/${apkFile.name}")
                         }
                     }

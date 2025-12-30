@@ -477,6 +477,16 @@
     <string name="force_update_message">We have added new features and fixed bugs. Please update the app to continue using it.</string>
     <string name="force_update_btn">Update</string>
 
+    <!-- Optional update -->
+    <string name="need_update_title">New version available</string>
+    <string name="need_update_subtitle">You can update now or continue with the current version.</string>
+    <string name="need_update_btn_update">Update</string>
+    <string name="need_update_btn_continue">Continue</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Starting up</string>
+    <string name="splash_subtitle">Checking updates and preparing your account</string>
+
     <!-- What's New -->
     <string name="whats_new_title">What's New</string>
     <string name="whats_new_btn_awesome">Awesome!</string>

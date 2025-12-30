@@ -482,6 +482,16 @@
     <string name="force_update_message">Біз жаңа мүмкіндіктер қостық және қателерді түзеттік. Қолдануды жалғастыру үшін қолданбаны жаңартыңыз.</string>
     <string name="force_update_btn">Жаңарту</string>
 
+    <!-- Optional update -->
+    <string name="need_update_title">Жаңа нұсқа қолжетімді</string>
+    <string name="need_update_subtitle">Қазір жаңарта аласыз немесе ағымдағы нұсқамен жалғастыра аласыз.</string>
+    <string name="need_update_btn_update">Жаңарту</string>
+    <string name="need_update_btn_continue">Жалғастыру</string>
+
+    <!-- Splash -->
+    <string name="splash_title">Қолданба іске қосылуда</string>
+    <string name="splash_subtitle">Жаңартуларды тексеріп, аккаунтыңызды дайындаудамыз</string>
+
     <!-- What's New -->
     <string name="whats_new_title">Жаңалықтар</string>
     <string name="whats_new_btn_awesome">Керемет!</string>

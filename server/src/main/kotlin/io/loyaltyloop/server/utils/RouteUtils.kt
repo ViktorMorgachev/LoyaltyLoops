@@ -13,13 +13,16 @@ import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.Country
 import io.loyaltyloop.shared.models.CountryCode
-import org.slf4j.LoggerFactory
 import java.time.ZoneId
 import java.util.UUID
 
 // TODO checked
+
+fun ApplicationCall.lang(): String {
+    val header = request.headers["Accept-Language"]
+    return header?.split(",")?.firstOrNull()?.take(2)?.lowercase() ?: "ru"
+}
 /**
  * Безопасно извлекает userId из JWT токена
  * @return userId или null, если токен невалиден
