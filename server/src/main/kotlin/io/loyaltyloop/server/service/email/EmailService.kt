@@ -33,7 +33,7 @@ class ConsoleEmailService(
         """.trimIndent()
         )
         
-        if (template is EmailTemplate.PinResetRequested) {
+        if (template is EmailTemplate.PartnerPinResetRequested) {
              EmailDebugStore.capturePinReset(template.resetLink)
         }
     }
