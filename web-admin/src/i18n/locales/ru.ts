@@ -77,6 +77,7 @@ export const ru = {
       INVALID_TIER_VALUE: "Нельзя использовать отрицательные значения в уровнях",
       SUCCESS: "Успешно",
       INVALID_INVITE_CODE: "Неверный инвайт код",
+      precheck_vpn: "Пожалуйста, отключите VPN и попробуйте снова. Страна номера и IP не совпадают.",
       ALREADY_JOINED: "Вы уже присоединены",
       SECURITY_QR_SECRET_MISSING: "Критическая ошибка безопасности (QR Secret)",
       LOYALTY_SETTING_NOT_FOUND: "Настройки лояльности не найдены",

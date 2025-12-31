@@ -81,3 +81,8 @@ data class AuthSessionStatusResponse(
     val status: String,
     val auth: AuthResponse? = null
 )
+
+@Serializable
+data class PrecheckRequest(
+    val phone: String
+)

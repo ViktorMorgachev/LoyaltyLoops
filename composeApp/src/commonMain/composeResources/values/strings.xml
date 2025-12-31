@@ -46,6 +46,7 @@
     
     <string name="error_invalid_phone">Неверный формат телефона</string>
     <string name="error_invalid_phone_number">Неверный формат номера телефона</string>
+    <string name="auth_precheck_vpn">Пожалуйста, отключите VPN и попробуйте снова. Страна номера и IP не совпадают.</string>
     <string name="error_invalid_code">Неверный код подтверждения</string>
     <string name="error_code_expired">Код истек</string>
     <string name="error_user_not_found">Пользователь не найден</string>

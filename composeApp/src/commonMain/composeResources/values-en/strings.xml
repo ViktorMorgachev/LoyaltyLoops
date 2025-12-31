@@ -40,6 +40,7 @@
     
     <string name="error_invalid_phone">Invalid phone format</string>
     <string name="error_invalid_phone_number">Invalid phone number format</string>
+    <string name="auth_precheck_vpn">Please turn off VPN and try again. Phone country and IP region do not match.</string>
     <string name="error_invalid_code">Invalid verification code</string>
     <string name="error_code_expired">Code expired</string>
     <string name="error_user_not_found">User not found</string>

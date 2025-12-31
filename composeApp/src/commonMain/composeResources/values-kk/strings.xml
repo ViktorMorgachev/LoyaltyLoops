@@ -45,6 +45,8 @@
     
     <string name="error_invalid_phone">Телефон форматы дұрыс емес</string>
     <string name="error_invalid_phone_number">Телефон нөмірінің форматы дұрыс емес</string>
+    <string name="auth_precheck_vpn">VPN-ді өшіріп, қайталап көріңіз. Нөмір елі мен IP аймағы сәйкес емес.</string>
+    <string name="auth_precheck_vpn">VPN-ді өшіріп, қайталап көріңіз. Нөмір елі мен IP аймағы сәйкес емес.</string>
     <string name="error_invalid_code">Растау коды дұрыс емес</string>
     <string name="error_code_expired">Код мерзімі өтті</string>
     <string name="error_user_not_found">Пайдаланушы табылмады</string>

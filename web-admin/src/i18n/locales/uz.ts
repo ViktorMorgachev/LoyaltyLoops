@@ -77,6 +77,7 @@ export const uz = {
       INVALID_TIER_VALUE: "Darajalarda manfiy qiymatlarni ishlatish mumkin emas",
       SUCCESS: "Muvaffaqiyatli",
       INVALID_INVITE_CODE: "Taklif kodi noto'g'ri",
+      precheck_vpn: "VPNni o‘chirib, qayta urinib ko‘ring. Telefon davlati va IP hududi mos kelmaydi.",
       ALREADY_JOINED: "Siz allaqachon qo'shilgansiz",
       SECURITY_QR_SECRET_MISSING: "Xavfsizlik xatosi (QR Secret)",
       LOYALTY_SETTING_NOT_FOUND: "Sodiqlik sozlamalari topilmadi",
@@ -874,6 +875,7 @@ export const uz = {
       rustore_scan: "RuStore ochish uchun skanerlang yoki bosing",
       rustore_hover: "QR ko‘rish uchun kursorni olib boring"
     },
+    
     client_onboarding: {
       welcome_title: "LoyaltyLoop-ga xush kelibsiz",
       welcome_subtitle: "Sevimli joylaringiz bitta ilovada. Ballar to'plang va sovg'alar oling.",

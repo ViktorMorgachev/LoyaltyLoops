@@ -45,6 +45,7 @@
     
     <string name="error_invalid_phone">Няправільны фармат тэлефона</string>
     <string name="error_invalid_phone_number">Няправільны фармат нумара тэлефона</string>
+    <string name="auth_precheck_vpn">Калі ласка, выключыце VPN і паспрабуйце зноў. Краіна нумара і IP не супадаюць.</string>
     <string name="error_invalid_code">Няправільны код пацверджання</string>
     <string name="error_code_expired">Код пратэрмінаваны</string>
     <string name="error_user_not_found">Карыстальнік не знойдзены</string>

@@ -67,6 +67,7 @@ export const en = {
       UNKNOWN_ERROR: "Unknown error",
       INTERNAL_ERROR: "Internal error",
       INVALID_REQUEST: "Invalid request",
+      precheck_vpn: "Please turn off VPN and try again. Phone country and IP region don't match.",
       UNAUTHORIZED: "Unauthorized",
       NOT_FOUND: "Resource not found",
       ACCOUNT_FROZEN: "Account temporarily frozen",
