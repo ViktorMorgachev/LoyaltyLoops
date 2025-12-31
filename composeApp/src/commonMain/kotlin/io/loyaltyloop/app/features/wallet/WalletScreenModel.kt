@@ -137,10 +137,6 @@ class WalletScreenModel(
 
     private suspend fun connectRealtimeIfNeeded(cards: List<LoyaltyCardDto>, force: Boolean = false) {
         val token = tokenStorage.getAccessToken() ?: return
-        if (cards.isEmpty()) {
-            disconnectRealtime()
-            return
-        }
         ensureRealtimeCollector()
 
         val targetIds = cards.map { it.id }
@@ -222,10 +218,6 @@ class WalletScreenModel(
         reconnectJob?.cancel()
         realtimeConnected = false
         realtimeConnecting = false
-        if (_state.value.cards.isEmpty()) {
-            subscribedCardIds = emptySet()
-            return
-        }
         reconnectJob = screenModelScope.launch {
             delay(REALTIME_RETRY_DELAY_MS)
             connectRealtimeIfNeeded(_state.value.cards)
