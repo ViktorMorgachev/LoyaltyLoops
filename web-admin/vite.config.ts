@@ -4,7 +4,7 @@ import path from 'path'
 
 // Функция для получения версии приложения из build.gradle.kts
 const getAppVersion = () => {
-  return '1.1.1'; // Fallback
+  return '1.2.0'; // Fallback
 };
 
 const appVersion = getAppVersion();
