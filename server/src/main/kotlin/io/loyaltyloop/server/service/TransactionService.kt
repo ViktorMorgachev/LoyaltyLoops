@@ -48,6 +48,7 @@ class TransactionService(
     private val historyRepository: HistoryRepository
 ) {
 
+    private val logger = org.slf4j.LoggerFactory.getLogger(TransactionService::class.java)
     suspend fun scanQr(
         cashierUserId: String,
         tradingPointId: String,
@@ -90,6 +91,7 @@ class TransactionService(
         ensureCardActive(card)
 
         if (isCreatedNow) {
+            logger.info("Card created for user=${customer.id}, cardId=${card.id}, partner=$partnerId, point=$tradingPointId")
             notifyUserCardCreated(customer.id, card, tradingPointId)
         }
 
