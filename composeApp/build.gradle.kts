@@ -171,12 +171,16 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             signingConfig = signingConfigs.getByName("release")
+            // Видимое имя в проде
+            resValue("string", "app_name", "LoyaltyLoop")
         }
         create("stage") {
             initWith(getByName("release"))
             applicationIdSuffix = ".stage"
             matchingFallbacks.add("release")
             signingConfig = signingConfigs.getByName("debug")
+            // Видимое имя на стейдже
+            resValue("string", "app_name", "LoyaltyLoop Stage")
         }
     }
 

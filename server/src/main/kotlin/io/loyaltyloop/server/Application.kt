@@ -264,9 +264,10 @@ fun Application.module() {
             val deviceModel = call.request.headers["X-Device-Model"]
             val osVersion = call.request.headers["X-Os-Version"]
             val appVersion = call.request.headers["X-App-Version"]
+            val path = call.request.uri
             val dateTime = java.time.Instant.now().toString()
             val duration = call.processingTimeMillis()
-            "Status: $status | Method: $httpMethod | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
+            "Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
         }
     }
 
