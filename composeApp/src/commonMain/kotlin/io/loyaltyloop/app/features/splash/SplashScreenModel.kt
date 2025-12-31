@@ -169,7 +169,11 @@ class SplashScreenModel(
             NavigationTarget.Home -> _events.send(Event.NavigateToHome)
             NavigationTarget.Login -> _events.send(Event.NavigateToLogin)
             NavigationTarget.Onboarding -> _events.send(Event.NavigateToOnboarding)
-            NavigationTarget.WhatsNew -> _events.send(Event.NavigateToWhatsNew)
+            NavigationTarget.WhatsNew -> {
+                // Сразу помечаем, что показываем changelog этой версии, чтобы не всплывало повторно.
+                tokenStorage.setLastShownWhatsNewVersion(BuildAppConfig.VERSION_CODE)
+                _events.send(Event.NavigateToWhatsNew)
+            }
         }
     }
 }
