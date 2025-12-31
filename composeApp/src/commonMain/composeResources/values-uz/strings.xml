@@ -46,7 +46,6 @@
     <string name="error_invalid_phone">Telefon formati noto‘g‘ri</string>
     <string name="error_invalid_phone_number">Telefon raqami formati noto‘g‘ri</string>
     <string name="auth_precheck_vpn">VPNni o‘chirib, qayta urinib ko‘ring. Telefon davlati va IP hududi mos kelmaydi.</string>
-    <string name="auth_precheck_vpn">VPNni o‘chirib, qayta urinib ko‘ring. Telefon davlati va IP hududi mos kelmaydi.</string>
     <string name="error_invalid_code">Tasdiqlash kodi noto‘g‘ri</string>
     <string name="error_code_expired">Kod muddati tugadi</string>
     <string name="error_user_not_found">Foydalanuvchi topilmadi</string>

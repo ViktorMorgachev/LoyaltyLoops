@@ -33,11 +33,13 @@ import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.RefreshTokenRepository
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.service.GeoIpService
+import io.loyaltyloop.server.utils.bool
 import io.loyaltyloop.server.utils.extractSignals
 import io.loyaltyloop.server.utils.getCountryCodeForTimezone
 import io.loyaltyloop.server.utils.lang
 import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.server.utils.validatePhoneNumber
 import io.loyaltyloop.shared.models.ApiMessage
@@ -62,7 +64,7 @@ fun Route.authRoutes(
     route("/auth") {
 
         route("/telegram") {
-            val webhookSecret = applicationConfig.propertyOrNull("telegram.webhookSecret")?.getString()
+            val webhookSecret = applicationConfig.string("telegram.webhookSecret", "")
             post("/start") {
                 val ttl = applicationConfig.long("telegram.ttl", default = 120_000L)
                 val uuid = authSessionRepository.createSession(ttl)
@@ -115,7 +117,7 @@ fun Route.authRoutes(
              */
             post("/webhook") {
                 val secret = call.request.queryParameters["secret"]
-                if (!webhookSecret.isNullOrBlank() && webhookSecret != secret) {
+                if (webhookSecret.isNotBlank() && webhookSecret != secret) {
                     call.respond(HttpStatusCode.Forbidden, "Invalid secret")
                     return@post
                 }
@@ -129,6 +131,13 @@ fun Route.authRoutes(
             val request = call.receive<PrecheckRequest>()
             val lang = call.lang()
 
+            val precheckEnabled = applicationConfig.bool("precheck.enabled")
+
+            if (!precheckEnabled){
+                call.respond(ApiMessage(AppErrorCode.SUCCESS, "OK"))
+                return@post
+            }
+
             fun detectCountry(phone: String): Country? =
                 Country.entries.sortedByDescending { it.phonePrefix.length }
                     .firstOrNull { phone.startsWith(it.phonePrefix) }
@@ -139,6 +148,8 @@ fun Route.authRoutes(
             val ipHeader = call.request.headers["X-Forwarded-For"]?.split(",")?.firstOrNull()?.trim()
             val clientIp = ipHeader?.takeIf { it.isNotBlank() } ?: call.request.origin.remoteHost
             val ipCountry: CountryCode? = geoIpService.getCountryByIp(clientIp)
+
+            application.log.info("ipCountry: ${ipCountry}, phoneCountryCode: ${phoneCountry.code}")
 
             if (ipCountry != null && ipCountry != phoneCountry.code) {
                 val message = when (lang) {
@@ -152,9 +163,8 @@ fun Route.authRoutes(
                 }
                 call.respond(HttpStatusCode.BadRequest, ApiMessage(AppErrorCode.INVALID_REQUEST, message))
                 return@post
-            }
+            } else  call.respond(ApiMessage(AppErrorCode.SUCCESS, "OK"))
 
-            call.respond(ApiMessage(AppErrorCode.SUCCESS, "OK"))
         }
 
         post("/send-code") {

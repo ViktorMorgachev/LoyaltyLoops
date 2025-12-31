@@ -253,7 +253,7 @@ fun Application.module() {
     }
 
     install(CallLogging) {
-        level = Level.INFO // Логируем все запросы
+        level = Level.INFO
         format { call ->
             val status = call.response.status()
             val httpMethod = call.request.httpMethod.value

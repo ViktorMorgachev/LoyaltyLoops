@@ -54,15 +54,17 @@ object NetworkClient {
             }
 
             // 2. LOGS
-            install(Logging) {
-
-                logger = object : Logger {
-                    override fun log(message: String) {
-                        netLog.write(message)
+            if (!AppConfig.IS_PROD){
+                install(Logging) {
+                    logger = object : Logger {
+                        override fun log(message: String) {
+                            netLog.write(message)
+                        }
                     }
+                    level = LogLevel.ALL
                 }
-                level = LogLevel.ALL
             }
+
 
             install(Auth) {
                 bearer {
