@@ -6,6 +6,7 @@ import io.loyaltyloop.server.models.AuthSessionStatus
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.SecurityUtils
+import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
 import kotlinx.coroutines.*
@@ -28,18 +29,18 @@ class TelegramAuthService(
     private val userRepository: UserRepository,
     private val botToken: String,
     val botUsername: String,
-    val webBaseUrl: String
+    val webBaseUrl: String,
+    private val webhookUrl: String? = null,
+    private val webhookSecret: String? = null
 ) {
     private val logger = LoggerFactory.getLogger(TelegramAuthService::class.java)
+    private val started = java.util.concurrent.atomic.AtomicBoolean(false)
 
     private val client = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS) // На подключение 10 сек ок
-        .readTimeout(70, TimeUnit.SECONDS)    // ВАЖНО: Увеличили с 30 до 70
-        .writeTimeout(70, TimeUnit.SECONDS)   // На запись тоже лучше поднять
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS) // Для отправки ответов долгий таймаут не нужен
         .build()
-    private val json = Json { ignoreUnknownKeys = true }
 
-    private var job: Job? = null
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private suspend fun pingBot() {
@@ -47,33 +48,26 @@ class TelegramAuthService(
         val request = Request.Builder().url(url).build()
         client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
-                throw IllegalStateException("Telegram getMe failed: ${response.code}")
+                logger.warn("Telegram health-check failed (HTTP ${response.code})")
             }
         }
     }
 
     fun start(autoCleanupSessionInMillis: Long = 60_000) {
 
+        if (!started.compareAndSet(false, true)) {
+            logger.warn("TelegramAuthService already started, skipping second start")
+            return
+        }
+
         if (botToken.isBlank()) {
             logger.warn("⚠️ Telegram Bot Token is missing. Telegram Auth skipped.")
             return
         }
 
-        logger.info("🚀 Telegram Auth Service started.")
+        logger.info("🚀 Telegram Auth Service started (webhook mode).")
 
-        // 0. Удаляем вебхук (на всякий случай, чтобы работал getUpdates)
-        scope.launch {
-            try {
-                val request = Request.Builder()
-                    .url("https://api.telegram.org/bot$botToken/deleteWebhook")
-                    .build()
-                client.newCall(request).execute().close()
-            } catch (e: Exception) {
-                logger.warn("Could not delete webhook (ignore if first run): ${e.message}")
-            }
-        }
-
-        // 1. ФОНОВАЯ ЗАДАЧА: Очистка старых сессий (независимо от Телеграма)
+        // 1. Чистка старых сессий
         scope.launch {
             while (isActive) {
                 try {
@@ -81,11 +75,11 @@ class TelegramAuthService(
                 } catch (e: Exception) {
                     logger.error("Session cleanup error: ${e.message}")
                 }
-                delay(autoCleanupSessionInMillis) // Ждем минуту перед следующей чисткой
+                delay(autoCleanupSessionInMillis)
             }
         }
 
-        // 1b. HEALTHCHECK: пингуем Telegram каждые 5 минут
+        // 2. Healthcheck Telegram
         scope.launch {
             while (isActive) {
                 try {
@@ -94,71 +88,47 @@ class TelegramAuthService(
                 } catch (e: Exception) {
                     logger.error("Telegram health-check failed: ${e.message}")
                 }
-                delay(5 * 60 * 1000L) // 5 минут
+                delay(5 * 60 * 1000L)
             }
         }
 
-        // 2. ОСНОВНАЯ ЗАДАЧА: Long Polling (слушаем сообщения)
-        job = scope.launch {
-            var lastUpdateId = 0L
-
-            while (isActive) {
-                try {
-                    // В getUpdates у тебя должен стоять timeout=50 в URL!
-                    val updates = getUpdates(lastUpdateId + 1)
-
-                    updates.forEach { update ->
-                        val updateId = update["update_id"]?.jsonPrimitive?.long ?: 0L
-                        if (updateId >= lastUpdateId) lastUpdateId = updateId
-
-                        // Запускаем обработку в отдельной корутине, чтобы не тормозить поллинг
-                        launch {
-                            processUpdate(update)
-                        }
-                    }
-                } catch (e: java.net.SocketTimeoutException) {
-                    // Это НОРМАЛЬНО для Long Polling.
-                    // Телеграм просто не прислал данных за 50 сек.
-                    // Идем на новый круг без задержки.
-                    continue
-                } catch (e: Exception) {
-                    logger.error("Telegram Polling Error: ${e.message}")
-                    delay(4000) // Пауза, чтобы не спамить логами
-                }
+        scope.launch {
+            try {
+                setupWebhook()
+            } catch (e: Exception) {
+                logger.error("Failed to set webhook: ${e.message}")
             }
         }
     }
 
-    fun stop() {
-        job?.cancel()
-         scope.cancel() // Можно отменить весь скоуп при выключении приложения
-    }
+    private fun setupWebhook() {
+        if (webhookUrl.isNullOrBlank()) {
+            logger.error("Webhook URL is not configured. Telegram login will not work.")
+            return
+        }
+        val fullUrl = if (!webhookSecret.isNullOrBlank()) {
+            if (webhookUrl.contains("?")) "$webhookUrl&secret=$webhookSecret" else "$webhookUrl?secret=$webhookSecret"
+        } else webhookUrl
 
+        val payload = JsonObject(
+            mapOf(
+                "url" to JsonPrimitive(fullUrl),
+                "allowed_updates" to JsonArray(listOf(JsonPrimitive("message")))
+            )
+        ).toString()
 
-    private fun getUpdates(offset: Long): List<JsonObject> {
-        val url = "https://api.telegram.org/bot$botToken/getUpdates?offset=$offset&timeout=50"
-        val request = Request.Builder().url(url).build()
+        val request = Request.Builder()
+            .url("https://api.telegram.org/bot$botToken/setWebhook")
+            .post(payload.toRequestBody("application/json".toMediaType()))
+            .build()
 
-        // logger.debug("Telegram polling: offset=$offset") 
-        
         client.newCall(request).execute().use { response ->
+            val body = response.body?.string()
             if (!response.isSuccessful) {
-                logger.warn("Telegram getUpdates failed: code=${response.code}, body=${response.body?.string()}")
-                return emptyList()
+                logger.error("setWebhook failed: code=${response.code}, body=$body")
+            } else {
+                logger.info("setWebhook OK: $fullUrl")
             }
-            val body = response.body?.string() ?: return emptyList()
-            // logger.trace("Telegram updates body: $body")
-
-            val root = json.parseToJsonElement(body).jsonObject
-            if (root["ok"]?.jsonPrimitive?.boolean != true) {
-                logger.warn("Telegram getUpdates returned ok=false: $body")
-                return emptyList()
-            }
-            val result = root["result"]?.jsonArray?.map { it.jsonObject } ?: emptyList()
-            if (result.isNotEmpty()) {
-                logger.info("Telegram received ${result.size} updates")
-            }
-            return result
         }
     }
 
@@ -221,40 +191,62 @@ class TelegramAuthService(
         "be" to "📱 Мабільны дадатак"
     )
 
-    private suspend fun processUpdate(update: JsonObject) {
+   private suspend fun processUpdate(update: JsonObject) {
+        // 1. Проверяем ID обновления (для логов)
         val updateId = update["update_id"]?.jsonPrimitive?.long
-        logger.info("Processing update: $updateId, content=$update")
 
+        // [Совет] Не логируй весь update в проде, там могут быть личные данные.
+        // logger.info("Processing update: $updateId")
+
+        // 2. Достаем сообщение
         val message = update["message"]?.jsonObject
         if (message == null) {
-            logger.info("Update $updateId has no message. Skipping.")
+            // Это может быть edited_message, callback_query и т.д. Нам они для входа не нужны.
             return
         }
 
         val chatId = message["chat"]?.jsonObject?.get("id")?.jsonPrimitive?.long
         if (chatId == null) {
-            logger.warn("Update $updateId message has no chat ID. Skipping.")
+            logger.warn("Update $updateId: No chat ID found.")
             return
         }
 
+        // 3. Достаем контент
         val text = message["text"]?.jsonPrimitive?.content
         val contact = message["contact"]?.jsonObject
-        
+
+        // Язык пользователя (полезно для ответа на нужном языке)
         val from = message["from"]?.jsonObject
         val languageCode = from?.get("language_code")?.jsonPrimitive?.content ?: "en"
 
-        logger.info("Message from chatId=$chatId, text='$text', hasContact=${contact != null}")
+        // 4. Логика Deep Link (/start login_UUID)
+        if (text?.startsWith("/start") == true) {
+            // Разбиваем "/start login_12345" на части
+            val parts = text.split(" ")
+            if (parts.size > 1 && parts[1].startsWith("login_")) {
+                val uuid = parts[1].removePrefix("login_").trim()
 
-        if (text?.startsWith("/start login_") == true) {
-            val uuid = text.removePrefix("/start login_").trim()
-            logger.info("Detected login start command with UUID: $uuid")
-            handleStartLogin(chatId, uuid, languageCode)
+                logger.info("Auth started from chatId=$chatId with UUID prefix")
+                handleStartLogin(chatId, uuid, languageCode)
+            }
         }
 
-        // 2. Contact
+        // 5. Логика Контакта
         if (contact != null) {
-            logger.info("Detected contact sharing from chatId=$chatId")
+            logger.info("Contact received from chatId=$chatId")
             handleContact(chatId, contact, languageCode)
+        }
+    }
+
+    /**
+     * Вебхук вызывается напрямую из маршрута /auth/telegram/webhook
+     */
+    suspend fun handleWebhookPayload(payload: String) {
+        try {
+            val jsonElement = json.parseToJsonElement(payload).jsonObject
+            processUpdate(jsonElement)
+        } catch (e: Exception) {
+            logger.error("Failed to process webhook payload: ${e.message}")
         }
     }
 
@@ -280,7 +272,7 @@ class TelegramAuthService(
             logger.error("Error in handleStartLogin: ${e.message}", e)
         }
     }
-    
+
     private suspend fun handleContact(chatId: Long, contact: JsonObject, languageCode: String) {
         logger.info("handleContact: chatId=$chatId, contact=$contact")
         val contactUserId = contact["user_id"]?.jsonPrimitive?.long
@@ -311,7 +303,7 @@ class TelegramAuthService(
         logger.info("Found pending session: $session")
 
         var user = userRepository.getUserByPhone(phone)
-        
+
         if (user == null) {
              logger.info("User not found by phone $phone. Creating new user.")
              val newUser = UserDto(
@@ -324,15 +316,16 @@ class TelegramAuthService(
                  telegramId = chatId,
                  createdAt = nowUtc().toUtcMillis()
              )
-             userRepository.createUser(newUser)
-             user = newUser
+             val newUserId = userRepository.createUser(newUser)
+             user = newUser.copy(id = newUserId)
+             logger.info("Created new user via Telegram: $newUserId")
         } else {
              logger.info("User found by phone $phone (id=${user.id}). Linking telegramId.")
              if (user.telegramId == null) {
                 userRepository.linkTelegram(user.id, chatId)
             }
         }
-        
+
         logger.info("Confirming session $session for userId=${user.id}")
         authSessionRepository.confirmSession(session, chatId, phone, user.id)
         sendSuccessMessage(chatId, languageCode, session)
@@ -368,7 +361,7 @@ class TelegramAuthService(
             .url(url)
             .post(jsonBody.toRequestBody("application/json".toMediaType()))
             .build()
-            
+
         try {
             client.newCall(request).execute().close()
             logger.info("Success message sent to $chatId")
@@ -383,12 +376,12 @@ class TelegramAuthService(
             "chat_id" to JsonPrimitive(chatId),
             "text" to JsonPrimitive(text)
         )).toString()
-        
+
         val request = Request.Builder()
             .url(url)
             .post(jsonBody.toRequestBody("application/json".toMediaType()))
             .build()
-            
+
         try {
             client.newCall(request).execute().close()
         } catch (e: Exception) {
@@ -399,7 +392,7 @@ class TelegramAuthService(
     private fun sendContactRequest(chatId: Long, languageCode: String) {
         val text = getMsg(MSG_HELLO, languageCode)
         val buttonText = getMsg(BTN_SHARE, languageCode)
-        
+
         val url = "https://api.telegram.org/bot$botToken/sendMessage"
         val keyboard = JsonObject(mapOf(
             "keyboard" to JsonArray(listOf(
@@ -413,7 +406,7 @@ class TelegramAuthService(
             "resize_keyboard" to JsonPrimitive(true),
             "one_time_keyboard" to JsonPrimitive(true)
         ))
-        
+
         val jsonBody = JsonObject(mapOf(
             "chat_id" to JsonPrimitive(chatId),
             "text" to JsonPrimitive(text),
@@ -424,7 +417,7 @@ class TelegramAuthService(
             .url(url)
             .post(jsonBody.toRequestBody("application/json".toMediaType()))
             .build()
-            
+
         try {
             client.newCall(request).execute().close()
         } catch (e: Exception) {

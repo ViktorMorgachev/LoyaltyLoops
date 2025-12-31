@@ -21,6 +21,7 @@ import io.loyaltyloop.shared.models.UserProfileResponse
 import io.loyaltyloop.shared.models.VerifyCodeRequest
 import io.loyaltyloop.shared.models.TelegramAuthStartResponse
 import io.loyaltyloop.shared.models.AuthSessionStatusResponse
+import io.loyaltyloop.shared.models.PrecheckRequest
 
 class AuthRepository(private val client: HttpClient) {
 
@@ -43,6 +44,15 @@ class AuthRepository(private val client: HttpClient) {
             client.post("/auth/send-code") {
                 contentType(ContentType.Application.Json)
                 setBody(SendCodeRequest(phone))
+            }
+        }
+    }
+
+    suspend fun precheck(phone: String): NetworkResult<ApiMessage> {
+        return safeNetworkCall {
+            client.post("/auth/precheck") {
+                contentType(ContentType.Application.Json)
+                setBody(PrecheckRequest(phone))
             }
         }
     }

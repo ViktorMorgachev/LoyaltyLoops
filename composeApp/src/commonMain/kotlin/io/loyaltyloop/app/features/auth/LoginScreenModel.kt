@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.auth_precheck_vpn
 import loyaltyloop.composeapp.generated.resources.auth_success
 import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
@@ -171,6 +172,25 @@ class LoginScreenModel(
 
             val fullNumber = country.phonePrefix + state.value.phoneInput
 
+            // Precheck VPN/гео против страны телефона
+            repository.precheck(fullNumber)
+                .onError { apiCode, msg ->
+                    val text = if (apiCode == AppErrorCode.INVALID_REQUEST) {
+                        UiText.Resource(Res.string.auth_precheck_vpn)
+                    } else {
+                        msg?.let { UiText.DynamicString(it) }
+                            ?: UiText.Resource(apiCode.toResource(msg))
+                    }
+                    _events.send(Event.ShowMessage(text, SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false)
+                    return@launch
+                }
+                .onFailure {
+                    _events.send(Event.ShowMessage(UiText.Resource(Res.string.error_network), SnackbarType.Error))
+                    _state.value = _state.value.copy(isLoading = false)
+                    return@launch
+                }
+
             repository.sendCode(fullNumber)
                 .onSuccess {
                     log.write("Code sent")
@@ -191,7 +211,9 @@ class LoginScreenModel(
                     _state.value = _state.value.copy(isLoading = false, otpInput = "")
                 }
                 .onError { apiCode, msg ->
-                    _events.send(Event.ShowMessage(UiText.Resource(apiCode.toResource(msg)), SnackbarType.Error))
+                    val text = msg?.let { UiText.DynamicString(it) }
+                        ?: UiText.Resource(apiCode.toResource(msg))
+                    _events.send(Event.ShowMessage(text, SnackbarType.Error))
                     val newTimer = if (apiCode == AppErrorCode.TOO_MANY_REQUESTS) 20 else _state.value.timerSeconds
                     _state.value = _state.value.copy(
                         isLoading = false,

@@ -77,6 +77,7 @@ export const kk = {
       INVALID_TIER_VALUE: "Деңгейлерде теріс мәндерді қолдануға болмайды",
       SUCCESS: "Сәтті",
       INVALID_INVITE_CODE: "Шақыру коды қате",
+      precheck_vpn: "VPN-ді өшіріп, қайталап көріңіз. Нөмір елі мен IP аймағы сәйкес емес.",
       ALREADY_JOINED: "Сіз қосылғансыз",
       SECURITY_QR_SECRET_MISSING: "Қауіпсіздік қатесі (QR Secret)",
       LOYALTY_SETTING_NOT_FOUND: "Адалдық параметрлері табылмады",

@@ -28,6 +28,7 @@ val serviceModule = module {
             okHttpClient = get<OkHttpClient>()
         )
     }
+    single { GeoIpService(get()) }
     single { TokenService(get()) }
     single { OtpService(get()) }
     single { CardRealtimeService() }
@@ -93,7 +94,9 @@ val serviceModule = module {
             userRepository = get(),
             botToken = get<ApplicationConfig>().string("telegram.botToken", ""),
             botUsername = get<ApplicationConfig>().string("telegram.botUsername", ""),
-            webBaseUrl = get<ApplicationConfig>().string("app.webBaseUrl", "http://localhost:3000")
+            webBaseUrl = get<ApplicationConfig>().string("app.webBaseUrl", "http://localhost:3000"),
+            webhookUrl = get<ApplicationConfig>().string("telegram.webhookUrl", ""),
+            webhookSecret = get<ApplicationConfig>().string("telegram.webhookSecret", "")
         )
     }
 

@@ -77,6 +77,7 @@ export const be = {
       INVALID_TIER_VALUE: "Нельга выкарыстоўваць адмоўныя значэнні ва ўзроўнях",
       SUCCESS: "Паспяхова",
       INVALID_INVITE_CODE: "Няправільны інвайт код",
+      precheck_vpn: "Калі ласка, выключыце VPN і паспрабуйце зноў. Краіна нумара і IP не супадаюць.",
       ALREADY_JOINED: "Вы ўжо далучаны",
       SECURITY_QR_SECRET_MISSING: "Крытычная памылка бяспекі (QR Secret)",
       LOYALTY_SETTING_NOT_FOUND: "Налады лаяльнасці не знойдзены",
@@ -874,6 +875,7 @@ export const be = {
       rustore_scan: "Адсканіруйце або клікніце, каб адкрыць у RuStore",
       rustore_hover: "Навядзіце, каб паказаць QR"
     },
+    
     client_onboarding: {
       welcome_title: "Сардэчна запрашаем у LoyaltyLoop",
       welcome_subtitle: "Вашы любімыя ўстановы ў адным дадатку. Збірайце балы і атрымлівайце падарункі.",

@@ -4,6 +4,7 @@ import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.config.ApplicationConfig
+import io.ktor.server.plugins.origin
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -31,12 +32,18 @@ import io.loyaltyloop.server.service.TelegramAuthService
 import io.loyaltyloop.server.repository.AuthSessionRepository
 import io.loyaltyloop.server.repository.RefreshTokenRepository
 import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.service.GeoIpService
 import io.loyaltyloop.server.utils.extractSignals
 import io.loyaltyloop.server.utils.getCountryCodeForTimezone
+import io.loyaltyloop.server.utils.lang
 import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.server.utils.validatePhoneNumber
+import io.loyaltyloop.shared.models.ApiMessage
+import io.loyaltyloop.shared.models.Country
+import io.loyaltyloop.shared.models.CountryCode
+import io.loyaltyloop.shared.models.PrecheckRequest
 
 // TODO checked
 fun Route.authRoutes(
@@ -49,28 +56,29 @@ fun Route.authRoutes(
     authSessionRepository: AuthSessionRepository,
     refreshTokenRepository: RefreshTokenRepository,
     accessControlService: AccessControlService,
+    geoIpService: GeoIpService,
 ) {
 
     route("/auth") {
 
         route("/telegram") {
+            val webhookSecret = applicationConfig.propertyOrNull("telegram.webhookSecret")?.getString()
             post("/start") {
                 val ttl = applicationConfig.long("telegram.ttl", default = 120_000L)
                 val uuid = authSessionRepository.createSession(ttl)
-                application.log.info("Created Telegram auth session: uuid=$uuid, ttl=$ttl")
+                application.log.debug("Created Telegram auth session: uuid=$uuid, ttl=$ttl")
                 call.respond(TelegramAuthStartResponse(uuid, telegramAuthService.botUsername, (ttl / 1000).toInt()))
             }
 
             get("/status/{uuid}") {
                 val uuid = call.parameters["uuid"]!!
-                application.log.info("Checking status for session uuid=$uuid")
+                application.log.debug("Checking status for session uuid=$uuid")
                 val session = authSessionRepository.getSession(uuid)
                 if (session == null) {
                     application.log.warn("Session not found: $uuid")
                     throw LoyaltyException(AppErrorCode.NOT_FOUND, "Session not found")
                 }
-                
-                application.log.info("Session status: ${session.status}, userId=${session.userId}")
+                application.log.debug("Session status: ${session.status}, userId=${session.userId}")
 
                 if (session.status == "CONFIRMED") {
                     val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
@@ -101,6 +109,52 @@ fun Route.authRoutes(
                     call.respond(AuthSessionStatusResponse(status = session.status))
                 }
             }
+
+            /**
+             * Webhook endpoint for Telegram
+             */
+            post("/webhook") {
+                val secret = call.request.queryParameters["secret"]
+                if (!webhookSecret.isNullOrBlank() && webhookSecret != secret) {
+                    call.respond(HttpStatusCode.Forbidden, "Invalid secret")
+                    return@post
+                }
+                val body = call.receiveText()
+                telegramAuthService.handleWebhookPayload(body)
+                call.respond(HttpStatusCode.OK)
+            }
+        }
+
+        post("/precheck") {
+            val request = call.receive<PrecheckRequest>()
+            val lang = call.lang()
+
+            fun detectCountry(phone: String): Country? =
+                Country.entries.sortedByDescending { it.phonePrefix.length }
+                    .firstOrNull { phone.startsWith(it.phonePrefix) }
+
+            val phoneCountry = detectCountry(request.phone)
+                ?: throw LoyaltyException(AppErrorCode.INVALID_PHONE, "Unknown country code")
+
+            val ipHeader = call.request.headers["X-Forwarded-For"]?.split(",")?.firstOrNull()?.trim()
+            val clientIp = ipHeader?.takeIf { it.isNotBlank() } ?: call.request.origin.remoteHost
+            val ipCountry: CountryCode? = geoIpService.getCountryByIp(clientIp)
+
+            if (ipCountry != null && ipCountry != phoneCountry.code) {
+                val message = when (lang) {
+                    "ru" -> "Пожалуйста, отключите VPN — страна номера и IP не совпадают."
+                    "en" -> "Please turn off VPN — phone country and IP region do not match."
+                    "ky" -> "VPN өчүрүңүз — номер өлкөсү менен IP аймагы дал келбейт."
+                    "kk" -> "VPN-ді өшіріңіз — нөмір елі мен IP аймағы сәйкес емес."
+                    "uz" -> "VPNni o‘chiring — telefon davlati va IP mintaqasi mos kelmayapti."
+                    "be" -> "Калі ласка, выключыце VPN — краіна нумара і IP не супадаюць."
+                    else -> "Please turn off VPN — phone country and IP region do not match."
+                }
+                call.respond(HttpStatusCode.BadRequest, ApiMessage(AppErrorCode.INVALID_REQUEST, message))
+                return@post
+            }
+
+            call.respond(ApiMessage(AppErrorCode.SUCCESS, "OK"))
         }
 
         post("/send-code") {

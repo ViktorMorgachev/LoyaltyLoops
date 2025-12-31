@@ -77,6 +77,7 @@ export const ky = {
       INVALID_TIER_VALUE: "Деңгээлдерде терс маанилерди колдонууга болбойт",
       SUCCESS: "Ийгиликтүү",
       INVALID_INVITE_CODE: "Чакыруу коду туура эмес",
+      precheck_vpn: "VPN өчүрүңүз жана кайра аракет кылыңыз. Номер өлкөсү менен IP аймагы дал келбейт.",
       ALREADY_JOINED: "Сиз мурун эле кошулгансыз",
       SECURITY_QR_SECRET_MISSING: "Коопсуздук катасы (QR Secret)",
       LOYALTY_SETTING_NOT_FOUND: "Лоялдуулук жөндөөлөрү табылган жок",

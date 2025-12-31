@@ -125,13 +125,19 @@ export const LoginPage = () => {
     setLoading(true);
     try {
         Analytics.track('login_send_code');
+        await api.post('/auth/precheck', { phone: fullPhone });
       await api.post('/auth/send-code', { phone: fullPhone });
       showSuccess(t('auth.code_sent'));
       setStep(2);
       setTimer(60); // Start 60s cooldown
     } catch (e: any) {
         Analytics.track('login_send_code_error', { status: getErrorMessage(e)});
-      showError(getErrorMessage(e));
+      const code = e?.response?.data?.code;
+      if (code === 'INVALID_REQUEST') {
+        showError(t('errors.precheck_vpn', 'Пожалуйста, отключите VPN и попробуйте снова.'));
+      } else {
+        showError(getErrorMessage(e));
+      }
     } finally {
       setLoading(false);
     }

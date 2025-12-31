@@ -12,6 +12,7 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.callloging.processingTimeMillis
 import io.ktor.server.plugins.contentnegotiation.*
@@ -83,9 +84,11 @@ import io.loyaltyloop.server.service.ExchangeRateService
 import io.loyaltyloop.server.service.LoyaltyEngineService
 import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.service.sms.SmsService
+import io.loyaltyloop.server.service.GeoIpService
 import io.loyaltyloop.shared.models.UserDto
 import io.loyaltyloop.shared.models.UserRole
 import okhttp3.OkHttpClient
+import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.ktor.ext.inject
 import org.koin.logger.slf4jLogger
@@ -122,6 +125,7 @@ fun Application.module() {
         allowHeader("X-App-Version")
         allowHeader("X-Timezone-Id")
         allowHeader("X-Workspace-Id")
+        allowHeader("X-Forwarded-For")
 
         // Разрешаем куки/токены
         allowCredentials = true
@@ -262,7 +266,7 @@ fun Application.module() {
             val appVersion = call.request.headers["X-App-Version"]
             val dateTime = java.time.Instant.now().toString()
             val duration = call.processingTimeMillis()
-            "Status: $status | Method: $httpMethod | Path: ${call.request.uri} | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
+            "Status: $status | Method: $httpMethod | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
         }
     }
 
@@ -328,11 +332,12 @@ fun Application.module() {
                 tokenService,
                 smsService,
                 eventLogger,
-                envConfig,
+                environment!!.config,
                 telegramAuthService,
                 authSessionRepository,
                 refreshTokenRepository,
-                accessControlService
+                accessControlService,
+                get<GeoIpService>()
             )
         }
 
