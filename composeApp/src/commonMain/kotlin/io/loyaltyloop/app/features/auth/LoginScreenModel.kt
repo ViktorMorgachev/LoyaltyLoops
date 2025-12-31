@@ -23,6 +23,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import loyaltyloop.composeapp.generated.resources.Res
+import loyaltyloop.composeapp.generated.resources.auth_precheck_vpn
 import loyaltyloop.composeapp.generated.resources.auth_success
 import loyaltyloop.composeapp.generated.resources.err_invalid_phone_format
 import loyaltyloop.composeapp.generated.resources.error_network
