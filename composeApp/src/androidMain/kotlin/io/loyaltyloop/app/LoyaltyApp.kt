@@ -36,15 +36,19 @@ class LoyaltyApp : Application() {
 
         // 1. Настраиваем Kermit писать в Logcat
         Logger.setLogWriters(LogcatWriter())
+        if (!AppConfig.isProd){
+            Logger.setMinSeverity(Severity.Info)
+        }
 
-        Logger.setMinSeverity(Severity.Info)
 
         MapKitFactory.setApiKey(io.loyaltyloop.app.config.AppConfig.MAP_API_KEY)
         MapKitFactory.initialize(this)
 
         // Запускаем DI
         startKoin {
-            androidLogger()
+            if (!AppConfig.isProd){
+                androidLogger()
+            }
             androidContext(this@LoyaltyApp)
             modules(appModule)
         }
