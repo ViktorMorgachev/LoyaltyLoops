@@ -493,7 +493,7 @@
     <string name="whats_new_btn_awesome">Awesome!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Added Russia support (phone +7, RUB currency)
+        • Improved Telegram login reliability
         • Improved app stability
     </string>
 

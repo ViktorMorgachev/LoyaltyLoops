@@ -23,8 +23,8 @@ val activeEnv = project.findProperty("env") as? String
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
-val currentVersionCode = 110
-val currentVersionName = "1.1.0"
+val currentVersionCode = 111
+val currentVersionName = "1.1.1"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
@@ -59,7 +59,7 @@ kotlin {
         cocoapods {
             summary = "LoyaltyLoop Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
-            version = "1.1.0"
+            version = "1.1.1"
             ios.deploymentTarget = "14.0"
             framework {
                 baseName = "LoyaltyLoop"

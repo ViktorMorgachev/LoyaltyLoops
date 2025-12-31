@@ -499,7 +499,7 @@
     <string name="whats_new_btn_awesome">Круто!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Добавлена поддержка РФ (телефон +7, валюта ₽)
+        • Улучшена авторизация через Telegram
         • Повышена стабильность приложения
     </string>
 
