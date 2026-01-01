@@ -742,7 +742,19 @@ export const PointDetailsPage = () => {
                     onChange={(newTz) => {
                         setScheduleTimezone(newTz);
                         if (newTz.includes('Bishkek')) setCurrency('KGS');
-                        else if (newTz.includes('Moscow')) setCurrency('RUB');
+                        else if (
+                            newTz.includes('Moscow') ||
+                            newTz.includes('Kaliningrad') ||
+                            newTz.includes('Samara') ||
+                            newTz.includes('Yekaterinburg') ||
+                            newTz.includes('Omsk') ||
+                            newTz.includes('Krasnoyarsk') ||
+                            newTz.includes('Irkutsk') ||
+                            newTz.includes('Yakutsk') ||
+                            newTz.includes('Vladivostok') ||
+                            newTz.includes('Magadan') ||
+                            newTz.includes('Kamchatka')
+                        ) setCurrency('RUB');
                         else if (newTz.includes('Almaty')) setCurrency('KZT');
                         else if (newTz.includes('Tashkent')) setCurrency('UZS');
                         else if (newTz.includes('Minsk')) setCurrency('BYN');
