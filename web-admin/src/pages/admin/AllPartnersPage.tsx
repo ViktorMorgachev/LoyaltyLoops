@@ -20,7 +20,7 @@ export const AllPartnersPage = () => {
   const [loading, setLoading] = useState(true);
 
   // Guard: only super admin/manager with selected workspace
-  if (!currentWorkspace || (!isSuperAdmin && !isSuperManager && !isPlatformManager,)) {
+  if (!currentWorkspace || (!isSuperAdmin && !isSuperManager && !isPlatformManager)) {
     return null;
   }
 
