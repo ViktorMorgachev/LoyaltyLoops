@@ -15,9 +15,14 @@ export const AllPartnersPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showError, showSuccess } = useNotification();
-  const { isSuperAdmin } = useUser();
+  const { isSuperAdmin, isSuperManager, currentWorkspace } = useUser();
   const [partners, setPartners] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Guard: only super admin/manager with selected workspace
+  if (!currentWorkspace || (!isSuperAdmin && !isSuperManager)) {
+    return null;
+  }
 
   useEffect(() => { loadPartners(); }, []);
 

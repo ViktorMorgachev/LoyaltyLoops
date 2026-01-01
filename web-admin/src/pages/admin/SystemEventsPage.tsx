@@ -52,7 +52,7 @@ export const SystemEventsPage = () => {
     const [events, setEvents] = useState<SystemEvent[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const { isSuperAdmin } = useUser();
+    const { isSuperAdmin, isSuperManager, currentWorkspace } = useUser();
 
     // Filters
     const [typeFilter, setTypeFilter] = useState<SystemEventType | 'ALL'>('ALL');
@@ -126,7 +126,11 @@ export const SystemEventsPage = () => {
         SystemEventType.REDEMPTION
     ];
 
-    const visibleEvents = isSuperAdmin
+    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager)) {
+        return null;
+    }
+
+    const visibleEvents = (isSuperAdmin || isSuperManager)
         ? events
         : events.filter((e) => !hiddenTypes.includes(e.type));
 

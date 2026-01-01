@@ -13,7 +13,7 @@ import { maskPhone } from '../../utils/maskPhone';
 export const PlatformStaffPage = () => {
     const { t } = useTranslation();
     const { showError, showSuccess } = useNotification();
-    const { isSuperAdmin, isSuperManager, user } = useUser();
+    const { isSuperAdmin, isSuperManager, user, currentWorkspace } = useUser();
     
     const [staff, setStaff] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
@@ -67,6 +67,16 @@ export const PlatformStaffPage = () => {
     };
 
     const canInviteSuperManager = isSuperAdmin;
+
+    // Guard: only super admin/manager with workspace
+    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager)) {
+        return null;
+    }
+
+    // Guard: only super admin/manager with workspace
+    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager)) {
+        return null;
+    }
 
     return (
         <Container maxWidth="lg" sx={{ mt: 4, mb: 8 }}>
