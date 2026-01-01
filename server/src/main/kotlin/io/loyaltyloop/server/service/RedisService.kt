@@ -47,7 +47,8 @@ class RedisService(config: ApplicationConfig) {
         val maxWaitMs = config.long("redis.pool.maxWaitMs", 2_000L)
         val jmxEnabled = config.bool("redis.pool.jmxEnabled", true)
 
-        logger.info("🔧 Redis Config -> Host: '$host', Port: '$port' Url: '${connectionUrl}'")
+        val safeUrl = connectionUrl?.replace(Regex("://.*@"), "://***@")
+        logger.info("🔧 Redis Config -> Host: '$host', Port: '$port' Url: '$safeUrl'")
 
         val poolConfig = JedisPoolConfig().apply {
             maxTotal = poolMaxTotal
