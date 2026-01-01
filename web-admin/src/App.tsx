@@ -116,7 +116,7 @@ function App() {
             <Route path="/partner/reviews" element={<ReviewsPage />} />
             <Route path="/partner/support" element={<SupportChatPage mode="partner" />} />
 
-            {/* Супер-Админ */}
+            {/* Супер-Админ и Супер-Менеджер платформы */}
             <Route path="/admin/partners" element={<AllPartnersPage />} />
             <Route path="/admin/partners/:id" element={<PartnerDetailsAdminPage />} />
             <Route path="/admin/support" element={<SupportChatPage mode="admin" />} />

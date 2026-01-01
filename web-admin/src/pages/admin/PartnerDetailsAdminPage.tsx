@@ -15,7 +15,8 @@ export const PartnerDetailsAdminPage = () => {
     const { id } = useParams();
     const { t } = useTranslation();
     const { showError, showSuccess } = useNotification();
-    const { isPlatformStaff } = useUser();
+    const { isPlatformStaff, isSuperManager, isPlatformManager } = useUser();
+    const hideSensitiveStats = isSuperManager || isPlatformManager;
 
     const [stats, setStats] = useState<any>(null);
     const [points, setPoints] = useState<any[]>([]);
@@ -216,7 +217,7 @@ export const PartnerDetailsAdminPage = () => {
             <Box
                 mb={5}
                 display="grid"
-                gridTemplateColumns={{ xs: '1fr', md: 'repeat(3, 1fr)' }}
+                gridTemplateColumns={{ xs: '1fr', md: hideSensitiveStats ? '1fr' : 'repeat(3, 1fr)' }}
                 gap={3}
             >
                 <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -232,32 +233,36 @@ export const PartnerDetailsAdminPage = () => {
                         <Typography variant="body2" color="text.secondary">{t('admin.total_points')}</Typography>
                     </Box>
                 </Paper>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ p: 1.5, bgcolor: 'success.50', borderRadius: 3, color: 'success.main' }}>
-                        <PeopleIcon fontSize="large" />
-                    </Box>
-                    <Box>
-                        {loading ? (
-                            <Skeleton variant="text" width={60} height={40} />
-                        ) : (
-                            <Typography variant="h4" fontWeight="bold" color="text.primary">{stats?.cardsCount || 0}</Typography>
-                        )}
-                        <Typography variant="body2" color="text.secondary">{t('admin.total_clients')}</Typography>
-                    </Box>
-                </Paper>
-                <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <Box sx={{ p: 1.5, bgcolor: 'warning.50', borderRadius: 3, color: 'warning.main' }}>
-                        <ReceiptIcon fontSize="large" />
-                    </Box>
-                    <Box>
-                        {loading ? (
-                            <Skeleton variant="text" width={60} height={40} />
-                        ) : (
-                            <Typography variant="h4" fontWeight="bold" color="text.primary">{stats?.transactionsCount || 0}</Typography>
-                        )}
-                        <Typography variant="body2" color="text.secondary">{t('admin.total_transactions')}</Typography>
-                    </Box>
-                </Paper>
+                {!hideSensitiveStats && (
+                    <>
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ p: 1.5, bgcolor: 'success.50', borderRadius: 3, color: 'success.main' }}>
+                                <PeopleIcon fontSize="large" />
+                            </Box>
+                            <Box>
+                                {loading ? (
+                                    <Skeleton variant="text" width={60} height={40} />
+                                ) : (
+                                    <Typography variant="h4" fontWeight="bold" color="text.primary">{stats?.cardsCount || 0}</Typography>
+                                )}
+                                <Typography variant="body2" color="text.secondary">{t('admin.total_clients')}</Typography>
+                            </Box>
+                        </Paper>
+                        <Paper elevation={0} sx={{ p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <Box sx={{ p: 1.5, bgcolor: 'warning.50', borderRadius: 3, color: 'warning.main' }}>
+                                <ReceiptIcon fontSize="large" />
+                            </Box>
+                            <Box>
+                                {loading ? (
+                                    <Skeleton variant="text" width={60} height={40} />
+                                ) : (
+                                    <Typography variant="h4" fontWeight="bold" color="text.primary">{stats?.transactionsCount || 0}</Typography>
+                                )}
+                                <Typography variant="body2" color="text.secondary">{t('admin.total_transactions')}</Typography>
+                            </Box>
+                        </Paper>
+                    </>
+                )}
             </Box>
 
             {/* POINTS LIST */}

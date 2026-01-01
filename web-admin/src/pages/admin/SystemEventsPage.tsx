@@ -26,6 +26,7 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import { api } from '../../api/axiosConfig';
 import { SystemEventType } from '../../types/events';
 import type { SystemEvent } from '../../types/events';
+import { useUser } from '../../context/UserContext';
 
 const EVENT_TYPE_COLORS: Record<SystemEventType, "default" | "primary" | "secondary" | "error" | "info" | "success" | "warning"> = {
     [SystemEventType.LOGIN]: 'info',
@@ -51,6 +52,7 @@ export const SystemEventsPage = () => {
     const [events, setEvents] = useState<SystemEvent[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { isSuperAdmin } = useUser();
 
     // Filters
     const [typeFilter, setTypeFilter] = useState<SystemEventType | 'ALL'>('ALL');
@@ -117,6 +119,16 @@ export const SystemEventsPage = () => {
         setDateTo('');
         setPage(0);
     };
+
+    const hiddenTypes: SystemEventType[] = [
+        SystemEventType.VISIT,
+        SystemEventType.ACCRUAL,
+        SystemEventType.REDEMPTION
+    ];
+
+    const visibleEvents = isSuperAdmin
+        ? events
+        : events.filter((e) => !hiddenTypes.includes(e.type));
 
     return (
         <Box>
@@ -215,7 +227,7 @@ export const SystemEventsPage = () => {
                                         <CircularProgress size={24} />
                                     </TableCell>
                                 </TableRow>
-                            ) : events.length === 0 ? (
+                            ) : visibleEvents.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={4} align="center" sx={{ py: 3 }}>
                                         <Typography color="text.secondary">
@@ -224,7 +236,7 @@ export const SystemEventsPage = () => {
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                events.map((event) => (
+                                visibleEvents.map((event) => (
                                     <TableRow key={event.id} hover>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>
                                             {new Date(event.timestamp).toLocaleString()}
@@ -246,7 +258,7 @@ export const SystemEventsPage = () => {
                                                 )}
                                                 {event.userId && (
                                                     <Typography variant="caption" color="text.secondary" sx={{ fontFamily: 'monospace' }}>
-                                                        {event.userId.substring(0, 8)}...
+                                                        {event.userId}
                                                     </Typography>
                                                 )}
                                             </Stack>
