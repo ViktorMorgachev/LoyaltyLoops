@@ -15,8 +15,13 @@ export const PartnerDetailsAdminPage = () => {
     const { id } = useParams();
     const { t } = useTranslation();
     const { showError, showSuccess } = useNotification();
-    const { isPlatformStaff, isSuperManager, isPlatformManager } = useUser();
+    const { isSuperAdmin, isSuperManager, isPlatformManager, currentWorkspace, isPlatformStaff } = useUser();
     const hideSensitiveStats = isSuperManager || isPlatformManager;
+
+    // Guard: only super admin/manager with selected workspace
+    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager && !isPlatformManager)) {
+        return null;
+    }
 
     const [stats, setStats] = useState<any>(null);
     const [points, setPoints] = useState<any[]>([]);
