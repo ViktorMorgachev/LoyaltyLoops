@@ -44,13 +44,14 @@ export const MainLayout = () => {
     }
   }, [navigate]);
 
+  const relaxedRoutes = ['/select-role', '/profile', '/about', '/login', '/join/partner', '/join/platform-manager'];
+  const isRelaxed = relaxedRoutes.some((route) => location.pathname.startsWith(route));
+
   React.useEffect(() => {
-      const relaxedRoutes = ['/select-role', '/profile', '/about', '/login', '/join/partner', '/join/platform-manager'];
-      const isRelaxed = relaxedRoutes.some((route) => location.pathname.startsWith(route));
       if (workspaces.length > 0 && !currentWorkspace && !isRelaxed) {
           navigate('/select-role');
       }
-  }, [workspaces, currentWorkspace, location.pathname, navigate]);
+  }, [workspaces, currentWorkspace, isRelaxed, navigate]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -122,8 +123,8 @@ export const MainLayout = () => {
           menuItems.push({ text: t('menu.platform_staff', { defaultValue: 'Staff' }), icon: <GroupIcon />, path: '/platform/staff' });
       }
 
-      if (isSuperAdmin) {
-        if (config.features.enableTestSupport) {
+      if (isSuperAdmin || isSuperManager) {
+        if (isSuperAdmin && config.features.enableTestSupport) {
             menuItems.push({
               text: t('menu.test_lab'),
               icon: <ScienceIcon />,
@@ -190,6 +191,11 @@ export const MainLayout = () => {
       </List>
     </Box>
   );
+
+  // Если воркспейс не выбран (и это не relaxed-роут), ничего не рендерим, чтобы не мигали данные.
+  if (workspaces.length > 0 && !currentWorkspace && !isRelaxed) {
+      return null;
+  }
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f8fafc' }}>
