@@ -16,7 +16,7 @@ import { PointDetailsDialog } from '../../components/admin/PointDetailsDialog';
 export const PlatformRequestsPage = () => {
     const { t } = useTranslation();
     const { showError, showSuccess } = useNotification();
-    const { isSuperAdmin, isSuperManager, currentWorkspace } = useUser();
+    const { isSuperAdmin, isSuperManager, isPlatformManager,  currentWorkspace } = useUser();
     
     const [requests, setRequests] = useState<any[]>([]);
     const [tab, setTab] = useState('PENDING');
@@ -35,7 +35,7 @@ export const PlatformRequestsPage = () => {
     const canApprove = isSuperAdmin || isSuperManager;
 
     // Guard: only super admin/manager with workspace
-    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager)) {
+    if (!currentWorkspace || (!isSuperAdmin && !isSuperManager && !isPlatformManager)) {
         return null;
     }
 

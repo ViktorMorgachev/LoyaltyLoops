@@ -59,7 +59,7 @@ fun Route.adminRoutes(
 
             post("/partners/{id}/status") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
-                accessControlService.requireSystemRole(userId, UserRole.PLATFORM_SUPER_ADMIN, UserRole.PLATFORM_SUPER_MANAGER)
+                accessControlService.requireSystemRole(userId)
 
                 val partnerId = call.parameters["id"] ?: return@post
                 val request = call.receive<ChangePartnerStatusRequest>()
@@ -161,15 +161,5 @@ fun Route.adminRoutes(
                 }
             }
         }
-    }
-}
-
-private suspend fun resolveAdminSenderRole(userRepo: UserRepository, userId: String): UserRole {
-    val workspaces = userRepo.getUserWorkspaces(userId)
-    return when {
-        workspaces.any { it.role == UserRole.PLATFORM_SUPER_ADMIN } -> UserRole.PLATFORM_SUPER_ADMIN
-        workspaces.any { it.role == UserRole.PLATFORM_SUPER_MANAGER } -> UserRole.PLATFORM_SUPER_MANAGER
-        workspaces.any { it.role == UserRole.PLATFORM_MANAGER } -> UserRole.PLATFORM_MANAGER
-        else -> UserRole.CLIENT
     }
 }
