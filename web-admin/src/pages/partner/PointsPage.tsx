@@ -437,6 +437,19 @@ export const PointsPage = () => {
                             setTimezone(newTz);
                             // Auto-select currency based on timezone
                             if (newTz.includes('Bishkek')) setCurrency('KGS');
+                            else if (
+                                newTz.includes('Moscow') ||
+                                newTz.includes('Kaliningrad') ||
+                                newTz.includes('Samara') ||
+                                newTz.includes('Yekaterinburg') ||
+                                newTz.includes('Omsk') ||
+                                newTz.includes('Krasnoyarsk') ||
+                                newTz.includes('Irkutsk') ||
+                                newTz.includes('Yakutsk') ||
+                                newTz.includes('Vladivostok') ||
+                                newTz.includes('Magadan') ||
+                                newTz.includes('Kamchatka')
+                            ) setCurrency('RUB');
                             else if (newTz.includes('Almaty')) setCurrency('KZT');
                             else if (newTz.includes('Tashkent')) setCurrency('UZS');
                             else if (newTz.includes('Minsk')) setCurrency('BYN');
@@ -453,6 +466,7 @@ export const PointsPage = () => {
                             label={t('dashboard.label_currency', 'Currency')}
                             onChange={(e) => setCurrency(e.target.value)}
                         >
+                        <MenuItem value="RUB">{t('currency.RUB', 'RUB (Рубль)')}</MenuItem>
                             <MenuItem value="KGS">KGS (Сом)</MenuItem>
                             <MenuItem value="KZT">KZT (Тенге)</MenuItem>
                             <MenuItem value="UZS">UZS (Сум)</MenuItem>

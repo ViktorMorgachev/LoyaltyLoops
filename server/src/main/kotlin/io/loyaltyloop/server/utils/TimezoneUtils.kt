@@ -97,13 +97,19 @@ object TimezoneUtils {
             // Belarus
             timezoneId == "Europe/Minsk" -> "BYN"
 
-            // Russia (Partial list, major zones)
+            timezoneId.startsWith("Europe/Kaliningrad") -> "RUB"
             timezoneId.startsWith("Europe/Moscow") -> "RUB"
+            timezoneId.startsWith("Europe/Samara") -> "RUB"
             timezoneId.startsWith("Asia/Yekaterinburg") -> "RUB"
+            timezoneId.startsWith("Asia/Omsk") -> "RUB"
             timezoneId.startsWith("Asia/Novosibirsk") -> "RUB"
             timezoneId.startsWith("Asia/Krasnoyarsk") -> "RUB"
             timezoneId.startsWith("Asia/Irkutsk") -> "RUB"
+            timezoneId.startsWith("Asia/Yakutsk") -> "RUB"
             timezoneId.startsWith("Asia/Vladivostok") -> "RUB"
+            timezoneId.startsWith("Asia/Magadan") -> "RUB"
+            timezoneId.startsWith("Asia/Kamchatka") -> "RUB"
+            timezoneId.startsWith("Asia/Anadyr") -> "RUB"
 
             // USA (Example)
             timezoneId.startsWith("America/") -> "USD"
