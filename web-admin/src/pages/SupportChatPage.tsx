@@ -93,10 +93,18 @@ const sortMessages = (messages: SupportMessage[]) =>
   [...messages].sort((a, b) => Number(a.createdAt) - Number(b.createdAt));
 
 export const SupportChatPage: React.FC<SupportChatPageProps> = ({ mode }) => {
-  const { isPartnerAdmin, isPartner, isPlatformStaff } = useUser();
-  const effectiveMode: Mode = mode ?? (isPlatformStaff ? 'admin' : 'partner');
+  const { isPartnerAdmin, isPartner, isSuperAdmin, isSuperManager } = useUser();
+  const canAdmin = isSuperAdmin || isSuperManager;
+  const effectiveMode: Mode = mode ?? (canAdmin ? 'admin' : 'partner');
 
   if (effectiveMode === 'admin') {
+    if (!canAdmin) {
+      return (
+        <Paper sx={{ p: 3 }}>
+          <Typography>{'Недостаточно прав для просмотра чата'}</Typography>
+        </Paper>
+      );
+    }
     return <AdminSupportChat />;
   }
 

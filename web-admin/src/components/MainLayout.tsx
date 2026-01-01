@@ -115,12 +115,14 @@ export const MainLayout = () => {
   if (isPlatformStaff) {
       menuItems.push(
           { text: t('menu.admin_partners'), icon: <AdminIcon />, path: '/admin/partners' },
-          { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' },
           { text: t('platform.requests_title'), icon: <ListAltIcon />, path: '/platform/requests' }
       );
 
       if (isSuperAdmin || isSuperManager) {
-          menuItems.push({ text: t('menu.platform_staff', { defaultValue: 'Staff' }), icon: <GroupIcon />, path: '/platform/staff' });
+          menuItems.push(
+              { text: t('menu.support_inbox'), icon: <ChatIcon />, path: '/admin/support' },
+              { text: t('menu.platform_staff', { defaultValue: 'Staff' }), icon: <GroupIcon />, path: '/platform/staff' },
+          );
       }
 
       if (isSuperAdmin || isSuperManager) {
