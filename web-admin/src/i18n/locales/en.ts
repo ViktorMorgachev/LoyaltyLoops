@@ -920,7 +920,7 @@ export const en = {
         geo_title: "Geo-marketing",
         geo_desc: "Your points on city map. Free traffic.",
         security_title: "Control & Security",
-        security_desc: "Transparent history. Fraud protection. RBAC.",
+        security_desc: "Centralized token handling, access control, and logging of all actions.",
         network_title: "Branch Network",
         network_desc: "Unified ecosystem for all your points.",
         partner_title: "Partnership 50/50",

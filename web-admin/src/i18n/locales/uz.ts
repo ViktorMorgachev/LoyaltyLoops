@@ -844,7 +844,7 @@ export const uz = {
         geo_title: "Geo-marketing",
         geo_desc: "Xaritadan mijozlarni jalb qilish.",
         security_title: "Xavfsizlik",
-        security_desc: "Shaffof tarix, firibgarlikdan himoya.",
+        security_desc: "Tokenlar bilan markazlashtirilgan ishlash, kirish huquqlarini boshqarish va barcha harakatlarni jurnal qilish.",
         network_title: "Filial tarmog'i",
         network_desc: "Yagona ekotizim.",
         partner_title: "Hamkorlik 50/50",
