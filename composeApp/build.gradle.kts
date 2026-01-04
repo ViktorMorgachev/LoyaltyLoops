@@ -23,8 +23,8 @@ val activeEnv = project.findProperty("env") as? String
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
-val currentVersionCode = 120
-val currentVersionName = "1.2.0"
+val currentVersionCode = 200
+val currentVersionName = "200"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
@@ -41,7 +41,7 @@ buildConfig {
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
 
     val (serverUrl, webUrl) = when (activeEnv) {
-        "prod" -> "https://server-loyalityloop-prod.up.railway.app" to "https://loyalityloop.up.railway.app"
+        "prod" -> "https://loyaltyloops.app" to "api.loyaltyloops.app"
         "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
         else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
     }
@@ -57,7 +57,7 @@ kotlin {
         iosX64(); iosArm64(); iosSimulatorArm64()
 
         cocoapods {
-            summary = "LoyaltyLoop Shared Module"
+            summary = "LoyaltyLoops Shared Module"
             homepage = "https://github.com/LoyaltyLoop"
             version = "1.1.1"
             ios.deploymentTarget = "14.0"
@@ -180,7 +180,7 @@ android {
             matchingFallbacks.add("release")
             signingConfig = signingConfigs.getByName("debug")
             // Видимое имя на стейдже
-            resValue("string", "app_name", "LoyaltyLoop Stage")
+            resValue("string", "app_name", "LoyaltyLoops Stage")
         }
     }
 
@@ -189,7 +189,7 @@ android {
         if (buildType.name == "release") {
             outputs.all {
                 // Меняем имя файла на LoyaltyLoop.apk
-                (this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl)?.outputFileName = "LoyaltyLoop.apk"
+                (this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl)?.outputFileName = "LoyaltyLoops.apk"
             }
 
             // Копируем APK в нужные папки после сборки

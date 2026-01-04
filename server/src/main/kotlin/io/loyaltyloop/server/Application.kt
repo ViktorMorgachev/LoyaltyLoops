@@ -435,7 +435,7 @@ fun Application.module() {
             }
 
             get("/") {
-                call.respondText("LoyaltyLoop Backend is ALIVE! 🐘")
+                call.respondText("LoyaltyLoops Backend is ALIVE! 🐘")
             }
         }
 

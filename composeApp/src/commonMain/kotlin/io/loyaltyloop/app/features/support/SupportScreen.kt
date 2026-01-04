@@ -22,7 +22,7 @@ import loyaltyloop.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.stringResource
 
 // TODO: Replace with actual contact details
-private const val SUPPORT_EMAIL = "morgachev.v.s@gmail.com"
+private const val SUPPORT_EMAIL = "support@loyaltyloops.app"
 private const val SUPPORT_TELEGRAM = "https://t.me/AndroDev11"
 
 class SupportScreen : Screen {

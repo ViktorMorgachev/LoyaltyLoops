@@ -73,7 +73,7 @@ class WebPortalScreen(
             snackbarHostState = SnackbarHostState(),
             topBar = {
                 TopAppBar(
-                    title = { Text("LoyaltyLoop Web") },
+                    title = { Text("LoyaltyLoops Web") },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)

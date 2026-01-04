@@ -156,7 +156,7 @@
     <string name="language_be">Bielaruskaja</string>
     <string name="profile_about_title">О приложении</string>
     <string name="profile_about_version">Версия:</string>
-    <string name="profile_about_description">LoyaltyLoop — это ваш единый кошелек для карт лояльности. Копите бонусы, получайте подарки и следите за своим статусом в любимых заведениях.</string>
+    <string name="profile_about_description">LoyaltyLoops — это ваш единый кошелек для карт лояльности. Копите бонусы, получайте подарки и следите за своим статусом в любимых заведениях.</string>
 
     <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
     <string name="profile_desc_create_business">Для владельцев заведений</string>
@@ -499,8 +499,7 @@
     <string name="whats_new_btn_awesome">Круто!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Улучшена авторизация через Telegram
-        • Повышена стабильность приложения
+        • Ребрендинг LoyaltyLoops
     </string>
 
     <!-- Coming Soon -->

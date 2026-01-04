@@ -158,7 +158,7 @@ export const kk = {
       subtitle: "Рөлдер қолжетімді бөлімдер мен құқықтарды анықтайды."
     },
     about: {
-      title: "LoyaltyLoop жобасы туралы",
+      title: "LoyaltyLoops жобасы туралы",
       section_mission: "Миссия",
       section_focus: "Даму бағыты",
       section_contact: "Байланыс және идеялар",
@@ -741,7 +741,7 @@ export const kk = {
       privacy: "Құпиялылық саясаты",
       roadmap: {
         title: "Жоба картасы 🚀",
-        subtitle: "LoyaltyLoop келешегі.",
+        subtitle: "LoyaltyLoops келешегі.",
         back: "Артқа",
         contact_support: "Идеялар бар ма? Жазыңыз!",
         status: {
@@ -852,7 +852,7 @@ export const kk = {
       },
       cta: {
         title: "Бизнесті өсіруге дайынсыз ба?",
-        subtitle: "LoyaltyLoop қосылыңыз.",
+        subtitle: "LoyaltyLoops қосылыңыз.",
         quick_start: "Тез бастау 15 мин",
         no_hardware: "Жабдық керек емес",
         trial: "14 күн сынақ мерзімі"
@@ -868,7 +868,7 @@ export const kk = {
       }
     },
     download: {
-      title: "LoyaltyLoop жүктеп алу",
+      title: "LoyaltyLoops жүктеп алу",
       desc: "Ұпай жинау, сыйлық алу және прогресті бақылау үшін қосымшаны орнатыңыз.",
       btn_apk: "APK жүктеу",
       requirements: "Android 8.0 немесе жоғары қажет",

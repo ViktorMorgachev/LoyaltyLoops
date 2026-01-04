@@ -158,7 +158,7 @@ export const uz = {
       subtitle: "Rollarni mavjud bo'limlar va huquqlar belgilaydi."
     },
     about: {
-      title: "LoyaltyLoop loyihasi haqida",
+      title: "LoyaltyLoops loyihasi haqida",
       section_mission: "Missiya",
       section_focus: "Rivojlanish yo'nalishi",
       section_contact: "Aloqa va g'oyalar",
@@ -741,7 +741,7 @@ export const uz = {
       privacy: "Maxfiylik siyosati",
       roadmap: {
         title: "Loyiha xaritasi 🚀",
-        subtitle: "LoyaltyLoop kelajagi.",
+        subtitle: "LoyaltyLoops kelajagi.",
         back: "Ortga",
         contact_support: "G'oyalar bormi? Yozing!",
         status: {
@@ -852,7 +852,7 @@ export const uz = {
       },
       cta: {
         title: "Biznesni o'stirishga tayyormisiz?",
-        subtitle: "LoyaltyLoop ga qo'shiling.",
+        subtitle: "LoyaltyLoops ga qo'shiling.",
         quick_start: "Tez boshlash 15 daq",
         no_hardware: "Uskuna kerak emas",
         trial: "14 kun sinov muddati"
@@ -868,7 +868,7 @@ export const uz = {
       }
     },
     download: {
-      title: "LoyaltyLoop yuklab olish",
+      title: "LoyaltyLoops yuklab olish",
       desc: "Ballar to'plash, sovg'a olish va progressni kuzatish uchun ilovani o'rnating.",
       btn_apk: "APK yuklash",
       requirements: "Android 8.0 yoki undan yuqori talab qilinadi",

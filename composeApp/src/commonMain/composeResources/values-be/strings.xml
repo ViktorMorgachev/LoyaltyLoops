@@ -155,7 +155,7 @@
     <string name="language_be">Беларуская</string>
     <string name="profile_about_title">Пра праграму</string>
     <string name="profile_about_version">Версія:</string>
-    <string name="profile_about_description">LoyaltyLoop — гэта ваш адзіны кашалёк для карт лаяльнасці. Збірайце бонусы, атрымлівайце падарункі і сачыце за сваім статусам у любімых месцах.</string>
+    <string name="profile_about_description">LoyaltyLoops — гэта ваш адзіны кашалёк для карт лаяльнасці. Збірайце бонусы, атрымлівайце падарункі і сачыце за сваім статусам у любімых месцах.</string>
 
     <string name="profile_btn_create_business">Запусціць LoyaltyLoop</string>
     <string name="profile_desc_create_business">Для ўладальнікаў устаноў</string>
@@ -498,8 +498,7 @@
     <string name="whats_new_btn_awesome">Крута!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Паляпшана аўтарызацыя праз Telegram
-        • Павышана стабільнасць праграмы
+        • Ребрэндынг LoyaltyLoops
     </string>
 
     <!-- Coming Soon Placeholder -->
