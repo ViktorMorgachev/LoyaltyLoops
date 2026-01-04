@@ -267,7 +267,7 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
 
         PartnersTable
             .slice(PartnersTable.managerInviteCode)
-            .select { PartnersTable.id eq partnerUuid }
+            .select { PartnersTable.owner eq partnerUuid }
             .singleOrNull()
             ?.get(PartnersTable.managerInviteCode)
             ?: throw LoyaltyException(AppErrorCode.BUSINESS_NOT_FOUND, "Partner not found")
