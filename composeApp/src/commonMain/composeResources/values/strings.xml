@@ -4,7 +4,7 @@
 
     <string name="notif_default_body">У вас новое событие по карте лояльности</string>
     <!-- Auth Screen -->
-    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_title">LoyaltyLoops</string>
     <string name="auth_subtitle">Вход для клиентов и партнеров</string>
     <string name="auth_phone_label">Ваш номер телефона</string>
     <string name="auth_btn_next">Продолжить</string>
@@ -158,7 +158,7 @@
     <string name="profile_about_version">Версия:</string>
     <string name="profile_about_description">LoyaltyLoops — это ваш единый кошелек для карт лояльности. Копите бонусы, получайте подарки и следите за своим статусом в любимых заведениях.</string>
 
-    <string name="profile_btn_create_business">Запустить LoyaltyLoop</string>
+    <string name="profile_btn_create_business">Запустить LoyaltyLoops</string>
     <string name="profile_desc_create_business">Для владельцев заведений</string>
 
     <string name="profile_btn_join_team">Ввести инвайт-код</string>

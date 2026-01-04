@@ -3,7 +3,7 @@
     <string name="app_name">LoyaltyLoop</string>
 
     <!-- Auth Screen -->
-    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_title">LoyaltyLoops</string>
     <string name="auth_subtitle">Клиенттер мен серіктестер үшін кіру</string>
     <string name="auth_phone_label">Сіздің телефон нөміріңіз</string>
     <string name="auth_btn_next">Жалғастыру</string>
@@ -157,7 +157,7 @@
     <string name="profile_about_version">Нұсқа:</string>
     <string name="profile_about_description">LoyaltyLoops — бұл сіздің адалдық карталарыңызға арналған бірыңғай әмиян. Бонус жинаңыз, сыйлықтар алыңыз және сүйікті орындарыңыздағы мәртебеңізді бақылаңыз.</string>
 
-    <string name="profile_btn_create_business">LoyaltyLoop-ты іске қосу</string>
+    <string name="profile_btn_create_business">LoyaltyLoops-ты іске қосу</string>
     <string name="profile_desc_create_business">Бизнес иелері үшін</string>
 
     <string name="profile_btn_join_team">Шақыру кодын енгізу</string>

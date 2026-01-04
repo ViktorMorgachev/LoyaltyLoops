@@ -23,8 +23,8 @@ val activeEnv = project.findProperty("env") as? String
 val isServerBuild = project.hasProperty("serverBuild")
 val isProd = activeEnv == "prod"
 
-val currentVersionCode = 202
-val currentVersionName = "2.0.2"
+val currentVersionCode = 203
+val currentVersionName = "2.0.3"
 
 // 2. Extension для красивой записи строк в BuildConfig
 fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String, value: String) =
@@ -41,7 +41,7 @@ buildConfig {
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
 
     val (serverUrl, webUrl) = when (activeEnv) {
-        "prod" -> "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
+        "prod" -> "https://api.loyaltyloops.app" to "https://loyaltyloops.app"
         "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
         else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
     }

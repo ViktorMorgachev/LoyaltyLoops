@@ -3,7 +3,7 @@
     <string name="app_name">LoyaltyLoop</string>
 
     <!-- Auth Screen -->
-    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_title">LoyaltyLoops</string>
     <string name="auth_subtitle">Уваход для кліентаў і партнёраў</string>
     <string name="auth_phone_label">Ваш нумар тэлефона</string>
     <string name="auth_btn_next">Працягнуць</string>
@@ -157,7 +157,7 @@
     <string name="profile_about_version">Версія:</string>
     <string name="profile_about_description">LoyaltyLoops — гэта ваш адзіны кашалёк для карт лаяльнасці. Збірайце бонусы, атрымлівайце падарункі і сачыце за сваім статусам у любімых месцах.</string>
 
-    <string name="profile_btn_create_business">Запусціць LoyaltyLoop</string>
+    <string name="profile_btn_create_business">Запусціць LoyaltyLoops</string>
     <string name="profile_desc_create_business">Для ўладальнікаў устаноў</string>
 
     <string name="profile_btn_join_team">Увесці інвайт-код</string>

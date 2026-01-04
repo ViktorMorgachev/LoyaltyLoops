@@ -157,7 +157,7 @@
     <string name="profile_about_version">Версия:</string>
     <string name="profile_about_description">LoyaltyLoops — бул сиздин лоялдуулук карталарыңыз үчүн бирдиктүү капчык. Бонус топтоңуз, белектерди алыңыз жана сүйүктүү жайларыңызда макамыңызды байкап туруңуз.</string>
 
-    <string name="profile_btn_create_business">LoyaltyLoop'ту иштетүү</string>
+    <string name="profile_btn_create_business">LoyaltyLoops'ту иштетүү</string>
     <string name="profile_desc_create_business">Бизнес ээлери үчүн</string>
 
     <string name="profile_btn_join_team">Чакыруу кодун киргизүү</string>

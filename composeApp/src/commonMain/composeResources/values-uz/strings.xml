@@ -3,7 +3,7 @@
     <string name="app_name">LoyaltyLoop</string>
 
     <!-- Auth Screen -->
-    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_title">LoyaltyLoops</string>
     <string name="auth_subtitle">Mijozlar va hamkorlar uchun kirish</string>
     <string name="auth_phone_label">Telefon raqamingiz</string>
     <string name="auth_btn_next">Davom etish</string>
