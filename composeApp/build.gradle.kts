@@ -41,9 +41,9 @@ buildConfig {
     stringField("MAP_API_KEY", "913bd734-3e88-42fd-ae0d-b5f16c05110c")
 
     val (serverUrl, webUrl) = when (activeEnv) {
-        "prod" -> "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
-        "stage" -> "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
-        else ->  "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
+        "prod" -> "https://api.loyaltyloops.app" to "https://loyaltyloops.app"
+        "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+        else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
     }
     stringField("SERVER_URL", serverUrl)
     stringField("WEB_URL", webUrl)

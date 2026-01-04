@@ -3,7 +3,7 @@
     <string name="app_name">LoyaltyLoop</string>
 
     <!-- Auth Screen -->
-    <string name="auth_title">LoyaltyLoop</string>
+    <string name="auth_title">LoyaltyLoops</string>
     <string name="auth_subtitle">Login for customers and partners</string>
     <string name="auth_phone_label">Your phone number</string>
     <string name="auth_btn_next">Continue</string>
@@ -152,7 +152,7 @@
     <string name="profile_about_version">Version:</string>
     <string name="profile_about_description">LoyaltyLoops is your single wallet for loyalty cards. Collect bonuses, get gifts, and track your status in your favorite places.</string>
 
-    <string name="profile_btn_create_business">Launch LoyaltyLoop</string>
+    <string name="profile_btn_create_business">Launch LoyaltyLoops</string>
     <string name="profile_desc_create_business">For business owners</string>
 
     <string name="profile_btn_join_team">Enter Invite Code</string>
