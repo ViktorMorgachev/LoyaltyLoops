@@ -42,8 +42,8 @@ buildConfig {
 
     val (serverUrl, webUrl) = when (activeEnv) {
         "prod" -> "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
-        "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
-        else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+        "stage" -> "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
+        else ->  "https://loyaltyloops.app" to "https://api.loyaltyloops.app"
     }
     stringField("SERVER_URL", serverUrl)
     stringField("WEB_URL", webUrl)
