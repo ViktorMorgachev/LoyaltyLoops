@@ -65,7 +65,7 @@ object ServerResources {
         // 🇺🇸 ENGLISH (International)
         // =====================================================================
         "en" to mapOf(
-            "welcome_subject" to "Welcome to LoyaltyLoop!",
+            "welcome_subject" to "Welcome to LoyaltyLoops!",
             "welcome_body" to "Congratulations! Your business \"{partnerName}\" has been registered. You can now add trading points and launch your loyalty program.",
             "welcome_btn" to "Go to Dashboard",
 

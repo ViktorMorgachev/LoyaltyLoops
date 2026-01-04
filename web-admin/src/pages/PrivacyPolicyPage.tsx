@@ -29,7 +29,7 @@ export const PrivacyPolicyPage = () => {
                         1. Introduction
                     </Typography>
                     <Typography variant="body1" color="text.secondary" paragraph>
-                        Welcome to LoyaltyLoop. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us.
+                        Welcome to LoyaltyLoops. We are committed to protecting your personal information and your right to privacy. If you have any questions or concerns about this privacy notice, or our practices with regards to your personal information, please contact us.
                     </Typography>
 
                     <Typography variant="h6" fontWeight="bold" gutterBottom sx={{ mt: 3 }}>
