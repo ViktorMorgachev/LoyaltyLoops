@@ -135,7 +135,7 @@ class SplashScreen : Screen {
                                     fontWeight = FontWeight.ExtraBold
                                 )
                             ) {
-                                append("LoyaltyLoop")
+                                append("LoyaltyLoops")
                             }
                         },
                         style = MaterialTheme.typography.displaySmall.copy(fontWeight = FontWeight.ExtraBold),

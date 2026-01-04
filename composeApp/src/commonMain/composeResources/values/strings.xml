@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">LoyaltyLoop</string>
+    <string name="app_name">LoyaltyLoops</string>
 
     <string name="notif_default_body">У вас новое событие по карте лояльности</string>
     <!-- Auth Screen -->
