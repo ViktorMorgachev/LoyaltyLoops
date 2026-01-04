@@ -36,8 +36,8 @@ fun com.github.gmazzo.buildconfig.BuildConfigExtension.stringField(name: String,
 buildConfig {
     packageName("io.loyaltyloop.shared")
 
-    val versionCode = getIntProp("currentVersionCode", 200)
-    val versionName = getStringProp("currentVersionName", "2.0.0")
+    val versionCode = getIntProp("currentVersionCode", 201)
+    val versionName = getStringProp("currentVersionName", "2.0.1")
 
     stringField("APP_VERSION", versionName)
     buildConfigField("int", "VERSION_CODE", "$versionCode")
