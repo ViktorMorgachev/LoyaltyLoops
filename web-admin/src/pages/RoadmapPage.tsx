@@ -122,12 +122,12 @@ export const RoadmapPage = () => {
                         {t('landing.roadmap.contact_support')}
                     </Typography>
                     <Link 
-                        href="mailto:morgachev.v.s@gmail.com" 
+                        href="mailto:support@loyaltyloops.app"
                         underline="hover" 
                         color="primary"
                         sx={{ fontWeight: 600, fontSize: '1rem' }}
                     >
-                        morgachev.v.s@gmail.com
+                        support@loyaltyloops.app
                     </Link>
                 </Box>
             </Container>

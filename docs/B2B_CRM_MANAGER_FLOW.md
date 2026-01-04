@@ -1,4 +1,4 @@
-# LoyaltyLoop B2B CRM Flow
+# LoyaltyLoops B2B CRM Flow
 
 Этот документ описывает бизнес-процессы и техническую реализацию B2B CRM 
 для управления партнерами и подписками в системе LoyaltyLoop.

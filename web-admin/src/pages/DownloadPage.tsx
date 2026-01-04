@@ -15,7 +15,7 @@ export const DownloadPage = () => {
     const { t } = useTranslation();
     const theme = useTheme();
     
-    const apkUrl = "/LoyaltyLoop.apk"; 
+    const apkUrl = "/LoyaltyLoops.apk";
     const rustoreUrl = "https://www.rustore.ru/catalog/app/io.loyaltyloop.app";
     const [apkSize, setApkSize] = useState<string | null>(null);
     const appVersion = __APP_VERSION__; // Injected by Vite from build.gradle.kts

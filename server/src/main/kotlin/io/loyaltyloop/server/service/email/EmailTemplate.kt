@@ -285,11 +285,11 @@ class EmailTemplateService {
             <body>
                 <div class="container">
                     <div class="header">
-                        <a href="https://loyaltyloop.io" class="logo">LoyaltyLoop</a>
+                        <a href="https://loyaltyloops.app" class="logo">LoyaltyLoops</a>
                     </div>
                     $content
                     <div class="footer">
-                        <p>© 2025 LoyaltyLoop Inc. • Automated System Message</p>
+                        <p>© 2025 LoyaltyLoops Inc. • Automated System Message</p>
                     </div>
                 </div>
             </body>

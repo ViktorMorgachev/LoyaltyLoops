@@ -155,7 +155,7 @@
     <string name="language_be">Beloruscha</string>
     <string name="profile_about_title">Ilova haqida</string>
     <string name="profile_about_version">Versiya:</string>
-    <string name="profile_about_description">LoyaltyLoop — bu sodiqlik kartalaringiz uchun yagona hamyon. Bonus yig‘ing, sovg‘alar oling va sevimli joylaringizda maqomingizni kuzatib boring.</string>
+    <string name="profile_about_description">LoyaltyLoops — bu sodiqlik kartalaringiz uchun yagona hamyon. Bonus yig‘ing, sovg‘alar oling va sevimli joylaringizda maqomingizni kuzatib boring.</string>
 
     <string name="profile_btn_create_business">LoyaltyLoop-ni ishga tushirish</string>
     <string name="profile_desc_create_business">Biznes egalari uchun</string>
@@ -498,8 +498,7 @@
     <string name="whats_new_btn_awesome">Zo‘r!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Telegram orqali avtorizatsiya yaxshilandi
-        • Ilova barqarorligi oshirildi
+        • LoyaltyLoops rebrendingi
     </string>
 
     <!-- Coming Soon Placeholder -->

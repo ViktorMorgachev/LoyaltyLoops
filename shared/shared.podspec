@@ -5,7 +5,7 @@ Pod::Spec.new do |spec|
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
     spec.license                  = ''
-    spec.summary                  = 'LoyaltyLoop Shared Module'
+    spec.summary                  = 'LoyaltyLoops Shared Module'
     spec.vendored_frameworks      = 'build/cocoapods/framework/LoyaltyLoop.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target    = '14.0'

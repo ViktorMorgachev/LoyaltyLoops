@@ -155,7 +155,7 @@
     <string name="language_be">Белорусша</string>
     <string name="profile_about_title">Қолданба туралы</string>
     <string name="profile_about_version">Нұсқа:</string>
-    <string name="profile_about_description">LoyaltyLoop — бұл сіздің адалдық карталарыңызға арналған бірыңғай әмиян. Бонус жинаңыз, сыйлықтар алыңыз және сүйікті орындарыңыздағы мәртебеңізді бақылаңыз.</string>
+    <string name="profile_about_description">LoyaltyLoops — бұл сіздің адалдық карталарыңызға арналған бірыңғай әмиян. Бонус жинаңыз, сыйлықтар алыңыз және сүйікті орындарыңыздағы мәртебеңізді бақылаңыз.</string>
 
     <string name="profile_btn_create_business">LoyaltyLoop-ты іске қосу</string>
     <string name="profile_desc_create_business">Бизнес иелері үшін</string>
@@ -498,8 +498,7 @@
     <string name="whats_new_btn_awesome">Керемет!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Telegram арқылы авторизация жақсартылды
-        • Қолданба тұрақтылығы артты
+        • LoyaltyLoops ребрендингі
     </string>
 
     <!-- Coming Soon Placeholder -->

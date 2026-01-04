@@ -150,7 +150,7 @@
     <string name="language_be">Belarusian</string>
     <string name="profile_about_title">About App</string>
     <string name="profile_about_version">Version:</string>
-    <string name="profile_about_description">LoyaltyLoop is your single wallet for loyalty cards. Collect bonuses, get gifts, and track your status in your favorite places.</string>
+    <string name="profile_about_description">LoyaltyLoops is your single wallet for loyalty cards. Collect bonuses, get gifts, and track your status in your favorite places.</string>
 
     <string name="profile_btn_create_business">Launch LoyaltyLoop</string>
     <string name="profile_desc_create_business">For business owners</string>
@@ -493,8 +493,7 @@
     <string name="whats_new_btn_awesome">Awesome!</string>
     <!-- Change these for every release -->
     <string name="whats_new_features_list">
-        • Improved Telegram login reliability
-        • Improved app stability
+        • Rebranding to LoyaltyLoops
     </string>
 
     <!-- Coming Soon -->
