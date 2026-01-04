@@ -877,7 +877,7 @@ export const be = {
     },
     
     client_onboarding: {
-      welcome_title: "Сардэчна запрашаем у LoyaltyLoop",
+      welcome_title: "Сардэчна запрашаем у LoyaltyLoops",
       welcome_subtitle: "Вашы любімыя ўстановы ў адным дадатку. Збірайце балы і атрымлівайце падарункі.",
       steps_title: "Як гэта працуе?",
       step_1: "Спампуйце дадатак",

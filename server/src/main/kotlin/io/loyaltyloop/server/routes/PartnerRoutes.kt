@@ -73,6 +73,9 @@ fun Route.partnerRoutes(
     analyticsService: AnalyticsService,
     subscriptionRepository: SubscriptionRepository
 ) {
+
+    val migratedWebBaseUrl = if (webBaseUrl =="https://loyalityloop.up.railway.app") "https://loyaltyloops.app" else webBaseUrl
+
     route("/partners") {
         authenticate("auth-jwt") {
 
@@ -182,7 +185,7 @@ fun Route.partnerRoutes(
                         to = it,
                         template = EmailTemplate.PartnerWelcome(
                             name = request.businessName,
-                            loginUrl = "$webBaseUrl/login"
+                            loginUrl = "$migratedWebBaseUrl/login"
                         ),
                         lang = user.language
                     )
@@ -262,7 +265,7 @@ fun Route.partnerRoutes(
                 val rawToken = SecurityUtils.generateToken()
                 pinResetTokenRepository.createToken(workspaceId, rawToken, nowUtc().plusHours(PIN_RESET_TTL_HOURS).toUtcMillis())
 
-                val resetLink = "$webBaseUrl/reset-pin?token=$rawToken"
+                val resetLink = "$migratedWebBaseUrl/reset-pin?token=$rawToken"
                 emailService.sendEmail(email, EmailTemplate.PartnerPinResetRequested(resetLink), user.language)
 
                 eventLogger.log(

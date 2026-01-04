@@ -18,7 +18,7 @@ object ServerResources {
         // =====================================================================
         "ru" to mapOf(
             // --- Welcome ---
-            "welcome_subject" to "Добро пожаловать в LoyaltyLoop!",
+            "welcome_subject" to "Добро пожаловать в LoyaltyLoops!",
             "welcome_body" to "Поздравляем! Ваш бизнес \"{partnerName}\" успешно зарегистрирован. Теперь вы можете добавлять торговые точки и запускать программу лояльности.",
             "welcome_btn" to "Перейти в Кабинет",
 

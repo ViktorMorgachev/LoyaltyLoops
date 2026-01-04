@@ -53,7 +53,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data android:scheme="https" />
-                <data android:host="loyalityloop.up.railway.app" />
+                <data android:host="loyaltyloops.app" />
                 <data android:pathPrefix="/auth" />
             </intent-filter>
 

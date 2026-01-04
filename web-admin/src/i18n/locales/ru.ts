@@ -950,7 +950,7 @@ export const ru = {
       rustore_hover: "Наведите, чтобы показать QR"
     },
     client_onboarding: {
-      welcome_title: "Добро пожаловать в LoyaltyLoop",
+      welcome_title: "Добро пожаловать в LoyaltyLoops",
       welcome_subtitle: "Ваши любимые заведения в одном приложении. Копите баллы и получайте подарки.",
       steps_title: "Как это работает?",
       step_1: "Скачайте приложение",
