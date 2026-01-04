@@ -953,7 +953,7 @@ export const en = {
       rustore_hover: "Hover to show QR"
     },
     client_onboarding: {
-      welcome_title: "Welcome to LoyaltyLoop",
+      welcome_title: "Welcome to LoyaltyLoops",
       welcome_subtitle: "Your favorite places in one app. Collect points and get rewards.",
       steps_title: "How it works?",
       step_1: "Download the app",

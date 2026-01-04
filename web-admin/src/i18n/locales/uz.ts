@@ -877,7 +877,7 @@ export const uz = {
     },
     
     client_onboarding: {
-      welcome_title: "LoyaltyLoop-ga xush kelibsiz",
+      welcome_title: "LoyaltyLoops-ga xush kelibsiz",
       welcome_subtitle: "Sevimli joylaringiz bitta ilovada. Ballar to'plang va sovg'alar oling.",
       steps_title: "Bu qanday ishlaydi?",
       step_1: "Ilovani yuklab oling",

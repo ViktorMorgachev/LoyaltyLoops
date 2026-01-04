@@ -33,6 +33,7 @@ class TelegramAuthService(
     private val webhookUrl: String? = null,
     private val webhookSecret: String? = null
 ) {
+    val migratedWebBaseUrl = if (webBaseUrl =="https://loyalityloop.up.railway.app") "https://loyaltyloops.app" else webBaseUrl
     private val logger = LoggerFactory.getLogger(TelegramAuthService::class.java)
     private val started = java.util.concurrent.atomic.AtomicBoolean(false)
 
@@ -339,13 +340,13 @@ class TelegramAuthService(
                 JsonArray(listOf(
                     JsonObject(mapOf(
                         "text" to JsonPrimitive(getMsg(BTN_WEB, languageCode)),
-                        "url" to JsonPrimitive(webBaseUrl)
+                        "url" to JsonPrimitive(migratedWebBaseUrl)
                     ))
                 )),
                  JsonArray(listOf(
                     JsonObject(mapOf(
                         "text" to JsonPrimitive(getMsg(BTN_APP, languageCode)),
-                        "url" to JsonPrimitive("${webBaseUrl}/auth?uuid=$uuid")
+                        "url" to JsonPrimitive("${migratedWebBaseUrl}/auth?uuid=$uuid")
                     ))
                 ))
             ))

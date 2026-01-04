@@ -876,7 +876,7 @@ export const ky = {
       rustore_hover: "QR көрсөтүү үчүн курсорду алып келиңиз"
     },
     client_onboarding: {
-      welcome_title: "LoyaltyLoop-ко кош келиңиз",
+      welcome_title: "LoyaltyLoops-ко кош келиңиз",
       welcome_subtitle: "Сүйүктүү жайларыңыз бир тиркемеде. Упай топтоп, белектерди алыңыз.",
       steps_title: "Бул кантип иштейт?",
       step_1: "Тиркемени жүктөп алыңыз",
