@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
-import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from 'react';
 
 // Страницы
@@ -83,7 +82,7 @@ function App() {
   }, []);
 
   return (
-    <HelmetProvider>
+    <>
       <CssBaseline />
       <BrowserRouter>
         <SEOHead />
@@ -135,7 +134,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
-    </HelmetProvider>
+    </>
   );
 }
 

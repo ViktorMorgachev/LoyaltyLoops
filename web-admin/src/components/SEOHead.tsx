@@ -1,9 +1,9 @@
-import { Helmet } from 'react-helmet-async';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const keywordsMap: Record<string, string> = {
-  ru: 'система лояльности, электронные карты, wallet, программа лояльности для кофейни, crm для бизнеса, кэшбэк сервис, удержание клиентов, b2c лояльность, loyaltyloops',
-  en: 'loyalty program, digital loyalty cards, wallet passes, cashback system, customer retention, small business crm, loyalty app, loyaltyloops',
+  ru: 'система лояльности, электронные карты wallet, программа лояльности для кофейни, crm для бизнеса, кэшбэк сервис, удержание клиентов, loyaltyloops',
+  en: 'loyalty program, digital loyalty cards, wallet passes, cashback system, customer retention, small business crm, loyaltyloops',
   ky: 'берилгендик программасы, электрондук карталар, арзандатуу, кардарларды тартуу, лоялдуулук тиркемеси, loyaltyloops',
   uz: 'sodiqlik dasturi, bonus kartalari, keshbek tizimi, mijozlarni saqlash, savdoni oshirish, loyaltyloops',
   kk: 'адалдық бағдарламасы, бонустық карталар, кэшбэк жүйесі, электронды карталар, бизнеске адалдық, loyaltyloops',
@@ -12,12 +12,18 @@ const keywordsMap: Record<string, string> = {
 
 export const SEOHead = () => {
   const { i18n } = useTranslation();
-  const currentKeywords = keywordsMap[i18n.language] || keywordsMap.ru;
 
-  return (
-    <Helmet>
-      <meta name="keywords" content={currentKeywords} />
-    </Helmet>
-  );
+  useEffect(() => {
+    const currentKeywords = keywordsMap[i18n.language] || keywordsMap.ru;
+    let tag = document.querySelector('meta[name="keywords"]') as HTMLMetaElement | null;
+    if (!tag) {
+      tag = document.createElement('meta');
+      tag.name = 'keywords';
+      document.head.appendChild(tag);
+    }
+    tag.content = currentKeywords;
+  }, [i18n.language]);
+
+  return null;
 };
 
