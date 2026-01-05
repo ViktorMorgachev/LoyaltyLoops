@@ -1,6 +1,7 @@
 package io.loyaltyloop.app.features.update
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -46,7 +48,6 @@ class NeedUpdateScreen(
     @Composable
     override fun Content() {
         val urlOpener = koinInject<UrlOpener>()
-
         Surface(
             color = MaterialTheme.colorScheme.background,
             modifier = Modifier.fillMaxSize(),
@@ -70,13 +71,14 @@ class NeedUpdateScreen(
                     text = stringResource(Res.string.need_update_title),
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = stringResource(Res.string.need_update_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onBackground,
                     textAlign = TextAlign.Center
                 )
 
@@ -89,7 +91,8 @@ class NeedUpdateScreen(
                         whatsNew.forEach { item ->
                             Text(
                                 text = item,
-                                style = MaterialTheme.typography.bodyMedium
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }

@@ -61,7 +61,8 @@ class ForceUpdateScreen(
                 Text(
                     text = stringResource(Res.string.force_update_title),
                     style = MaterialTheme.typography.headlineMedium,
-                    textAlign = TextAlign.Companion.Center
+                    textAlign = TextAlign.Companion.Center,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(modifier = Modifier.Companion.height(16.dp))
