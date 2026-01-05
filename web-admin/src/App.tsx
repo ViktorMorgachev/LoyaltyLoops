@@ -39,6 +39,7 @@ import { PlatformStaffPage } from './pages/platform/PlatformStaffPage';
 import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
 import { AuthSync } from './components/AuthSync';
+import { SEOHead } from './components/SEOHead';
 
 import { DownloadPage } from './pages/DownloadPage';
 
@@ -84,7 +85,8 @@ function App() {
     <>
       <CssBaseline />
       <BrowserRouter>
-       <AuthSync />
+        <SEOHead />
+        <AuthSync />
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />

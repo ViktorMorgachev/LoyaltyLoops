@@ -831,8 +831,8 @@ export const uz = {
       },
       result: {
         title: "Biznes uchun natija",
-        stat_1: "+40% Qayta xaridlar o'sishi",
-        stat_2: "+25% O'rtacha chek o'sishi",
+        stat_1: "Qayta xaridlar o'sishi",
+        stat_2: "O'rtacha chek o'sishi",
         stat_3: "Mijoz xulq-atvori bo'yicha to'liq analitika"
       },
 
@@ -853,9 +853,14 @@ export const uz = {
       cta: {
         title: "Biznesni o'stirishga tayyormisiz?",
         subtitle: "LoyaltyLoops ga qo'shiling.",
+        contact_line: "Bugunoq ekotizimga qo'shiling — bizga yozing",
         quick_start: "Tez boshlash 15 daq",
         no_hardware: "Uskuna kerak emas",
-        trial: "14 kun sinov muddati"
+        trial: "14 kun sinov muddati",
+        copy_hint: "yoki manzilni nusxa oling",
+        copy_button: "Nusxa olish",
+        copy_success: "Nusxalandi",
+        copy_error: "Nusxa olib bo‘lmadi"
       },
       waitlist: {
         title: "Kutish ro'yxatiga qo'shilish",

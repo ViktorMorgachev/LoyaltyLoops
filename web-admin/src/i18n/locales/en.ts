@@ -881,8 +881,8 @@ export const en = {
       },
       result: {
         title: "Business Impact",
-        stat_1: "+40% Repeat purchases",
-        stat_2: "+25% Higher average check",
+        stat_1: "Repeat purchases",
+        stat_2: "Higher average check",
         stat_3: "Complete visibility of client behavior"
       },
 
@@ -929,9 +929,14 @@ export const en = {
       cta: {
         title: "Ready to scale?",
         subtitle: "Join LoyaltyLoops today.",
+        contact_line: "Join the ecosystem today — email us at",
         quick_start: "Quick Start 15 min",
         no_hardware: "No Hardware",
-        trial: "14 Days Trial"
+        trial: "14 Days Trial",
+        copy_hint: "or copy the address",
+        copy_button: "Copy",
+        copy_success: "Copied",
+        copy_error: "Failed to copy"
       },
       waitlist: {
         title: "Join the Waitlist",
