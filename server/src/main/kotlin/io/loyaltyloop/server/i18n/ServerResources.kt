@@ -56,9 +56,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "Сброс ПИН-кода",
-            "pin_reset_body" to "Вы запросили сброс ПИН-кода. Нажмите на ссылку ниже, чтобы задать новый ПИН:\n{resetLink}\nЕсли вы этого не делали, проигнорируйте это письмо.",
+            "pin_reset_body" to "Вы запросили сброс ПИН-кода. Нажмите на кнопку ниже, чтобы задать новый ПИН:\n{resetButton}\nЕсли вы этого не делали, проигнорируйте это письмо.",
             "pin_reset_partner_subject" to "Сброс ПИН-кода для Партнера",
-            "pin_reset_partner_body" to "Вы запросили сброс ПИН-кода для вашего партнерского аккаунта. Нажмите на ссылку ниже, чтобы задать новый ПИН:\n{resetLink}\nЕсли вы этого не делали, проигнорируйте это письмо."
+            "pin_reset_partner_body" to "Вы запросили сброс ПИН-кода для вашего партнерского аккаунта. Нажмите на кнопку ниже, чтобы задать новый ПИН:\n{resetButton}\nЕсли вы этого не делали, проигнорируйте это письмо.",
+            "pin_reset_button" to "Сменить ПИН"
         ),
 
         // =====================================================================
@@ -96,9 +97,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "PIN Reset",
-            "pin_reset_body" to "You have requested a PIN reset. Click the link below to set a new PIN:\n{resetLink}\nIf you did not request this, please ignore this email.",
+            "pin_reset_body" to "You have requested a PIN reset. Click the button below to set a new PIN:\n{resetButton}\nIf you did not request this, please ignore this email.",
             "pin_reset_partner_subject" to "Partner PIN Reset",
-            "pin_reset_partner_body" to "You have requested a PIN reset for your partner account. Click the link below to set a new PIN:\n{resetLink}\nIf you did not request this, please ignore this email."
+            "pin_reset_partner_body" to "You have requested a PIN reset for your partner account. Click the button below to set a new PIN:\n{resetButton}\nIf you did not request this, please ignore this email.",
+            "pin_reset_button" to "Reset PIN"
         ),
 
         // =====================================================================
@@ -133,9 +135,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "ПИН-кодду алмаштыруу",
-            "pin_reset_body" to "Сиз ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү шилтемени басыңыз:\n{resetLink}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз.",
+            "pin_reset_body" to "Сиз ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү баскычты басыңыз:\n{resetButton}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз.",
             "pin_reset_partner_subject" to "Өнөктөштүн ПИН-кодун алмаштыруу",
-            "pin_reset_partner_body" to "Сиз өнөктөштүк аккаунтуңуз үчүн ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү шилтемени басыңыз:\n{resetLink}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз."
+            "pin_reset_partner_body" to "Сиз өнөктөштүк аккаунтуңуз үчүн ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү баскычты басыңыз:\n{resetButton}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз.",
+            "pin_reset_button" to "ПИН алмаштыруу"
         ),
 
         // =====================================================================
@@ -170,9 +173,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "ПИН-кодты қалпына келтіру",
-            "pin_reset_body" to "Сіз ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі сілтемені басыңыз:\n{resetLink}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз.",
+            "pin_reset_body" to "Сіз ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі батырманы басыңыз:\n{resetButton}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз.",
             "pin_reset_partner_subject" to "Серіктестің ПИН-кодын қалпына келтіру",
-            "pin_reset_partner_body" to "Сіз серіктестік аккаунтыңыз үшін ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі сілтемені басыңыз:\n{resetLink}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз."
+            "pin_reset_partner_body" to "Сіз серіктестік аккаунтыңыз үшін ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі батырманы басыңыз:\n{resetButton}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз.",
+            "pin_reset_button" to "ПИН ауыстыру"
         ),
 
         // =====================================================================
@@ -207,9 +211,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "PIN-kodni tiklash",
-            "pin_reset_body" to "Siz PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi havolani bosing:\n{resetLink}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.",
+            "pin_reset_body" to "Siz PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi tugmani bosing:\n{resetButton}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.",
             "pin_reset_partner_subject" to "Hamkor uchun PIN-kodni tiklash",
-            "pin_reset_partner_body" to "Siz hamkorlik hisobingiz uchun PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi havolani bosing:\n{resetLink}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring."
+            "pin_reset_partner_body" to "Siz hamkorlik hisobingiz uchun PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi tugmani bosing:\n{resetButton}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring.",
+            "pin_reset_button" to "PINni o‘zgartirish"
         ),
 
         // =====================================================================
@@ -244,9 +249,10 @@ object ServerResources {
 
             // --- Pin Reset ---
             "pin_reset_subject" to "Скід ПІН-кода",
-            "pin_reset_body" to "Вы запрасілі скід ПІН-кода. Націсніце на спасылку ніжэй, каб задаць новы ПІН:\n{resetLink}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст.",
+            "pin_reset_body" to "Вы запрасілі скід ПІН-кода. Націсніце на кнопку ніжэй, каб задаць новы ПІН:\n{resetButton}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст.",
             "pin_reset_partner_subject" to "Скід ПІН-кода для Партнёра",
-            "pin_reset_partner_body" to "Вы запрасілі скід ПІН-кода для вашага партнёрскага акаўнта. Націсніце на спасылку ніжэй, каб задаць новы ПІН:\n{resetLink}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст."
+            "pin_reset_partner_body" to "Вы запрасілі скід ПІН-кода для вашага партнёрскага акаўнта. Націсніце на кнопку ніжэй, каб задаць новы ПІН:\n{resetButton}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст.",
+            "pin_reset_button" to "Змяніць PIN"
         )
     )
 

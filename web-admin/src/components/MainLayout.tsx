@@ -25,7 +25,7 @@ import { LanguageSwitcher } from './LanguageSwitcher';
 import { useUser } from '../context/UserContext';
 import { useAppConfig } from '../context/ConfigContext';
 
-const drawerWidth = 240;
+  const drawerWidth = 240;
 
 export const MainLayout = () => {
   const { t } = useTranslation();
@@ -152,7 +152,7 @@ export const MainLayout = () => {
   const drawer = (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1 }}>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 800, background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 800, color: '#111827' }}>
           LoyaltyLoops
         </Typography>
       </Toolbar>

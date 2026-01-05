@@ -133,7 +133,8 @@ export const DownloadPage = () => {
                                     borderRadius: 3, 
                                     fontSize: '1.1rem', 
                                     fontWeight: 'bold',
-                                    boxShadow: theme.shadows[4]
+                                    boxShadow: theme.shadows[4],
+                                    color: theme.palette.primary.contrastText
                                 }}
                             >
                                 {t('client_onboarding.download_apk')}
@@ -141,34 +142,45 @@ export const DownloadPage = () => {
                             
                             <Stack direction="row" spacing={2} width="100%" justifyContent="center">
                                 <Box flex={1}>
-                                    <Button 
-                                        variant="outlined" 
-                                        fullWidth 
-                                        size="large"
-                                        startIcon={<ShopIcon />}
-                                        disabled
-                                        sx={{ borderRadius: 3, py: 1.5, position: 'relative', height: '100%' }}
-                                    >
-                                        <Stack alignItems="center">
-                                            <Typography variant="caption" lineHeight={1} sx={{fontSize: '0.65rem'}}>Google Play</Typography>
-                                            <Typography variant="body2" fontWeight="bold" sx={{fontSize: '0.75rem'}}>{t('client_onboarding.soon')}</Typography>
-                                        </Stack>
-                                    </Button>
+                            <Button 
+                                variant="outlined" 
+                                fullWidth 
+                                size="large"
+                                startIcon={<ShopIcon />}
+                                disabled
+                                sx={{ 
+                                    borderRadius: 3, 
+                                    py: 1.5, 
+                                    position: 'relative', 
+                                    height: '100%',
+                                    borderWidth: 1.5
+                                }}
+                            >
+                                <Stack alignItems="center">
+                                    <Typography variant="caption" lineHeight={1} sx={{fontSize: '0.65rem', color: 'text.primary'}}>Google Play</Typography>
+                                    <Typography variant="body2" fontWeight="bold" sx={{fontSize: '0.75rem', color: 'text.primary'}}>{t('client_onboarding.soon')}</Typography>
+                                </Stack>
+                            </Button>
                                 </Box>
                                 <Box flex={1}>
-                                    <Button 
-                                        variant="outlined" 
-                                        fullWidth 
-                                        size="large"
-                                        startIcon={<AppleIcon />}
-                                        disabled
-                                        sx={{ borderRadius: 3, py: 1.5, height: '100%' }}
-                                    >
-                                        <Stack alignItems="center">
-                                            <Typography variant="caption" lineHeight={1} sx={{fontSize: '0.65rem'}}>App Store</Typography>
-                                            <Typography variant="body2" fontWeight="bold" sx={{fontSize: '0.75rem'}}>{t('client_onboarding.soon')}</Typography>
-                                        </Stack>
-                                    </Button>
+                            <Button 
+                                variant="outlined" 
+                                fullWidth 
+                                size="large"
+                                startIcon={<AppleIcon />}
+                                disabled
+                                sx={{ 
+                                    borderRadius: 3, 
+                                    py: 1.5, 
+                                    height: '100%',
+                                    borderWidth: 1.5
+                                }}
+                            >
+                                <Stack alignItems="center">
+                                    <Typography variant="caption" lineHeight={1} sx={{fontSize: '0.65rem', color: 'text.primary'}}>App Store</Typography>
+                                    <Typography variant="body2" fontWeight="bold" sx={{fontSize: '0.75rem', color: 'text.primary'}}>{t('client_onboarding.soon')}</Typography>
+                                </Stack>
+                            </Button>
                                 </Box>
                                 <Box flex={1}>
                                     <RuStoreCard rustoreUrl={rustoreUrl} />
@@ -240,7 +252,7 @@ export const DownloadPage = () => {
                 <Link href="/privacy" color="text.secondary" underline="hover" variant="body2">
                     {t('landing.privacy')}
                 </Link>
-                <Typography variant="caption" display="block" color="text.disabled" mt={1}>
+                <Typography variant="caption" display="block" color="text.primary" mt={1}>
                     © 2025 LoyaltyLoops. All rights reserved.
                 </Typography>
             </Box>

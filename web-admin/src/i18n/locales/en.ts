@@ -929,7 +929,7 @@ export const en = {
       cta: {
         title: "Ready to scale?",
         subtitle: "Join LoyaltyLoops today.",
-        contact_line: "Join the ecosystem today — email us at",
+        contact_line: "email us at",
         quick_start: "Quick Start 15 min",
         no_hardware: "No Hardware",
         trial: "14 Days Trial",

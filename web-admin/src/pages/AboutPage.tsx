@@ -674,7 +674,7 @@ export const AboutPage = () => {
                 <Link href="/privacy" color="text.secondary" underline="hover" variant="body2" sx={{ display: 'block', mb: 1 }}>
                     {t('landing.privacy')}
                 </Link>
-                <Typography variant="caption" display="block" color="text.disabled">
+                <Typography variant="caption" display="block" color="text.primary">
                     © 2025 LoyaltyLoops. All rights reserved.
                 </Typography>
             </Box>
