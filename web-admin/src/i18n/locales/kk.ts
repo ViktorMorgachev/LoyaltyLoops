@@ -857,7 +857,7 @@ export const kk = {
         quick_start: "Тез бастау 15 мин",
         no_hardware: "Жабдық керек емес",
         trial: "14 күн сынақ мерзімі",
-        copy_hint: "Немесе мекенжайды көшіру:",
+        copy_hint: "немесе мекенжайды көшіру",
         copy_button: "Көшіру",
         copy_success: "Көшірілді",
         copy_error: "Көшіру мүмкін болмады"

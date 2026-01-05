@@ -933,7 +933,7 @@ export const en = {
         quick_start: "Quick Start 15 min",
         no_hardware: "No Hardware",
         trial: "14 Days Trial",
-        copy_hint: "Or copy the address:",
+        copy_hint: "or copy the address",
         copy_button: "Copy",
         copy_success: "Copied",
         copy_error: "Failed to copy"

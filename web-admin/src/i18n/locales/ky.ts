@@ -857,7 +857,7 @@ export const ky = {
         quick_start: "Тез баштоо 15 мин",
         no_hardware: "Жабдуу керек эмес",
         trial: "14 күн сыноо мөөнөтү",
-        copy_hint: "Же даректи көчүрүңүз:",
+        copy_hint: "же даректи көчүрүңүз",
         copy_button: "Көчүрүү",
         copy_success: "Көчүрүлдү",
         copy_error: "Көчүрүү мүмкүн эмес"

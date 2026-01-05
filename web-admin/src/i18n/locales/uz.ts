@@ -857,7 +857,7 @@ export const uz = {
         quick_start: "Tez boshlash 15 daq",
         no_hardware: "Uskuna kerak emas",
         trial: "14 kun sinov muddati",
-        copy_hint: "Yoki manzilni nusxa oling:",
+        copy_hint: "yoki manzilni nusxa oling",
         copy_button: "Nusxa olish",
         copy_success: "Nusxalandi",
         copy_error: "Nusxa olib bo‘lmadi"
