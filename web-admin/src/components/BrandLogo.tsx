@@ -12,8 +12,8 @@ export const BrandLogo = ({ size = 64 }: { size?: number }) => {
             <LocalOfferIcon 
                 sx={{ 
                     fontSize: tagSize, 
-                    // фиксированный цвет под старый синий/фиолетовый
-                    color: '#3b82f6',
+                    // фиксированный цвет под голубой (менее контрастный)
+                    color: '#367ae7',
                     transform: 'rotate(-45deg)',
                     filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.3))'
                 }} 

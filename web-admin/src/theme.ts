@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material';
 
-const primaryMain = '#1d4ed8'; // темнее для лучшего контраста
+const primaryMain = '#436ee5'; // темнее для лучшего контраста
 const textSecondary = '#374151';
 const textDisabled = '#6b7280';
 
