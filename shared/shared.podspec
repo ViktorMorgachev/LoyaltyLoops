@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
     spec.name                     = 'shared'
-    spec.version                  = '1.0'
+    spec.version                  = '2.0.3'
     spec.homepage                 = 'https://github.com/LoyaltyLoop'
     spec.source                   = { :http=> ''}
     spec.authors                  = ''
