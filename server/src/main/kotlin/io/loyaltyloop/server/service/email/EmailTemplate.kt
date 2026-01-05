@@ -189,11 +189,14 @@ class EmailTemplateService {
                 )
             )
 
-            is EmailTemplate.PartnerPinResetRequested -> ServerResources.get(
-                lang, "pin_reset_partner_body", mapOf(
-                    "resetLink" to template.resetLink
+            is EmailTemplate.PartnerPinResetRequested -> {
+                val btn = ServerResources.get(lang, "pin_reset_button")
+                ServerResources.get(
+                    lang, "pin_reset_partner_body", mapOf(
+                        "resetButton" to """<a href="${template.resetLink}" class="button">$btn</a>"""
+                    )
                 )
-            )
+            }
 
             is EmailTemplate.SmsProviderAlert -> "Critical SMS Provider Error: ${template.code}\n\nDetails:\n${template.debugBody}"
 

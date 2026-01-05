@@ -853,7 +853,7 @@ export const uz = {
       cta: {
         title: "Biznesni o'stirishga tayyormisiz?",
         subtitle: "LoyaltyLoops ga qo'shiling.",
-        contact_line: "Bugunoq ekotizimga qo'shiling — bizga yozing",
+        contact_line: "bizga yozing",
         quick_start: "Tez boshlash 15 daq",
         no_hardware: "Uskuna kerak emas",
         trial: "14 kun sinov muddati",

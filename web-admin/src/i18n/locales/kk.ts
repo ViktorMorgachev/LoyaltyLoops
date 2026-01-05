@@ -853,7 +853,7 @@ export const kk = {
       cta: {
         title: "Бизнесті өсіруге дайынсыз ба?",
         subtitle: "LoyaltyLoops қосылыңыз.",
-        contact_line: "Бүгін экожүйеге қосылыңыз — бізге жазыңыз",
+        contact_line: "бізге жазыңыз",
         quick_start: "Тез бастау 15 мин",
         no_hardware: "Жабдық керек емес",
         trial: "14 күн сынақ мерзімі",
