@@ -733,7 +733,7 @@ export const kk = {
       }
     },
     landing: {
-      hero_title: "LoyaltyLoop",
+      hero_title: "LoyaltyLoops",
       hero_subtitle: "Шағын және орта бизнес үшін заманауи адалдық жүйесі.",
       start_free: "Тегін бастау",
       roadmap_btn: "Даму жоспары",

@@ -153,7 +153,7 @@ export const MainLayout = () => {
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Toolbar sx={{ display: 'flex', alignItems: 'center', px: 3, py: 1 }}>
         <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 800, background: 'linear-gradient(45deg, #2563eb 30%, #ec4899 90%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-          LoyaltyLoop
+          LoyaltyLoops
         </Typography>
       </Toolbar>
       <Divider sx={{ mx: 2 }} />

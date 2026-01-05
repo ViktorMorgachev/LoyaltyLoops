@@ -158,7 +158,7 @@ export const be = {
       subtitle: "Ролі вызначаюць набор даступных раздзелаў і правоў. Выберыце актуальную задачу."
     },
     about: {
-      title: "Пра праект LoyaltyLoop",
+      title: "Пра праект LoyaltyLoops",
       section_mission: "Місія",
       section_focus: "Фокус развіцця",
       section_contact: "Сувязь і ідэі",
@@ -733,7 +733,7 @@ export const be = {
       }
     },
     landing: {
-      hero_title: "LoyaltyLoop",
+      hero_title: "LoyaltyLoops",
       hero_subtitle: "Сучасная сістэма лаяльнасці для малога і сярэдняга бізнесу. Ператвараем выпадковых наведвальнікаў у пастаянных кліентаў.",
       start_free: "Пачаць бясплатна",
       roadmap_btn: "Планы развіцця",
@@ -873,7 +873,7 @@ export const be = {
       }
     },
     download: {
-      title: "Спампаваць LoyaltyLoop",
+      title: "Спампаваць LoyaltyLoops",
       desc: "Усталюйце дадатак, каб збіраць балы, атрымліваць узнагароды і адсочваць свой прагрэс.",
       btn_apk: "Спампаваць APK",
       requirements: "Патрабуецца Android 8.0 або вышэй",

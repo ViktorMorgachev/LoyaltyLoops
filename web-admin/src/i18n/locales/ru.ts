@@ -169,7 +169,7 @@ export const ru = {
       subtitle: "Роли определяют набор доступных разделов и прав. Выберите актуальную задачу."
     },
     about: {
-      title: "О проекте LoyaltyLoop",
+      title: "О проекте LoyaltyLoops",
       section_mission: "Миссия",
       section_focus: "Фокус развития",
       section_contact: "Связь и идеи",
@@ -947,7 +947,7 @@ export const ru = {
       }
     },
     download: {
-      title: "Скачать LoyaltyLoop",
+      title: "Скачать LoyaltyLoops",
       desc: "Установите приложение, чтобы копить баллы, получать награды и отслеживать свой прогресс.",
       btn_apk: "Скачать APK",
       requirements: "Требуется Android 8.0 или выше",
