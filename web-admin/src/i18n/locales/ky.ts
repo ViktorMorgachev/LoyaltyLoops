@@ -733,7 +733,7 @@ export const ky = {
       }
     },
     landing: {
-      hero_title: "LoyaltyLoop",
+      hero_title: "LoyaltyLoops",
       hero_subtitle: "Чакан жана орто бизнес үчүн заманбап лоялдуулук системасы.",
       start_free: "Акысыз баштоо",
       roadmap_btn: "Өнүгүү планы",

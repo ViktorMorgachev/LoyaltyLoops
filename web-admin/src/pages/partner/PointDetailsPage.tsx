@@ -401,7 +401,7 @@ export const PointDetailsPage = () => {
   const reverseGeocodeFallback = async (lat: number, lng: number): Promise<string | null> => {
       try {
           const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-          const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
+          const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoops-Admin/1.0' } });
           if (response.ok) {
               const data = await response.json();
               if (data?.display_name) {

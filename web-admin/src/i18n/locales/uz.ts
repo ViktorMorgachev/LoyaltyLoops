@@ -733,7 +733,7 @@ export const uz = {
       }
     },
     landing: {
-      hero_title: "LoyaltyLoop",
+      hero_title: "LoyaltyLoops",
       hero_subtitle: "Kichik va o'rta biznes uchun zamonaviy sodiqlik tizimi.",
       start_free: "Bepul boshlash",
       roadmap_btn: "Rivojlanish rejasi",

@@ -600,7 +600,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "LoyaltyLoop",
+        "hero_title": "LoyaltyLoops",
         "hero_subtitle": "Чакан жана орто бизнес үчүн заманбап берилгендик системасы. Биз конокторду кадимки кардарларга айландырабыз.",
         "start_free": "АКЫСЫЗ баштаңыз",
         "roadmap_btn": "Өнүгүү пландары",
@@ -1253,7 +1253,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "LoyaltyLoop",
+        "hero_title": "LoyaltyLoops",
         "hero_subtitle": "Шағын және орта бизнес үшін заманауи адалдық жүйесі. Біз кездейсоқ келушілерді тұрақты клиенттерге айналдырамыз.",
         "start_free": "Бастау тегін",
         "roadmap_btn": "Даму жоспарлары",
@@ -1906,7 +1906,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "LoyaltyLoop",
+        "hero_title": "LoyaltyLoops",
         "hero_subtitle": "Kichik va o'rta biznes uchun zamonaviy sodiqlik tizimi. Biz tasodifiy tashrif buyuruvchilarni doimiy mijozlarga aylantiramiz.",
         "start_free": "Bepul boshlang",
         "roadmap_btn": "Rivojlanish rejalari",
@@ -2082,7 +2082,7 @@ export const autoLanguages = {
         "subtitle": "Ролі вызначаюць набор даступных раздзелаў і правоў. Выберыце бягучае заданне."
       },
       "about": {
-        "title": "Аб праекце LoyaltyLoop",
+        "title": "Аб праекце LoyaltyLoops",
         "section_mission": "Місія",
         "section_focus": "Фокус на развіццё",
         "section_contact": "Камунікацыя і ідэі",
@@ -2559,7 +2559,7 @@ export const autoLanguages = {
         }
       },
       "landing": {
-        "hero_title": "LoyaltyLoop",
+        "hero_title": "LoyaltyLoops",
         "hero_subtitle": "Сучасная сістэма лаяльнасці для малога і сярэдняга бізнесу. Мы ператвараем выпадковых наведвальнікаў у пастаянных кліентаў.",
         "start_free": "Пачаць бясплатна",
         "roadmap_btn": "Планы развіцця",
@@ -2604,7 +2604,7 @@ export const autoLanguages = {
         },
         "cta": {
           "title": "Гатовы павялічыць свой бізнес?",
-          "subtitle": "Далучайцеся да экасістэмы LoyaltyLoop сёння.",
+          "subtitle": "Далучайцеся да экасістэмы LoyaltyLoops сёння.",
           "quick_start": "Хуткі старт за 15 хвілін",
           "no_hardware": "Няма складанага абсталявання",
           "trial": "14 дзён выпрабавальнага перыяду"

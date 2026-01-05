@@ -100,7 +100,7 @@ export const PointsPage = () => {
   const reverseGeocodeFallback = async (lat: number, lng: number): Promise<string | null> => {
     try {
       const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
-      const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
+      const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoops-Admin/1.0' } });
       if (response.ok) {
         const data = await response.json();
         if (data?.display_name) {
@@ -116,7 +116,7 @@ export const PointsPage = () => {
   const geocodeAddressFallback = async (query: string): Promise<{ lat: number; lng: number; address: string } | null> => {
     try {
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
-      const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoop-Admin/1.0' } });
+      const response = await fetch(url, { headers: { 'User-Agent': 'LoyaltyLoops-Admin/1.0' } });
       if (response.ok) {
         const data = await response.json();
         if (data && data.length > 0) {

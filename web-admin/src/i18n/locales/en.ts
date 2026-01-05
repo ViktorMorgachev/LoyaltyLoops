@@ -169,7 +169,7 @@ export const en = {
       subtitle: "Roles define access rights. Choose your current task."
     },
     about: {
-      title: "About LoyaltyLoop",
+      title: "About LoyaltyLoops",
       section_mission: "Mission",
       section_focus: "Development Focus",
       section_contact: "Contact & Ideas",
@@ -950,7 +950,7 @@ export const en = {
       }
     },
     download: {
-      title: "Download LoyaltyLoop",
+      title: "Download LoyaltyLoops",
       desc: "Get the app to collect points, get rewards, and track your progress.",
       btn_apk: "Download APK",
       requirements: "Requires Android 8.0 or later",
