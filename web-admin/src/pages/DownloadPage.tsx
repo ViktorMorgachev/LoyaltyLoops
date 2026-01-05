@@ -241,7 +241,7 @@ export const DownloadPage = () => {
                     {t('landing.privacy')}
                 </Link>
                 <Typography variant="caption" display="block" color="text.disabled" mt={1}>
-                    © 2025 LoyaltyLoop. All rights reserved.
+                    © 2025 LoyaltyLoops. All rights reserved.
                 </Typography>
             </Box>
         </Box>

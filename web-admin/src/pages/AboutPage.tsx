@@ -1,4 +1,4 @@
-import { Container, Typography, Box, Paper, Button, Stack, useTheme, Avatar, TextField, CircularProgress } from '@mui/material';
+import { Container, Typography, Box, Paper, Button, Stack, useTheme, Avatar, TextField, CircularProgress, Link } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useEffect, useMemo, useState } from 'react';
@@ -613,9 +613,7 @@ export const AboutPage = () => {
                                     {t('landing.download_play')}
                                 </Button>
                             )}
-                            <Button variant="text" onClick={() => navigate('/privacy')} sx={{ textTransform: 'none' }}>
-                                {t('landing.privacy')}
-                            </Button>
+
                         </Stack>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} justifyContent="center" mt={4}>
                              <Box display="flex" alignItems="center" gap={1}>
@@ -641,6 +639,16 @@ export const AboutPage = () => {
                         </Box>
                     </Box>
                 </Container>
+            </Box>
+
+            {/* Footer */}
+            <Box sx={{ p: 3, textAlign: 'center', bgcolor: 'background.default', mt: { xs: 4, md: 0 } }}>
+                <Link href="/privacy" color="text.secondary" underline="hover" variant="body2" sx={{ display: 'block', mb: 1 }}>
+                    {t('landing.privacy')}
+                </Link>
+                <Typography variant="caption" display="block" color="text.disabled">
+                    © 2025 LoyaltyLoops. All rights reserved.
+                </Typography>
             </Box>
 
             {/* Sticky CTA for mobile */}
