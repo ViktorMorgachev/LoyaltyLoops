@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
+import { HelmetProvider } from 'react-helmet-async';
 import { useEffect } from 'react';
 
 // Страницы
@@ -39,6 +40,7 @@ import { PlatformStaffPage } from './pages/platform/PlatformStaffPage';
 import { MainLayout } from './components/MainLayout';
 import { SelectRolePage } from './pages/SelectRolePage';
 import { AuthSync } from './components/AuthSync';
+import { SEOHead } from './components/SEOHead';
 
 import { DownloadPage } from './pages/DownloadPage';
 
@@ -81,10 +83,11 @@ function App() {
   }, []);
 
   return (
-    <>
+    <HelmetProvider>
       <CssBaseline />
       <BrowserRouter>
-       <AuthSync />
+        <SEOHead />
+        <AuthSync />
         <Routes>
           {/* Публичные */}
           <Route path="/login" element={<LoginPage />} />
@@ -132,7 +135,7 @@ function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
-    </>
+    </HelmetProvider>
   );
 }
 

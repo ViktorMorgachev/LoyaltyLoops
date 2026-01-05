@@ -20,6 +20,7 @@ import SwitchAccountIcon from '@mui/icons-material/SwitchAccount';
 import ShieldIcon from '@mui/icons-material/Shield';
 import PublicIcon from '@mui/icons-material/Public';
 import AndroidIcon from '@mui/icons-material/Android';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { api } from '../api/axiosConfig';
 import { useNotification } from '../context/NotificationContext';
@@ -34,6 +35,7 @@ export const AboutPage = () => {
     const playStoreUrl = 'https://play.google.com/store/apps/details?id=io.loyaltyloop.app';
     const showPlayLinks = (import.meta as any)?.env?.VITE_SHOW_PLAY_LINKS === 'true';
     const showStartFree = (import.meta as any)?.env?.VITE_SHOW_PLAY_LINKS === 'true';
+    const supportEmail = 'support@loyaltyloops.app';
 
     const { showSuccess, showError } = useNotification();
     const [email, setEmail] = useState('');
@@ -579,6 +581,40 @@ export const AboutPage = () => {
                         <Typography variant="h6" color="text.secondary" mb={4}>
                             {t('landing.cta.subtitle')}
                         </Typography>
+                        <Typography variant="body1" color="text.primary" mb={3}>
+                            {t('landing.cta.contact_line')}{" "}
+                            <Link href={`mailto:${supportEmail}`} color="primary" underline="hover">
+                                {supportEmail}
+                            </Link>
+                            .
+                        </Typography>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center" alignItems="center" mb={3}>
+                            <Typography variant="body2" color="text.secondary">
+                                {t('landing.cta.copy_hint')}
+                            </Typography>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                                <Typography variant="body2" color="text.primary" sx={{ fontWeight: 600 }}>
+                                    {supportEmail}
+                                </Typography>
+                                <Button
+                                    size="small"
+                                    variant="outlined"
+                                    startIcon={<ContentCopyIcon fontSize="small" />}
+                                    onClick={() => {
+                                        if (navigator.clipboard?.writeText) {
+                                            navigator.clipboard.writeText(supportEmail)
+                                                .then(() => showSuccess(t('landing.cta.copy_success')))
+                                                .catch(() => showError(t('landing.cta.copy_error')));
+                                        } else {
+                                            showError(t('landing.cta.copy_error'));
+                                        }
+                                    }}
+                                    sx={{ borderRadius: 2 }}
+                                >
+                                    {t('landing.cta.copy_button')}
+                                </Button>
+                            </Stack>
+                        </Stack>
                         {showStartFree && (
                             <Button 
                                 variant="contained" 
