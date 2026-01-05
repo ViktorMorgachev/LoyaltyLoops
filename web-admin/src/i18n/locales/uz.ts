@@ -172,7 +172,7 @@ export const uz = {
       loyalty_types: {
         title: "Sodiqlik tizimi turlari",
         tiered_title: "Jamg'arib boriladigan (Keshbek)",
-        tiered_desc: "Mijoz aylanmani to'playdi, darajasini oshiradi va ko'proq keshbek oladi. Darajalar: Start, Silver, Gold.",
+        tiered_desc: "Mijoz ballarni jamlaydi, darajasini oshiradi va kattaroq keshbek oladi. Keshbek foizlari hamkor tomonidan darajalar bo'yicha o'rnatiladi: Start, Silver, Gold.",
         visits_title: "Tashrif hisoblagichi",
         visits_desc: "Har N-chi tovar sovg'a. Masalan, har 6-chi kofe bepul.",
         hybrid_title: "Gibrid: Jamg'arib boriladigan + Tashriflar",
@@ -781,7 +781,7 @@ export const uz = {
       mechanics: {
         accumulative: {
           title: "To'plovchi tizim",
-          desc: "Mijoz aylanmani oshiradi, Start → Silver → Gold darajasiga ko'tariladi va ko'proq keshbek oladi."
+          desc: "Mijoz ballarni jamlaydi, darajasini oshiradi va kattaroq keshbek oladi. Keshbek foizlari hamkor tomonidan darajalar bo'yicha o'rnatiladi: Start, Silver, Gold."
         },
         visits: {
           title: "Tashrif hisoblagichi",

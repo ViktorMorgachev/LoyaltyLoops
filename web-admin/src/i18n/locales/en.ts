@@ -183,7 +183,7 @@ export const en = {
       loyalty_types: {
         title: "Loyalty System Types",
         tiered_title: "Tiered (Cashback)",
-        tiered_desc: "Client accumulates turnover, levels up, and gets higher cashback. Percents set by levels: Start, Silver, Gold.",
+        tiered_desc: "The customer accumulates points, upgrades their level, and receives a higher cashback. Cashback percentages are set by the partner according to levels: Start, Silver, Gold.",
         visits_title: "Visit Counter",
         visits_desc: "Every N-th item free. Good for coffee shops (e.g., every 6th coffee free).",
         hybrid_title: "Hybrid: Tiered + Visits",
@@ -831,7 +831,7 @@ export const en = {
       mechanics: {
         accumulative: {
           title: "Accumulation System",
-          desc: "Client grows turnover, upgrades Start → Silver → Gold, and gets higher cashback."
+          desc: "The customer accumulates points, upgrades their level, and receives a higher cashback. Cashback percentages are set by the partner according to levels: Start, Silver, Gold."
         },
         visits: {
           title: "Visit Counter",
