@@ -15,15 +15,17 @@ export const DownloadPage = () => {
     const { t } = useTranslation();
     const theme = useTheme();
     
-    const apkUrl = "/LoyaltyLoops.apk";
+    const appVersion = __APP_VERSION__; // Injected by Vite from build.gradle.kts
+    const baseApkUrl = "/LoyaltyLoops.apk";
+    // Добавляем версионирующий параметр, чтобы обойти CDN/браузерный кеш при обновлении файла
+    const apkUrl = `${baseApkUrl}?v=${appVersion}`;
     const rustoreUrl = "https://www.rustore.ru/catalog/app/io.loyaltyloop.app";
     const [apkSize, setApkSize] = useState<string | null>(null);
-    const appVersion = __APP_VERSION__; // Injected by Vite from build.gradle.kts
 
     useEffect(() => {
         const fetchSize = async () => {
             try {
-                const response = await fetch(apkUrl, { method: 'HEAD' });
+                const response = await fetch(apkUrl, { method: 'HEAD', cache: 'no-store' });
                 if (response.ok) {
                     const length = response.headers.get('Content-Length');
                     if (length) {
