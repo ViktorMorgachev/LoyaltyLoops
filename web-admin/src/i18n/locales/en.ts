@@ -888,7 +888,7 @@ export const en = {
 
       roadmap: {
         title: "Project Roadmap 🚀",
-        subtitle: "What's next for LoyaltyLoop.",
+        subtitle: "What's next for LoyaltyLoops.",
         back: "Back",
         contact_support: "Ideas? Contact Support!",
         status: {

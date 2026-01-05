@@ -78,7 +78,7 @@ export const DownloadPage = () => {
                 <Box display="flex" alignItems="center" gap={1}>
                     <BrandLogo size={40} />
                     <Typography variant="h6" fontWeight="bold" sx={{ display: { xs: 'none', sm: 'block' } }}>
-                        LoyaltyLoop
+                        LoyaltyLoops
                     </Typography>
                 </Box>
                 <LanguageSwitcher />
