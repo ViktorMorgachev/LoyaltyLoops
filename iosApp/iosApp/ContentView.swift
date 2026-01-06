@@ -5,9 +5,8 @@ import LoyaltyLoop // <-- Это имя твоего Shared-модуля (из b
 struct ComposeView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
-        // Вызываем ту самую функцию MainViewController(), которую мы написали в Kotlin
-        // Kotlin-файлы в Swift обычно доступны через суффикс "Kt"
-        return MainViewControllerKt.MainViewController()
+        // Вызываем Kotlin-функцию MainViewController(), она доступна напрямую
+        return MainViewController()
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {

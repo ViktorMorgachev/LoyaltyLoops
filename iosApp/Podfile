@@ -1,12 +1,13 @@
 platform :ios, '14.0'
 use_frameworks!
 
-target 'iosApp' do
-  # 1. Подключаем твой Kotlin-модуль.
-  # Имя 'LoyaltyLoop' берется из baseName в build.gradle.kts
-  # Путь указывает на папку composeApp относительно iosApp
+def shared_pods
+  # Kotlin-фреймворк (внутри фреймворк LoyaltyLoop)
   pod 'composeApp', :path => '../composeApp'
+  # Яндекс Карты: версия совпадает с composeApp (4.5.1-lite)
+  pod 'YandexMapsMobile', '4.5.1-lite'
+end
 
-  # 2. Подключаем Яндекс Карты (они нужны для линковки)
-  pod 'YandexMapsMobile', '4.5.1-full'
+target 'iosApp' do
+  shared_pods
 end
