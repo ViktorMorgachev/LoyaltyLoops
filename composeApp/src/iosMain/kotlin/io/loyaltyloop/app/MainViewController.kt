@@ -20,7 +20,7 @@ fun MainViewController(): UIViewController {
 
     // 2. Запускаем Compose App
     return ComposeUIViewController {
-        App()
+        IosApp()
     }
 }
 
@@ -30,7 +30,6 @@ private fun initializeYandexMaps() {
     // Устанавливаем ключ.
     YMKMapKit.setApiKey(AppConfig.MAP_API_KEY)
     
-    // YMKMapKit.sharedInstance().onStart() 
-    // В Lite версии или новой версии MapKit for iOS этот метод может быть не нужен или недоступен через cinterop
-    // Оставляем только setApiKey, обычно этого достаточно для старта
+    // В iOS Lite версии YMKMapKit нужно инициализировать, чтобы не упасть при первом обращении
+    YMKMapKit.sharedInstance().onStart()
 }

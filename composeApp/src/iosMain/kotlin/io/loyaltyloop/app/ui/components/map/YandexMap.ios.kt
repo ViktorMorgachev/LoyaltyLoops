@@ -1,21 +1,44 @@
 package io.loyaltyloop.app.ui.components.map
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
-import cocoapods.YandexMapsMobile.*
+import cocoapods.YandexMapsMobile.YMKAnimation
+import cocoapods.YandexMapsMobile.YMKAnimationType
+import cocoapods.YandexMapsMobile.YMKCameraPosition
+import cocoapods.YandexMapsMobile.YMKCircle
+import cocoapods.YandexMapsMobile.YMKCircleMapObject
+import cocoapods.YandexMapsMobile.YMKMap
+import cocoapods.YandexMapsMobile.YMKMapInputListenerProtocol
+import cocoapods.YandexMapsMobile.YMKMapObject
+import cocoapods.YandexMapsMobile.YMKMapObjectTapListenerProtocol
+import cocoapods.YandexMapsMobile.YMKMapView
+import cocoapods.YandexMapsMobile.YMKPlacemarkMapObject
+import cocoapods.YandexMapsMobile.YMKPoint
+import io.loyaltyloop.shared.models.GeoLocation
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSString
-import platform.UIKit.*
-import platform.CoreGraphics.CGPointMake
-import platform.darwin.NSObject
-import io.loyaltyloop.shared.models.GeoLocation
-import kotlinx.cinterop.BetaInteropApi
-import kotlinx.datetime.Clock
 import platform.Foundation.create
+import platform.UIKit.NSFontAttributeName
+import platform.UIKit.NSForegroundColorAttributeName
+import platform.UIKit.UIBezierPath
+import platform.UIKit.UIColor
+import platform.UIKit.UIFont
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
+import platform.UIKit.UIGraphicsEndImageContext
+import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
+import platform.UIKit.UIImage
+import platform.UIKit.drawAtPoint
+import platform.UIKit.sizeWithAttributes
+import platform.darwin.NSObject
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -146,7 +169,7 @@ private class InputListenerImpl(val onMapClick: () -> Unit) : NSObject(), YMKMap
     override fun onMapLongTapWithMap(map: YMKMap, point: YMKPoint) {}
 }
 
-@OptIn(ExperimentalForeignApi::class, BetaInteropApi::class)
+@OptIn(ExperimentalForeignApi::class)
 private fun generatePinImage(marker: MapMarker): UIImage {
     val isActive = marker.isSelected
     val bgActive = UIColor(red = 0.067, green = 0.094, blue = 0.153, alpha = 1.0)
@@ -156,7 +179,7 @@ private fun generatePinImage(marker: MapMarker): UIImage {
     val bgColor = if (isActive) bgActive else bgInactive
 
     val emoji = getEmojiForType(marker.type)
-    val label = if (isActive) getLabelResource(marker.type) else ""
+    val label = if (isActive) getLabelForType(marker.type.name) else ""
 
     val height = if (isActive) 40.0 else 36.0
     val padding = 12.0
@@ -168,7 +191,7 @@ private fun generatePinImage(marker: MapMarker): UIImage {
         NSFontAttributeName to labelFont,
         NSForegroundColorAttributeName to textColor
     )
-    val nsLabel = NSString.create(string = label.toString())
+    val nsLabel = NSString.create(string = label)
     val labelSize = nsLabel.sizeWithAttributes(labelAttributes)
     val textWidth = if (isActive) labelSize.useContents { width } else 0.0
     val totalWidth = if (isActive) (padding * 2) + iconSize + 8.0 + textWidth else height
@@ -221,4 +244,15 @@ private fun generateUserLocationImage(): UIImage {
     val image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
     return image ?: UIImage()
+}
+
+
+private fun getLabelForType(type: String): String {
+    return when (type) {
+        "COFFEE" -> "Coffee"
+        "RETAIL" -> "Shop"
+        "FOOD" -> "Food"
+        "SERVICE" -> "Service"
+        else -> "Point"
+    }
 }
