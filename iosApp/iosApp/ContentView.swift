@@ -6,7 +6,7 @@ struct ComposeView: UIViewControllerRepresentable {
 
     func makeUIViewController(context: Context) -> UIViewController {
         // Вызываем Kotlin-функцию MainViewController(), она доступна напрямую
-        return MainViewController()
+        return MainViewControllerKt.MainViewController()
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {

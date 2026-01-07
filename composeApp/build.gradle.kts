@@ -84,7 +84,7 @@ kotlin {
             implementation(compose.material3)
             implementation(compose.ui)
             implementation(compose.animation)
-            implementation(compose.components.resources)
+            api(compose.components.resources)
             implementation(compose.materialIconsExtended)
             implementation(compose.components.uiToolingPreview)
 

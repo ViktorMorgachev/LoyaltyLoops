@@ -61,7 +61,6 @@ import io.loyaltyloop.shared.models.CardBlockStatus
 import io.loyaltyloop.shared.models.LoyaltyCardDto
 import io.loyaltyloop.shared.models.LoyaltyTierDto.LoyaltyLevel
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -84,6 +83,7 @@ import loyaltyloop.composeapp.generated.resources.wallet_card_visits
 import org.jetbrains.compose.resources.stringResource
 import io.loyaltyloop.shared.utils.LoyaltyFormatter
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import kotlin.time.ExperimentalTime
 
 @Composable
 @Preview
@@ -118,6 +118,7 @@ fun LoyaltyCardItemPreview() {
     )
 }
 
+@OptIn(ExperimentalTime::class)
 @Composable
 fun LoyaltyCardItem(
     card: LoyaltyCardDto,
@@ -135,7 +136,7 @@ fun LoyaltyCardItem(
     val visitSuffix = stringResource(Res.string.wallet_card_visits)
     val newLevelLabel = stringResource(Res.string.wallet_card_new_level)
     val rewardLabel = stringResource(Res.string.wallet_card_reward_badge)
-    val activeBlock = card.block?.takeIf { it.until > Clock.System.now().toEpochMilliseconds() }
+    val activeBlock = card.block?.takeIf { it.until > kotlin.time.Clock.System.now().toEpochMilliseconds() }
     val statusLabel = when {
         activeBlock != null -> {
             val formatted = formatBlockedUntil(activeBlock.until)
@@ -613,6 +614,7 @@ private fun parseCardColor(hexColor: String, fallback: Color): Color =
         fallback
     }
 
+@OptIn(ExperimentalTime::class)
 private fun formatBlockedUntil(epochMillis: Long): String {
     val dateTime = Instant.fromEpochMilliseconds(epochMillis)
         .toLocalDateTime(TimeZone.currentSystemDefault())

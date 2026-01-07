@@ -10,10 +10,9 @@ import platform.UIKit.UIViewController
 
 private var isMapInitialized = false
 
+@Suppress("unused")
 fun MainViewController(): UIViewController {
     // 1. Инициализируем Яндекс Карты ПЕРЕД запуском UI
-    // Используем remember или side-effect не обязательно,
-    // так как это точка входа, она выполняется один раз.
     if (!isMapInitialized) {
         initializeYandexMaps()
         isMapInitialized = true
@@ -29,9 +28,9 @@ fun MainViewController(): UIViewController {
 @OptIn(ExperimentalForeignApi::class)
 private fun initializeYandexMaps() {
     // Устанавливаем ключ.
-    // Важно: на iOS это статический метод класса YMKMapKit
     YMKMapKit.setApiKey(AppConfig.MAP_API_KEY)
-
-    // В Android мы вызывали initialize(), в iOS это обычно делает setApiKey + старт инстанса
-    YMKMapKit.sharedInstance().onStart()
+    
+    // YMKMapKit.sharedInstance().onStart() 
+    // В Lite версии или новой версии MapKit for iOS этот метод может быть не нужен или недоступен через cinterop
+    // Оставляем только setApiKey, обычно этого достаточно для старта
 }

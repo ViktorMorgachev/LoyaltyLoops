@@ -110,6 +110,22 @@ adb shell monkey -p io.loyaltyloop.app 1
 ./gradlew bundleRelease -Penv=prod
 ```
 
+ 
+### 5. Подготовка debug IOS
+```bash
+ cd iosApp
+    rm -rf Pods Podfile.lock
+    pod repo update
+    pod install --repo-update
+```
+### 5. Билд debug IOS 
+```bash
+./gradlew :composeApp:syncFramework \
+    -Pkotlin.native.cocoapods.platform=iphonesimulator \
+    -Pkotlin.native.cocoapods.archs=arm64 \
+    -Pkotlin.native.cocoapods.configuration=Debug \
+    -Pkotlin.native.cocoapods.target=iosSimulatorArm64
+```
 
 **iOS:**
 1. Убедитесь, что установлены CocoaPods.

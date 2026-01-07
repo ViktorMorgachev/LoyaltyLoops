@@ -1,12 +1,14 @@
 package io.loyaltyloop.app.features.wallet
 
 import io.loyaltyloop.shared.models.LoyaltyCardDto
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
 enum class CelebrationType {
     Earn, Spend, Visit, Reward, Tier, Created
 }
 
+@OptIn(ExperimentalTime::class)
 data class CelebrationState(
     val id: Long = Clock.System.now().toEpochMilliseconds(),
     val cardId: String,

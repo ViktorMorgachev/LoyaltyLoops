@@ -33,6 +33,7 @@ import kotlinx.datetime.Clock
 import loyaltyloop.composeapp.generated.resources.Res
 import loyaltyloop.composeapp.generated.resources.error_network
 import kotlin.math.abs
+import kotlin.time.ExperimentalTime
 
 class WalletScreenModel(
     private val tokenStorage: TokenStorage,
@@ -431,11 +432,12 @@ class WalletScreenModel(
         }
     }
 
+    @OptIn(ExperimentalTime::class)
     private fun updateQrCode() {
         val userId = tokenStorage.getUserId() ?: return
         val secret = tokenStorage.getQrSecret() ?: return
 
-        val timestamp = Clock.System.now().epochSeconds
+        val timestamp = kotlin.time.Clock.System.now().toEpochMilliseconds()
         val data = "$userId:$timestamp"
         val signature = CryptoUtils.hmacSha256(secret, data)
 
