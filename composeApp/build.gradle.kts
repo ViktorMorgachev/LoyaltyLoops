@@ -64,6 +64,7 @@ kotlin {
             framework {
                 baseName = "LoyaltyLoop"
                 isStatic = true
+                binaryOptions["bundleId"] = "io.loyaltyloop.app"
                 export(compose.components.resources)
             }
 
