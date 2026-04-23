@@ -13,7 +13,7 @@ export const BrandLogo = ({ size = 64 }: { size?: number }) => {
                 sx={{ 
                     fontSize: tagSize, 
                     // фиксированный цвет под голубой (менее контрастный)
-                    color: '#367ae7',
+                    color: '#227BCE',
                     transform: 'rotate(-45deg)',
                     filter: 'drop-shadow(0 4px 6px rgba(37, 99, 235, 0.3))'
                 }} 

@@ -1,18 +1,44 @@
 package io.loyaltyloop.app.ui.components.map
 
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.interop.UIKitView
-import cocoapods.YandexMapsMobile.*
+import cocoapods.YandexMapsMobile.YMKAnimation
+import cocoapods.YandexMapsMobile.YMKAnimationType
+import cocoapods.YandexMapsMobile.YMKCameraPosition
+import cocoapods.YandexMapsMobile.YMKCircle
+import cocoapods.YandexMapsMobile.YMKCircleMapObject
+import cocoapods.YandexMapsMobile.YMKMap
+import cocoapods.YandexMapsMobile.YMKMapInputListenerProtocol
+import cocoapods.YandexMapsMobile.YMKMapObject
+import cocoapods.YandexMapsMobile.YMKMapObjectTapListenerProtocol
+import cocoapods.YandexMapsMobile.YMKMapView
+import cocoapods.YandexMapsMobile.YMKPlacemarkMapObject
+import cocoapods.YandexMapsMobile.YMKPoint
+import io.loyaltyloop.shared.models.GeoLocation
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPointMake
 import platform.CoreGraphics.CGRectMake
 import platform.CoreGraphics.CGSizeMake
 import platform.Foundation.NSString
-import platform.UIKit.*
-import platform.CoreGraphics.CGPointMake
+import platform.Foundation.create
+import platform.UIKit.NSFontAttributeName
+import platform.UIKit.NSForegroundColorAttributeName
+import platform.UIKit.UIBezierPath
+import platform.UIKit.UIColor
+import platform.UIKit.UIFont
+import platform.UIKit.UIGraphicsBeginImageContextWithOptions
+import platform.UIKit.UIGraphicsEndImageContext
+import platform.UIKit.UIGraphicsGetImageFromCurrentImageContext
+import platform.UIKit.UIImage
+import platform.UIKit.drawAtPoint
+import platform.UIKit.sizeWithAttributes
 import platform.darwin.NSObject
-import io.loyaltyloop.shared.models.GeoLocation
 
 @OptIn(ExperimentalForeignApi::class)
 @Composable
@@ -26,47 +52,36 @@ actual fun YandexMap(
     onMapClick: () -> Unit,
     onMarkerClick: (String) -> Unit
 ) {
-    // Создаем карту (используем remember, чтобы не пересоздавать)
     val mapView = remember { YMKMapView(frame = CGRectMake(0.0, 0.0, 0.0, 0.0)) }
+    val mapObjects = remember { mapView.mapWindow!!.map.mapObjects.addCollection() }
 
-    // Коллекция объектов на карте
-    val mapObjects = remember { mapView.mapWindow.map.mapObjects.addCollection() }
+    val tapListener = remember { MapObjectTapListenerImpl(onMarkerClick) }
+    val inputListener = remember { InputListenerImpl(onMapClick) }
 
-    // Слушатель кликов по маркерам
-    val tapListener = remember {
-        MapObjectTapListenerImpl(onMarkerClick)
-    }
-
-    // Слушатель кликов по карте
-    val inputListener = remember {
-        InputListenerImpl(onMapClick)
-    }
-
-    // Привязка слушателя ввода (клики в пустоту)
     DisposableEffect(mapView) {
-        mapView.mapWindow.map.addInputListener(inputListener)
+        mapView.mapWindow!!.map.addInputListenerWithInputListener(inputListener)
         onDispose {
-            mapView.mapWindow.map.removeInputListener(inputListener)
+            mapView.mapWindow!!.map.removeInputListenerWithInputListener(inputListener)
         }
     }
 
-    // Управление камерой
     LaunchedEffect(cameraPosition) {
         val targetPoint = YMKPoint.pointWithLatitude(cameraPosition.lat, longitude = cameraPosition.lon)
-
-        mapView.mapWindow.map.moveWithCameraPosition(
-            YMKCameraPosition.cameraPositionWithTarget(
+        val animation = YMKAnimation.animationWithType(YMKAnimationType.YMKAnimationTypeSmooth, duration = 0.5f)
+        
+        // Исправлено имя параметра: animation вместо animationType
+        mapView.mapWindow!!.map.moveWithCameraPosition(
+            cameraPosition = YMKCameraPosition.cameraPositionWithTarget(
                 targetPoint,
                 zoom = cameraPosition.zoom,
                 azimuth = 0.0f,
                 tilt = 0.0f
             ),
-            animationType = YMKAnimation(YMKAnimationType.YMKAnimationTypeSmooth, 0.5f),
+            animation = animation, 
             cameraCallback = null
         )
     }
 
-    // Отрисовка радиуса
     val searchCircle = remember { mutableStateOf<YMKCircleMapObject?>(null) }
     val strokeColor = remember { UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0) }
     val fillColor = remember { UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 0.1) }
@@ -77,7 +92,11 @@ actual fun YandexMap(
             val circleGeom = YMKCircle.circleWithCenter(center, radius = searchRadius.toFloat())
 
             if (searchCircle.value == null) {
-                val c = mapObjects.addCircleWithCircle(circleGeom, strokeColor, 1.5f, fillColor)
+                // Сначала создаем, потом настраиваем
+                val c = mapObjects.addCircleWithCircle(circleGeom)
+                c.strokeColor = strokeColor
+                c.strokeWidth = 1.5f
+                c.fillColor = fillColor
                 searchCircle.value = c
             } else {
                 searchCircle.value?.geometry = circleGeom
@@ -88,21 +107,19 @@ actual fun YandexMap(
         }
     }
 
-    // Отрисовка локации
     val userLocationPlacemark = remember { mutableStateOf<YMKPlacemarkMapObject?>(null) }
     LaunchedEffect(userLocation) {
         if (userLocation != null) {
             val point = YMKPoint.pointWithLatitude(userLocation.lat, longitude = userLocation.lon)
             val image = generateUserLocationImage()
-            val provider = YMKImageProvider.fromImage(image)
-
             if (userLocationPlacemark.value == null) {
-                val p = mapObjects.addPlacemarkWithPoint(point, image = provider)
+                val p = mapObjects.addPlacemarkWithPoint(point)
+                p.setIconWithImage(image)
                 p.zIndex = 100.0f
                 userLocationPlacemark.value = p
             } else {
                 userLocationPlacemark.value?.geometry = point
-                userLocationPlacemark.value?.setIconWithImage(provider)
+                userLocationPlacemark.value?.setIconWithImage(image)
             }
         } else {
             userLocationPlacemark.value?.let { mapObjects.removeWithMapObject(it) }
@@ -110,33 +127,20 @@ actual fun YandexMap(
         }
     }
 
-    // Отрисовка маркеров
     LaunchedEffect(markers) {
-        mapObjects.clear() // Очистка
-
+        mapObjects.clear()
         markers.forEach { marker ->
             val image = generatePinImage(marker)
-            val imageProvider = YMKImageProvider.fromImage(image)
-
             val point = YMKPoint.pointWithLatitude(marker.lat, longitude = marker.lon)
-            val placemark = mapObjects.addPlacemarkWithPoint(point, image = imageProvider)
-
-            // В iOS userData это Any?, передаем ID
+            val placemark = mapObjects.addPlacemarkWithPoint(point)
+            placemark.setIconWithImage(image)
             placemark.userData = marker.id
             placemark.addTapListenerWithTapListener(tapListener)
         }
     }
 
-    // Lifecycle (в iOS YMKMapKit тоже нужно стартовать)
     DisposableEffect(Unit) {
-        // YMKMapKit.sharedInstance().onStart() // Обычно это делается в AppDelegate, но можно и тут
-        // ВНИМАНИЕ: Если крашится на onStart, убери это и добавь в iOS App Delegate.
-        // Но для MapView onStart нужен.
-        mapView.onStart()
-        onDispose {
-            mapView.onStop()
-            // YMKMapKit.sharedInstance().onStop()
-        }
+        onDispose { }
     }
 
     UIKitView(
@@ -145,12 +149,8 @@ actual fun YandexMap(
     )
 }
 
-// --- ЛИСТЕНЕРЫ (Bridge classes) ---
-
 @OptIn(ExperimentalForeignApi::class)
-private class MapObjectTapListenerImpl(
-    val onMarkerClick: (String) -> Unit
-) : NSObject(), YMKMapObjectTapListenerProtocol {
+private class MapObjectTapListenerImpl(val onMarkerClick: (String) -> Unit) : NSObject(), YMKMapObjectTapListenerProtocol {
     override fun onMapObjectTapWithMapObject(mapObject: YMKMapObject, point: YMKPoint): Boolean {
         val id = mapObject.userData as? String
         if (id != null) {
@@ -162,126 +162,70 @@ private class MapObjectTapListenerImpl(
 }
 
 @OptIn(ExperimentalForeignApi::class)
-private class InputListenerImpl(
-    val onMapClick: () -> Unit
-) : NSObject(), YMKMapInputListenerProtocol {
+private class InputListenerImpl(val onMapClick: () -> Unit) : NSObject(), YMKMapInputListenerProtocol {
     override fun onMapTapWithMap(map: YMKMap, point: YMKPoint) {
         onMapClick()
     }
-
-    override fun onMapLongTapWithMap(map: YMKMap, point: YMKPoint) {
-        // Ignored
-    }
+    override fun onMapLongTapWithMap(map: YMKMap, point: YMKPoint) {}
 }
-
-// --- ГЕНЕРАЦИЯ ИКОНОК (CORE GRAPHICS) ---
 
 @OptIn(ExperimentalForeignApi::class)
 private fun generatePinImage(marker: MapMarker): UIImage {
     val isActive = marker.isSelected
-
-    // Цвета (UIColor)
-    // #111827
     val bgActive = UIColor(red = 0.067, green = 0.094, blue = 0.153, alpha = 1.0)
-    // #FFFFFF
     val bgInactive = UIColor.whiteColor
-    // #1F2937
-    val textInactive = UIColor(red = 0.122, green = 0.161, blue = 0.216, alpha = 1.0)
-    // #2563EB
-    val strokeBlue = UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0)
-
+    val textColor = if (isActive) UIColor.whiteColor else UIColor(red = 0.122, green = 0.161, blue = 0.216, alpha = 1.0)
+    val strokeColor = if (isActive) bgActive else UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0)
     val bgColor = if (isActive) bgActive else bgInactive
-    val textColor = if (isActive) UIColor.whiteColor else textInactive
-    val strokeColor = if (isActive) bgActive else strokeBlue
 
-    // Тексты
     val emoji = getEmojiForType(marker.type)
-    val label = if (isActive) getLabelForType(marker.type) else ""
+    val label = if (isActive) getLabelForType(marker.type.name) else ""
 
-    // Размеры
     val height = if (isActive) 40.0 else 36.0
     val padding = 12.0
-    val iconSize = 20.0 // Для текста-эмодзи
-
-    // Шрифты
+    val iconSize = 20.0
     val labelFont = UIFont.boldSystemFontOfSize(13.0)
     val emojiFont = UIFont.systemFontOfSize(if (isActive) 18.0 else 20.0)
 
-    // Расчет ширины текста
-    val labelAttributes = mapOf(
+    val labelAttributes = mapOf<Any?, Any?>(
         NSFontAttributeName to labelFont,
         NSForegroundColorAttributeName to textColor
     )
     val nsLabel = NSString.create(string = label)
     val labelSize = nsLabel.sizeWithAttributes(labelAttributes)
     val textWidth = if (isActive) labelSize.useContents { width } else 0.0
-
-    val totalWidth = if (isActive) {
-        (padding * 2) + iconSize + 8.0 + textWidth
-    } else {
-        height
-    }
-
+    val totalWidth = if (isActive) (padding * 2) + iconSize + 8.0 + textWidth else height
     val size = CGSizeMake(totalWidth, height)
 
-    // --- РИСОВАНИЕ ---
-    // scale = 0.0 означает использование масштаба экрана устройства (Retina)
     UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-
-    val context = UIGraphicsGetCurrentContext()
-
-    // 1. Фон (Rounded Rect)
     val rect = CGRectMake(0.0, 0.0, totalWidth, height)
     val path = UIBezierPath.bezierPathWithRoundedRect(rect, cornerRadius = height / 2.0)
-
-    // Тень
-    /*
-    // Рисовать тень внутри UIGraphics сложнее, проще добавить прозрачность или не делать вовсе для производительности.
-    // Если очень нужно:
-    CGContextSetShadowWithColor(context, CGSizeMake(0.0, 2.0), 4.0, UIColor.blackColor.colorWithAlphaComponent(0.2).CGColor)
-    */
-
     bgColor.setFill()
     path.fill()
 
-    // 2. Обводка (если не активен)
     if (!isActive) {
         strokeColor.setStroke()
         path.lineWidth = 1.5
-        // Делаем inset, чтобы обводка не обрезалась
         val strokeRect = CGRectMake(0.75, 0.75, totalWidth - 1.5, height - 1.5)
         val strokePath = UIBezierPath.bezierPathWithRoundedRect(strokeRect, cornerRadius = (height - 1.5) / 2.0)
         strokePath.stroke()
     }
 
-    // 3. Эмодзи
-    val emojiAttributes = mapOf(
-        NSFontAttributeName to emojiFont,
-        // Для эмодзи цвет не важен, но для текста да
-        // Если это не эмодзи шрифт, нужен цвет
-    )
+    val emojiAttributes = mapOf<Any?, Any?>(NSFontAttributeName to emojiFont)
     val nsEmoji = NSString.create(string = emoji)
     val emojiSize = nsEmoji.sizeWithAttributes(emojiAttributes)
-
-    val iconX = if (isActive) padding + (iconSize / 2.0) - (emojiSize.useContents { width } / 2.0)
-    else (totalWidth / 2.0) - (emojiSize.useContents { width } / 2.0)
-
-    // Центрирование по Y
+    val iconX = if (isActive) padding + (iconSize / 2.0) - (emojiSize.useContents { width } / 2.0) else (totalWidth / 2.0) - (emojiSize.useContents { width } / 2.0)
     val iconY = (height / 2.0) - (emojiSize.useContents { height } / 2.0)
-
     nsEmoji.drawAtPoint(CGPointMake(iconX, iconY), withAttributes = emojiAttributes)
 
-    // 4. Текст (Label)
     if (isActive) {
         val textX = padding + iconSize + 8.0
         val textY = (height / 2.0) - (labelSize.useContents { height } / 2.0)
-
-        nsLabel.drawAtPoint(CGPointMake(textX, textY), withAttributes = labelAttributes as Map<Any?, *>)
+        nsLabel.drawAtPoint(CGPointMake(textX, textY), withAttributes = labelAttributes)
     }
 
     val finalImage = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
-
     return finalImage ?: UIImage()
 }
 
@@ -289,20 +233,26 @@ private fun generatePinImage(marker: MapMarker): UIImage {
 private fun generateUserLocationImage(): UIImage {
     val size = CGSizeMake(24.0, 24.0)
     UIGraphicsBeginImageContextWithOptions(size, false, 0.0)
-
-    // White stroke/bg
     val white = UIColor.whiteColor
     white.setFill()
     val rect = CGRectMake(0.0, 0.0, 24.0, 24.0)
     UIBezierPath.bezierPathWithRoundedRect(rect, cornerRadius = 12.0).fill()
-
-    // Blue dot
-    val blue = UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0) // #2563EB
+    val blue = UIColor(red = 0.145, green = 0.388, blue = 0.922, alpha = 1.0)
     blue.setFill()
     val dotRect = CGRectMake(4.0, 4.0, 16.0, 16.0)
     UIBezierPath.bezierPathWithRoundedRect(dotRect, cornerRadius = 8.0).fill()
-
-    val img = UIGraphicsGetImageFromCurrentImageContext()
+    val image = UIGraphicsGetImageFromCurrentImageContext()
     UIGraphicsEndImageContext()
-    return img ?: UIImage()
+    return image ?: UIImage()
+}
+
+
+private fun getLabelForType(type: String): String {
+    return when (type) {
+        "COFFEE" -> "Coffee"
+        "RETAIL" -> "Shop"
+        "FOOD" -> "Food"
+        "SERVICE" -> "Service"
+        else -> "Point"
+    }
 }
