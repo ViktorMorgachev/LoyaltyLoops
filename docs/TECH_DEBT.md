@@ -39,15 +39,10 @@
 
 ---
 
-## TD-002 — CORS: `anyHost()` + `allowCredentials = true`
+## ~~TD-002~~ — ~~CORS: `anyHost()` + `allowCredentials = true`~~ ✅ ЗАКРЫТ
 
-- **Область:** server / безопасность
-- **Проблема:** CORS разрешает креденшлы с любого origin.
-- **Почему это техдолг:** любой сайт может выполнять авторизованные запросы к API от имени залогиненного пользователя.
-- **Риск:** CSRF-подобные атаки на web-admin и клиентов.
-- **Приоритет:** 🔴 Critical
-- **Что нужно сделать:** явный whitelist доменов (web-admin prod/staging, localhost для dev) через конфиг `cors.allowedHosts`.
-- **Когда делать:** немедленно.
+- **Решено в:** 2026-07-07 (см. ENGINEERING_CHANGELOG «TD-002: CORS whitelist»)
+- **Что сделано:** `anyHost()` заменён на whitelist из конфига `cors.allowedHosts` (env `CORS_ALLOWED_HOSTS`, через запятую). Дефолт: `loyaltyloops.app`, `www.loyaltyloops.app`, `loyalityloop-beta.up.railway.app`, `localhost:3000`. Мобильные клиенты не затронуты — они не отправляют Origin, CORS ограничивает только браузерные запросы.
 
 ---
 

@@ -106,6 +106,11 @@ fun Application.module() {
 
     install(XForwardedHeaders)
 
+    val corsAllowedHosts = environment.config.string("cors.allowedHosts", "")
+        .split(",")
+        .map { it.trim() }
+        .filter { it.isNotEmpty() }
+
     install(CORS) {
         allowMethod(HttpMethod.Options)
         allowMethod(HttpMethod.Put)
@@ -131,7 +136,8 @@ fun Application.module() {
         allowCredentials = true
         allowNonSimpleContentTypes = true
 
-        anyHost()
+        // Мобильные клиенты не отправляют Origin — CORS ограничивает только браузерные запросы
+        corsAllowedHosts.forEach { allowHost(it, schemes = listOf("http", "https")) }
     }
 
 

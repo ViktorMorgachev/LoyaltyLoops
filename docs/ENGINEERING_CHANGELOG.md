@@ -15,6 +15,16 @@
 
 ---
 
+## 2026-07-07 — TD-002: CORS whitelist вместо anyHost()
+
+### Внедрено
+- `anyHost()` в CORS заменён на явный whitelist из конфига: `cors.allowedHosts` в `application.conf`, override через env `CORS_ALLOWED_HOSTS` (хосты через запятую, без схемы).
+- Дефолтный список: `loyaltyloops.app`, `www.loyaltyloops.app` (web prod), `loyalityloop-beta.up.railway.app` (web stage), `localhost:3000` (Vite dev).
+- Мобильные клиенты не затронуты: нативные приложения не отправляют заголовок Origin, плагин CORS ограничивает только браузерные запросы. WebSocket-подключения web-admin с разрешённых доменов также проходят.
+- Изменённые файлы: `server/src/main/kotlin/io/loyaltyloop/server/Application.kt`, `server/src/main/resources/application.conf`, `docs/TECH_DEBT.md`.
+
+---
+
 ## 2026-07-07 — Стандарт ведения проекта
 
 ### Внедрено.
