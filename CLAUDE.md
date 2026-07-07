@@ -11,10 +11,10 @@
 
 | Тип задачи | Скилл |
 |---|---|
-| Реализовать фичу, починить баг, рефакторинг | `loyalty-dev` |
-| Код-ревью перед мержем | `loyalty-review` |
-| Обновить документацию после изменений в коде | `loyalty-docs` |
-| Дизайн-ревью, проверка темы/токенов, UX-копирайт | `loyalty-design` |
+| Реализовать фичу, починить баг, рефакторинг | `loyaltyloops-dev` |
+| Код-ревью перед мержем | `loyaltyloops-review` |
+| Обновить документацию после изменений в коде | `loyaltyloops-docs` |
+| Дизайн-ревью, проверка темы/токенов, UX-копирайт | `loyaltyloops-design` |
 
 ---
 
@@ -36,10 +36,10 @@
 
 ```
 1. Читаем контекст → docs/tasks/* + docs/TECH_DEBT.md (обязательно!) + docs/screens/**/*_SPEC.md если есть
-2. [loyalty-dev]    Реализуем небольшими атомарными шагами, TypeScript/компиляция gate
-3. [loyalty-review] Двухфазное ревью: сначала Claude, потом Viktor
-4. [loyalty-docs]   Синхронизируем доки: CHANGELOG, openapi, TECH_DEBT, SPEC-статусы
-5. [loyalty-design] Дизайн-чек: тема MUI / Compose theme, копирайт
+2. [loyaltyloops-dev]    Реализуем небольшими атомарными шагами, TypeScript/компиляция gate
+3. [loyaltyloops-review] Двухфазное ревью: сначала Claude, потом Viktor
+4. [loyaltyloops-docs]   Синхронизируем доки: CHANGELOG, openapi, TECH_DEBT, SPEC-статусы
+5. [loyaltyloops-design] Дизайн-чек: тема MUI / Compose theme, копирайт
 6. Коммитим и шипим
 ```
 

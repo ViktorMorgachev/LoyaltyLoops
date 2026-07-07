@@ -1,5 +1,5 @@
 ---
-name: loyalty-dev
+name: loyaltyloops-dev
 description: "Development module for the LoyaltyLoops project. Use this skill for any new feature, bugfix, or refactoring task in the LoyaltyLoops codebase. Triggers: 'реализуй', 'разработай', 'добавь фичу', 'implement', 'build feature', 'fix this', 'refactor'. Always use this skill when writing code for LoyaltyLoops — it knows the exact project structure, conventions, and workflow. Do NOT start coding without this skill active."
 ---
 

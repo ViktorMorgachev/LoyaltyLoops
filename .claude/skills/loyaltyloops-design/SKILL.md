@@ -1,5 +1,5 @@
 ---
-name: loyalty-design
+name: loyaltyloops-design
 description: "Design sync module for LoyaltyLoops. Use for design-related tasks: checking consistency between code and theme/tokens, reviewing UX copy, updating screen specs. Triggers: 'проверь дизайн', 'обнови дизайн', 'посмотри на UI', 'design review', 'check tokens', 'review copy', 'ux copy', 'дизайн-система'. Always use this skill when making or reviewing visual/UX changes in LoyaltyLoops."
 ---
 
@@ -133,7 +133,7 @@ SPEC-файлы: `docs/screens/**/*_SCREEN_SPEC.md` (правила: `docs/SCREE
 
 ## Лаконичность комментариев и описаний
 
-Полные правила — в `loyalty-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
+Полные правила — в `loyaltyloops-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
 
 - никаких TD-XXX / STEP_X в коде, OpenAPI, SCREEN_SPEC — история живёт в git и `ENGINEERING_CHANGELOG.md`;
 - OpenAPI `description` — одно предложение по сути;

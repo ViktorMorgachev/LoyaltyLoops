@@ -1,5 +1,5 @@
 ---
-name: loyalty-docs
+name: loyaltyloops-docs
 description: "Documentation sync module for LoyaltyLoops. Use after any code change to keep docs in sync with implementation. Triggers: 'актуализируй документацию', 'обнови доку', 'sync docs', 'update docs', 'документация устарела', 'что нужно обновить в доках'. Always use this skill after implementing a feature or fixing a bug — it knows which LoyaltyLoops docs to update and how. Do NOT let docs drift from code."
 ---
 
@@ -129,7 +129,7 @@ server/src/main/resources/openapi/
 
 ## Лаконичность комментариев и описаний
 
-Полные правила — в `loyalty-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
+Полные правила — в `loyaltyloops-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
 
 - никаких TD-XXX / STEP_X в коде, OpenAPI, SCREEN_SPEC — история живёт в git и `ENGINEERING_CHANGELOG.md`;
 - OpenAPI `description` — одно предложение по сути;

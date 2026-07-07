@@ -6,7 +6,7 @@
 
 ## Время — всегда UTC
 
-Вся система живёт в UTC на трёх уровнях: PostgreSQL (`ALTER DATABASE ... SET timezone TO 'UTC'` / `PGTZ=UTC`), HikariCP (`connectionInitSql = "SET TIME ZONE 'UTC'"`), JVM (`-Duser.timezone=UTC` в Dockerfile). Подробности: `operations/DATABASE_MIGRATIONS.md`.
+Вся система живёт в UTC на трёх уровнях: PostgreSQL (`ALTER DATABASE ... SET timezone TO 'UTC'` / `PGTZ=UTC`), HikariCP (`connectionInitSql = "SET TIME ZONE 'UTC'"`), JVM (`-Duser.timezone=UTC` в Dockerfile). Подробности: `operations/POSTGRES_UTC_SETUP.md`.
 
 ## Схема БД — пока без миграций
 

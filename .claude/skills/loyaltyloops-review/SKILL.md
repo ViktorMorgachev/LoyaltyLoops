@@ -1,5 +1,5 @@
 ---
-name: loyalty-review
+name: loyaltyloops-review
 description: "Code review module for LoyaltyLoops. Use for reviewing any code changes before committing or merging. Triggers: 'сделай ревью', 'проверь код', 'review this', 'review before merge', 'что ты думаешь о коде'. Always use this skill for code review in LoyaltyLoops — it runs a structured two-phase review where Claude analyzes first, then presents findings so the developer can learn and add their own observations. Do NOT skip review before merging non-trivial changes."
 ---
 
@@ -169,7 +169,7 @@ git commit -m "docs: add code review for {feature}"
 
 ## Лаконичность комментариев и описаний
 
-Полные правила — в `loyalty-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
+Полные правила — в `loyaltyloops-dev/SKILL.md` (раздел «Лаконичность»). Кратко:
 
 - никаких TD-XXX / STEP_X в коде, OpenAPI, SCREEN_SPEC — история живёт в git и `ENGINEERING_CHANGELOG.md`;
 - OpenAPI `description` — одно предложение по сути;
