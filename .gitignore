@@ -58,3 +58,7 @@ yarn-error.log*
 # --- Vite & Web Cache ---
 .vite/
 **/.vite/
+# Signing artifacts (TD-014)
+*.pem
+pepk.jar
+pepk_out.zip
