@@ -16,6 +16,7 @@ export const ru = {
       status: "Статус",
       actions: "Действия",
       active: "Активен",
+      inactive: "Не Активен",
       blocked: "Заблокирован",
       pending: "На проверке",
       copied: "Скопировано",

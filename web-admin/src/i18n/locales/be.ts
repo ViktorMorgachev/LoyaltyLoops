@@ -16,6 +16,7 @@ export const be = {
       status: "Статус",
       actions: "Дзеянні",
       active: "Актыўны",
+      inactive: "Неактыўны",
       blocked: "Заблакаваны",
       pending: "На праверцы",
       copied: "Скапіявана",

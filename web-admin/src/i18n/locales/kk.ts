@@ -16,6 +16,7 @@ export const kk = {
       status: "Мәртебесі",
       actions: "Әрекеттер",
       active: "Белсенді",
+      inactive: "Белсенді емес",
       blocked: "Бұғатталған",
       pending: "Тексерілуде",
       copied: "Көшірілді",

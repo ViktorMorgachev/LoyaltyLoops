@@ -16,6 +16,7 @@ export const en = {
       status: "Status",
       actions: "Actions",
       active: "Active",
+      inactive: "Inactive",
       blocked: "Blocked",
       pending: "Pending",
       copied: "Copied",
