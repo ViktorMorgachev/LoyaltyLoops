@@ -15,6 +15,14 @@
 
 ---
 
+## 2026-07-07 — Fix: .dockerignore ломал сборку web-admin
+
+### Внедрено
+- Из корневого `.dockerignore` убрано исключение `web-admin`: Railway собирает `web-admin/Dockerfile` с корневым build context, и `COPY web-admin/...` падал с «not found». Вместо каталога целиком исключён только `web-admin/dist`; `node_modules` покрыт паттерном `**/node_modules`.
+- Урок: один `.dockerignore` обслуживает все Dockerfile'ы, собирающиеся из корня, — проверять надо оба образа (server и web-admin).
+
+---
+
 ## 2026-07-07 — TD-002: CORS whitelist вместо anyHost()
 
 ### Внедрено

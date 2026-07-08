@@ -9,7 +9,7 @@ build
 **/build
 node_modules
 **/node_modules
-web-admin
+web-admin/dist
 iosApp
 docs
 tests
