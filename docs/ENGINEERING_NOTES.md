@@ -22,4 +22,4 @@
 
 ## Docker-сборка сервера
 
-Multi-stage: `gradle:*-jdk17` → `eclipse-temurin:17`. Сборка флагом `-PserverBuild=true` отключает Android/iOS таргеты shared-модуля. Версия Gradle в образе обязана совпадать с `gradle-wrapper.properties`, иначе wrapper качает дистрибутив на каждой сборке (см. TD-018 — падение деплоя 2026-07-07).
+Multi-stage: `gradle:8.7.0-jdk17` → `eclipse-temurin:17`. Сборка предустановленным `gradle` (не `./gradlew`), флаг `-PserverBuild=true` отключает Android/iOS таргеты shared-модуля. **При обновлении версии в `gradle-wrapper.properties` — обновить и тег образа в Dockerfile**, иначе версии разойдутся. `GRADLE_OPTS` в Dockerfile ограничивает память сборки (-Xmx3g) — локальный `-Xmx16g` из gradle.properties в контейнере не действует.

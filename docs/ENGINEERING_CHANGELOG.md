@@ -15,6 +15,16 @@
 
 ---
 
+## 2026-07-07 — TD-017/TD-018: детерминированная Docker-сборка сервера
+
+### Внедрено
+- Образ сборки поднят до `gradle:8.7.0-jdk17` (версия совпадает с `gradle-wrapper.properties`), сборка через предустановленный `gradle` вместо `./gradlew` — wrapper больше не качает дистрибутив на каждом деплое (причина падения 2026-07-07 устранена).
+- `GRADLE_OPTS=-Xmx3g -XX:MaxMetaspaceSize=512m` в Dockerfile — переопределение локального `-Xmx16g`, защита от OOM на CI.
+- `networkTimeout` wrapper'а поднят до 120 сек (подстраховка для локальных/CI сборок через wrapper).
+- Изменённые файлы: `Dockerfile`, `gradle/wrapper/gradle-wrapper.properties`, `docs/TECH_DEBT.md`.
+
+---
+
 ## 2026-07-07 — Detekt baseline: разблокирован :server:build
 
 ### Внедрено
