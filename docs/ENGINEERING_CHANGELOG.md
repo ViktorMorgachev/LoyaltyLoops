@@ -15,6 +15,16 @@
 
 ---
 
+## 2026-07-07 — TD-003: сериализация денежных операций по карте
+
+### Внедрено
+- `TransactionService.processTransaction` первым шагом блокирует строку карты (`SELECT ... FOR UPDATE` через `LoyaltyCardRepository.lockCardRow`) — параллельные транзакции по одной карте выполняются последовательно, проверка баланса идёт по актуальному значению.
+- Второй слой защиты: в `addCashback` списание выполняется условным UPDATE с `balance >= сумма`; при гонке или недостатке средств — `LoyaltyException(INVALID_AMOUNT, "Insufficient balance")` и откат транзакции.
+- Конкурентный тест зафиксирован отдельно как TD-019.
+- Изменённые файлы: `TransactionService.kt`, `LoyaltyCardRepository.kt`, `docs/TECH_DEBT.md`.
+
+---
+
 ## 2026-07-07 — Fix: .dockerignore ломал сборку web-admin
 
 ### Внедрено

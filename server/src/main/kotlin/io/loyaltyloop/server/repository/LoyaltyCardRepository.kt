@@ -129,6 +129,17 @@ class LoyaltyCardRepository(
 
     }
 
+
+    suspend fun lockCardRow(cardId: String) = dbQuery {
+        val found = LoyaltyCardsTable
+            .select { LoyaltyCardsTable.id eq cardId.toUUID() }
+            .forUpdate()
+            .any()
+        if (!found) {
+            throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
+        }
+    }
+
     suspend fun incrementVisits(cardId: String, updatedAt: LocalDateTime) = dbQuery {
         val cardUuid = cardId.toUUID()
         LoyaltyCardsTable.update({ LoyaltyCardsTable.id eq cardUuid }) {
@@ -152,10 +163,21 @@ class LoyaltyCardRepository(
         val cashbackDec = BigDecimal.valueOf(cashback)
         val spentDec = BigDecimal.valueOf(spentAmount)
 
-        LoyaltyCardsTable.update({ LoyaltyCardsTable.id eq cardUuid }) {
+        val updated = LoyaltyCardsTable.update({
+            if (cashbackDec.signum() < 0) {
+                // Списание не может увести баланс в минус даже при гонке
+                (LoyaltyCardsTable.id eq cardUuid) and (LoyaltyCardsTable.balance greaterEq cashbackDec.negate())
+            } else {
+                LoyaltyCardsTable.id eq cardUuid
+            }
+        }) {
             it[totalSpent] = totalSpent + spentDec
             it[balance] = balance + cashbackDec
             it[lastActivityAt] = updatedAt
+        }
+
+        if (updated == 0) {
+            throw LoyaltyException(AppErrorCode.INVALID_AMOUNT, "Insufficient balance")
         }
     }
 

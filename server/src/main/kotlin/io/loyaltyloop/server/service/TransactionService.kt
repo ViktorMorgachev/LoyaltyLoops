@@ -219,6 +219,9 @@ class TransactionService(
         val staffId = partnerStaffRepository.getCassierById(cashierUserId, tradingPointId)?.toString()
             ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "Cashier staff record not found")
 
+        // Сериализуем параллельные операции по карте: баланс ниже читается уже под блокировкой
+        loyaltyCardRepository.lockCardRow(cardId)
+
         val card = loyaltyCardRepository.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")
 
