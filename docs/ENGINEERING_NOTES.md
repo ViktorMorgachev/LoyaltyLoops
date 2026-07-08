@@ -8,9 +8,9 @@
 
 Вся система живёт в UTC на трёх уровнях: PostgreSQL (`ALTER DATABASE ... SET timezone TO 'UTC'` / `PGTZ=UTC`), HikariCP (`connectionInitSql = "SET TIME ZONE 'UTC'"`), JVM (`-Duser.timezone=UTC` в Dockerfile). Подробности: `operations/POSTGRES_UTC_SETUP.md`.
 
-## Схема БД — пока без миграций
+## Схема БД — Flyway
 
-Схема создаётся `SchemaUtils.createMissingTablesAndColumns` на старте. Это осознанный компромисс раннего этапа; переход на Flyway зафиксирован как TD-004 в `TECH_DEBT.md`. До перехода: изменение схемы = изменение table object, деструктивные изменения (drop/retype) — только руками с бэкапом.
+Миграции: `server/src/main/resources/db/migration/V{N}__description.sql`. `V1__baseline.sql` зеркалит схему на момент перехода; на существовавших БД он пропускается (`baselineOnMigrate=true` помечает их версией 1), выполняются только V2+. Изменение схемы = обновить Exposed table object **и** написать миграцию — они обязаны совпадать. Тесты (H2) миграции не используют: схема создаётся из table objects (`DatabaseFactory`), поэтому Postgres-специфичный SQL в миграциях допустим.
 
 ## Один бэкенд — три роли клиента
 

@@ -15,6 +15,18 @@
 
 ---
 
+## 2026-07-07 — TD-004: Flyway-миграции вместо createMissingTablesAndColumns
+
+### Внедрено
+- Flyway 9.22.3 (`libs.flyway.core`). Миграции: `server/src/main/resources/db/migration/`.
+- `V1__baseline.sql` — полная текущая схема (23 таблицы), выполняется только на пустых БД; существующие БД помечаются версией 1 через `baselineOnMigrate=true`.
+- `V2__loyalty_cards_balance_check.sql` — CHECK `balance >= 0 NOT VALID` (страховка к TD-003, применится и на проде без скана существующих строк).
+- `DatabaseFactory.init`: Postgres → Flyway; не-Postgres (H2 в тестах) → прежний `createMissingTablesAndColumns` (миграции Postgres-специфичны).
+- Новое правило разработки: изменение схемы = table object + миграция `V{N}` (CLAUDE.md, ENGINEERING_NOTES, скиллы обновлены).
+- Изменённые файлы: `gradle/libs.versions.toml`, `server/build.gradle.kts`, `DatabaseFactory.kt`, `db/migration/V1..V2`, `CLAUDE.md`, `docs/**`.
+
+---
+
 ## 2026-07-07 — TD-003: сериализация денежных операций по карте
 
 ### Внедрено

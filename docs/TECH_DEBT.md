@@ -53,15 +53,10 @@
 
 ---
 
-## TD-004 — Схема БД через `createMissingTablesAndColumns` вместо миграций
+## ~~TD-004~~ — ~~Схема БД через `createMissingTablesAndColumns` вместо миграций~~ ✅ ЗАКРЫТ
 
-- **Область:** server / database
-- **Проблема:** схема создаётся `SchemaUtils.createMissingTablesAndColumns` (experimental API Exposed). Изменение типа/удаление колонки не применяется; версионирования схемы нет.
-- **Почему это техдолг:** прод и код разъезжаются молча; откат невозможен.
-- **Риск:** тихая рассинхронизация схемы, потеря данных при ручных правках.
-- **Приоритет:** 🟠 High
-- **Что нужно сделать:** внедрить Flyway (`V{N}__description.sql` в `server/src/main/resources/db/migration/`), первую миграцию сгенерировать из текущей продовой схемы, `createMissingTablesAndColumns` оставить только для тестов.
-- **Когда делать:** ближайший инфраструктурный спринт.
+- **Решено в:** 2026-07-07 (см. ENGINEERING_CHANGELOG «TD-004: Flyway»)
+- **Что сделано:** внедрён Flyway 9.22.3. `V1__baseline.sql` — полная текущая схема (23 таблицы, на существующих БД не выполняется благодаря `baselineOnMigrate=true`), `V2__loyalty_cards_balance_check.sql` — CHECK `balance >= 0 NOT VALID`. `DatabaseFactory.init`: Postgres → Flyway; H2 (тесты) → прежний `createMissingTablesAndColumns`. Новое правило: изменение схемы = table object + миграция `V{N}__description.sql`.
 
 ---
 

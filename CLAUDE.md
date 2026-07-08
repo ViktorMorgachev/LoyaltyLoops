@@ -51,7 +51,7 @@
 
 - **server**: слои `routes → services → repositories`; бизнес-логика в сервисах, route handlers тонкие
 - **Ошибки server**: только `LoyaltyException(AppErrorCode.*)` — маппинг в HTTP в `ErrorHandler.kt`
-- **БД**: schema через Exposed table objects + `createMissingTablesAndColumns` (переход на Flyway — TD-004). Деструктивные изменения схемы — только осознанно, с бэкапом
+- **БД**: изменение схемы = Exposed table object **+** Flyway-миграция `V{N}__description.sql` (`server/src/main/resources/db/migration/`); они обязаны совпадать. Тесты на H2 создают схему из table objects
 - **DTO** — в `shared` (используются сервером и мобильными клиентами)
 - **API changes**: всегда обновляем `server/src/main/resources/openapi/documentation.yaml`
 - **web-admin**: цвета/стили через тему MUI (`src/theme.ts`), не хардкод в sx; строки через i18n (`src/i18n/`), не хардкод в JSX
