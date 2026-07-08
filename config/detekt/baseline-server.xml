@@ -1,0 +1,445 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>ComplexCondition:GeoIpService.kt$GeoIpService$ip == "127.0.0.1" || ip == "0:0:0:0:0:0:0:1" || ip.startsWith("192.168.") || ip.startsWith("10.")</ID>
+    <ID>ComplexCondition:RatingService.kt$RatingService$currentCard.trustScore &gt;= 4.5 &amp;&amp; currentCard.totalScore &gt; 100 &amp;&amp; dto.rating == 1 &amp;&amp; !dto.tags.contains(ClientRatingTag.FRAUD)</ID>
+    <ID>CyclomaticComplexMethod:AdminPlatformRoutes.kt$fun Route.adminPlatformRoutes( platformRepository: PlatformRepository, systemStaffRepository: SystemStaffRepository, accessControlService: AccessControlService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>CyclomaticComplexMethod:AdminRoutes.kt$fun Route.adminRoutes( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
+    <ID>CyclomaticComplexMethod:Application.kt$@Suppress("unused") fun Application.module()</ID>
+    <ID>CyclomaticComplexMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
+    <ID>CyclomaticComplexMethod:ClientRoutes.kt$@Suppress("ThrowsCount") fun Route.clientRoutes( userRepository: UserRepository, deviceTokenRepository: DeviceTokenRepository, ratingService: RatingService, loyaltyCardRepository: LoyaltyCardRepository, accessControlService: AccessControlService, )</ID>
+    <ID>CyclomaticComplexMethod:EmailTemplate.kt$EmailTemplateService$fun buildBody(template: EmailTemplate, lang: String?): String</ID>
+    <ID>CyclomaticComplexMethod:ErrorHandler.kt$suspend fun handleError(call: ApplicationCall, exception: Throwable)</ID>
+    <ID>CyclomaticComplexMethod:LoyaltyCalculator.kt$LoyaltyCalculator$fun calculate( card: LoyaltyCardDto, purchaseAmount: Double, // В локальной валюте (KGS) maxBurnPercentage: Int, settingsVisitTarget: Int, settingsTiers: List&lt;LoyaltyTierDto&gt;, // В локальной валюте (KGS) strategy: TransactionStrategy, awardOnMixedPayment: Boolean = false ): TransactionCalculationDto</ID>
+    <ID>CyclomaticComplexMethod:PartnerRoutes.kt$fun Route.partnerRoutes( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>CyclomaticComplexMethod:PlatformRepository.kt$PlatformRepository$suspend fun approveRequest(requestId: String, approverUserId: String): Boolean</ID>
+    <ID>CyclomaticComplexMethod:RatingService.kt$RatingService$suspend fun rateClient(cashierId: String, dto: CreateClientRatingDto, tradingPointId: String, timeZoneCurrency: String): TrustScoreDto</ID>
+    <ID>CyclomaticComplexMethod:TimezoneUtils.kt$TimezoneUtils$fun getCountryForTimezone(timezoneId: String): CountryCode</ID>
+    <ID>CyclomaticComplexMethod:TimezoneUtils.kt$TimezoneUtils$fun getCurrencyForTimezone(timezoneId: String): String</ID>
+    <ID>CyclomaticComplexMethod:TradingPointSearchCriteria.kt$fun TradingPointSearchCriteria.matches(point: TradingPointDto): Boolean</ID>
+    <ID>CyclomaticComplexMethod:TransactionService.kt$TransactionService$private suspend fun processMoneyTransaction( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, calc: TransactionCalculationDto, updatedAt: LocalDateTime ): Pair&lt;TransactionResult, CardRealtimePayload&gt;</ID>
+    <ID>EmptyFunctionBlock:ValidationUtilsTest.kt$ValidationUtilsTest${ }</ID>
+    <ID>InstanceOfCheckForException:ExchangeRateService.kt$ExchangeRateService$e is kotlin.coroutines.cancellation.CancellationException</ID>
+    <ID>LongMethod:Application.kt$@Suppress("unused") fun Application.module()</ID>
+    <ID>LongMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
+    <ID>LongMethod:PartnerRoutes.kt$fun Route.partnerRoutes( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>LongParameterList:AdminRoutes.kt$( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
+    <ID>LongParameterList:AuthRoutes.kt$( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
+    <ID>LongParameterList:HistoryRepository.kt$HistoryRepository$( userId: String, pointId: String, cashierId: String, type: String, amount: Double, pointsDelta: Double, visitsDelta: Int, currency: String, exchangeRate: Double, pointsBaseValue: Double, updatedAt: LocalDateTime )</ID>
+    <ID>LongParameterList:LoyaltyCalculator.kt$LoyaltyCalculator$( card: LoyaltyCardDto, purchaseAmount: Double, // В локальной валюте (KGS) maxBurnPercentage: Int, settingsVisitTarget: Int, settingsTiers: List&lt;LoyaltyTierDto&gt;, // В локальной валюте (KGS) strategy: TransactionStrategy, awardOnMixedPayment: Boolean = false )</ID>
+    <ID>LongParameterList:MapsRoutes.kt$( applicationConfig: ApplicationConfig, partnerRepository: PartnerRepository, userRepository: UserRepository, tradingPointRepository: TradingPointRepository, mapRepository: MapRepository, accessControlService: AccessControlService, )</ID>
+    <ID>LongParameterList:PartnerRoutes.kt$( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>LongParameterList:TelegramAuthService.kt$TelegramAuthService$( private val authSessionRepository: AuthSessionRepository, private val userRepository: UserRepository, private val botToken: String, val botUsername: String, val webBaseUrl: String, private val webhookUrl: String? = null, private val webhookSecret: String? = null )</ID>
+    <ID>LongParameterList:TransactionService.kt$TransactionService$( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, calc: TransactionCalculationDto, updatedAt: LocalDateTime )</ID>
+    <ID>LongParameterList:TransactionService.kt$TransactionService$( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, settings: LoyaltySettingsDto, calc: TransactionCalculationDto, updatedAt: LocalDateTime )</ID>
+    <ID>LongParameterList:TransactionService.kt$TransactionService$( cashierUserId: String, tradingPointId: String, cardId: String, purchaseAmount: Double, strategy: TransactionStrategy, estimatedCurrency: String, )</ID>
+    <ID>LongParameterList:TransactionService.kt$TransactionService$( private val userRepository: UserRepository, private val partnerRepository: PartnerRepository, private val partnerStaffRepository: PartnerStaffRepository, private val tradingPointRepository: TradingPointRepository, private val realtimeService: CardRealtimeService, private val eventLogger: EventLogger, private val loyaltyCardRepository: LoyaltyCardRepository, private val exchangeRateService: ExchangeRateService, private val historyRepository: HistoryRepository )</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$1000L</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$180L</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$24</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$29</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$3600</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$365L</ID>
+    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$6</ID>
+    <ID>MagicNumber:Application.kt$10</ID>
+    <ID>MagicNumber:Application.kt$30</ID>
+    <ID>MagicNumber:Application.kt$60</ID>
+    <ID>MagicNumber:Application.kt$60_000L</ID>
+    <ID>MagicNumber:AuthRoutes.kt$1000</ID>
+    <ID>MagicNumber:AuthSessionsTable.kt$AuthSessionsTable$20</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$15000</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$2000</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$350</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$42.8746</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$50</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$74.5698</ID>
+    <ID>MagicNumber:ConfigRoutes.kt$80</ID>
+    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$10</ID>
+    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$120_000</ID>
+    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$300_000</ID>
+    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$30_000</ID>
+    <ID>MagicNumber:DeviceTokensTable.kt$DeviceTokensTable$20</ID>
+    <ID>MagicNumber:DeviceTokensTable.kt$DeviceTokensTable$50</ID>
+    <ID>MagicNumber:DeviceTokensTable.kt$DeviceTokensTable$500</ID>
+    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$1000L</ID>
+    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$25</ID>
+    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$3</ID>
+    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$4</ID>
+    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$60</ID>
+    <ID>MagicNumber:ExchangeRatesTable.kt$ExchangeRatesTable$19</ID>
+    <ID>MagicNumber:ExchangeRatesTable.kt$ExchangeRatesTable$3</ID>
+    <ID>MagicNumber:ExchangeRatesTable.kt$ExchangeRatesTable$6</ID>
+    <ID>MagicNumber:InviteCodeGenerator.kt$6</ID>
+    <ID>MagicNumber:LoyaltyCalculator.kt$LoyaltyCalculator$100.0</ID>
+    <ID>MagicNumber:LoyaltyCardRepository.kt$LoyaltyCardRepository$4.0</ID>
+    <ID>MagicNumber:LoyaltyCardTable.kt$LoyaltyCardsTable$10</ID>
+    <ID>MagicNumber:LoyaltyCardTable.kt$LoyaltyCardsTable$12</ID>
+    <ID>MagicNumber:LoyaltyCardTable.kt$LoyaltyCardsTable$255</ID>
+    <ID>MagicNumber:LoyaltyCardTable.kt$LoyaltyCardsTable$4.0</ID>
+    <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$10000</ID>
+    <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$3</ID>
+    <ID>MagicNumber:LoyaltySettingsTable.kt$LoyaltySettingsTable$100</ID>
+    <ID>MagicNumber:LoyaltySettingsTable.kt$LoyaltySettingsTable$20</ID>
+    <ID>MagicNumber:LoyaltyTiersTable.kt$LoyaltyTiersTable$12</ID>
+    <ID>MagicNumber:LoyaltyTiersTable.kt$LoyaltyTiersTable$5</ID>
+    <ID>MagicNumber:LoyaltyTiersTable.kt$LoyaltyTiersTable$50</ID>
+    <ID>MagicNumber:MapRepository.kt$MapRepository$1.1</ID>
+    <ID>MagicNumber:MapRepository.kt$MapRepository$60</ID>
+    <ID>MagicNumber:MapsRoutes.kt$100</ID>
+    <ID>MagicNumber:MapsRoutes.kt$15000</ID>
+    <ID>MagicNumber:MapsRoutes.kt$2000</ID>
+    <ID>MagicNumber:MapsRoutes.kt$5.0</ID>
+    <ID>MagicNumber:MapsRoutes.kt$50</ID>
+    <ID>MagicNumber:OtpService.kt$OtpService$1000</ID>
+    <ID>MagicNumber:OtpService.kt$OtpService$120_000L</ID>
+    <ID>MagicNumber:OtpService.kt$OtpService$9999</ID>
+    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$10</ID>
+    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$4</ID>
+    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$6</ID>
+    <ID>MagicNumber:PartnerRoutes.kt$50</ID>
+    <ID>MagicNumber:PartnerStaffTable.kt$PartnerStaffTable$30</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$10</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$128</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$20</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$255</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$3</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$4</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$50</ID>
+    <ID>MagicNumber:PartnersTable.kt$PartnersTable$9</ID>
+    <ID>MagicNumber:PinResetTokensTable.kt$PinResetTokensTable$128</ID>
+    <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$14</ID>
+    <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$3</ID>
+    <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$5</ID>
+    <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$6</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformInvitesTable$20</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformInvitesTable$50</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformRequestsTable$10</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformRequestsTable$20</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformRequestsTable$255</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformRequestsTable$30</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformSubscriptionsTable$10</ID>
+    <ID>MagicNumber:PlatformTables.kt$PlatformSubscriptionsTable$20</ID>
+    <ID>MagicNumber:RatingRepository.kt$RatingRepository$100</ID>
+    <ID>MagicNumber:RatingRepository.kt$RatingRepository$3</ID>
+    <ID>MagicNumber:RatingRepository.kt$RatingRepository$5</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$10</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$100</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$12</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$20</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$3.5</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$4.5</ID>
+    <ID>MagicNumber:RatingService.kt$RatingService$5.0</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$128</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$2_000L</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$30_000L</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$32</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$34</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$5000</ID>
+    <ID>MagicNumber:RedisService.kt$RedisService$60_000L</ID>
+    <ID>MagicNumber:RefreshTokensTable.kt$RefreshTokensTable$2048</ID>
+    <ID>MagicNumber:RefreshTokensTable.kt$RefreshTokensTable$255</ID>
+    <ID>MagicNumber:RefreshTokensTable.kt$RefreshTokensTable$45</ID>
+    <ID>MagicNumber:RowMappers.kt$3.5</ID>
+    <ID>MagicNumber:RowMappers.kt$4.5</ID>
+    <ID>MagicNumber:SecurityUtils.kt$SecurityUtils$12</ID>
+    <ID>MagicNumber:SecurityUtils.kt$SecurityUtils$4</ID>
+    <ID>MagicNumber:ServiceModule.kt$3</ID>
+    <ID>MagicNumber:ServiceModule.kt$3_600_000L</ID>
+    <ID>MagicNumber:ServiceModule.kt$5</ID>
+    <ID>MagicNumber:SubscriptionRepository.kt$SubscriptionRepository$3</ID>
+    <ID>MagicNumber:SupportChatRepository.kt$SupportChatRepository$100</ID>
+    <ID>MagicNumber:SupportChatTables.kt$SupportThreadsTable$200</ID>
+    <ID>MagicNumber:SupportChatTables.kt$SupportThreadsTable$255</ID>
+    <ID>MagicNumber:SystemEventsTable.kt$SystemEventsTable$20</ID>
+    <ID>MagicNumber:SystemEventsTable.kt$SystemEventsTable$50</ID>
+    <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$100000</ID>
+    <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$24</ID>
+    <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$999999</ID>
+    <ID>MagicNumber:SystemStaffTable.kt$SystemStaffTable$128</ID>
+    <ID>MagicNumber:SystemStaffTable.kt$SystemStaffTable$50</ID>
+    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$10</ID>
+    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$1000L</ID>
+    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$30</ID>
+    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$5</ID>
+    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$60</ID>
+    <ID>MagicNumber:TierDef.kt$15000</ID>
+    <ID>MagicNumber:TierDef.kt$3</ID>
+    <ID>MagicNumber:TierDef.kt$3.0</ID>
+    <ID>MagicNumber:TierDef.kt$5.0</ID>
+    <ID>MagicNumber:TierDef.kt$5000</ID>
+    <ID>MagicNumber:TokenService.kt$TokenService$32</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$100</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$20</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$200</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$3</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$30</ID>
+    <ID>MagicNumber:TradingPointsTable.kt$TradingPointsTable$50</ID>
+    <ID>MagicNumber:TransactionService.kt$TransactionService$1000</ID>
+    <ID>MagicNumber:TransactionService.kt$TransactionService$4</ID>
+    <ID>MagicNumber:TransactionsHistoryTable.kt$TransactionsHistoryTable$10</ID>
+    <ID>MagicNumber:TransactionsHistoryTable.kt$TransactionsHistoryTable$19</ID>
+    <ID>MagicNumber:TransactionsHistoryTable.kt$TransactionsHistoryTable$20</ID>
+    <ID>MagicNumber:TransactionsHistoryTable.kt$TransactionsHistoryTable$3</ID>
+    <ID>MagicNumber:TransactionsHistoryTable.kt$TransactionsHistoryTable$6</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$100</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$20</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$4</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$5</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$50</ID>
+    <ID>MagicNumber:UsersTable.kt$UsersTable$64</ID>
+    <ID>MagicNumber:WaitlistTable.kt$WaitlistTable$255</ID>
+    <ID>MatchingDeclarationName:AuthSessionsDto.kt$AuthSessionStatus</ID>
+    <ID>MatchingDeclarationName:LoyaltyCardTable.kt$LoyaltyCardsTable : UUIDTable</ID>
+    <ID>MatchingDeclarationName:PublicRoutes.kt$WaitlistRequest</ID>
+    <ID>MaxLineLength:AdminPlatformRoutes.kt$val targetRoleStr = call.request.queryParameters["role"] ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")</ID>
+    <ID>MaxLineLength:Application.kt$"Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"</ID>
+    <ID>MaxLineLength:AuthRoutes.kt$val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")</ID>
+    <ID>MaxLineLength:DeviceTokenRepository.kt$DeviceTokenRepository$suspend</ID>
+    <ID>MaxLineLength:EmailService.kt$ResendEmailService$eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;h3 style='color:#d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px;'&gt;🚨 CRITICAL (${data.critical.size})&lt;/h3&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;h3 style='color:#f57c00; border-bottom: 2px solid #f57c00; padding-bottom: 5px;'&gt;⚠️ WARNING (${data.warning.size})&lt;/h3&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;${item.managerEmail ?: "&lt;span style='color:#ccc'&gt;-&lt;/span&gt;"}&lt;/td&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;${item.partner}&lt;br&gt;&lt;span style='color:#777; font-size:12px;'&gt;${item.point}&lt;/span&gt;&lt;/td&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;&lt;b&gt;${item.partner}&lt;/b&gt;&lt;br&gt;&lt;span style='color:#777; font-size:12px;'&gt;${item.point}&lt;/span&gt;&lt;/td&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;tr style='background-color:#ffebee; text-align:left;'&gt;&lt;th style='padding:8px;'&gt;Partner / Point&lt;/th&gt;&lt;th style='padding:8px;'&gt;Expires&lt;/th&gt;&lt;th style='padding:8px;'&gt;Manager&lt;/th&gt;&lt;/tr&gt;")</ID>
+    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;tr style='background-color:#fff3e0; text-align:left;'&gt;&lt;th style='padding:8px;'&gt;Partner / Point&lt;/th&gt;&lt;th style='padding:8px;'&gt;Expires&lt;/th&gt;&lt;th style='padding:8px;'&gt;Manager&lt;/th&gt;&lt;/tr&gt;")</ID>
+    <ID>MaxLineLength:ErrorHandler.kt$AppErrorCode.OTP_ATTEMPTS_EXCEEDED , AppErrorCode.RATE_LIMIT_EXCEEDEG, AppErrorCode.TOO_MANY_REQUESTS -&gt; HttpStatusCode.TooManyRequests</ID>
+    <ID>MaxLineLength:PartnerRepository.kt$PartnerRepository$LoyaltyTiersTable</ID>
+    <ID>MaxLineLength:PartnerRepository.kt$PartnerRepository$val uuid = try { partnerId.toUUID() } catch (e: Exception) { throw LoyaltyException(AppErrorCode.INVALID_REQUEST, message = "PartnerId invalid") }</ID>
+    <ID>MaxLineLength:PartnerRoutes.kt$partnerStaffRepository.removeStaffMember(requesterUserId = userId, partnerId = workspaceId, targetUserId = cashierId, targetPointId = pointId, targetRole = UserRole.CASHIER)</ID>
+    <ID>MaxLineLength:PlatformRepository.kt$PlatformRepository$if (partnerStatus == PartnerStatus.PENDING) throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")</ID>
+    <ID>MaxLineLength:RatingRepository.kt$RatingRepository$val totalScore = (rating.castTo&lt;Double&gt;(DoubleColumnType()) * ratingCount.castTo&lt;Double&gt;(DoubleColumnType())) + newVote.toDouble()</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "Siz PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi tugmani bosing:\n{resetButton}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "You have requested a PIN reset. Click the button below to set a new PIN:\n{resetButton}\nIf you did not request this, please ignore this email."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "Вы запрасілі скід ПІН-кода. Націсніце на кнопку ніжэй, каб задаць новы ПІН:\n{resetButton}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "Вы запросили сброс ПИН-кода. Нажмите на кнопку ниже, чтобы задать новый ПИН:\n{resetButton}\nЕсли вы этого не делали, проигнорируйте это письмо."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "Сиз ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү баскычты басыңыз:\n{resetButton}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_body" to "Сіз ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі батырманы басыңыз:\n{resetButton}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "Siz hamkorlik hisobingiz uchun PIN-kodni tiklashni so'radingiz. Yangi PIN o'rnatish uchun quyidagi tugmani bosing:\n{resetButton}\nAgar siz buni so'ramagan bo'lsangiz, ushbu xatni e'tiborsiz qoldiring."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "You have requested a PIN reset for your partner account. Click the button below to set a new PIN:\n{resetButton}\nIf you did not request this, please ignore this email."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "Вы запрасілі скід ПІН-кода для вашага партнёрскага акаўнта. Націсніце на кнопку ніжэй, каб задаць новы ПІН:\n{resetButton}\nКалі вы гэтага не рабілі, праігнаруйце гэты ліст."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "Вы запросили сброс ПИН-кода для вашего партнерского аккаунта. Нажмите на кнопку ниже, чтобы задать новый ПИН:\n{resetButton}\nЕсли вы этого не делали, проигнорируйте это письмо."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "Сиз өнөктөштүк аккаунтуңуз үчүн ПИН-кодду алмаштырууну сурандыңыз. Жаңы ПИН коюу үчүн төмөнкү баскычты басыңыз:\n{resetButton}\nЭгер сиз муну кылбасаңыз, бул катты этибарга албаңыз."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"pin_reset_partner_body" to "Сіз серіктестік аккаунтыңыз үшін ПИН-кодты қалпына келтіруді сұрадыңыз. Жаңа ПИН орнату үшін төмендегі батырманы басыңыз:\n{resetButton}\nЕгер бұны сіз сұрамасаңыз, бұл хатты елемеңіз."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_body" to "Критическое предупреждение! Точка \"{pointName}\" будет отключена завтра ({date}). Продлите подписку сейчас!"</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_body" to "Крытычнае папярэджанне! Кропка \"{pointName}\" будзе адключана заўтра ({date}). Падоўжыце падпіску зараз!"</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_manager_body" to "SHOSHILINCH: \"{pointName}\" (Hamkor: {partnerName}) obunasi ertaga tugaydi! Egasi bilan bog'laning."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_manager_body" to "URGENT: Subscription for \"{pointName}\" (Partner: {partnerName}) expires tomorrow! Contact the owner."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_manager_body" to "СРОЧНО: Подписка \"{pointName}\" (Партнер: {partnerName}) истекает завтра! Свяжитесь с владельцем."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_manager_body" to "ТЭРМІНОВА: Падпіска \"{pointName}\" (Партнёр: {partnerName}) заканчваецца заўтра! Звяжыцеся з уладальнікам."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_critical_manager_body" to "ШАШЫЛЫШ: \"{pointName}\" (Өнөктөш: {partnerName}) жазылуусу эртең бүтөт! Ээси менен байланышыңыз."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_expiring_body" to "Внимание: Подписка для точки \"{pointName}\" истекает {date}. Пожалуйста, продлите во избежание отключения."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"sub_expiring_body" to "Увага: Падпіска для кропкі \"{pointName}\" заканчваецца {date}. Калі ласка, падоўжыце, каб пазбегнуць адключэння."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Congratulations! Your business \"{partnerName}\" has been registered. You can now add trading points and launch your loyalty program."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Tabriklaymiz! \"{partnerName}\" biznesingiz muvaffaqiyatli ro'yxatdan o'tdi. Endi savdo nuqtalarini qo'shib, sodiqlik dasturini ishga tushirishingiz mumkin."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Віншуем! Ваш бізнес \"{partnerName}\" паспяхова зарэгістраваны. Цяпер вы можаце дадаваць гандлёвыя кропкі і запускаць праграму лаяльнасці."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Куттуктайбыз! Сиздин \"{partnerName}\" бизнесиңиз ийгиликтүү катталды. Эми соода түйүндөрүн кошуп, лоялдуулук программасын баштасаңыз болот."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Поздравляем! Ваш бизнес \"{partnerName}\" успешно зарегистрирован. Теперь вы можете добавлять торговые точки и запускать программу лояльности."</ID>
+    <ID>MaxLineLength:ServerResources.kt$ServerResources$"welcome_body" to "Құттықтаймыз! \"{partnerName}\" бизнесіңіз сәтті тіркелді. Енді сауда нүктелерін қосып, адалдық бағдарламасын іске қоса аласыз."</ID>
+    <ID>MaxLineLength:SystemStaffRepository.kt$SystemStaffRepository$?.</ID>
+    <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 1, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Base, "Base"), threshold = 0.0, cashbackPercent = 1.0),</ID>
+    <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 2, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Silver, "Silver"), threshold = 5_000.0, cashbackPercent = 7.0),</ID>
+    <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 3, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Gold, "Gold"), threshold = 20_000.0, cashbackPercent = 9.0)</ID>
+    <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// assertEquals(HttpStatusCode.Created.description, client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point", currency = Currency.KGS, TradingPointType.SERVICE))</ID>
+    <ID>MaxLineLength:TransactionService.kt$TransactionService$// Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType, либо передавать "10 (~850 сом)" как один аргумент.</ID>
+    <ID>NestedBlockDepth:PreludeSmsService.kt$PreludeSmsService$override suspend fun sendSms(phone: String, text: String): Boolean</ID>
+    <ID>NewLineAtEndOfFile:AdminApiTest.kt$io.loyaltyloop.server.AdminApiTest.kt</ID>
+    <ID>NewLineAtEndOfFile:AuthTest.kt$io.loyaltyloop.server.AuthTest.kt</ID>
+    <ID>ReturnCount:AccessControlService.kt$AccessControlService$suspend fun requirePartnerAccess( userId: String, partnerId: String, allowManager: Boolean = false )</ID>
+    <ID>ReturnCount:ExchangeRateService.kt$ExchangeRateService$suspend fun getRate(fromCurrency: String, toCurrency: String): Double</ID>
+    <ID>ReturnCount:LoyaltyCalculator.kt$LoyaltyCalculator$fun calculate( card: LoyaltyCardDto, purchaseAmount: Double, // В локальной валюте (KGS) maxBurnPercentage: Int, settingsVisitTarget: Int, settingsTiers: List&lt;LoyaltyTierDto&gt;, // В локальной валюте (KGS) strategy: TransactionStrategy, awardOnMixedPayment: Boolean = false ): TransactionCalculationDto</ID>
+    <ID>ReturnCount:MapRepository.kt$MapRepository$private fun WeeklyScheduleDto?.isOpen(timezone: String, at: LocalDateTime): Boolean?</ID>
+    <ID>ReturnCount:OtpService.kt$OtpService$fun validateCode(phone: String, code: String): Boolean</ID>
+    <ID>ReturnCount:RouteUtils.kt$suspend fun ApplicationCall.getUserIdOrRespond( accessControlService: AccessControlService, allowFrozenActions: Boolean = false ): String?</ID>
+    <ID>ReturnCount:SupportChatWebSocketHandler.kt$SupportChatWebSocketHandler$private suspend fun resolveUserId(call: ApplicationCall, session: DefaultWebSocketServerSession): String?</ID>
+    <ID>ReturnCount:SupportChatWebSocketHandler.kt$SupportChatWebSocketHandler$suspend fun handlePartner(call: ApplicationCall, session: DefaultWebSocketServerSession)</ID>
+    <ID>ReturnCount:TelegramAuthService.kt$TelegramAuthService$private suspend fun handleContact(chatId: Long, contact: JsonObject, languageCode: String)</ID>
+    <ID>ReturnCount:TradingPointSearchCriteria.kt$fun TradingPointSearchCriteria.matches(point: TradingPointDto): Boolean</ID>
+    <ID>ReturnCount:TransactionService.kt$TransactionService$private suspend fun updateTierIfEligible( cardId: String, estimatedCurrency: String, tiers: List&lt;LoyaltyTierDto&gt;, updatedAt: LocalDateTime ): Boolean</ID>
+    <ID>SwallowedException:AnalyticsService.kt$AnalyticsService$e: Exception</ID>
+    <ID>SwallowedException:ClientRoutes.kt$e2: Exception</ID>
+    <ID>SwallowedException:ClientRoutes.kt$e: Exception</ID>
+    <ID>SwallowedException:DeviceTokenRepository.kt$DeviceTokenRepository$e: Exception</ID>
+    <ID>SwallowedException:MapsRoutes.kt$e: Exception</ID>
+    <ID>SwallowedException:PartnerRepository.kt$PartnerRepository$e: Exception</ID>
+    <ID>SwallowedException:PartnerRoutes.kt$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:RatingRepository.kt$RatingRepository$e: Exception</ID>
+    <ID>SwallowedException:RouteUtils.kt$e: Exception</ID>
+    <ID>SwallowedException:RouteUtils.kt$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:StringExt.kt$e: IllegalArgumentException</ID>
+    <ID>SwallowedException:SupportChatService.kt$SupportChatService$e: Exception</ID>
+    <ID>SwallowedException:SupportChatWebSocketHandler.kt$SupportChatWebSocketHandler$e: ClosedReceiveChannelException</ID>
+    <ID>SwallowedException:SystemEventRepository.kt$SystemEventRepository$e: Exception</ID>
+    <ID>ThrowsCount:AdminPlatformRoutes.kt$fun Route.adminPlatformRoutes( platformRepository: PlatformRepository, systemStaffRepository: SystemStaffRepository, accessControlService: AccessControlService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>ThrowsCount:AdminRoutes.kt$fun Route.adminRoutes( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
+    <ID>ThrowsCount:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
+    <ID>ThrowsCount:ExchangeRateService.kt$ExchangeRateService$suspend fun getRate(fromCurrency: String, toCurrency: String): Double</ID>
+    <ID>ThrowsCount:PartnerRoutes.kt$fun Route.partnerRoutes( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
+    <ID>ThrowsCount:PlatformRepository.kt$PlatformRepository$suspend fun approveRequest(requestId: String, approverUserId: String): Boolean</ID>
+    <ID>ThrowsCount:PlatformRepository.kt$PlatformRepository$suspend fun rejectRequest(requestId: String, approverId: String, reason: String): Boolean</ID>
+    <ID>ThrowsCount:TransactionService.kt$TransactionService$private suspend fun validateTransactionAccess(cashierUserId: String, tradingPointId: String)</ID>
+    <ID>ThrowsCount:TransactionService.kt$TransactionService$suspend fun scanQr( cashierUserId: String, tradingPointId: String, estimatedCurrency: String, request: ScanQrRequest ): ScanQrResponse</ID>
+    <ID>TooGenericExceptionCaught:AnalyticsService.kt$AnalyticsService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ClientRoutes.kt$e2: Exception</ID>
+    <ID>TooGenericExceptionCaught:ClientRoutes.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DatabaseFactory.kt$DatabaseFactory$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:DeviceTokenRepository.kt$DeviceTokenRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EmailService.kt$ResendEmailService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:EventLogger.kt$EventLogger$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:ExchangeRateService.kt$ExchangeRateService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:GeoIpService.kt$GeoIpService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:LoyaltyEngineService.kt$LoyaltyEngineService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MapRepository.kt$MapRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:MapsRoutes.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PartnerRepository.kt$PartnerRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PreludeSmsService.kt$PreludeSmsService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:PreludeSmsService.kt$PreludeSmsService$t: Throwable</ID>
+    <ID>TooGenericExceptionCaught:RatingRepository.kt$RatingRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:RouteUtils.kt$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SupportChatService.kt$SupportChatService$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:SystemEventRepository.kt$SystemEventRepository$e: Exception</ID>
+    <ID>TooGenericExceptionCaught:TelegramAuthService.kt$TelegramAuthService$e: Exception</ID>
+    <ID>TooGenericExceptionThrown:ExchangeRateService.kt$ExchangeRateService$throw Exception("API Error: ${response.code}")</ID>
+    <ID>TooGenericExceptionThrown:ExchangeRateService.kt$ExchangeRateService$throw Exception("API returned error: ${json.optString("error-type")}")</ID>
+    <ID>TooManyFunctions:LoyaltyCardRepository.kt$LoyaltyCardRepository</ID>
+    <ID>TooManyFunctions:PartnerRepository.kt$PartnerRepository</ID>
+    <ID>TooManyFunctions:PartnerStaffRepository.kt$PartnerStaffRepository</ID>
+    <ID>TooManyFunctions:RouteUtils.kt$io.loyaltyloop.server.utils.RouteUtils.kt</ID>
+    <ID>TooManyFunctions:SupportChatService.kt$SupportChatService</ID>
+    <ID>TooManyFunctions:SystemStaffRepository.kt$SystemStaffRepository</ID>
+    <ID>TooManyFunctions:TelegramAuthService.kt$TelegramAuthService</ID>
+    <ID>TooManyFunctions:TradingPointRepository.kt$TradingPointRepository</ID>
+    <ID>TooManyFunctions:TransactionService.kt$TransactionService</ID>
+    <ID>TooManyFunctions:UserRepository.kt$UserRepository</ID>
+    <ID>TrailingWhitespace:AdminPlatformRoutes.kt$io.loyaltyloop.server.routes.AdminPlatformRoutes.kt</ID>
+    <ID>TrailingWhitespace:AdminRoutes.kt$io.loyaltyloop.server.routes.AdminRoutes.kt</ID>
+    <ID>TrailingWhitespace:AuthRoutes.kt$io.loyaltyloop.server.routes.AuthRoutes.kt</ID>
+    <ID>TrailingWhitespace:ClientRoutes.kt$io.loyaltyloop.server.routes.ClientRoutes.kt</ID>
+    <ID>TrailingWhitespace:ConfigRoutes.kt$io.loyaltyloop.server.routes.ConfigRoutes.kt</ID>
+    <ID>TrailingWhitespace:DeviceTokenRepository.kt$io.loyaltyloop.server.repository.DeviceTokenRepository.kt</ID>
+    <ID>TrailingWhitespace:EmailService.kt$io.loyaltyloop.server.service.email.EmailService.kt</ID>
+    <ID>TrailingWhitespace:LoyaltyCalculator.kt$io.loyaltyloop.server.service.LoyaltyCalculator.kt</ID>
+    <ID>TrailingWhitespace:PartnerRoutes.kt$io.loyaltyloop.server.routes.PartnerRoutes.kt</ID>
+    <ID>TrailingWhitespace:PartnerStaffRepository.kt$io.loyaltyloop.server.repository.PartnerStaffRepository.kt</ID>
+    <ID>TrailingWhitespace:PublicRoutes.kt$io.loyaltyloop.server.routes.PublicRoutes.kt</ID>
+    <ID>TrailingWhitespace:RatingRepository.kt$io.loyaltyloop.server.repository.RatingRepository.kt</ID>
+    <ID>TrailingWhitespace:RatingService.kt$io.loyaltyloop.server.service.RatingService.kt</ID>
+    <ID>TrailingWhitespace:RedisService.kt$io.loyaltyloop.server.service.RedisService.kt</ID>
+    <ID>TrailingWhitespace:TerminalRoutes.kt$io.loyaltyloop.server.routes.TerminalRoutes.kt</ID>
+    <ID>TrailingWhitespace:TransactionService.kt$io.loyaltyloop.server.service.TransactionService.kt</ID>
+    <ID>TrailingWhitespace:ValidationUtilsTest.kt$io.loyaltyloop.server.utils.ValidationUtilsTest.kt</ID>
+    <ID>UnusedParameter:MapsRoutes.kt$partnerRepository: PartnerRepository</ID>
+    <ID>UnusedParameter:SupportChatRepository.kt$SupportChatRepository$viewerIsPartner: Boolean</ID>
+    <ID>UnusedParameter:SystemStaffRepository.kt$SystemStaffRepository$role: UserRole</ID>
+    <ID>UnusedParameter:SystemStaffRepository.kt$SystemStaffRepository$userId: String</ID>
+    <ID>UnusedPrivateMember:AuthTest.kt$AuthTest$private fun generateExpiredToken(userId: String): String</ID>
+    <ID>UnusedPrivateProperty:AuthSessionRepository.kt$AuthSessionRepository$private val logger = LoggerFactory.getLogger(AuthSessionRepository::class.java)</ID>
+    <ID>UnusedPrivateProperty:PartnerConstraintsTest.kt$PartnerConstraintsTest$val owner = client.registerAndLogin()</ID>
+    <ID>UnusedPrivateProperty:RatingService.kt$RatingService$// Configuration private val MAX_RATINGS_FOR_AVERAGE = 10</ID>
+    <ID>UnusedPrivateProperty:RatingService.kt$RatingService$private val ANTI_ABUSE_RATING_COOLDOWN_HOURS = 12 // 1 rating per cashier per client half day</ID>
+    <ID>UnusedPrivateProperty:RatingService.kt$RatingService$private val RATING_RESET_VISITS = 20</ID>
+    <ID>UnusedPrivateProperty:SupportChatWebSocketHandler.kt$SupportChatWebSocketHandler$frame</ID>
+    <ID>UnusedPrivateProperty:ValidationUtilsTest.kt$ValidationUtilsTest$val shortPhone = "+7777123456"</ID>
+    <ID>UnusedPrivateProperty:ValidationUtilsTest.kt$ValidationUtilsTest$val shortPhone = "+99655512345"</ID>
+    <ID>UnusedPrivateProperty:ValidationUtilsTest.kt$ValidationUtilsTest$val unknownPhone = "+15551234567" // USA code not supported</ID>
+    <ID>UseCheckOrError:TestUtils.kt$throw IllegalStateException("Test setup failed: Login returned ${loginRes.status} body: ${loginRes.bodyAsText()}")</ID>
+    <ID>UseCheckOrError:TestUtils.kt$throw IllegalStateException("Test setup failed: Send Code returned ${sendRes.status}")</ID>
+    <ID>VariableNaming:ExchangeRateService.kt$ExchangeRateService$// 25 часов (чтобы пережить сбой крона, но удалять мусор) private val CACHE_TTL = 25 * 60 * 60</ID>
+    <ID>VariableNaming:PlatformRepository.kt$PlatformRepository$private val ApproverStaff = SystemStaffTable.alias("app_staff")</ID>
+    <ID>VariableNaming:PlatformRepository.kt$PlatformRepository$private val ApproverUser = UsersTable.alias("app_user")</ID>
+    <ID>VariableNaming:PlatformRepository.kt$PlatformRepository$private val RequesterStaff = SystemStaffTable.alias("req_staff")</ID>
+    <ID>VariableNaming:PlatformRepository.kt$PlatformRepository$private val RequesterUser = UsersTable.alias("req_user")</ID>
+    <ID>VariableNaming:RatingRepository.kt$RatingRepository$private val CashierUserTable = UsersTable.alias("cashier_users")</ID>
+    <ID>VariableNaming:RatingService.kt$RatingService$// Configuration private val MAX_RATINGS_FOR_AVERAGE = 10</ID>
+    <ID>VariableNaming:RatingService.kt$RatingService$private val ANTI_ABUSE_RATING_COOLDOWN_HOURS = 12 // 1 rating per cashier per client half day</ID>
+    <ID>VariableNaming:RatingService.kt$RatingService$private val RATING_RESET_VISITS = 20</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val BTN_APP = mapOf( "en" to "📱 Mobile App", "ru" to "📱 Мобильное приложение", "kk" to "📱 Мобильді қосымша", "ky" to "📱 Мобилдик тиркеме", "uz" to "📱 Mobil ilova", "be" to "📱 Мабільны дадатак" )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val BTN_SHARE = mapOf( "en" to "📱 Share Contact", "ru" to "📱 Отправить контакт", "kk" to "📱 Байланыспен бөлісу", "ky" to "📱 Байланыш бөлүшүү", "uz" to "📱 Kontakt yuborish", "be" to "📱 Адправіць кантакт" )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val BTN_WEB = mapOf( "en" to "🌐 Web Dashboard", "ru" to "🌐 Веб-панель", "kk" to "🌐 Веб-басқару", "ky" to "🌐 Веб-башкаруу", "uz" to "🌐 Veb-boshqaruv", "be" to "🌐 Вэб-панэль" )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val MSG_HELLO = mapOf( "en" to "Hello! To log in, please tap the button below to share your phone number.", "ru" to "Привет! Чтобы войти, нажмите кнопку ниже для отправки номера телефона.", "kk" to "Сәлем! Кіру үшін төмендегі түймені басып, телефон нөміріңізді жіберіңіз.", "ky" to "Салам! Кирүү үчүн төмөнкү баскычты басып, телефон номериңизди жөнөтүңүз.", "uz" to "Salom! Kirish uchun quyidagi tugmani bosing va telefon raqamingizni yuboring.", "be" to "Прывітанне! Каб увайсці, націсніце кнопку ніжэй для адпраўкі нумара тэлефона." )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val MSG_NO_SESSION = mapOf( "en" to "❌ No pending login session found. Scan the QR code again.", "ru" to "❌ Активная сессия не найдена. Отсканируйте QR-код заново.", "kk" to "❌ Белсенді сессия табылмады. QR-кодты қайта сканерлеңіз.", "ky" to "❌ Активдүү сессия табылган жок. QR-кодду кайра сканерлеңиз.", "uz" to "❌ Faol sessiya topilmadi. QR-kodni qayta skanerlang.", "be" to "❌ Актыўная сесія не знойдзена. Адскануйце QR-код нанова." )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val MSG_OWN_CONTACT = mapOf( "en" to "⚠️ Please share your own contact.", "ru" to "⚠️ Пожалуйста, поделитесь своим контактом.", "kk" to "⚠️ Өз байланысыңызбен бөлісіңіз.", "ky" to "⚠️ Өз байланышыңызды бөлүшүңүз.", "uz" to "⚠️ O'z kontaktingizni ulashing.", "be" to "⚠️ Калі ласка, падзяліцеся сваім кантактам." )</ID>
+    <ID>VariableNaming:TelegramAuthService.kt$TelegramAuthService$private val MSG_SUCCESS = mapOf( "en" to "✅ Login successful! Return to the app to continue.", "ru" to "✅ Вход выполнен! Вернитесь в приложение.", "kk" to "✅ Кіру сәтті! Қосымшаға оралыңыз.", "ky" to "✅ Кирүү ийгиликтүү! Тиркемеге кайтыңыз.", "uz" to "✅ Kirish muvaffaqiyatli! Ilovaga qayting.", "be" to "✅ Уваход выкананы! Вярніцеся ў дадатак." )</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.http.*</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.server.auth.*</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.server.request.*</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:AdminRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:AppRoutes.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:AppRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:AppRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.serialization.kotlinx.json.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.plugins.contentnegotiation.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.plugins.ratelimit.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.server.websocket.*</ID>
+    <ID>WildcardImport:Application.kt$import io.ktor.websocket.*</ID>
+    <ID>WildcardImport:Application.kt$import org.slf4j.event.*</ID>
+    <ID>WildcardImport:AuthRoutes.kt$import io.ktor.http.*</ID>
+    <ID>WildcardImport:AuthRoutes.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:AuthRoutes.kt$import io.ktor.server.request.*</ID>
+    <ID>WildcardImport:AuthRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:AuthRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:AuthSessionRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.http.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.server.auth.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.server.request.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:ClientRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:DatabaseFactory.kt$import io.ktor.server.config.*</ID>
+    <ID>WildcardImport:OtpService.kt$import io.ktor.server.config.*</ID>
+    <ID>WildcardImport:PartnerRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:PartnerRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:PartnerRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:PartnerStaffRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:PartnerStaffRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:PlatformRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:PlatformRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:PlatformRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:PreludeSmsService.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.http.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.server.plugins.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.server.request.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:PublicRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:RatingRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:RatingRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:RatingRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:RatingService.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:RedisService.kt$import io.ktor.server.config.*</ID>
+    <ID>WildcardImport:RepositoriesModule.kt$import io.loyaltyloop.server.repository.*</ID>
+    <ID>WildcardImport:ServiceModule.kt$import io.loyaltyloop.server.service.*</ID>
+    <ID>WildcardImport:SupportChatRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:SupportChatRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:SupportChatRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:SupportChatWebSocketHandler.kt$import io.ktor.server.application.*</ID>
+    <ID>WildcardImport:SupportChatWebSocketHandler.kt$import io.ktor.server.websocket.*</ID>
+    <ID>WildcardImport:SupportChatWebSocketHandler.kt$import io.ktor.websocket.*</ID>
+    <ID>WildcardImport:SystemEventRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:TelegramAuthService.kt$import kotlinx.coroutines.*</ID>
+    <ID>WildcardImport:TelegramAuthService.kt$import kotlinx.serialization.json.*</ID>
+    <ID>WildcardImport:TelegramAuthService.kt$import okhttp3.*</ID>
+    <ID>WildcardImport:TerminalRoutes.kt$import io.ktor.server.auth.*</ID>
+    <ID>WildcardImport:TerminalRoutes.kt$import io.ktor.server.request.*</ID>
+    <ID>WildcardImport:TerminalRoutes.kt$import io.ktor.server.response.*</ID>
+    <ID>WildcardImport:TerminalRoutes.kt$import io.ktor.server.routing.*</ID>
+    <ID>WildcardImport:TestUtils.kt$import io.ktor.client.*</ID>
+    <ID>WildcardImport:TestUtils.kt$import io.ktor.client.plugins.contentnegotiation.*</ID>
+    <ID>WildcardImport:TestUtils.kt$import io.ktor.serialization.kotlinx.json.*</ID>
+    <ID>WildcardImport:TestUtils.kt$import io.ktor.server.config.*</ID>
+    <ID>WildcardImport:TestUtils.kt$import io.ktor.server.testing.*</ID>
+    <ID>WildcardImport:TokenService.kt$import io.ktor.server.config.*</ID>
+    <ID>WildcardImport:TradingPointRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:TradingPointRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:TradingPointRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+    <ID>WildcardImport:UserRepository.kt$import io.loyaltyloop.server.database.tables.*</ID>
+    <ID>WildcardImport:UserRepository.kt$import io.loyaltyloop.shared.models.*</ID>
+    <ID>WildcardImport:UserRepository.kt$import org.jetbrains.exposed.sql.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

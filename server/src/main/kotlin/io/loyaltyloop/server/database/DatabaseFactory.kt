@@ -81,6 +81,7 @@ object DatabaseFactory {
         }
     }
 
+    @Suppress("SpreadOperator") // один вызов на старте, копия массива несущественна
     fun init(config: ApplicationConfig) {
         val driverClassName = config.property("storage.driverClassName").getString()
         val jdbcUrl = config.property("storage.jdbcUrl").getString()
@@ -127,6 +128,7 @@ object DatabaseFactory {
     }
 
     // 2. Точка входа для Тестов
+    @Suppress("SpreadOperator")
     fun connect(driver: String, url: String, user: String, pass: String) {
         val hikariConfig = config(driver = driver, url = url, user = user, pass = pass)
         val dataSource = HikariDataSource(hikariConfig)

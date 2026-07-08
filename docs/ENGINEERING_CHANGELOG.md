@@ -15,6 +15,15 @@
 
 ---
 
+## 2026-07-07 — Detekt baseline: разблокирован :server:build
+
+### Внедрено
+- В detekt-конфиг всех модулей добавлен `baseline = config/detekt/baseline-{module}.xml`: легаси-замечания (~400) замораживаются, новый код проверяется строго. Генерация: `./gradlew detektBaseline` (закоммитить полученные файлы).
+- Исправлено безопасно-механическое: 43 файла получили newline в конце (server/shared); `@Suppress("SpreadOperator")` в `DatabaseFactory` (вызов один раз на старте).
+- Разбор замороженного долга зафиксирован как TD-020 (приоритет — SwallowedException и Unused*).
+
+---
+
 ## 2026-07-07 — TD-004: Flyway-миграции вместо createMissingTablesAndColumns
 
 ### Внедрено
