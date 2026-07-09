@@ -35,6 +35,8 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 // TODO checked
+private const val HEALTHCHECK_INTERVAL_MS = 5L * 60 * 1000
+
 class TelegramAuthService(
     private val authSessionRepository: AuthSessionRepository,
     private val userRepository: UserRepository,
@@ -100,7 +102,7 @@ class TelegramAuthService(
                 } catch (e: Exception) {
                     logger.error("Telegram health-check failed: ${e.message}")
                 }
-                delay(5 * 60 * 1000L)
+                delay(HEALTHCHECK_INTERVAL_MS)
             }
         }
 

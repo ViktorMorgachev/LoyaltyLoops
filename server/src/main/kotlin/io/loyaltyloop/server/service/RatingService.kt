@@ -72,7 +72,11 @@ class RatingService(
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Client card not found")
 
         var isIgnored = false
-        if (currentCard.trustScore >= RISK_GREEN_THRESHOLD && currentCard.totalScore > 100 && dto.rating == 1 && !dto.tags.contains(ClientRatingTag.FRAUD)) {
+        val isAntiAbuseIgnored = currentCard.trustScore >= RISK_GREEN_THRESHOLD &&
+            currentCard.totalScore > 100 &&
+            dto.rating == 1 &&
+            !dto.tags.contains(ClientRatingTag.FRAUD)
+        if (isAntiAbuseIgnored) {
             isIgnored = true
             eventLogger.log(
                 type = SystemEventType.WARNING,

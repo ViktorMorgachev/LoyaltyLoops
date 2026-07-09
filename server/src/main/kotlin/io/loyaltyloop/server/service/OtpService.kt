@@ -5,6 +5,8 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 
 // TODO checked
+private const val OTP_UPPER_BOUND = 9999
+
 class OtpService(config: ApplicationConfig) {
 
     private val codeTtl = config.propertyOrNull("otp.ttl")?.getString()?.toLong() ?: 120_000L
@@ -22,7 +24,7 @@ class OtpService(config: ApplicationConfig) {
      */
     fun generateCode(phone: String): String {
         // Генерируем 4 случайные цифры (1000..9999)
-        val code = Random.nextInt(1000, 9999).toString()
+        val code = Random.nextInt(1000, OTP_UPPER_BOUND).toString()
 
         val expiresAt = System.currentTimeMillis() + codeTtl
         otpStorage[phone] = OtpEntry(code, expiresAt)

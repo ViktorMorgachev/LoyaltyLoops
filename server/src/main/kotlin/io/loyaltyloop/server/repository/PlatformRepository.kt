@@ -34,6 +34,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 // TODO checked
+private const val TRIAL_PERIOD_DAYS = 14L
+
 class PlatformRepository(val systemEventRepository: SystemEventRepository) {
 
     private val requesterStaff = SystemStaffTable.alias("req_staff")
@@ -254,7 +256,7 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
                     val isTrial = requestRow[PlatformRequestsTable.isTrial]
 
                     val endDate = if (isTrial) {
-                        effectiveStartDate.plusDays(14)
+                        effectiveStartDate.plusDays(TRIAL_PERIOD_DAYS)
                     } else {
                         val duration = requestRow[PlatformRequestsTable.duration]
                         calculateEndDate(effectiveStartDate, duration!!)

@@ -3,7 +3,6 @@
   <ManuallySuppressedIssues></ManuallySuppressedIssues>
   <CurrentIssues>
     <ID>ComplexCondition:GeoIpService.kt$GeoIpService$ip == "127.0.0.1" || ip == "0:0:0:0:0:0:0:1" || ip.startsWith("192.168.") || ip.startsWith("10.")</ID>
-    <ID>ComplexCondition:RatingService.kt$RatingService$currentCard.trustScore &gt;= 4.5 &amp;&amp; currentCard.totalScore &gt; 100 &amp;&amp; dto.rating == 1 &amp;&amp; !dto.tags.contains(ClientRatingTag.FRAUD)</ID>
     <ID>CyclomaticComplexMethod:AdminPlatformRoutes.kt$fun Route.adminPlatformRoutes( platformRepository: PlatformRepository, systemStaffRepository: SystemStaffRepository, accessControlService: AccessControlService, subscriptionRepository: SubscriptionRepository )</ID>
     <ID>CyclomaticComplexMethod:AdminRoutes.kt$fun Route.adminRoutes( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
     <ID>CyclomaticComplexMethod:Application.kt$fun Application.module()</ID>
@@ -33,35 +32,9 @@
     <ID>LongParameterList:TransactionService.kt$TransactionService$( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, settings: LoyaltySettingsDto, calc: TransactionCalculationDto, updatedAt: LocalDateTime )</ID>
     <ID>LongParameterList:TransactionService.kt$TransactionService$( cashierUserId: String, tradingPointId: String, cardId: String, purchaseAmount: Double, strategy: TransactionStrategy, estimatedCurrency: String, )</ID>
     <ID>LongParameterList:TransactionService.kt$TransactionService$( private val userRepository: UserRepository, private val partnerRepository: PartnerRepository, private val partnerStaffRepository: PartnerStaffRepository, private val tradingPointRepository: TradingPointRepository, private val realtimeService: CardRealtimeService, private val eventLogger: EventLogger, private val loyaltyCardRepository: LoyaltyCardRepository, private val exchangeRateService: ExchangeRateService, private val historyRepository: HistoryRepository )</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$15000</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$2000</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$350</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$42.8746</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$50</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$74.5698</ID>
-    <ID>MagicNumber:ConfigRoutes.kt$80</ID>
-    <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$10000</ID>
-    <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$3</ID>
-    <ID>MagicNumber:MapRepository.kt$MapRepository$1.1</ID>
-    <ID>MagicNumber:MapRepository.kt$MapRepository$60</ID>
-    <ID>MagicNumber:MapsRoutes.kt$15000</ID>
-    <ID>MagicNumber:MapsRoutes.kt$2000</ID>
-    <ID>MagicNumber:MapsRoutes.kt$5.0</ID>
-    <ID>MagicNumber:MapsRoutes.kt$50</ID>
-    <ID>MagicNumber:OtpService.kt$OtpService$9999</ID>
-    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$10</ID>
-    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$4</ID>
-    <ID>MagicNumber:PartnerRepository.kt$PartnerRepository$6</ID>
-    <ID>MagicNumber:PartnerRoutes.kt$50</ID>
-    <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$14</ID>
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$3</ID>
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$5</ID>
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$6</ID>
-    <ID>MagicNumber:SubscriptionRepository.kt$SubscriptionRepository$3</ID>
-    <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$24</ID>
-    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$5</ID>
-    <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$60</ID>
-    <ID>MagicNumber:TransactionService.kt$TransactionService$4</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 1, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Base, "Base"), threshold = 0.0, cashbackPercent = 1.0),</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 2, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Silver, "Silver"), threshold = 5_000.0, cashbackPercent = 7.0),</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 3, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Gold, "Gold"), threshold = 20_000.0, cashbackPercent = 9.0)</ID>
@@ -99,16 +72,7 @@
     <ID>TooGenericExceptionCaught:PreludeSmsService.kt$PreludeSmsService$e: Exception</ID>
     <ID>TooGenericExceptionCaught:PreludeSmsService.kt$PreludeSmsService$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:TelegramAuthService.kt$TelegramAuthService$e: Exception</ID>
-    <ID>TooManyFunctions:LoyaltyCardRepository.kt$LoyaltyCardRepository</ID>
-    <ID>TooManyFunctions:PartnerRepository.kt$PartnerRepository</ID>
-    <ID>TooManyFunctions:PartnerStaffRepository.kt$PartnerStaffRepository</ID>
     <ID>TooManyFunctions:RouteUtils.kt$io.loyaltyloop.server.utils.RouteUtils.kt</ID>
-    <ID>TooManyFunctions:SupportChatService.kt$SupportChatService</ID>
-    <ID>TooManyFunctions:SystemStaffRepository.kt$SystemStaffRepository</ID>
-    <ID>TooManyFunctions:TelegramAuthService.kt$TelegramAuthService</ID>
-    <ID>TooManyFunctions:TradingPointRepository.kt$TradingPointRepository</ID>
-    <ID>TooManyFunctions:TransactionService.kt$TransactionService</ID>
-    <ID>TooManyFunctions:UserRepository.kt$UserRepository</ID>
     <ID>UnusedPrivateMember:AuthTest.kt$AuthTest$private fun generateExpiredToken(userId: String): String</ID>
     <ID>UnusedPrivateProperty:Application.kt$frame</ID>
     <ID>UnusedPrivateProperty:Application.kt$val emailTemplatesService by inject&lt;EmailTemplateService&gt;()</ID>

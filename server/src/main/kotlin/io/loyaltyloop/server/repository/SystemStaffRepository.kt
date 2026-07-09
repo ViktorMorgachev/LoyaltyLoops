@@ -22,6 +22,8 @@ import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 // TODO checked
+private const val INVITE_EXPIRY_HOURS = 24L
+
 class SystemStaffRepository {
 
     // ==========================================
@@ -156,7 +158,7 @@ class SystemStaffRepository {
 
         // Устанавливаем срок жизни (например, 24 часа)
         val now = nowUtc()
-        val expirationDate = now.plusHours(24)
+        val expirationDate = now.plusHours(INVITE_EXPIRY_HOURS)
 
         PlatformInvitesTable.insert {
             it[code] = inviteCode

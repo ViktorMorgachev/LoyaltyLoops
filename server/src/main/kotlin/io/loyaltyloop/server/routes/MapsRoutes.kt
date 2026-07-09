@@ -26,6 +26,12 @@ import org.slf4j.LoggerFactory
 private val logger = LoggerFactory.getLogger("MapsRoutes")
 
 // TODO checked
+private const val MAP_MIN_RADIUS_M = 50
+private const val MAP_DEFAULT_RADIUS_M = 2000
+private const val MAP_MAX_RADIUS_M = 15000
+private const val DEFAULT_SEARCH_LIMIT = 50
+private const val MAX_RATING = 5.0
+
 fun Route.mapsRoutes(
     applicationConfig: ApplicationConfig,
     userRepository: UserRepository,
@@ -33,9 +39,9 @@ fun Route.mapsRoutes(
     mapRepository: MapRepository,
     accessControlService: AccessControlService,
 ) {
-    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", 50)
-    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", 2000)
-    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", 15000)
+    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", MAP_MIN_RADIUS_M)
+    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", MAP_DEFAULT_RADIUS_M)
+    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", MAP_MAX_RADIUS_M)
 
     authenticate("auth-jwt") {
         route("/map") {
@@ -76,12 +82,12 @@ fun Route.mapsRoutes(
                 val radius = (requestedRadius ?: mapDefaultRadius).coerceIn(mapMinRadius, mapMaxRadius)
 
                 val requestedLimit = queryParameters["limit"]?.toIntOrNull()
-                val limit = (requestedLimit ?: 50).coerceIn(1, 100)
+                val limit = (requestedLimit ?: DEFAULT_SEARCH_LIMIT).coerceIn(1, 100)
 
                 val query = queryParameters["query"]?.trim()?.takeIf { it.isNotEmpty() }
                 val openNow = queryParameters["openNow"]?.toBoolean() ?: false
                 val includeInactive = queryParameters["includeInactive"]?.toBoolean() ?: false
-                val minRating = queryParameters["minRating"]?.toDoubleOrNull()?.coerceIn(0.0, 5.0)
+                val minRating = queryParameters["minRating"]?.toDoubleOrNull()?.coerceIn(0.0, MAX_RATING)
 
                 val typeParams = queryParameters.getAll("type")
                     ?.flatMap { it.split(",", ";") }

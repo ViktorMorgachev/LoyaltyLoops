@@ -55,6 +55,8 @@ private const val PIN_FREEZE_HOURS = 24L
 private const val PIN_RESET_TTL_HOURS = 12L
 
 // TODO Checked
+private const val DEFAULT_PAGE_LIMIT = 50
+
 fun Route.partnerRoutes(
     userRepository: UserRepository,
     partnerRepository: PartnerRepository,
@@ -117,7 +119,7 @@ fun Route.partnerRoutes(
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 accessControlService.requirePartnerAccess(userId,workspaceId, true)
 
-                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: DEFAULT_PAGE_LIMIT
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
 
                 val list = ratingRepository.getServiceReviews(workspaceId, limit, offset)
@@ -129,7 +131,7 @@ fun Route.partnerRoutes(
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 accessControlService.requirePartnerAccess(userId,workspaceId, true)
 
-                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
+                val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: DEFAULT_PAGE_LIMIT
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
 
                 val list = ratingRepository.getClientRatings(workspaceId, limit, offset)

@@ -35,6 +35,8 @@ import java.time.LocalDateTime
 import kotlin.math.abs
 
 // TODO Checked
+private const val QR_PARTS_COUNT = 4
+
 class TransactionService(
     private val userRepository: UserRepository,
     private val partnerRepository: PartnerRepository,
@@ -627,7 +629,7 @@ class TransactionService(
 
     private fun parseQrCode(qrContent: String): QrData {
         val parts = qrContent.split(":")
-        if (parts.size != 4 || parts[0] != "loyalty_v1") {
+        if (parts.size != QR_PARTS_COUNT || parts[0] != "loyalty_v1") {
             throw LoyaltyException(AppErrorCode.INVALID_QR_SIGNATURE, "Invalid QR code format")
         }
         return QrData(
