@@ -6,7 +6,7 @@
     <ID>ComplexCondition:RatingService.kt$RatingService$currentCard.trustScore &gt;= 4.5 &amp;&amp; currentCard.totalScore &gt; 100 &amp;&amp; dto.rating == 1 &amp;&amp; !dto.tags.contains(ClientRatingTag.FRAUD)</ID>
     <ID>CyclomaticComplexMethod:AdminPlatformRoutes.kt$fun Route.adminPlatformRoutes( platformRepository: PlatformRepository, systemStaffRepository: SystemStaffRepository, accessControlService: AccessControlService, subscriptionRepository: SubscriptionRepository )</ID>
     <ID>CyclomaticComplexMethod:AdminRoutes.kt$fun Route.adminRoutes( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
-    <ID>CyclomaticComplexMethod:Application.kt$@Suppress("unused") fun Application.module()</ID>
+    <ID>CyclomaticComplexMethod:Application.kt$fun Application.module()</ID>
     <ID>CyclomaticComplexMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
     <ID>CyclomaticComplexMethod:ClientRoutes.kt$@Suppress("ThrowsCount") fun Route.clientRoutes( userRepository: UserRepository, deviceTokenRepository: DeviceTokenRepository, ratingService: RatingService, loyaltyCardRepository: LoyaltyCardRepository, accessControlService: AccessControlService, )</ID>
     <ID>CyclomaticComplexMethod:EmailTemplate.kt$EmailTemplateService$fun buildBody(template: EmailTemplate, lang: String?): String</ID>
@@ -20,7 +20,7 @@
     <ID>CyclomaticComplexMethod:TradingPointSearchCriteria.kt$fun TradingPointSearchCriteria.matches(point: TradingPointDto): Boolean</ID>
     <ID>CyclomaticComplexMethod:TransactionService.kt$TransactionService$private suspend fun processMoneyTransaction( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, calc: TransactionCalculationDto, updatedAt: LocalDateTime ): Pair&lt;TransactionResult, CardRealtimePayload&gt;</ID>
     <ID>InstanceOfCheckForException:ExchangeRateService.kt$ExchangeRateService$e is kotlin.coroutines.cancellation.CancellationException</ID>
-    <ID>LongMethod:Application.kt$@Suppress("unused") fun Application.module()</ID>
+    <ID>LongMethod:Application.kt$fun Application.module()</ID>
     <ID>LongMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
     <ID>LongMethod:PartnerRoutes.kt$fun Route.partnerRoutes( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
     <ID>LongParameterList:AdminRoutes.kt$( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
@@ -33,16 +33,6 @@
     <ID>LongParameterList:TransactionService.kt$TransactionService$( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, settings: LoyaltySettingsDto, calc: TransactionCalculationDto, updatedAt: LocalDateTime )</ID>
     <ID>LongParameterList:TransactionService.kt$TransactionService$( cashierUserId: String, tradingPointId: String, cardId: String, purchaseAmount: Double, strategy: TransactionStrategy, estimatedCurrency: String, )</ID>
     <ID>LongParameterList:TransactionService.kt$TransactionService$( private val userRepository: UserRepository, private val partnerRepository: PartnerRepository, private val partnerStaffRepository: PartnerStaffRepository, private val tradingPointRepository: TradingPointRepository, private val realtimeService: CardRealtimeService, private val eventLogger: EventLogger, private val loyaltyCardRepository: LoyaltyCardRepository, private val exchangeRateService: ExchangeRateService, private val historyRepository: HistoryRepository )</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$180L</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$24</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$29</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$3600</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$365L</ID>
-    <ID>MagicNumber:AnalyticsService.kt$AnalyticsService$6</ID>
-    <ID>MagicNumber:Application.kt$10</ID>
-    <ID>MagicNumber:Application.kt$30</ID>
-    <ID>MagicNumber:Application.kt$60</ID>
-    <ID>MagicNumber:Application.kt$60_000L</ID>
     <ID>MagicNumber:ConfigRoutes.kt$15000</ID>
     <ID>MagicNumber:ConfigRoutes.kt$2000</ID>
     <ID>MagicNumber:ConfigRoutes.kt$350</ID>
@@ -50,13 +40,6 @@
     <ID>MagicNumber:ConfigRoutes.kt$50</ID>
     <ID>MagicNumber:ConfigRoutes.kt$74.5698</ID>
     <ID>MagicNumber:ConfigRoutes.kt$80</ID>
-    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$10</ID>
-    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$120_000</ID>
-    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$300_000</ID>
-    <ID>MagicNumber:DatabaseFactory.kt$DatabaseFactory$30_000</ID>
-    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$3</ID>
-    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$4</ID>
-    <ID>MagicNumber:ExchangeRateService.kt$ExchangeRateService$60</ID>
     <ID>MagicNumber:LoyaltyCardRepository.kt$LoyaltyCardRepository$4.0</ID>
     <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$10000</ID>
     <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$3</ID>
@@ -81,16 +64,8 @@
     <ID>MagicNumber:RatingService.kt$RatingService$3.5</ID>
     <ID>MagicNumber:RatingService.kt$RatingService$4.5</ID>
     <ID>MagicNumber:RatingService.kt$RatingService$5.0</ID>
-    <ID>MagicNumber:RedisService.kt$RedisService$128</ID>
-    <ID>MagicNumber:RedisService.kt$RedisService$2_000L</ID>
-    <ID>MagicNumber:RedisService.kt$RedisService$30_000L</ID>
-    <ID>MagicNumber:RedisService.kt$RedisService$32</ID>
-    <ID>MagicNumber:RedisService.kt$RedisService$60_000L</ID>
     <ID>MagicNumber:RowMappers.kt$3.5</ID>
     <ID>MagicNumber:RowMappers.kt$4.5</ID>
-    <ID>MagicNumber:ServiceModule.kt$3</ID>
-    <ID>MagicNumber:ServiceModule.kt$3_600_000L</ID>
-    <ID>MagicNumber:ServiceModule.kt$5</ID>
     <ID>MagicNumber:SubscriptionRepository.kt$SubscriptionRepository$3</ID>
     <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$24</ID>
     <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$5</ID>
@@ -144,6 +119,8 @@
     <ID>TooManyFunctions:TransactionService.kt$TransactionService</ID>
     <ID>TooManyFunctions:UserRepository.kt$UserRepository</ID>
     <ID>UnusedPrivateMember:AuthTest.kt$AuthTest$private fun generateExpiredToken(userId: String): String</ID>
+    <ID>UnusedPrivateProperty:Application.kt$frame</ID>
+    <ID>UnusedPrivateProperty:Application.kt$val emailTemplatesService by inject&lt;EmailTemplateService&gt;()</ID>
     <ID>UnusedPrivateProperty:PartnerConstraintsTest.kt$PartnerConstraintsTest$val owner = client.registerAndLogin()</ID>
   </CurrentIssues>
 </SmellBaseline>

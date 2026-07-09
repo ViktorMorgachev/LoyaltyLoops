@@ -1,6 +1,7 @@
 build:
   maxIssues: 0
   excludeCorrectable: false
+  # weights влияют на счётчик только при maxIssues > 0; при 0 любой новый дефект и так валит сборку
   weights:
     complexity: 2
     LongParameterList: 1
@@ -50,7 +51,10 @@ style:
 complexity:
   TooManyFunctions:
     active: true
+    # Дефолт для классов — 11; для backend route/service-файлов этого мало
+    thresholdInClasses: 20
     thresholdInObjects: 20
+    thresholdInEnums: 20
   LongMethod:
     active: true
     threshold: 120
