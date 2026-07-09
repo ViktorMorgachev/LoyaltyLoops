@@ -383,7 +383,13 @@ fun Route.partnerRoutes(
                     return@delete
                 }
 
-                partnerStaffRepository.removeStaffMember(requesterUserId = userId,  partnerId = workspaceId, targetUserId = cashierId, targetPointId = pointId, targetRole = UserRole.CASHIER)
+                partnerStaffRepository.removeStaffMember(
+                    requesterUserId = userId,
+                    partnerId = workspaceId,
+                    targetUserId = cashierId,
+                    targetPointId = pointId,
+                    targetRole = UserRole.CASHIER
+                )
                 deviceTokenRepository.deleteToken(userId, DevicePlatform.ANDROID, UserRole.CASHIER, pointId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }

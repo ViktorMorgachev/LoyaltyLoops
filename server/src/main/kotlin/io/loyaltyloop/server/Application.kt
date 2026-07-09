@@ -282,7 +282,9 @@ fun Application.module() {
             val path = call.request.uri
             val dateTime = java.time.Instant.now().toString()
             val duration = call.processingTimeMillis()
-            "Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
+            "Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | " +
+                "UA: $userAgent | TZ: $timeZone | " +
+                "Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
         }
     }
 

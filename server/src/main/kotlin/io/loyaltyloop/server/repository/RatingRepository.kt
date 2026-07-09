@@ -82,7 +82,8 @@ class RatingRepository {
 
     private fun updateTradingPointRating(pointUuid: UUID, newVote: Int) {
         TradingPointsTable.update({ TradingPointsTable.id eq pointUuid }) {
-            val totalScore = (rating.castTo<Double>(DoubleColumnType()) * ratingCount.castTo<Double>(DoubleColumnType())) + newVote.toDouble()
+            val totalScore =
+                (rating.castTo<Double>(DoubleColumnType()) * ratingCount.castTo<Double>(DoubleColumnType())) + newVote.toDouble()
             val newCount = ratingCount + 1
 
             it[rating] = totalScore / newCount.castTo<Double>(DoubleColumnType())

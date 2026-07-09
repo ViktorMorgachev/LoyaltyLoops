@@ -108,7 +108,8 @@ fun Route.adminPlatformRoutes(
             post("/invite") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
 
-                val targetRoleStr = call.request.queryParameters["role"] ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")
+                val targetRoleStr = call.request.queryParameters["role"]
+                    ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")
                 val targetRole = UserRole.valueOf(targetRoleStr)
 
                 val code = systemStaffRepository.generateInvite(targetRole, userId)

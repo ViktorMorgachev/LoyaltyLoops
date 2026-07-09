@@ -149,7 +149,10 @@ class DeviceTokenRepository {
             baseCondition and contextCondition
         }
     }
-    suspend fun deleteTokenExact(token: String) = newSuspendedTransaction(Dispatchers.IO, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED) {
+    suspend fun deleteTokenExact(token: String) = newSuspendedTransaction(
+        Dispatchers.IO,
+        transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
+    ) {
         DeviceTokensTable.deleteWhere { DeviceTokensTable.token eq token }
     }
 

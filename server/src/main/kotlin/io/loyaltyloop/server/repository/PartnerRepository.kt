@@ -245,7 +245,9 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
 
         request.tiers?.let { newTiers ->
             newTiers.forEach { tier ->
-                LoyaltyTiersTable.update({ (LoyaltyTiersTable.partner eq partnerUuid) and (LoyaltyTiersTable.levelIndex eq tier.levelIndex) }) {
+                LoyaltyTiersTable.update({
+                    (LoyaltyTiersTable.partner eq partnerUuid) and (LoyaltyTiersTable.levelIndex eq tier.levelIndex)
+                }) {
                     it[threshold] = tier.threshold.toBigDecimal()
                     it[cashbackPercent] = tier.cashbackPercent.toBigDecimal()
                 }

@@ -96,29 +96,10 @@
     <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$5</ID>
     <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$60</ID>
     <ID>MagicNumber:TransactionService.kt$TransactionService$4</ID>
-    <ID>MaxLineLength:AdminPlatformRoutes.kt$val targetRoleStr = call.request.queryParameters["role"] ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")</ID>
-    <ID>MaxLineLength:Application.kt$"Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"</ID>
-    <ID>MaxLineLength:AuthRoutes.kt$val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")</ID>
-    <ID>MaxLineLength:DeviceTokenRepository.kt$DeviceTokenRepository$suspend</ID>
-    <ID>MaxLineLength:EmailService.kt$ResendEmailService$eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;h3 style='color:#d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px;'&gt;🚨 CRITICAL (${data.critical.size})&lt;/h3&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;h3 style='color:#f57c00; border-bottom: 2px solid #f57c00; padding-bottom: 5px;'&gt;⚠️ WARNING (${data.warning.size})&lt;/h3&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;${item.managerEmail ?: "&lt;span style='color:#ccc'&gt;-&lt;/span&gt;"}&lt;/td&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;${item.partner}&lt;br&gt;&lt;span style='color:#777; font-size:12px;'&gt;${item.point}&lt;/span&gt;&lt;/td&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;td style='padding:8px; border-bottom:1px solid #eee;'&gt;&lt;b&gt;${item.partner}&lt;/b&gt;&lt;br&gt;&lt;span style='color:#777; font-size:12px;'&gt;${item.point}&lt;/span&gt;&lt;/td&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;tr style='background-color:#ffebee; text-align:left;'&gt;&lt;th style='padding:8px;'&gt;Partner / Point&lt;/th&gt;&lt;th style='padding:8px;'&gt;Expires&lt;/th&gt;&lt;th style='padding:8px;'&gt;Manager&lt;/th&gt;&lt;/tr&gt;")</ID>
-    <ID>MaxLineLength:EmailTemplate.kt$EmailTemplateService$sb.append("&lt;tr style='background-color:#fff3e0; text-align:left;'&gt;&lt;th style='padding:8px;'&gt;Partner / Point&lt;/th&gt;&lt;th style='padding:8px;'&gt;Expires&lt;/th&gt;&lt;th style='padding:8px;'&gt;Manager&lt;/th&gt;&lt;/tr&gt;")</ID>
-    <ID>MaxLineLength:ErrorHandler.kt$AppErrorCode.OTP_ATTEMPTS_EXCEEDED , AppErrorCode.RATE_LIMIT_EXCEEDEG, AppErrorCode.TOO_MANY_REQUESTS -&gt; HttpStatusCode.TooManyRequests</ID>
-    <ID>MaxLineLength:PartnerRepository.kt$PartnerRepository$LoyaltyTiersTable</ID>
-    <ID>MaxLineLength:PartnerRoutes.kt$partnerStaffRepository.removeStaffMember(requesterUserId = userId, partnerId = workspaceId, targetUserId = cashierId, targetPointId = pointId, targetRole = UserRole.CASHIER)</ID>
-    <ID>MaxLineLength:PlatformRepository.kt$PlatformRepository$if (partnerStatus == PartnerStatus.PENDING) throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")</ID>
-    <ID>MaxLineLength:RatingRepository.kt$RatingRepository$val totalScore = (rating.castTo&lt;Double&gt;(DoubleColumnType()) * ratingCount.castTo&lt;Double&gt;(DoubleColumnType())) + newVote.toDouble()</ID>
-    <ID>MaxLineLength:SystemStaffRepository.kt$SystemStaffRepository$?.</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 1, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Base, "Base"), threshold = 0.0, cashbackPercent = 1.0),</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 2, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Silver, "Silver"), threshold = 5_000.0, cashbackPercent = 7.0),</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// LoyaltyTierDto(levelIndex = 3, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Gold, "Gold"), threshold = 20_000.0, cashbackPercent = 9.0)</ID>
     <ID>MaxLineLength:TieredLoyaltyTest.kt$TieredLoyaltyTest$// assertEquals(HttpStatusCode.Created.description, client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point", currency = Currency.KGS, TradingPointType.SERVICE))</ID>
-    <ID>MaxLineLength:TransactionService.kt$TransactionService$// Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType, либо передавать "10 (~850 сом)" как один аргумент.</ID>
     <ID>NestedBlockDepth:PreludeSmsService.kt$PreludeSmsService$override suspend fun sendSms(phone: String, text: String): Boolean</ID>
     <ID>ReturnCount:AccessControlService.kt$AccessControlService$suspend fun requirePartnerAccess( userId: String, partnerId: String, allowManager: Boolean = false )</ID>
     <ID>ReturnCount:ExchangeRateService.kt$ExchangeRateService$suspend fun getRate(fromCurrency: String, toCurrency: String): Double</ID>

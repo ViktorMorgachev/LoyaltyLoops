@@ -88,7 +88,10 @@ fun Route.authRoutes(
                 application.log.debug("Session status: ${session.status}, userId=${session.userId}")
 
                 if (session.status == "CONFIRMED") {
-                    val userId = session.userId ?: return@get call.respond(HttpStatusCode.InternalServerError, "Session confirmed but userID is missing")
+                    val userId = session.userId ?: return@get call.respond(
+                        HttpStatusCode.InternalServerError,
+                        "Session confirmed but userID is missing"
+                    )
 
                     if (session.phone == null) {
                         call.respond(HttpStatusCode.InternalServerError, "Session confirmed but phone number is missing")

@@ -86,7 +86,10 @@ class ResendEmailService(
                 } else eventLogger.log(type = SystemEventType.EMAIL_SEND_SUCCESS, payload = "📧 Email sent to  $to via Resend")
 
             } else {
-                eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")
+                eventLogger.log(
+                    type = SystemEventType.EMAIL_SEND_ERROR,
+                    payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}"
+                )
             }
             response.close()
         } catch (e: Exception) {

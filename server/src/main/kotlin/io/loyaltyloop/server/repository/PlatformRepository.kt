@@ -226,7 +226,9 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
                 .single()[PartnersTable.status]
 
             if (type == PlatformRequestType.ACTIVATE_POINT) {
-                if (partnerStatus == PartnerStatus.PENDING) throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")
+                if (partnerStatus == PartnerStatus.PENDING) {
+                    throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")
+                }
                 if (partnerStatus == PartnerStatus.BLOCKED) throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED, "Partner is blocked")
             }
 

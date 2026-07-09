@@ -224,17 +224,21 @@ class EmailTemplateService {
 
         // 1. CRITICAL SECTION (Red)
         if (data.critical.isNotEmpty()) {
-            sb.append("<h3 style='color:#d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px;'>🚨 CRITICAL (${data.critical.size})</h3>")
+            sb.append("<h3 style='color:#d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 5px;'>")
+            sb.append("🚨 CRITICAL (${data.critical.size})</h3>")
             sb.append("<p style='color:#666; font-size: 12px;'>Expiring in ≤ 24 hours. Automated SMS sent to owners.</p>")
 
             sb.append("<table style='width:100%; border-collapse: collapse; margin-bottom: 20px;'>")
-            sb.append("<tr style='background-color:#ffebee; text-align:left;'><th style='padding:8px;'>Partner / Point</th><th style='padding:8px;'>Expires</th><th style='padding:8px;'>Manager</th></tr>")
+            sb.append("<tr style='background-color:#ffebee; text-align:left;'><th style='padding:8px;'>Partner / Point</th>")
+            sb.append("<th style='padding:8px;'>Expires</th><th style='padding:8px;'>Manager</th></tr>")
 
             data.critical.forEach { item ->
                 sb.append("<tr>")
-                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'><b>${item.partner}</b><br><span style='color:#777; font-size:12px;'>${item.point}</span></td>")
+                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'><b>${item.partner}</b><br>")
+                sb.append("<span style='color:#777; font-size:12px;'>${item.point}</span></td>")
                 sb.append("<td style='padding:8px; border-bottom:1px solid #eee; color:#d32f2f;'><b>${item.date}</b></td>")
-                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>${item.managerEmail ?: "<span style='color:#ccc'>-</span>"}</td>")
+                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>")
+                sb.append("${item.managerEmail ?: "<span style='color:#ccc'>-</span>"}</td>")
                 sb.append("</tr>")
             }
             sb.append("</table>")
@@ -242,15 +246,18 @@ class EmailTemplateService {
 
         // 2. WARNING SECTION (Orange)
         if (data.warning.isNotEmpty()) {
-            sb.append("<h3 style='color:#f57c00; border-bottom: 2px solid #f57c00; padding-bottom: 5px;'>⚠️ WARNING (${data.warning.size})</h3>")
+            sb.append("<h3 style='color:#f57c00; border-bottom: 2px solid #f57c00; padding-bottom: 5px;'>")
+            sb.append("⚠️ WARNING (${data.warning.size})</h3>")
             sb.append("<p style='color:#666; font-size: 12px;'>Expiring in 3 days. Email notifications sent.</p>")
 
             sb.append("<table style='width:100%; border-collapse: collapse;'>")
-            sb.append("<tr style='background-color:#fff3e0; text-align:left;'><th style='padding:8px;'>Partner / Point</th><th style='padding:8px;'>Expires</th><th style='padding:8px;'>Manager</th></tr>")
+            sb.append("<tr style='background-color:#fff3e0; text-align:left;'><th style='padding:8px;'>Partner / Point</th>")
+            sb.append("<th style='padding:8px;'>Expires</th><th style='padding:8px;'>Manager</th></tr>")
 
             data.warning.forEach { item ->
                 sb.append("<tr>")
-                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>${item.partner}<br><span style='color:#777; font-size:12px;'>${item.point}</span></td>")
+                sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>${item.partner}<br>")
+                sb.append("<span style='color:#777; font-size:12px;'>${item.point}</span></td>")
                 sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>${item.date}</td>")
                 sb.append("<td style='padding:8px; border-bottom:1px solid #eee;'>${item.managerEmail ?: "-"}</td>")
                 sb.append("</tr>")
