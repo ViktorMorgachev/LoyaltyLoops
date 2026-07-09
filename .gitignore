@@ -7,6 +7,8 @@ Thumbs.db
 .cursor/
 *.iml
 *.iws
+.claude
+claude-setup/
 *.ipr
 *.watch
 .vscode/
