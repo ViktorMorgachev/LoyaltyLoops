@@ -2,7 +2,6 @@ package io.loyaltyloop.server.utils
 
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.application.call
 import io.ktor.server.request.uri
 import io.ktor.server.response.respond
 import io.loyaltyloop.shared.models.ApiMessage

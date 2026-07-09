@@ -3,16 +3,15 @@ package io.loyaltyloop.server.repository
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.AuthSessionsTable
 import io.loyaltyloop.server.models.AuthSessionStatus
-import io.loyaltyloop.server.service.email.ConsoleEmailService
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AuthSession
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.sql.Connection
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.time.temporal.ChronoUnit
 
 // TODO checked

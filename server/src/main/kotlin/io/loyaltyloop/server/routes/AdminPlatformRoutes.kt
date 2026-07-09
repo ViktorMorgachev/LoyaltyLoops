@@ -10,11 +10,9 @@ import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.repository.PlatformRepository
 import io.loyaltyloop.server.repository.SubscriptionRepository
 import io.loyaltyloop.server.repository.SystemStaffRepository
-import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.getUserIdOrRespond
@@ -24,8 +22,6 @@ import io.loyaltyloop.shared.models.JoinPlatformAdminRequest
 import io.loyaltyloop.shared.models.PlatformRequestStatus
 import io.loyaltyloop.shared.models.RejectRequestDto
 import io.loyaltyloop.shared.models.UserRole
-import io.loyaltyloop.server.service.email.EmailService // Added
-import org.jetbrains.exposed.sql.select
 
 
 // TODO checked

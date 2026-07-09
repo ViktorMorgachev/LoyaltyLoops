@@ -5,7 +5,6 @@ import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.service.ExchangeRateService
 import io.loyaltyloop.server.utils.LoyaltyException
-import io.loyaltyloop.server.utils.initializeLoyaltySettings
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toLoyaltyCardDto
 import io.loyaltyloop.server.utils.toUUID

@@ -9,19 +9,30 @@ import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
-import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
-import okhttp3.*
+import io.loyaltyloop.shared.models.UserDto
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
-import io.loyaltyloop.shared.models.UserDto
-import org.jetbrains.exposed.sql.SortOrder
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 // TODO checked
 class TelegramAuthService(

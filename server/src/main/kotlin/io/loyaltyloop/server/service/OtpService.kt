@@ -1,6 +1,6 @@
 package io.loyaltyloop.server.service
 
-import io.ktor.server.config.*
+import io.ktor.server.config.ApplicationConfig
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.random.Random
 

@@ -1,7 +1,6 @@
 package io.loyaltyloop.server.utils
 
 import kotlin.test.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class ValidationUtilsTest {

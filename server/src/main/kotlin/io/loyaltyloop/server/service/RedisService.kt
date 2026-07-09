@@ -1,6 +1,6 @@
 package io.loyaltyloop.server.service
 
-import io.ktor.server.config.*
+import io.ktor.server.config.ApplicationConfig
 import io.loyaltyloop.server.utils.bool
 import io.loyaltyloop.server.utils.int
 import io.loyaltyloop.server.utils.long

@@ -1,12 +1,11 @@
 package io.loyaltyloop.server
 
-import io.ktor.client.*
+import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
-import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
@@ -14,28 +13,16 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.config.*
-import io.ktor.server.testing.*
-import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.server.repository.PlatformRepository
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.config.MapApplicationConfig
+import io.ktor.server.testing.ApplicationTestBuilder
 import io.loyaltyloop.shared.models.AuthResponse
-import io.loyaltyloop.shared.models.ChangePointStatusRequest
-import io.loyaltyloop.shared.models.CreateTradingPointRequest
-import io.loyaltyloop.shared.models.Currency
-import io.loyaltyloop.shared.models.JoinTradingPointRequest
 import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.ProcessTransactionRequest
 import io.loyaltyloop.shared.models.SendCodeRequest
-import io.loyaltyloop.shared.models.TradingPointType
-import io.loyaltyloop.shared.models.TransactionResult
-import io.loyaltyloop.shared.models.TransactionStrategy
-import io.loyaltyloop.shared.models.UserRole
 import io.loyaltyloop.shared.models.VerifyCodeRequest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlin.test.assertEquals
 
 /**
  * Общая конфигурация для всех тестов (База H2 + Настройки JWT)

@@ -3,11 +3,6 @@ package io.loyaltyloop.server.models
 import io.loyaltyloop.server.utils.haversineMeters
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
-import kotlin.math.atan2
-import kotlin.math.cos
-import kotlin.math.sin
-import kotlin.math.sqrt
-import kotlin.times
 
 data class TradingPointSearchCriteria(
     val offset: Long = 0,

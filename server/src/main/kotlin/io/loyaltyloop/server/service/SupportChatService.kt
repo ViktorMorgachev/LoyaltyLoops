@@ -1,21 +1,19 @@
 package io.loyaltyloop.server.service
 
-import io.loyaltyloop.server.repository.SupportChatRepository
-import io.loyaltyloop.shared.models.SupportChatEventDto
-import io.loyaltyloop.shared.models.SupportChatEventType
-import io.loyaltyloop.shared.models.SupportMessageDto
-import io.loyaltyloop.shared.models.SupportThreadDto
-import io.loyaltyloop.shared.models.SupportThreadResponse
-import io.loyaltyloop.shared.models.UserRole
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.Frame
-import io.ktor.websocket.send
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.SupportChatRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.SupportChatEventDto
+import io.loyaltyloop.shared.models.SupportChatEventType
+import io.loyaltyloop.shared.models.SupportMessageDto
+import io.loyaltyloop.shared.models.SupportThreadDto
+import io.loyaltyloop.shared.models.SupportThreadResponse
 import kotlinx.serialization.encodeToString
 import java.util.concurrent.ConcurrentHashMap
 

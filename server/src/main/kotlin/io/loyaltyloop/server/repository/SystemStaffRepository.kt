@@ -20,7 +20,6 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
-import kotlin.collections.get
 
 // TODO checked
 class SystemStaffRepository {

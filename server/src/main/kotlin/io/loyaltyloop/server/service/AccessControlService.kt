@@ -6,13 +6,11 @@ import io.loyaltyloop.server.repository.PartnerStaffRepository
 import io.loyaltyloop.server.repository.SystemStaffRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
-import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.UserRole
 import org.jetbrains.exposed.sql.select
 import java.util.UUID
-import kotlin.uuid.Uuid
 
 // TODO checked
 class AccessControlService(

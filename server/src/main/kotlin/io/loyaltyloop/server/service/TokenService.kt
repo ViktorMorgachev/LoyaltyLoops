@@ -2,9 +2,10 @@ package io.loyaltyloop.server.service
 
 import com.auth0.jwt.JWT
 import com.auth0.jwt.algorithms.Algorithm
-import io.ktor.server.config.*
+import io.ktor.server.config.ApplicationConfig
 import io.loyaltyloop.shared.models.UserDto
-import java.util.*
+import java.util.Date
+import java.util.UUID
 
 // TODO checked
 class TokenService(config: ApplicationConfig) {

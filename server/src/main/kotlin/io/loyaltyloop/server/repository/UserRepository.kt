@@ -1,16 +1,33 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.database.tables.DeviceTokensTable
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.RefreshTokensTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
-import io.loyaltyloop.shared.models.*
 import io.loyaltyloop.server.utils.toUserDto
 import io.loyaltyloop.server.utils.toUtcLocalDateTime
 import io.loyaltyloop.server.utils.toUtcMillis
-import org.jetbrains.exposed.sql.*
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.PartnerStatus
+import io.loyaltyloop.shared.models.UpdateProfileRequest
+import io.loyaltyloop.shared.models.UserDto
+import io.loyaltyloop.shared.models.UserRole
+import io.loyaltyloop.shared.models.UserWorkspace
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
 // TODO checked
 class UserRepository {

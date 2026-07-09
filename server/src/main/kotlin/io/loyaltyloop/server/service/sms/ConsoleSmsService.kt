@@ -1,10 +1,10 @@
 package io.loyaltyloop.server.service.sms
 
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.OtpService
-import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import org.slf4j.LoggerFactory

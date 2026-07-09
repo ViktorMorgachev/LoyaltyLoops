@@ -1,36 +1,7 @@
 package io.loyaltyloop.server
 
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.shared.models.CountryCode
-import io.loyaltyloop.shared.models.CreatePartnerRequest
-import io.loyaltyloop.shared.models.CreateTradingPointRequest
-import io.loyaltyloop.shared.models.Currency
-import io.loyaltyloop.shared.models.JoinTradingPointRequest
-import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.LoyaltyProgramType
-import io.loyaltyloop.shared.models.LoyaltyTierDto
-import io.loyaltyloop.shared.models.ScanQrRequest
-import io.loyaltyloop.shared.models.ScanQrResponse
-import io.loyaltyloop.shared.models.TransactionStrategy
-import io.loyaltyloop.shared.models.TradingPointDto
-import io.loyaltyloop.shared.models.TradingPointType
-import io.loyaltyloop.shared.models.UpdateLoyaltySettingsRequest
-import io.loyaltyloop.shared.models.UpdateTradingPointRequest
-import io.loyaltyloop.shared.utils.CryptoUtils
-import kotlinx.serialization.json.Json
 import kotlin.test.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class TieredLoyaltyTest {
 

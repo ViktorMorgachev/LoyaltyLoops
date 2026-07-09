@@ -1,8 +1,9 @@
 package io.loyaltyloop.server.websocket
 
-import io.ktor.server.websocket.*
-import io.ktor.websocket.*
-import io.ktor.server.application.*
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.websocket.DefaultWebSocketServerSession
+import io.ktor.websocket.CloseReason
+import io.ktor.websocket.close
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PartnerStaffRepository
 import io.loyaltyloop.server.repository.SystemStaffRepository

@@ -2,18 +2,30 @@ package io.loyaltyloop.server.database
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
-import io.loyaltyloop.server.database.tables.UsersTable
-import io.ktor.server.config.*
+import io.ktor.server.config.ApplicationConfig
+import io.loyaltyloop.server.database.tables.AuthSessionsTable
+import io.loyaltyloop.server.database.tables.ClientRatingsTable
+import io.loyaltyloop.server.database.tables.DeviceTokensTable
+import io.loyaltyloop.server.database.tables.ExchangeRatesTable
+import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
 import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
 import io.loyaltyloop.server.database.tables.PartnersTable
-import io.loyaltyloop.server.database.tables.RefreshTokensTable
-import io.loyaltyloop.server.database.tables.SystemStaffTable
-import io.loyaltyloop.server.database.tables.TradingPointsTable
-import io.loyaltyloop.server.database.tables.DeviceTokensTable
 import io.loyaltyloop.server.database.tables.PinResetTokensTable
+import io.loyaltyloop.server.database.tables.PlatformInvitesTable
+import io.loyaltyloop.server.database.tables.PlatformRequestsTable
+import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
+import io.loyaltyloop.server.database.tables.RefreshTokensTable
+import io.loyaltyloop.server.database.tables.ServiceReviewsTable
 import io.loyaltyloop.server.database.tables.SupportMessagesTable
 import io.loyaltyloop.server.database.tables.SupportThreadsTable
+import io.loyaltyloop.server.database.tables.SystemEventsTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
+import io.loyaltyloop.server.database.tables.UsersTable
+import io.loyaltyloop.server.database.tables.WaitlistTable
 import kotlinx.coroutines.Dispatchers
 import org.flywaydb.core.Flyway
 import org.jetbrains.exposed.sql.Database
@@ -22,18 +34,6 @@ import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.sql.ResultSet
-import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
-import io.loyaltyloop.server.database.tables.SystemEventsTable
-import io.loyaltyloop.server.database.tables.PlatformInvitesTable
-import io.loyaltyloop.server.database.tables.PlatformRequestsTable
-import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
-import io.loyaltyloop.server.database.tables.ClientRatingsTable
-import io.loyaltyloop.server.database.tables.ServiceReviewsTable
-import io.loyaltyloop.server.database.tables.WaitlistTable
-import io.loyaltyloop.server.database.tables.AuthSessionsTable
-import io.loyaltyloop.server.database.tables.ExchangeRatesTable
-import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
-import io.loyaltyloop.server.database.tables.PartnerStaffTable
 
 object DatabaseFactory {
 

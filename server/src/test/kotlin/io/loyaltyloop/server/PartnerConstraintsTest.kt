@@ -1,21 +1,7 @@
 package io.loyaltyloop.server
 
-import io.ktor.client.call.body
-import io.ktor.client.request.header
-import io.ktor.client.request.post
-import io.ktor.client.request.put
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
 import io.ktor.server.testing.testApplication
-import io.loyaltyloop.shared.models.ApiMessage
-import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.shared.models.CreatePartnerRequest
-import io.loyaltyloop.shared.models.ResetPinRequest
-import io.loyaltyloop.shared.models.UpdatePinRequest
 import kotlin.test.Test
-import kotlin.test.assertEquals
 
 class PartnerConstraintsTest {
 

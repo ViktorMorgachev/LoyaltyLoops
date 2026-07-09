@@ -1,31 +1,35 @@
 package io.loyaltyloop.server.routes
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.auth.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.auth.authenticate
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.DeviceTokenRepository
+import io.loyaltyloop.server.repository.LoyaltyCardRepository
 import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.service.RatingService
 import io.loyaltyloop.server.utils.LoyaltyException
+import io.loyaltyloop.server.utils.getCurrencyForTimezone
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.resolveLanguage
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.Country
 import io.loyaltyloop.shared.models.CountryCode
+import io.loyaltyloop.shared.models.CreateServiceReviewDto
+import io.loyaltyloop.shared.models.DeleteDeviceTokenRequest
 import io.loyaltyloop.shared.models.DeviceTokenContext
 import io.loyaltyloop.shared.models.RegisterDeviceTokenRequest
 import io.loyaltyloop.shared.models.UpdateLanguageRequest
 import io.loyaltyloop.shared.models.UpdateProfileRequest
 import io.loyaltyloop.shared.models.UserProfileResponse
-import io.loyaltyloop.shared.models.Country
-import io.loyaltyloop.shared.models.CreateServiceReviewDto
-import io.loyaltyloop.server.service.RatingService
-import io.loyaltyloop.server.repository.LoyaltyCardRepository
-import io.loyaltyloop.server.service.AccessControlService
-import io.loyaltyloop.server.utils.getCurrencyForTimezone
-import io.loyaltyloop.shared.models.DeleteDeviceTokenRequest
 
 // TODO Checked
 @Suppress("ThrowsCount")

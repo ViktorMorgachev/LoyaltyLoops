@@ -8,12 +8,11 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
-import io.loyaltyloop.server.repository.MapRepository
 import io.loyaltyloop.server.models.TradingPointSearchCriteria
+import io.loyaltyloop.server.repository.MapRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.AccessControlService
-import io.loyaltyloop.server.utils.bool
 import io.loyaltyloop.server.utils.getTimezone
 import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow

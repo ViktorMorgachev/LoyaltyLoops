@@ -4,10 +4,10 @@ import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.ExchangeRatesTable
 import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
-import io.loyaltyloop.shared.models.PartnerStatus
-import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.PartnerStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,10 +20,10 @@ import okhttp3.Request
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.batchInsert
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.or
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.json.JSONObject
 import org.slf4j.LoggerFactory
 import java.math.BigDecimal
