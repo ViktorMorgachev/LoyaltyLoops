@@ -15,6 +15,16 @@ import java.time.Duration
 class RedisService(config: ApplicationConfig) {
 
     private val logger = LoggerFactory.getLogger(RedisService::class.java)
+
+    private companion object {
+        const val DEFAULT_POOL_MAX_TOTAL = 128
+        const val DEFAULT_POOL_MAX_IDLE = 128
+        const val DEFAULT_POOL_MIN_IDLE = 32
+        const val DEFAULT_MIN_EVICTABLE_IDLE_MS = 60_000L
+        const val DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MS = 30_000L
+        const val DEFAULT_NUM_TESTS_PER_EVICTION_RUN = 32
+        const val DEFAULT_MAX_WAIT_MS = 2_000L
+    }
     private val connectionUrl = config.propertyOrNull("redis.url")?.getString()?.takeIf { it.isNotBlank() }
 
     private val host = config.string("redis.host").cleanString()
@@ -31,20 +41,20 @@ class RedisService(config: ApplicationConfig) {
 
     init {
         // Read pool tuning from config (with sane defaults)
-        val poolMaxTotal = config.int("redis.pool.maxTotal", 128)
-        val poolMaxIdle = config.int("redis.pool.maxIdle", 128)
-        val poolMinIdle = config.int("redis.pool.minIdle", 32)
+        val poolMaxTotal = config.int("redis.pool.maxTotal", DEFAULT_POOL_MAX_TOTAL)
+        val poolMaxIdle = config.int("redis.pool.maxIdle", DEFAULT_POOL_MAX_IDLE)
+        val poolMinIdle = config.int("redis.pool.minIdle", DEFAULT_POOL_MIN_IDLE)
 
         val testOnBorrow = config.bool("redis.pool.testOnBorrow", false)
         val testOnReturn = config.bool("redis.pool.testOnReturn", false)
         val testWhileIdle = config.bool("redis.pool.testWhileIdle", true)
 
-        val minEvictableIdleTimeMs = config.long("redis.pool.minEvictableIdleTimeMs", 60_000L)
-        val timeBetweenEvictionRunsMs = config.long("redis.pool.timeBetweenEvictionRunsMs", 30_000L)
-        val numTestsPerEvictionRun = config.int("redis.pool.numTestsPerEvictionRun", 32)
+        val minEvictableIdleTimeMs = config.long("redis.pool.minEvictableIdleTimeMs", DEFAULT_MIN_EVICTABLE_IDLE_MS)
+        val timeBetweenEvictionRunsMs = config.long("redis.pool.timeBetweenEvictionRunsMs", DEFAULT_TIME_BETWEEN_EVICTION_RUNS_MS)
+        val numTestsPerEvictionRun = config.int("redis.pool.numTestsPerEvictionRun", DEFAULT_NUM_TESTS_PER_EVICTION_RUN)
 
         val blockWhenExhausted = config.bool("redis.pool.blockWhenExhausted", true)
-        val maxWaitMs = config.long("redis.pool.maxWaitMs", 2_000L)
+        val maxWaitMs = config.long("redis.pool.maxWaitMs", DEFAULT_MAX_WAIT_MS)
         val jmxEnabled = config.bool("redis.pool.jmxEnabled", true)
 
         val safeUrl = connectionUrl?.replace(Regex("://.*@"), "://***@")

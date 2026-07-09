@@ -37,6 +37,11 @@ class ExchangeRateService(
 ) {
     private val logger = LoggerFactory.getLogger(ExchangeRateService::class.java)
 
+    private companion object {
+        const val UPDATE_INTERVAL_MS = 4L * 60 * 60 * 1000
+        const val CURRENCY_CODE_LENGTH = 3
+    }
+
     // 25 часов (чтобы пережить сбой крона, но удалять мусор)
     private val cacheTtlSeconds = 25 * 60 * 60
 
@@ -51,7 +56,7 @@ class ExchangeRateService(
                 } catch (e: Exception) {
                     logger.error("❌ Failed to update exchange rates", e)
                 }
-                delay(4 * 60 * 60 * 1000L) // 4 hours
+                delay(UPDATE_INTERVAL_MS)
             }
         }
     }
@@ -121,7 +126,7 @@ class ExchangeRateService(
                 .select((PartnersTable.status eq PartnerStatus.ACTIVE) or (PartnersTable.status eq PartnerStatus.PENDING))
                 .withDistinct()
                 .map { it[PartnersTable.baseCurrency] }
-                .filter { it.length == 3 }
+                .filter { it.length == CURRENCY_CODE_LENGTH }
         }
 
         val terminalCurrencies = dbQuery {
@@ -129,7 +134,7 @@ class ExchangeRateService(
                 .selectAll()
                 .withDistinct()
                 .map { it[TradingPointsTable.currency] }
-                .filter { it.length == 3 }
+                .filter { it.length == CURRENCY_CODE_LENGTH }
         }.toSet()
 
         if (baseCurrencies.isEmpty()) return
