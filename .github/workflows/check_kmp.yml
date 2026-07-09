@@ -25,4 +25,10 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew :composeApp:assembleDebug :composeApp:lintDebug --no-daemon
 
+      - name: Detekt (server)
+        run: ./gradlew :server:detekt --no-daemon
+
+      - name: Server tests
+        run: ./gradlew :server:test --no-daemon
+
 
