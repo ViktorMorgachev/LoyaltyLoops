@@ -15,6 +15,7 @@
 | Код-ревью перед мержем | `loyaltyloops-review` |
 | Обновить документацию после изменений в коде | `loyaltyloops-docs` |
 | Дизайн-ревью, проверка темы/токенов, UX-копирайт | `loyaltyloops-design` |
+| Актуализировать/дописать тесты, разбор упавших тестов | `loyaltyloops-tests` |
 
 ---
 
@@ -37,10 +38,11 @@
 ```
 1. Читаем контекст → docs/tasks/* + docs/TECH_DEBT.md (обязательно!) + docs/screens/**/*_SPEC.md если есть
 2. [loyaltyloops-dev]    Реализуем небольшими атомарными шагами, TypeScript/компиляция gate
-3. [loyaltyloops-review] Двухфазное ревью: сначала Claude, потом Viktor
-4. [loyaltyloops-docs]   Синхронизируем доки: CHANGELOG, openapi, TECH_DEBT, SPEC-статусы
-5. [loyaltyloops-design] Дизайн-чек: тема MUI / Compose theme, копирайт
-6. Коммитим и шипим
+3. [loyaltyloops-tests]  Тесты синхронизированы с контрактами, :server:test зелёный
+4. [loyaltyloops-review] Двухфазное ревью: сначала Claude, потом Viktor
+5. [loyaltyloops-docs]   Синхронизируем доки: CHANGELOG, openapi, TECH_DEBT, SPEC-статусы
+6. [loyaltyloops-design] Дизайн-чек: тема MUI / Compose theme, копирайт
+7. Коммитим и шипим
 ```
 
 ---

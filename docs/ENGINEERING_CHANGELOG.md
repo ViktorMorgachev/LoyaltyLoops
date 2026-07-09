@@ -15,6 +15,35 @@
 
 ---
 
+## 2026-07-09 — Новый скилл loyaltyloops-tests
+
+### Внедрено
+- Скилл `loyaltyloops-tests` (актуализация тестов при изменении кода): карта тестовой инфраструктуры (H2, TestUtils, debugCode), workflow «изменился код» и «тест упал» с классификацией «протухший тест vs реальный баг», запрет на комментирование упавших тестов, приоритеты покрытия (деньги → access control → валидация). Уроки сегодняшней реанимации тестов зашиты в правила.
+- `CLAUDE.md`: скилл добавлен в Skill Map и в Vibe Coding Loop (шаг 3, перед ревью).
+
+---
+
+## 2026-07-09 — Реанимация тестового слоя (первый заход)
+
+### Внедрено
+- `ValidationUtilsTest` переписан под актуальный контракт: `validatePhoneNumber` бросает `LoyaltyException(INVALID_PHONE)`, тесты были написаны под старую сигнатуру `String?` и не могли пройти (`assertNull(Unit)`); дописаны негативные кейсы (короткие номера, неизвестный код, пустая/мусорная строка).
+- `LoyaltyCalculatorTest.mathematicalRounding`: ожидание синхронизировано с фикстурой (tier 1 = 1% → 12.35), тест снова проверяет округление до 2 знаков.
+- `TestUtils.registerAndLogin`: ошибка send-code теперь включает тело ответа — для диагностики падающего auth-флоу в тестах.
+- Выяснено: `PartnerConstraintsTest` — единственный тест, реально выполняющий `registerAndLogin` (в остальных закомментирован). Восстановлен auth-флоу в тестах, по цепочке найдены и исправлены: (1) хелпер не слал обязательный `X-Timezone-Id` — теперь `Asia/Bishkek` в пару к KG-номерам; (2) баг сервера: `ConsoleSmsService.startVerification` возвращал телефон вместо кода — поле `debugCode` в ответе `/auth/send-code` не содержало код, дев-режим/тесты не могли залогиниться; (3) баг сервера: `checkCode` логировал неудачную OTP-попытку с `userPhone = verificationId`, из-за чего `checkOtpBlock` (анти-brute-force) никогда не срабатывал.
+
+---
+
+## 2026-07-09 — TD-020 pass 2: нейминг, структура файлов, generic throw
+
+### Внедрено
+- camelCase для приватных полей: `cacheTtlSeconds` (ExchangeRateService), алиасы таблиц в PlatformRepository/RatingRepository, локализационные map в TelegramAuthService (13 переименований, все private).
+- `ExchangeRateService`: `error(...)` вместо `throw Exception(...)` (2), отдельный `catch (e: CancellationException)` вместо instanceof-проверки, `cause` в LoyaltyException при неудачном фетче курса.
+- Файлы приведены к именам деклараций: `LoyaltyCardsTable.kt`, `AuthSessionStatus.kt`; `WaitlistRequest` вынесен из PublicRoutes в `models/`.
+- `TestUtils`: `error(...)` вместо `throw IllegalStateException` (2); EOF-newline в 2 тестах.
+- WildcardImport 80/80 устранены (IDE Optimize Imports, single-name policy закреплена).
+
+---
+
 ## 2026-07-07 — TD-020 (частично): проглоченные исключения и мёртвый код
 
 ### Внедрено

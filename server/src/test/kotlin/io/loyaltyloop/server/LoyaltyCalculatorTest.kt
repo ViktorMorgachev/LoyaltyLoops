@@ -162,7 +162,7 @@ class LoyaltyCalculatorTest {
 
     @Test
     fun mathematicalRounding_toTwoDecimals() {
-        println("=== Mathematical rounding check (3% of 1234.56) ===")
+        println("=== Mathematical rounding check (1% of 1234.56) ===")
         val result = LoyaltyCalculator.calculate(
             card = card(tierLevel = 1, balance = 0.0, totalSpent = 0.0),
             purchaseAmount = 1_234.56,
@@ -173,7 +173,8 @@ class LoyaltyCalculatorTest {
         )
 
         println("earned=${result.pointsToAward}")
-        assertEquals(37.04, result.pointsToAward, "Cashback must be rounded to 2 decimals")
+        // tier 1 в фикстуре = 1%: 1234.56 * 0.01 = 12.3456 -> 12.35
+        assertEquals(12.35, result.pointsToAward, "Cashback must be rounded to 2 decimals")
     }
 }
 

@@ -40,7 +40,7 @@ import java.util.UUID
 // TODO checked
 class RatingRepository {
 
-    private val CashierUserTable = UsersTable.alias("cashier_users")
+    private val cashierUserTable = UsersTable.alias("cashier_users")
     suspend fun createClientRating(
         partnerId: String,
         cashierId: String,
@@ -155,10 +155,10 @@ class RatingRepository {
             )
             // Джойн Кассира (Кто оценивал) -> Имя берем из UsersTable (через алиас)
             .join(
-                otherTable = CashierUserTable,
+                otherTable = cashierUserTable,
                 joinType = JoinType.LEFT,
                 onColumn = ClientRatingsTable.cashier,
-                otherColumn = CashierUserTable[UsersTable.id]
+                otherColumn = cashierUserTable[UsersTable.id]
             )
             .selectAll()
             .where { ClientRatingsTable.partner eq partnerUuid }
@@ -169,9 +169,9 @@ class RatingRepository {
                 val clientFirst = row.getOrNull(UsersTable.firstName) ?: ""
                 val clientLast = row.getOrNull(UsersTable.lastName) ?: ""
                 val clientName = "$clientFirst $clientLast".trim().ifBlank { "Client" }
-                val cashierFirst = row.getOrNull(CashierUserTable[UsersTable.firstName])
+                val cashierFirst = row.getOrNull(cashierUserTable[UsersTable.firstName])
                 val cashierName = if (cashierFirst != null) {
-                    val last = row.getOrNull(CashierUserTable[UsersTable.lastName]) ?: ""
+                    val last = row.getOrNull(cashierUserTable[UsersTable.lastName]) ?: ""
                     "$cashierFirst $last".trim()
                 } else {
                     "Unknown Cashier"

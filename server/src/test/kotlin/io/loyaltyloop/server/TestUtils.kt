@@ -105,7 +105,7 @@ suspend fun HttpClient.registerAndLogin(
     }
 
     if (sendRes.status != HttpStatusCode.OK) {
-        throw IllegalStateException("Test setup failed: Send Code returned ${sendRes.status}")
+        error("Test setup failed: Send Code returned ${sendRes.status} body: ${sendRes.bodyAsText()}")
     }
     if (withLogs)  println("${testDescr}: Запрос смс: Успех")
     val code = extractOtpCode(sendRes)
@@ -115,11 +115,13 @@ suspend fun HttpClient.registerAndLogin(
     val loginRes = post("/auth/login") {
         contentType(ContentType.Application.Json)
         header(HttpHeaders.AcceptLanguage, language)
+        // KG-таймзона в пару к генерируемым +996-номерам (login мапит таймзону на страну)
+        header("X-Timezone-Id", "Asia/Bishkek")
         setBody(VerifyCodeRequest(phone, code))
     }
 
     if (loginRes.status != HttpStatusCode.OK) {
-        throw IllegalStateException("Test setup failed: Login returned ${loginRes.status} body: ${loginRes.bodyAsText()}")
+        error("Test setup failed: Login returned ${loginRes.status} body: ${loginRes.bodyAsText()}")
     }
 
     if (withLogs)  println("${testDescr}: Логин: Успех")

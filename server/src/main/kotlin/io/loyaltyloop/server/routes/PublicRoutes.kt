@@ -10,14 +10,10 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
+import io.loyaltyloop.server.models.WaitlistRequest
 import io.loyaltyloop.server.repository.WaitlistRepository
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
-import kotlinx.serialization.Serializable
-
-// TODO Checked
-@Serializable
-data class WaitlistRequest(val email: String)
 
 fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
     route("/public") {

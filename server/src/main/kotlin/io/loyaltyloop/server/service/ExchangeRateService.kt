@@ -38,7 +38,7 @@ class ExchangeRateService(
     private val logger = LoggerFactory.getLogger(ExchangeRateService::class.java)
 
     // 25 часов (чтобы пережить сбой крона, но удалять мусор)
-    private val CACHE_TTL = 25 * 60 * 60
+    private val cacheTtlSeconds = 25 * 60 * 60
 
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
@@ -85,7 +85,7 @@ class ExchangeRateService(
             val rateValue = dbRate.toDouble()
 
             try {
-                redisService.set(key, rateValue.toString(), CACHE_TTL)
+                redisService.set(key, rateValue.toString(), cacheTtlSeconds)
             } catch (e: Exception) {
                 logger.warn("Redis restore failed", e)
             }
@@ -105,10 +105,11 @@ class ExchangeRateService(
             saveRatesToDbAndCache(fromCurrency, rates)
 
             targetRate
+        } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+            throw e
         } catch (e: Exception) {
-            if (e is kotlin.coroutines.cancellation.CancellationException) throw e
             logger.error("❌ Lazy fetch failed for $fromCurrency -> $toCurrency", e)
-            throw LoyaltyException(AppErrorCode.CURRENCY_RATE_NOT_FOUND, "Rate fetch failed")
+            throw LoyaltyException(AppErrorCode.CURRENCY_RATE_NOT_FOUND, "Rate fetch failed", e)
         }
     }
 
@@ -157,7 +158,7 @@ class ExchangeRateService(
         try {
             rates.forEach { (target, rate) ->
                 val key = "rate:$base:$target"
-                redisService.set(key, rate.toString(), CACHE_TTL)
+                redisService.set(key, rate.toString(), cacheTtlSeconds)
             }
         } catch (e: Exception) {
             logger.warn("Redis set failed", e)
@@ -188,13 +189,13 @@ class ExchangeRateService(
         val request = Request.Builder().url(url).build()
 
         okHttpClient.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) throw Exception("API Error: ${response.code}")
+            if (!response.isSuccessful) error("API Error: ${response.code}")
 
             val bodyString = response.body?.string() ?: "{}"
             val json = JSONObject(bodyString)
 
             if (json.optString("result") != "success") {
-                throw Exception("API returned error: ${json.optString("error-type")}")
+                error("API returned error: ${json.optString("error-type")}")
             }
 
             val conversionRates = json.getJSONObject("conversion_rates")
