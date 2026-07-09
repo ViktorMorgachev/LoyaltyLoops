@@ -62,7 +62,7 @@ LoyaltyLoop/
 - Ошибки: только `throw LoyaltyException(AppErrorCode.*)` — HTTP-маппинг централизован в `utils/ErrorHandler.kt`. Новый код ошибки → добавить в `AppErrorCode` (shared) и в маппинг
 - DTO живут в `shared` (общие с мобильными клиентами)
 - БД-доступ: через `DatabaseFactory.dbQuery { }`; денежные операции — в одной транзакции с блокировкой строки (см. TD-003)
-- Схема БД: Exposed table objects + `createMissingTablesAndColumns` (Flyway — TD-004). Деструктивные изменения — только осознанно, с бэкапом
+- Схема БД: изменение = Exposed table object **+** Flyway-миграция `V{N}__description.sql` в `server/src/main/resources/db/migration/` — они обязаны совпадать. Тесты (H2) создают схему из table objects, поэтому SQL в миграциях может быть Postgres-специфичным
 - Новый endpoint без записи в `documentation.yaml` = задача не завершена
 - Логи — только slf4j-логгер, `println` запрещён
 - Время — везде UTC (`docs/ENGINEERING_NOTES.md`)
@@ -112,7 +112,7 @@ TodoList с независимо проверяемыми подзадачами
 
 - Новый endpoint → `documentation.yaml`
 - Тронут экран → пара `*_SCREEN.md` + `*_SCREEN_SPEC.md`
-- Изменена схема БД → обновить table object (+ `docs/DATABASE.md`/`.dbml` когда появятся — TD-015)
+- Изменена схема БД → миграция `V{N}` + table object (+ `docs/DATABASE.md`/`.dbml` когда появятся — TD-015)
 - Шип → запись в `docs/ENGINEERING_CHANGELOG.md`
 
 ---
@@ -131,10 +131,10 @@ TodoList с независимо проверяемыми подзадачами
 
 ### Добавление колонки в БД
 
-1. Обновить table object в `database/tables/`
-2. Обновить DTO в `shared` + RowMapper
-3. Обновить repository
-4. Проверить, что `createMissingTablesAndColumns` добавит колонку (nullable или с default!)
+1. Создать миграцию `V{N}__add_column_name.sql` в `server/src/main/resources/db/migration/`
+2. Обновить table object в `database/tables/` (обязан совпадать с миграцией)
+3. Обновить DTO в `shared` + RowMapper
+4. Обновить repository
 5. Обновить `documentation.yaml`, если колонка видна в API
 
 ### Добавление экрана web-admin
