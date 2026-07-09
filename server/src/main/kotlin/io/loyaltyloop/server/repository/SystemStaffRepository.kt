@@ -20,7 +20,6 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 import java.util.UUID
-import kotlin.collections.get
 
 // TODO checked
 class SystemStaffRepository {
@@ -29,7 +28,7 @@ class SystemStaffRepository {
     // 2. УПРАВЛЕНИЕ ПЕРСОНАЛОМ (STAFF MANAGEMENT)
     // ==========================================
 
-    suspend fun checkForRolePermission(role: UserRole, userId: String) {
+    suspend fun checkForRolePermission(role: UserRole) {
         val allowedRoles = listOf(
             UserRole.PLATFORM_SUPER_MANAGER,
             UserRole.PLATFORM_MANAGER,
@@ -44,7 +43,7 @@ class SystemStaffRepository {
         }
     }
 
-    suspend fun checkExistingRole(role: UserRole, userUuid: UUID) {
+    suspend fun checkExistingRole(userUuid: UUID) {
 
         val existingEntry = SystemStaffTable
             .select { SystemStaffTable.user eq userUuid }
@@ -73,8 +72,8 @@ class SystemStaffRepository {
         defaultPinHash: String? = null
     ) = dbQuery {
         val userUuid = userId.toUUID()
-        checkForRolePermission(role = role, userId)
-        checkExistingRole(role = role, userUuid)
+        checkForRolePermission(role = role)
+        checkExistingRole(userUuid)
 
         SystemStaffTable.insert {
             it[user] = userUuid
@@ -193,8 +192,8 @@ class SystemStaffRepository {
 
         val now = nowUtc()
         val userUuid = userId.toUUID()
-        checkForRolePermission(role = role, userId)
-        checkExistingRole(role = role, userUuid)
+        checkForRolePermission(role = role)
+        checkExistingRole(userUuid)
 
         SystemStaffTable.insert {
             it[user] = userUuid

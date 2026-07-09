@@ -1,23 +1,42 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
-import io.loyaltyloop.server.models.TierDef
+import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.getDefaultTiers
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toPartnerEntity
 import io.loyaltyloop.server.utils.toUUID
-import io.loyaltyloop.shared.models.*
-import org.jetbrains.exposed.sql.*
-import java.math.BigDecimal
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.CreatePartnerRequest
+import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.PartnerEntity
+import io.loyaltyloop.shared.models.PartnerStatus
+import io.loyaltyloop.shared.models.UpdatePartnerRequest
+import io.loyaltyloop.shared.models.UserRole
+import io.loyaltyloop.shared.models.indexToLoyaltyLevel
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.batchInsert
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
 // TODO checked
 class PartnerRepository(private val subscriptionRepository: SubscriptionRepository) {
 
     suspend fun getPartnerByIdOrThrow(partnerId: String, loadOtherData: Boolean = true): PartnerEntity = dbQuery {
-        val uuid = try { partnerId.toUUID() } catch (e: Exception) { throw LoyaltyException(AppErrorCode.INVALID_REQUEST, message =  "PartnerId invalid") }
+        val uuid = try {
+            partnerId.toUUID()
+        } catch (e: LoyaltyException) {
+            throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "PartnerId invalid", e)
+        }
 
         val row = PartnersTable
             .selectAll()

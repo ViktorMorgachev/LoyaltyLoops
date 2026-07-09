@@ -5,9 +5,9 @@ import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.SystemStaffTable
 import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.email.EmailService
-import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.bool
@@ -21,16 +21,15 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import org.jetbrains.exposed.sql.*
-import org.slf4j.LoggerFactory
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.or
+import org.jetbrains.exposed.sql.selectAll
 import so.prelude.sdk.client.PreludeClient
 import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 import so.prelude.sdk.core.JsonValue
 import so.prelude.sdk.models.VerificationCheckParams
 import so.prelude.sdk.models.VerificationCheckResponse
 import so.prelude.sdk.models.VerificationCreateParams
-import java.io.IOException
-import kotlin.collections.contains
 
 
 // TODO checked

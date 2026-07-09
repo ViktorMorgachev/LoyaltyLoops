@@ -15,14 +15,18 @@
 
 Вам нужно добавить следующие переменные окружения на сервере (или в файл `.env` / конфигурацию запуска):
 
-*   `TELEGRAM_BOT_TOKEN`: Токен, полученный от @BotFather.
+*   `TELEGRAM_BOT_TOKEN`: Токен, полученный от @BotFather (отдельный токен на окружение: prod/stage/dev).
 *   `TELEGRAM_BOT_USERNAME`: Юзернейм бота (без @).
+*   `TELEGRAM_WEBHOOK_URL`: Полный публичный HTTPS-URL вебхука, например `https://api.yourdomain.com/auth/telegram/webhook`.
+*   `TELEGRAM_WEBHOOK_SECRET`: Секрет для query (`?secret=...`), любая строка. Если задан — запросы без него отклоняются (403).
 
 Пример:
 ```env
 TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
 TELEGRAM_BOT_USERNAME=LoyaltyLoopAuthBot
 TELEGRAM_AUTH_TTL=120000
+TELEGRAM_WEBHOOK_URL=https://api.yourdomain.com/auth/telegram/webhook
+TELEGRAM_WEBHOOK_SECRET=change-me
 ```
 *(`TELEGRAM_AUTH_TTL` - время жизни сессии входа в миллисекундах, по умолчанию 2 минуты)*
 
@@ -34,11 +38,32 @@ TELEGRAM_AUTH_TTL=120000
 *   `/setdescription`: Установить описание (что делает этот бот).
 *   `/setabouttext`: Текст, который виден в профиле бота.
 
-## 4. Как это работает
+## 4. Webhook (единственный режим приёма событий)
+
+Авторизация через Telegram работает **только через webhook** — long polling отключён (чтобы не ловить 409/дубли). Эндпоинт: `POST /auth/telegram/webhook`. Обрабатываются только `message`-обновления (кнопка `/start login_xxx` и отправка контакта).
+
+Требования:
+1.  Публичный HTTPS-домен, доступный Telegram.
+2.  Один инстанс на один токен: нельзя использовать тот же токен в другом сервисе или в long polling.
+
+Поведение при старте сервиса:
+- Сервис вызывает `setWebhook` с `telegram.webhookUrl` (+ `secret`, если указан). В логах: `setWebhook OK: <url>`.
+- Если URL пуст — логгер выдаст ошибку, авторизация через Telegram работать не будет.
+- При смене домена/URL обновите переменную и перезапустите сервис (`setWebhook` вызовется автоматически).
+- Health-check: сервис периодически делает `getMe` для диагностики.
+
+Проверка:
+1.  В логах при старте: `setWebhook OK: <url>`.
+2.  Отправьте `/start login_<uuid>` боту (uuid выдаёт `POST /auth/telegram/start`) — придёт приглашение отправить контакт.
+3.  Отправьте контакт — сессия должна перейти в `CONFIRMED`.
+
+## 5. Как это работает (флоу пользователя)
 
 1.  Пользователь на сайте или в приложении нажимает "Войти через Telegram".
 2.  Сервер генерирует ссылку вида `https://t.me/LoyaltyLoopAuthBot?start=login_UUID`.
 3.  Пользователь переходит по ссылке и нажимает "Запустить" (кнопка Start внизу).
 4.  Бот (через наш бэкенд) проверяет `UUID` и если пользователь новый — запрашивает контакт (телефон).
 5.  Пользователь делится контактом -> Бэкенд регистрирует/авторизует его.
+
+Техническая реализация флоу целиком: `../flows/TELEGRAM_AUTH_FLOW.md`.
 

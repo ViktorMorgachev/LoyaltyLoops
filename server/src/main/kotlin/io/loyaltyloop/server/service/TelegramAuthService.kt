@@ -9,19 +9,30 @@ import io.loyaltyloop.server.utils.SecurityUtils
 import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
-import kotlinx.coroutines.*
-import kotlinx.serialization.json.*
-import okhttp3.*
+import io.loyaltyloop.shared.models.UserDto
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.long
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
-import java.util.concurrent.TimeUnit
-import io.loyaltyloop.shared.models.UserDto
-import org.jetbrains.exposed.sql.SortOrder
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 
 // TODO checked
 class TelegramAuthService(
@@ -135,7 +146,7 @@ class TelegramAuthService(
 
     private fun getMsg(map: Map<String, String>, lang: String): String = map[lang] ?: map["en"]!!
 
-    private val MSG_HELLO = mapOf(
+    private val msgHello = mapOf(
         "en" to "Hello! To log in, please tap the button below to share your phone number.",
         "ru" to "Привет! Чтобы войти, нажмите кнопку ниже для отправки номера телефона.",
         "kk" to "Сәлем! Кіру үшін төмендегі түймені басып, телефон нөміріңізді жіберіңіз.",
@@ -143,7 +154,7 @@ class TelegramAuthService(
         "uz" to "Salom! Kirish uchun quyidagi tugmani bosing va telefon raqamingizni yuboring.",
         "be" to "Прывітанне! Каб увайсці, націсніце кнопку ніжэй для адпраўкі нумара тэлефона."
     )
-    private val BTN_SHARE = mapOf(
+    private val btnShare = mapOf(
         "en" to "📱 Share Contact",
         "ru" to "📱 Отправить контакт",
         "kk" to "📱 Байланыспен бөлісу",
@@ -151,7 +162,7 @@ class TelegramAuthService(
         "uz" to "📱 Kontakt yuborish",
         "be" to "📱 Адправіць кантакт"
     )
-    private val MSG_OWN_CONTACT = mapOf(
+    private val msgOwnContact = mapOf(
         "en" to "⚠️ Please share your own contact.",
         "ru" to "⚠️ Пожалуйста, поделитесь своим контактом.",
         "kk" to "⚠️ Өз байланысыңызбен бөлісіңіз.",
@@ -159,7 +170,7 @@ class TelegramAuthService(
         "uz" to "⚠️ O'z kontaktingizni ulashing.",
         "be" to "⚠️ Калі ласка, падзяліцеся сваім кантактам."
     )
-    private val MSG_NO_SESSION = mapOf(
+    private val msgNoSession = mapOf(
         "en" to "❌ No pending login session found. Scan the QR code again.",
         "ru" to "❌ Активная сессия не найдена. Отсканируйте QR-код заново.",
         "kk" to "❌ Белсенді сессия табылмады. QR-кодты қайта сканерлеңіз.",
@@ -167,7 +178,7 @@ class TelegramAuthService(
         "uz" to "❌ Faol sessiya topilmadi. QR-kodni qayta skanerlang.",
         "be" to "❌ Актыўная сесія не знойдзена. Адскануйце QR-код нанова."
     )
-    private val MSG_SUCCESS = mapOf(
+    private val msgSuccess = mapOf(
         "en" to "✅ Login successful! Return to the app to continue.",
         "ru" to "✅ Вход выполнен! Вернитесь в приложение.",
         "kk" to "✅ Кіру сәтті! Қосымшаға оралыңыз.",
@@ -175,7 +186,7 @@ class TelegramAuthService(
         "uz" to "✅ Kirish muvaffaqiyatli! Ilovaga qayting.",
         "be" to "✅ Уваход выкананы! Вярніцеся ў дадатак."
     )
-    private val BTN_WEB = mapOf(
+    private val btnWeb = mapOf(
         "en" to "🌐 Web Dashboard",
         "ru" to "🌐 Веб-панель",
         "kk" to "🌐 Веб-басқару",
@@ -183,7 +194,7 @@ class TelegramAuthService(
         "uz" to "🌐 Veb-boshqaruv",
         "be" to "🌐 Вэб-панэль"
     )
-    private val BTN_APP = mapOf(
+    private val btnApp = mapOf(
         "en" to "📱 Mobile App",
         "ru" to "📱 Мобильное приложение",
         "kk" to "📱 Мобильді қосымша",
@@ -279,7 +290,7 @@ class TelegramAuthService(
         val contactUserId = contact["user_id"]?.jsonPrimitive?.long
         if (contactUserId != chatId) {
             logger.warn("Contact user_id ($contactUserId) does not match sender chatId ($chatId). Rejecting.")
-            sendMessage(chatId, getMsg(MSG_OWN_CONTACT, languageCode))
+            sendMessage(chatId, getMsg(msgOwnContact, languageCode))
             return
         }
         val rawPhone = contact["phone_number"]?.jsonPrimitive?.content ?: return
@@ -298,7 +309,7 @@ class TelegramAuthService(
 
         if (session == null) {
             logger.warn("No PENDING session found for chatId=$chatId")
-            sendMessage(chatId, getMsg(MSG_NO_SESSION, languageCode))
+            sendMessage(chatId, getMsg(msgNoSession, languageCode))
             return
         }
         logger.info("Found pending session: $session")
@@ -339,13 +350,13 @@ class TelegramAuthService(
             "inline_keyboard" to JsonArray(listOf(
                 JsonArray(listOf(
                     JsonObject(mapOf(
-                        "text" to JsonPrimitive(getMsg(BTN_WEB, languageCode)),
+                        "text" to JsonPrimitive(getMsg(btnWeb, languageCode)),
                         "url" to JsonPrimitive(migratedWebBaseUrl)
                     ))
                 )),
                  JsonArray(listOf(
                     JsonObject(mapOf(
-                        "text" to JsonPrimitive(getMsg(BTN_APP, languageCode)),
+                        "text" to JsonPrimitive(getMsg(btnApp, languageCode)),
                         "url" to JsonPrimitive("${migratedWebBaseUrl}/auth?uuid=$uuid")
                     ))
                 ))
@@ -354,7 +365,7 @@ class TelegramAuthService(
 
         val jsonBody = JsonObject(mapOf(
             "chat_id" to JsonPrimitive(chatId),
-            "text" to JsonPrimitive(getMsg(MSG_SUCCESS, languageCode)),
+            "text" to JsonPrimitive(getMsg(msgSuccess, languageCode)),
             "reply_markup" to keyboard
         )).toString()
 
@@ -391,8 +402,8 @@ class TelegramAuthService(
     }
 
     private fun sendContactRequest(chatId: Long, languageCode: String) {
-        val text = getMsg(MSG_HELLO, languageCode)
-        val buttonText = getMsg(BTN_SHARE, languageCode)
+        val text = getMsg(msgHello, languageCode)
+        val buttonText = getMsg(btnShare, languageCode)
 
         val url = "https://api.telegram.org/bot$botToken/sendMessage"
         val keyboard = JsonObject(mapOf(

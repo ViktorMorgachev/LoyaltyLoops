@@ -1,39 +1,38 @@
 package io.loyaltyloop.server.service
 
-import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.server.repository.UserRepository
-import io.loyaltyloop.shared.config.SecurityDefaults
-import io.loyaltyloop.shared.models.LoyaltyProgramType
-import io.loyaltyloop.shared.models.ScanQrRequest
-import io.loyaltyloop.shared.models.ScanQrResponse
-import io.loyaltyloop.shared.models.TransactionCalculationDto
-import io.loyaltyloop.shared.models.TransactionResult
-import io.loyaltyloop.shared.models.TransactionStrategy
-import io.loyaltyloop.shared.models.TransactionSuccessType
-import io.loyaltyloop.shared.models.UserDto
-import io.loyaltyloop.shared.models.LoyaltyCardDto
-import io.loyaltyloop.shared.models.AppErrorCode
-import io.loyaltyloop.server.utils.LoyaltyException
-import io.loyaltyloop.shared.models.CardRealtimeEventType
-import io.loyaltyloop.shared.models.CardRealtimePayload
-import io.loyaltyloop.shared.utils.CryptoUtils
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.repository.HistoryRepository
 import io.loyaltyloop.server.repository.LoyaltyCardRepository
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PartnerStaffRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.repository.UserRepository
+import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
-import io.loyaltyloop.shared.models.PartnerStatus
-import kotlin.math.abs
+import io.loyaltyloop.shared.config.SecurityDefaults
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.CardRealtimeEventType
+import io.loyaltyloop.shared.models.CardRealtimePayload
+import io.loyaltyloop.shared.models.LoyaltyCardDto
+import io.loyaltyloop.shared.models.LoyaltyProgramType
 import io.loyaltyloop.shared.models.LoyaltySettingsDto
 import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.PartnerStatus
+import io.loyaltyloop.shared.models.ScanQrRequest
+import io.loyaltyloop.shared.models.ScanQrResponse
+import io.loyaltyloop.shared.models.TransactionCalculationDto
 import io.loyaltyloop.shared.models.TransactionHistoryDto
+import io.loyaltyloop.shared.models.TransactionResult
+import io.loyaltyloop.shared.models.TransactionStrategy
+import io.loyaltyloop.shared.models.TransactionSuccessType
 import io.loyaltyloop.shared.models.TransactionTypeHistory
+import io.loyaltyloop.shared.models.UserDto
+import io.loyaltyloop.shared.utils.CryptoUtils
+import io.loyaltyloop.shared.utils.LoyaltyFormatter
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import java.time.LocalDateTime
-
-import io.loyaltyloop.shared.utils.LoyaltyFormatter
+import kotlin.math.abs
 
 // TODO Checked
 class TransactionService(
@@ -218,6 +217,9 @@ class TransactionService(
 
         val staffId = partnerStaffRepository.getCassierById(cashierUserId, tradingPointId)?.toString()
             ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "Cashier staff record not found")
+
+        // Сериализуем параллельные операции по карте: баланс ниже читается уже под блокировкой
+        loyaltyCardRepository.lockCardRow(cardId)
 
         val card = loyaltyCardRepository.getCardByID(cardId = cardId, estimatedCurrency = estimatedCurrency)
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Card not found")

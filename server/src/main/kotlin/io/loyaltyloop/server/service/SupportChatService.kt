@@ -1,21 +1,19 @@
 package io.loyaltyloop.server.service
 
-import io.loyaltyloop.server.repository.SupportChatRepository
-import io.loyaltyloop.shared.models.SupportChatEventDto
-import io.loyaltyloop.shared.models.SupportChatEventType
-import io.loyaltyloop.shared.models.SupportMessageDto
-import io.loyaltyloop.shared.models.SupportThreadDto
-import io.loyaltyloop.shared.models.SupportThreadResponse
-import io.loyaltyloop.shared.models.UserRole
 import io.ktor.server.websocket.DefaultWebSocketServerSession
 import io.ktor.websocket.Frame
-import io.ktor.websocket.send
 import io.loyaltyloop.server.repository.PartnerRepository
+import io.loyaltyloop.server.repository.SupportChatRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
 import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.SupportChatEventDto
+import io.loyaltyloop.shared.models.SupportChatEventType
+import io.loyaltyloop.shared.models.SupportMessageDto
+import io.loyaltyloop.shared.models.SupportThreadDto
+import io.loyaltyloop.shared.models.SupportThreadResponse
 import kotlinx.serialization.encodeToString
 import java.util.concurrent.ConcurrentHashMap
 
@@ -30,7 +28,7 @@ class SupportChatService(
 
     suspend fun getPartnerThread(partnerId: String): SupportThreadResponse {
 
-        val threads = repository.getThreads(true, partnerId, limit = 1)
+        val threads = repository.getThreads(partnerId, limit = 1)
 
         val thread = threads.firstOrNull()
 
@@ -71,7 +69,7 @@ class SupportChatService(
     // --- ADMIN SIDE ---
 
     suspend fun listThreads(): List<SupportThreadDto> =
-        repository.getThreads(viewerIsPartner = false, limit = 50)
+        repository.getThreads(limit = 50)
 
     suspend fun getAdminThread(threadId: String): SupportThreadResponse {
         // [FIX] Передаем false, так как смотрит Админ
@@ -137,7 +135,7 @@ class SupportChatService(
         partnerSessions[partnerId]?.toList()?.forEach { session ->
             try {
                 session.send(Frame.Text(payload))
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // Игнорируем ошибки отправки, сессия закроется сама
             }
         }
@@ -148,8 +146,8 @@ class SupportChatService(
         adminSessions.values.flatten().forEach { session ->
             try {
                 session.send(Frame.Text(payload))
-            } catch (e: Exception) {
-                // ignore
+            } catch (_: Exception) {
+                // Игнорируем ошибки отправки, сессия закроется сама
             }
         }
     }

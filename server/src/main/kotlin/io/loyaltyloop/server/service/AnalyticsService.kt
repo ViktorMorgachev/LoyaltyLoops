@@ -2,16 +2,16 @@ package io.loyaltyloop.server.service
 
 import io.loyaltyloop.server.repository.HistoryRepository
 import io.loyaltyloop.server.repository.LoyaltyCardRepository
-import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PartnerStaffRepository
+import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUtcMillis
+import io.loyaltyloop.shared.models.AnalyticsResponse
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CashierDailyStatsDto
 import io.loyaltyloop.shared.models.Employer
-import io.loyaltyloop.server.repository.PartnerRepository
-import io.loyaltyloop.shared.models.AnalyticsResponse
 import io.loyaltyloop.shared.models.PartnerStatsDto
 
 // TODO checked
@@ -30,7 +30,7 @@ class AnalyticsService(
         val partner = partnerRepository.getPartnerByIdOrThrow(partnerId)
         val zoneId = try {
             java.time.ZoneId.of(timezone)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             java.time.ZoneId.of("UTC")
         }
 
@@ -147,7 +147,7 @@ class AnalyticsService(
 
         val zoneId = try {
             java.time.ZoneId.of(point.timezone)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             java.time.ZoneId.of("UTC")
         }
 

@@ -1,18 +1,37 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.database.tables.ClientRatingsTable
+import io.loyaltyloop.server.database.tables.ServiceReviewsTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.utils.nowUtc
-import io.loyaltyloop.server.utils.splitCsv
 import io.loyaltyloop.server.utils.toClientRatingEntity
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
-import io.loyaltyloop.shared.models.*
-import org.jetbrains.exposed.sql.*
+import io.loyaltyloop.shared.models.AnalyticsDataDto
+import io.loyaltyloop.shared.models.AnalyticsSeriesPointDto
+import io.loyaltyloop.shared.models.ClientRatingTag
+import io.loyaltyloop.shared.models.CreateClientRatingDto
+import io.loyaltyloop.shared.models.CreateServiceReviewDto
+import io.loyaltyloop.shared.models.HeatmapPointDto
+import io.loyaltyloop.shared.models.ReviewDto
+import io.loyaltyloop.shared.models.ReviewTypes
+import io.loyaltyloop.shared.models.TagStatDto
+import org.jetbrains.exposed.sql.DoubleColumnType
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.div
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.times
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.castTo
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.UUID
@@ -21,7 +40,7 @@ import java.util.UUID
 // TODO checked
 class RatingRepository {
 
-    private val CashierUserTable = UsersTable.alias("cashier_users")
+    private val cashierUserTable = UsersTable.alias("cashier_users")
     suspend fun createClientRating(
         partnerId: String,
         cashierId: String,
@@ -136,10 +155,10 @@ class RatingRepository {
             )
             // Джойн Кассира (Кто оценивал) -> Имя берем из UsersTable (через алиас)
             .join(
-                otherTable = CashierUserTable,
+                otherTable = cashierUserTable,
                 joinType = JoinType.LEFT,
                 onColumn = ClientRatingsTable.cashier,
-                otherColumn = CashierUserTable[UsersTable.id]
+                otherColumn = cashierUserTable[UsersTable.id]
             )
             .selectAll()
             .where { ClientRatingsTable.partner eq partnerUuid }
@@ -150,9 +169,9 @@ class RatingRepository {
                 val clientFirst = row.getOrNull(UsersTable.firstName) ?: ""
                 val clientLast = row.getOrNull(UsersTable.lastName) ?: ""
                 val clientName = "$clientFirst $clientLast".trim().ifBlank { "Client" }
-                val cashierFirst = row.getOrNull(CashierUserTable[UsersTable.firstName])
+                val cashierFirst = row.getOrNull(cashierUserTable[UsersTable.firstName])
                 val cashierName = if (cashierFirst != null) {
-                    val last = row.getOrNull(CashierUserTable[UsersTable.lastName]) ?: ""
+                    val last = row.getOrNull(cashierUserTable[UsersTable.lastName]) ?: ""
                     "$cashierFirst $last".trim()
                 } else {
                     "Unknown Cashier"
@@ -249,7 +268,7 @@ class RatingRepository {
         // 1. Настраиваем Таймзону (для графика по дням)
         val zoneId = try {
             java.time.ZoneId.of(timezone)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             java.time.ZoneId.of("UTC")
         }
 

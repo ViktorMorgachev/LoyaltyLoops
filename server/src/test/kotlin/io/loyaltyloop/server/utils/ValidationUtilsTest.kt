@@ -1,76 +1,75 @@
 package io.loyaltyloop.server.utils
 
+import io.loyaltyloop.shared.models.AppErrorCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
+import kotlin.test.assertFailsWith
 
 class ValidationUtilsTest {
 
+    // Валидный номер: функция просто возвращается; невалидный: бросает LoyaltyException(INVALID_PHONE)
+
     @Test
-    fun `validatePhoneNumber should return null for valid KG number`() {
+    fun `validatePhoneNumber accepts valid KG number`() {
         // +996 (prefix) + 9 digits
-        val validPhone = "+996555123456"
-        assertNull(validatePhoneNumber(validPhone))
+        validatePhoneNumber("+996555123456")
     }
 
     @Test
-    fun `validatePhoneNumber should return null for valid KZ number`() {
+    fun `validatePhoneNumber accepts valid KZ number`() {
         // +7 (prefix) + 10 digits
-        val validPhone = "+77771234567"
-        assertNull(validatePhoneNumber(validPhone))
+        validatePhoneNumber("+77771234567")
     }
 
     @Test
-    fun `validatePhoneNumber should return null for valid UZ number`() {
+    fun `validatePhoneNumber accepts valid UZ number`() {
         // +998 (prefix) + 9 digits
-        val validPhone = "+998901234567"
-        assertNull(validatePhoneNumber(validPhone))
+        validatePhoneNumber("+998901234567")
     }
 
     @Test
-    fun `validatePhoneNumber should return null for valid BY number`() {
+    fun `validatePhoneNumber accepts valid BY number`() {
         // +375 (prefix) + 9 digits
-        val validPhone = "+375291234567"
-        assertNull(validatePhoneNumber(validPhone))
+        validatePhoneNumber("+375291234567")
     }
 
     @Test
-    fun `validatePhoneNumber should fail for invalid KG length`() {
+    fun `validatePhoneNumber fails for invalid KG length`() {
         // +996 + 8 digits (too short)
-        val shortPhone = "+99655512345"
+        assertInvalidPhone("+99655512345")
     }
 
     @Test
-    fun `validatePhoneNumber should fail for invalid KZ length`() {
+    fun `validatePhoneNumber fails for invalid KZ length`() {
         // +7 + 9 digits (too short)
-        val shortPhone = "+7777123456"
+        assertInvalidPhone("+7777123456")
     }
 
     @Test
-    fun `validatePhoneNumber should fail for unknown country code`() {
-        val unknownPhone = "+15551234567" // USA code not supported
+    fun `validatePhoneNumber fails for unknown country code`() {
+        assertInvalidPhone("+15551234567") // USA code not supported
     }
 
     @Test
-    fun `validatePhoneNumber should fail for empty string`() {
+    fun `validatePhoneNumber fails for empty string`() {
+        assertInvalidPhone("")
     }
 
     @Test
-    fun `validatePhoneNumber should fail for garbage string`() {
+    fun `validatePhoneNumber fails for garbage string`() {
+        assertInvalidPhone("not-a-phone")
     }
 
     @Test
-    fun `validatePhoneNumber should prioritize longer prefix (UZ vs 9)`() {
-        // If we had +9 prefix (e.g. hypothetical), +998 should match UZ first.
-        // In our case, we have +7 (KZ) and others are 3 digits.
-        // Testing that +998 is NOT matched as +9 (if +9 existed) is implicit by logic, 
-        // but let's ensure +998 works correctly which we did in valid UZ test.
-        // The critical one is ensuring +7 doesn't eat things if we had say +77 country. 
-        // But we only have +7. 
-        // Let's just re-verify standard cases are solid.
-        
-        // +998... should NOT be treated as unknown if logic was flawed
-        assertNull(validatePhoneNumber("+998901234567"))
+    fun `validatePhoneNumber prioritizes longer prefix over KZ +7`() {
+        // +998 должен матчиться как UZ (длинный префикс), а не как +7/неизвестный;
+        // обычный KZ-номер при этом остаётся валидным
+        validatePhoneNumber("+998901234567")
+        validatePhoneNumber("+77012345678")
+    }
+
+    private fun assertInvalidPhone(phone: String) {
+        val ex = assertFailsWith<LoyaltyException> { validatePhoneNumber(phone) }
+        assertEquals(AppErrorCode.INVALID_PHONE, ex.code)
     }
 }
-

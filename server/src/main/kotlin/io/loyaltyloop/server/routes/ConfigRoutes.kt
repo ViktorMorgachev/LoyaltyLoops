@@ -6,8 +6,10 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.loyaltyloop.server.utils.bool
+import io.loyaltyloop.server.utils.double
 import io.loyaltyloop.server.utils.int
 import io.loyaltyloop.server.utils.long
+import io.loyaltyloop.shared.models.ClientRatingTag
 import io.loyaltyloop.shared.models.CountryCode
 import io.loyaltyloop.shared.models.FeatureToggleDto
 import io.loyaltyloop.shared.models.GeoLocation
@@ -15,9 +17,7 @@ import io.loyaltyloop.shared.models.MapSettingsDto
 import io.loyaltyloop.shared.models.PublicConfigResponse
 import io.loyaltyloop.shared.models.RatingTagDto
 import io.loyaltyloop.shared.models.RatingTagsDto
-import io.loyaltyloop.shared.models.ClientRatingTag
 import io.loyaltyloop.shared.models.ServiceReviewTag
-import io.loyaltyloop.server.utils.double
 
 //TODO  Checked
 fun Route.configRoutes(

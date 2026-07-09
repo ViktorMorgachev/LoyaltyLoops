@@ -1,23 +1,34 @@
 package io.loyaltyloop.server.di
 
-import io.loyaltyloop.server.service.*
+import io.ktor.server.config.ApplicationConfig
+import io.loyaltyloop.server.service.AccessControlService
+import io.loyaltyloop.server.service.AnalyticsService
+import io.loyaltyloop.server.service.CardRealtimeService
+import io.loyaltyloop.server.service.EventLogger
+import io.loyaltyloop.server.service.ExchangeRateService
+import io.loyaltyloop.server.service.GeoIpService
+import io.loyaltyloop.server.service.LoyaltyEngineService
+import io.loyaltyloop.server.service.OtpService
+import io.loyaltyloop.server.service.RatingService
+import io.loyaltyloop.server.service.RedisService
+import io.loyaltyloop.server.service.SupportChatService
+import io.loyaltyloop.server.service.TelegramAuthService
+import io.loyaltyloop.server.service.TokenService
+import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.service.email.ConsoleEmailService
 import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.service.email.EmailTemplateService
+import io.loyaltyloop.server.service.email.ResendEmailService
 import io.loyaltyloop.server.service.sms.ConsoleSmsService
 import io.loyaltyloop.server.service.sms.PreludeSmsService
 import io.loyaltyloop.server.service.sms.SmsRateLimits
 import io.loyaltyloop.server.service.sms.SmsService
-import io.loyaltyloop.server.utils.bool
 import io.loyaltyloop.server.utils.int
 import io.loyaltyloop.server.utils.long
 import io.loyaltyloop.server.utils.string
 import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
-import io.ktor.server.config.ApplicationConfig
-import io.loyaltyloop.server.service.email.ResendEmailService
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
-import so.prelude.sdk.client.okhttp.PreludeOkHttpClient
 
 val serviceModule = module {
     single { RedisService(get()) }

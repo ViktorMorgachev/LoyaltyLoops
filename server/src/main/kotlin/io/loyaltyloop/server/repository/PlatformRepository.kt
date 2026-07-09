@@ -1,26 +1,46 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
-import io.loyaltyloop.server.database.tables.PlatformRequestsTable.updatedAt
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.PlatformRequestsTable
+import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
+import io.loyaltyloop.server.database.tables.SystemStaffTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEventType
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
-import io.loyaltyloop.shared.models.*
-import org.jetbrains.exposed.sql.*
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.CreatePlatformRequest
+import io.loyaltyloop.shared.models.PartnerStatus
+import io.loyaltyloop.shared.models.PlatformRequestDto
+import io.loyaltyloop.shared.models.PlatformRequestStatus
+import io.loyaltyloop.shared.models.PlatformRequestType
+import io.loyaltyloop.shared.models.SubscriptionDuration
+import io.loyaltyloop.shared.models.SubscriptionType
+import org.jetbrains.exposed.sql.JoinType
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.alias
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import java.math.BigDecimal
 import java.time.LocalDateTime
 
 // TODO checked
 class PlatformRepository(val systemEventRepository: SystemEventRepository) {
 
-    private val RequesterStaff = SystemStaffTable.alias("req_staff")
-    private val RequesterUser = UsersTable.alias("req_user")
+    private val requesterStaff = SystemStaffTable.alias("req_staff")
+    private val requesterUser = UsersTable.alias("req_user")
 
-    private val ApproverStaff = SystemStaffTable.alias("app_staff")
-    private val ApproverUser = UsersTable.alias("app_user")
+    private val approverStaff = SystemStaffTable.alias("app_staff")
+    private val approverUser = UsersTable.alias("app_user")
 
     suspend fun createRequest(userId: String, request: CreatePlatformRequest): String = dbQuery {
         val userUuid = userId.toUUID()
@@ -101,11 +121,11 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
 
         val query = PlatformRequestsTable
             // 1. Реквестер
-            .join(RequesterStaff, JoinType.LEFT, PlatformRequestsTable.requester, RequesterStaff[SystemStaffTable.id])
-            .join(RequesterUser, JoinType.LEFT, RequesterStaff[SystemStaffTable.user], RequesterUser[UsersTable.id])
+            .join(requesterStaff, JoinType.LEFT, PlatformRequestsTable.requester, requesterStaff[SystemStaffTable.id])
+            .join(requesterUser, JoinType.LEFT, requesterStaff[SystemStaffTable.user], requesterUser[UsersTable.id])
             // 2. Аппрувер
-            .join(ApproverStaff, JoinType.LEFT, PlatformRequestsTable.approver, ApproverStaff[SystemStaffTable.id])
-            .join(ApproverUser, JoinType.LEFT, ApproverStaff[SystemStaffTable.user], ApproverUser[UsersTable.id])
+            .join(approverStaff, JoinType.LEFT, PlatformRequestsTable.approver, approverStaff[SystemStaffTable.id])
+            .join(approverUser, JoinType.LEFT, approverStaff[SystemStaffTable.user], approverUser[UsersTable.id])
             // 3. Контекст
             .join(TradingPointsTable, JoinType.LEFT, PlatformRequestsTable.targetPoint, TradingPointsTable.id)
             .join(PartnersTable, JoinType.LEFT, PlatformRequestsTable.targetPartner, PartnersTable.id)
@@ -117,7 +137,7 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
         }
         if (requesterId != null) {
             // Фильтруем по UserID реквестера (через алиас)
-            query.andWhere { RequesterStaff[SystemStaffTable.user] eq requesterId.toUUID() }
+            query.andWhere { requesterStaff[SystemStaffTable.user] eq requesterId.toUUID() }
         }
         if (targetPartnerId != null) {
             query.andWhere { PlatformRequestsTable.targetPartner eq targetPartnerId.toUUID() }
@@ -127,18 +147,18 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
         query.orderBy(PlatformRequestsTable.createdAt to SortOrder.DESC)
             .map { row ->
                 // Имя Реквестера
-                val reqFirst = row.getOrNull(RequesterUser[UsersTable.firstName]) ?: ""
-                val reqLast = row.getOrNull(RequesterUser[UsersTable.lastName]) ?: ""
+                val reqFirst = row.getOrNull(requesterUser[UsersTable.firstName]) ?: ""
+                val reqLast = row.getOrNull(requesterUser[UsersTable.lastName]) ?: ""
                 val reqName = "$reqFirst $reqLast".trim().ifBlank { "Unknown Staff" }
-                val reqPhone = row.getOrNull(RequesterUser[UsersTable.phoneNumber]) ?: ""
+                val reqPhone = row.getOrNull(requesterUser[UsersTable.phoneNumber]) ?: ""
 
                 // Имя Аппрувера
-                val appFirst = row.getOrNull(ApproverUser[UsersTable.firstName])
+                val appFirst = row.getOrNull(approverUser[UsersTable.firstName])
                 val appName = if (appFirst != null) {
-                    "$appFirst ${row.getOrNull(ApproverUser[UsersTable.lastName]) ?: ""}".trim()
+                    "$appFirst ${row.getOrNull(approverUser[UsersTable.lastName]) ?: ""}".trim()
                 } else null
 
-                val reqUserId = row.getOrNull(RequesterUser[UsersTable.id])?.value?.toString() ?: ""
+                val reqUserId = row.getOrNull(requesterUser[UsersTable.id])?.value?.toString() ?: ""
 
                 PlatformRequestDto(
                     id = row[PlatformRequestsTable.id].value.toString(),
@@ -147,7 +167,7 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
                     requesterId = reqUserId,
                     requesterName = reqName,
                     requesterPhone = reqPhone,
-                    approverId = row.getOrNull(ApproverUser[UsersTable.id])?.value?.toString(),
+                    approverId = row.getOrNull(approverUser[UsersTable.id])?.value?.toString(),
                     approverName = appName,
                     createdAt = row[PlatformRequestsTable.createdAt].toUtcMillis(),
                     updatedAt = row[PlatformRequestsTable.updatedAt].toUtcMillis(),

@@ -1,10 +1,10 @@
 package io.loyaltyloop.server.service.sms
 
 import io.loyaltyloop.server.models.SystemEventType
+import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.EventLogger
 import io.loyaltyloop.server.service.OtpService
-import io.loyaltyloop.server.models.VerificationSignals
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.shared.models.AppErrorCode
 import org.slf4j.LoggerFactory
@@ -70,7 +70,8 @@ class ConsoleSmsService(
             payload = "SMS sent with code: $code$ipInfo"
         )
 
-        return phone
+        // Дев-провайдер: возвращаем код как verificationId, чтобы /send-code мог отдать его в debugCode
+        return code
     }
 
     override suspend fun checkCode(
@@ -82,9 +83,10 @@ class ConsoleSmsService(
 
         val isValid = otpService.validateCode(phone, code)
         if (!isValid) {
+            // userPhone обязан быть телефоном — по нему checkOtpBlock считает блокировку
             eventLogger.log(
                 type = SystemEventType.OTP_VERIFICATION_FAILED,
-                userPhone = verificationId,
+                userPhone = phone,
                 payload = "Invalid code entered"
             )
         }

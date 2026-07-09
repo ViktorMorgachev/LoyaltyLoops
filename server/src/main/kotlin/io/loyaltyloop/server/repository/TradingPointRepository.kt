@@ -1,17 +1,33 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
+import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.TransactionsHistoryTable
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.initializeLoyaltySettings
 import io.loyaltyloop.server.utils.json
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toTradingPointDto
 import io.loyaltyloop.server.utils.toUUID
-import io.loyaltyloop.shared.models.*
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.CreateTradingPointRequest
+import io.loyaltyloop.shared.models.LoyaltySettingsDto
+import io.loyaltyloop.shared.models.LoyaltyTierDto
+import io.loyaltyloop.shared.models.TradingPointDetailsDto
+import io.loyaltyloop.shared.models.TradingPointDto
+import io.loyaltyloop.shared.models.UpdateTradingPointRequest
+import io.loyaltyloop.shared.models.indexToLoyaltyLevel
 import kotlinx.serialization.encodeToString
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.JoinType
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
 // TODO checked
 class TradingPointRepository {

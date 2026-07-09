@@ -1,13 +1,13 @@
 package io.loyaltyloop.server.service
 
 import io.ktor.server.websocket.DefaultWebSocketServerSession
+import io.ktor.websocket.send
 import io.loyaltyloop.shared.models.CardRealtimePayload
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.concurrent.ConcurrentHashMap
-import io.ktor.websocket.send
 
 // TODO checked
 class CardRealtimeService {

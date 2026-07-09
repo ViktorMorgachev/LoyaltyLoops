@@ -2,13 +2,11 @@ package io.loyaltyloop.server.utils
 
 import io.loyaltyloop.server.database.tables.LoyaltySettingsTable
 import io.loyaltyloop.server.database.tables.LoyaltyTiersTable
-import io.loyaltyloop.server.models.TierDef
 import io.loyaltyloop.server.models.getDefaultTiers
 import io.loyaltyloop.shared.models.CreateTradingPointRequest
 import org.jetbrains.exposed.sql.batchInsert
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import java.math.BigDecimal
 import java.time.LocalDateTime
 import java.util.UUID
 

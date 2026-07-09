@@ -1,14 +1,21 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.database.tables.PartnerStaffTable
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.TradingPointsTable
+import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.Employer
 import io.loyaltyloop.shared.models.UserRole
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 // TODO checked

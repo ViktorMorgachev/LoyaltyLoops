@@ -1,22 +1,24 @@
 package io.loyaltyloop.server.routes
 
 import io.ktor.server.application.call
-import io.ktor.server.auth.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import io.loyaltyloop.server.repository.UserRepository
+import io.ktor.server.auth.authenticate
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
 import io.loyaltyloop.server.service.AccessControlService
 import io.loyaltyloop.server.service.AnalyticsService
-import io.loyaltyloop.server.utils.getUserIdOrRespond
-import io.loyaltyloop.shared.models.CalculateTransactionRequest
-import io.loyaltyloop.shared.models.ProcessTransactionRequest
-import io.loyaltyloop.shared.models.ScanQrRequest
 import io.loyaltyloop.server.service.RatingService
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.utils.getCurrencyForTimezone
+import io.loyaltyloop.server.utils.getUserIdOrRespond
 import io.loyaltyloop.server.utils.getWorkspaceIdOrThrow
+import io.loyaltyloop.shared.models.CalculateTransactionRequest
 import io.loyaltyloop.shared.models.CreateClientRatingDto
+import io.loyaltyloop.shared.models.ProcessTransactionRequest
+import io.loyaltyloop.shared.models.ScanQrRequest
 
 // TODO checked
 fun Route.terminalRoutes(

@@ -1,0 +1,16 @@
+.git
+.gradle
+.idea
+.kotlin
+.cursor
+.DS_Store
+**/.DS_Store
+build
+**/build
+node_modules
+**/node_modules
+web-admin/dist
+iosApp
+docs
+tests
+local.properties

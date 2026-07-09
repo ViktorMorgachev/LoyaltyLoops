@@ -13,7 +13,7 @@
 
 1.  **Frontend (Web/Mobile)**: Инициатор сессии. Отображает QR-код/Кнопку и опрашивает сервер о статусе входа.
 2.  **Backend (Ktor)**:
-    *   `TelegramAuthService`: Служба, которая "слушает" события от Telegram (Polling) и управляет бизнес-логикой бота.
+    *   `TelegramAuthService`: Служба, которая принимает события от Telegram через webhook (`POST /auth/telegram/webhook`, long polling отключён) и управляет бизнес-логикой бота.
     *   `AuthSessionRepository`: Управляет временными сессиями входа.
     *   `UserRepository`: Управляет пользователями и их привязкой к Telegram ID.
 3.  **Database**:

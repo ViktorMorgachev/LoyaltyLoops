@@ -16,6 +16,7 @@ export const ky = {
       status: "Абалы",
       actions: "Аракеттер",
       active: "Активдүү",
+      inactive: "Активдүү эмес",
       blocked: "Бөгөттөлгөн",
       pending: "Текшерүүдө",
       copied: "Көчүрүлдү",

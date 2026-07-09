@@ -5,6 +5,7 @@ import io.loyaltyloop.shared.models.AppErrorCode
 // TODO checked
 class LoyaltyException(
     val code: AppErrorCode,
-    message: String? = null
-) : RuntimeException(message ?: code.name)
+    message: String? = null,
+    cause: Throwable? = null
+) : RuntimeException(message ?: code.name, cause)
 

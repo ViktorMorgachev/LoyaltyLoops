@@ -19,6 +19,9 @@ dependencies {
     implementation(libs.bundles.ktor.server)
     implementation(libs.bundles.exposed)
 
+    // Миграции БД
+    implementation(libs.flyway.core)
+
     // Дополнительные зависимости
     implementation(libs.okhttp)
     implementation(libs.prelude.sdk)

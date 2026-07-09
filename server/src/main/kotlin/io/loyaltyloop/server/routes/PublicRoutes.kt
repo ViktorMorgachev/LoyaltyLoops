@@ -1,19 +1,19 @@
 package io.loyaltyloop.server.routes
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.call
+import io.ktor.server.request.receive
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.Route
+import io.ktor.server.routing.get
+import io.ktor.server.routing.post
+import io.ktor.server.routing.route
+import io.loyaltyloop.server.models.WaitlistRequest
 import io.loyaltyloop.server.repository.WaitlistRepository
 import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
-import kotlinx.serialization.Serializable
-
-// TODO Checked
-@Serializable
-data class WaitlistRequest(val email: String)
 
 fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
     route("/public") {

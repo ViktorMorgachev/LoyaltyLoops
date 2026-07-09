@@ -23,5 +23,8 @@ allprojects {
         toolVersion = "1.23.6"
         config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
         buildUponDefaultConfig = true
+        // Легаси-замечания зафиксированы в baseline (генерация: ./gradlew detektBaseline).
+        // Новый код обязан быть чистым — baseline не обновлять без ревью.
+        baseline = file("$rootDir/config/detekt/baseline-${project.name}.xml")
     }
 }

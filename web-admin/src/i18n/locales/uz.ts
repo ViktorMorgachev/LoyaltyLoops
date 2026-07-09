@@ -16,6 +16,7 @@ export const uz = {
       status: "Holat",
       actions: "Amallar",
       active: "Faol",
+      inactive: "Faol emas",
       blocked: "Bloklangan",
       pending: "Tekshiruvda",
       copied: "Nusxalandi",

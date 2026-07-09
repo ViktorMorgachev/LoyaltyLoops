@@ -12,7 +12,7 @@ import io.loyaltyloop.shared.models.ExpiringPointDto
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.select
 import java.time.LocalDateTime
-import java.util.*
+import java.util.UUID
 
 // TODO checked
 class SubscriptionRepository {

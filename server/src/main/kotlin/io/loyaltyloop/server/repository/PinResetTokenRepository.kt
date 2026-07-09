@@ -8,16 +8,11 @@ import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcLocalDateTime
 import io.loyaltyloop.server.utils.toUtcMillis
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greater
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.isNull
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
-import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.insertAndGetId
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
-import java.util.UUID
 
 // TODO checked
 data class PinResetToken(

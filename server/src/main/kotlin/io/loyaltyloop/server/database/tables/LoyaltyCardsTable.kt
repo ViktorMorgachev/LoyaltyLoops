@@ -10,7 +10,6 @@ import org.jetbrains.exposed.sql.ResultRow
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 import java.math.BigDecimal
-import java.time.LocalDateTime
 
 /**
  * Таблица Бонусных Карт (Счетов) пользователей.

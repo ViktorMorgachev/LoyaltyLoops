@@ -21,7 +21,7 @@
   - **RiskLevel**: `BLACK`, если `fraudFlag=true`; иначе `GREEN ≥4.5`, `YELLOW ≥3.5`, `ORANGE ≥2.0`, `RED <2.0`.
 - **Анти-абьюз**:  
   - Кулдаун (1 отзыв/день на кассира→клиента) через `features.rating.enableCooldown` (env `FEATURE_RATING_ENABLE_COOLDOWN`, по умолчанию true).  
-  - Защита от “мстительной 1★”: если текущий `trustScore ≥ 4.5` и прилетела 1★ без `FRAUD`, игнорируем и логируем.
+  - Защита от “мстительной 1★”: если текущий `trustScore ≥ 4.5`, накоплено `totalScore > 100` и прилетела 1★ без `FRAUD` — игнорируем и логируем.
 - **Хранение/использование**: сохраняется в `LoyaltyCard` (`trustScore`, `riskLevel`, `fraudFlag`), возвращается в `TrustScoreDto`.
 
 ## Конфигурация

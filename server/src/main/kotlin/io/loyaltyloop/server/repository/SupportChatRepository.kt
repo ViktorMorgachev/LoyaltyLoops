@@ -1,13 +1,24 @@
 package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
-import io.loyaltyloop.server.database.tables.*
+import io.loyaltyloop.server.database.tables.PartnersTable
+import io.loyaltyloop.server.database.tables.SupportMessagesTable
+import io.loyaltyloop.server.database.tables.SupportThreadsTable
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toThreadDto
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
-import io.loyaltyloop.shared.models.*
-import org.jetbrains.exposed.sql.*
+import io.loyaltyloop.shared.models.SupportMessageDto
+import io.loyaltyloop.shared.models.SupportThreadDto
+import io.loyaltyloop.shared.models.UserRole
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.SqlExpressionBuilder
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 
 // TODO checked
 class SupportChatRepository {
@@ -125,7 +136,6 @@ class SupportChatRepository {
     }
 
     suspend fun getThreads(
-        viewerIsPartner: Boolean,
         partnerId: String? = null,
         limit: Int = 20,
         offset: Long = 0

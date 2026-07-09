@@ -1,15 +1,18 @@
 # --- Этап 1: Сборка (Build) ---
-FROM gradle:8.5.0-jdk17 AS build
+# Версия Gradle в образе обязана совпадать с gradle-wrapper.properties (8.7):
+# используем предустановленный gradle вместо ./gradlew, чтобы wrapper
+# не скачивал дистрибутив на каждой сборке (падало по таймауту на CI).
+FROM gradle:8.7.0-jdk17 AS build
 
 COPY --chown=gradle:gradle . /home/gradle/src
 WORKDIR /home/gradle/src
 
-# 1. Даем права на выполнение скрипта (важно!)
-RUN chmod +x ./gradlew
+# Переопределяем -Xmx16g из gradle.properties: столько памяти на CI-билдере нет
+ENV GRADLE_OPTS="-Dorg.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8"
 
-# 2. Запускаем сборку с флагом -PserverBuild=true
-# Это отключит Android и iOS в shared модуле, и сборка не упадет из-за отсутствия SDK
-RUN ./gradlew :server:installDist --no-daemon -PserverBuild=true
+# Флаг -PserverBuild=true отключает Android/iOS таргеты shared-модуля,
+# сборка не требует Android SDK / Xcode
+RUN gradle :server:installDist --no-daemon -PserverBuild=true
 
 # --- Этап 2: Запуск (Run) ---
 

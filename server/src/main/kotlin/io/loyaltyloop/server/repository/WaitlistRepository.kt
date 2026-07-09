@@ -5,9 +5,7 @@ import io.loyaltyloop.server.database.tables.WaitlistTable
 import org.jetbrains.exposed.sql.SortOrder
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
-import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
-import java.util.UUID
 
 // TODO checked
 class WaitlistRepository {

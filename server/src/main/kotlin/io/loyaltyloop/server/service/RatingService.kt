@@ -4,14 +4,18 @@ import io.ktor.server.config.ApplicationConfig
 import io.ktor.server.config.tryGetString
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.LoyaltyCardsTable
-import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.models.SystemEventType
-import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.LoyaltyCardRepository
+import io.loyaltyloop.server.repository.RatingRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.toUUID
-import io.loyaltyloop.shared.models.*
+import io.loyaltyloop.shared.models.AppErrorCode
+import io.loyaltyloop.shared.models.ClientRatingTag
+import io.loyaltyloop.shared.models.CreateClientRatingDto
+import io.loyaltyloop.shared.models.CreateServiceReviewDto
+import io.loyaltyloop.shared.models.RiskLevel
+import io.loyaltyloop.shared.models.TrustScoreDto
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.plus
 import org.jetbrains.exposed.sql.update
 import org.slf4j.LoggerFactory
@@ -26,10 +30,6 @@ class RatingService(
 ) {
     private val logger = LoggerFactory.getLogger("RatingService")
 
-    // Configuration
-    private val MAX_RATINGS_FOR_AVERAGE = 10
-    private val RATING_RESET_VISITS = 20
-    private val ANTI_ABUSE_RATING_COOLDOWN_HOURS = 12 // 1 rating per cashier per client half day
 
     // Feature Flag
     private val enableCooldown: Boolean

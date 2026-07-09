@@ -2,7 +2,6 @@ package io.loyaltyloop.server.repository
 
 import io.loyaltyloop.server.database.DatabaseFactory.dbQuery
 import io.loyaltyloop.server.database.tables.SystemEventsTable
-import io.loyaltyloop.server.database.tables.UsersTable
 import io.loyaltyloop.server.models.SystemEvent
 import io.loyaltyloop.server.models.SystemEventFilter
 import io.loyaltyloop.server.models.SystemEventType
@@ -10,10 +9,14 @@ import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcLocalDateTime
 import io.loyaltyloop.server.utils.toUtcMillis
-import kotlinx.coroutines.Dispatchers
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import java.util.*
+import org.jetbrains.exposed.sql.Op
+import org.jetbrains.exposed.sql.SortOrder
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.andWhere
+import org.jetbrains.exposed.sql.insertAndGetId
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import java.util.UUID
 
 // TODO checked
 class SystemEventRepository {
@@ -75,14 +78,14 @@ class SystemEventRepository {
         if (filter.userId != null) {
             try {
                 query.andWhere { SystemEventsTable.user eq filter.userId.toUUID() }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 query.andWhere { Op.FALSE }
             }
         }
         if (filter.partnerId != null) {
             try {
                 query.andWhere { SystemEventsTable.partner eq filter.partnerId.toUUID() }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 query.andWhere { Op.FALSE }
             }
         }

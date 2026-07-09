@@ -11,28 +11,30 @@
 
 ### Сборка для разных окружений
 
-По умолчанию используется окружение `dev` (Localhost). Чтобы собрать версию для продакшена, передайте параметр `-Penv=prod`.
+Окружение задаётся параметром `-Penv=...`. Без параметра (`dev`) сборка указывает на **stage-сервер** (не на localhost).
 
-**Примеры команд:**
+**Примеры команд** (запускать из корня репозитория; `cd` в начале позволяет запускать их и через ▶ в IDE прямо из этого файла):
 
 ```bash
-# 🛠 DEV (Localhost: 10.0.2.2:8080) - По умолчанию
-./gradlew :composeApp:assembleDebug
-
-# 🚀 PROD (https://api.loyaltyloop.kg)
-./gradlew :composeApp:assembleRelease -Penv=prod
-
-# 🧪 STAGE (https://api-test.loyaltyloop.kg)
-./gradlew :composeApp:assembleDebug -Penv=stage
+# 🧪 DEV/STAGE (https://server-loyalityloop-stage.up.railway.app) - По умолчанию
+cd "$(git rev-parse --show-toplevel)" && ./gradlew :composeApp:assembleDebug
+```
+```bash
+# 🚀 PROD (https://api.loyaltyloops.app)
+cd "$(git rev-parse --show-toplevel)" && ./gradlew :composeApp:assembleRelease -Penv=prod
+```
+```bash
+# 🧪 STAGE явно
+cd "$(git rev-parse --show-toplevel)" && ./gradlew :composeApp:assembleDebug -Penv=stage
 ```
 
 **Где менять URL?**
-В файле `composeApp/build.gradle.kts`:
+В файле `composeApp/build.gradle.kts` (блок `buildConfig`):
 ```kotlin
-val serverUrl = when(activeEnv) {
-    "prod" -> "https://api.loyaltyloop.kg"
-    "stage" -> "https://api-test.loyaltyloop.kg"
-    else -> "http://10.0.2.2:8080"
+val (serverUrl, webUrl) = when (activeEnv) {
+    "prod" -> "https://api.loyaltyloops.app" to "https://loyaltyloops.app"
+    "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+    else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
 }
 ```
 
@@ -54,9 +56,10 @@ val serverUrl = when(activeEnv) {
 | `JDBC_DATABASE_USERNAME` | Пользователь БД | `postgres` |
 | `JDBC_DATABASE_PASSWORD` | Пароль БД | `secret` |
 | `JWT_SECRET` | **Секретный ключ** для токенов | `dlinnaya_strolka_simvolov_123` |
-| `JWT_ISSUER` | Ваш домен (кто выдал токен) | `https://api.loyaltyloop.kg` |
-| `JWT_AUDIENCE` | Домен API | `https://api.loyaltyloop.kg` |
-| `WEB_BASE_URL` | Ссылка на веб-админку (для писем) | `https://admin.loyaltyloop.kg` |
+| `JWT_ISSUER` | Ваш домен (кто выдал токен) | `https://api.loyaltyloops.app` |
+| `JWT_AUDIENCE` | Домен API | `https://api.loyaltyloops.app` |
+| `WEB_BASE_URL` | Ссылка на веб-админку (для писем) | `https://loyaltyloops.app` |
+| `CORS_ALLOWED_HOSTS` | Браузерные origin'ы через запятую (см. `cors.allowedHosts`) | `loyaltyloops.app,www.loyaltyloops.app,loyalityloop-beta.up.railway.app` |
 | `ADMIN_DEFAULT_PIN` | PIN-код для супер-админа | `1111` |
 
 **Dockerfile**:
@@ -87,7 +90,7 @@ Railway автоматически собирает проект через `npm
 Vite "запекает" переменные в JS код во время сборки.
 
 Убедитесь, что на сервере сборки (Railway) задана переменная:
-`VITE_API_URL` = `https://api.loyaltyloop.kg` (адрес вашего бэкенда)
+`VITE_API_URL` = `https://api.loyaltyloops.app` (адрес вашего бэкенда)
 
 **Варианты деплоя:**
 1. **Вместе с бэкендом (Monolith)**: Сервер раздает статику из папки `web-admin/dist`. (Требует настройки Ktor).
