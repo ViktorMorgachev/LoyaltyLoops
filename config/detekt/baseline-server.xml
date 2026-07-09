@@ -40,7 +40,6 @@
     <ID>MagicNumber:ConfigRoutes.kt$50</ID>
     <ID>MagicNumber:ConfigRoutes.kt$74.5698</ID>
     <ID>MagicNumber:ConfigRoutes.kt$80</ID>
-    <ID>MagicNumber:LoyaltyCardRepository.kt$LoyaltyCardRepository$4.0</ID>
     <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$10000</ID>
     <ID>MagicNumber:LoyaltyEngineService.kt$LoyaltyEngineService$3</ID>
     <ID>MagicNumber:MapRepository.kt$MapRepository$1.1</ID>
@@ -58,14 +57,6 @@
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$3</ID>
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$5</ID>
     <ID>MagicNumber:PlatformRepository.kt$PlatformRepository$6</ID>
-    <ID>MagicNumber:RatingRepository.kt$RatingRepository$3</ID>
-    <ID>MagicNumber:RatingRepository.kt$RatingRepository$5</ID>
-    <ID>MagicNumber:RatingService.kt$RatingService$20</ID>
-    <ID>MagicNumber:RatingService.kt$RatingService$3.5</ID>
-    <ID>MagicNumber:RatingService.kt$RatingService$4.5</ID>
-    <ID>MagicNumber:RatingService.kt$RatingService$5.0</ID>
-    <ID>MagicNumber:RowMappers.kt$3.5</ID>
-    <ID>MagicNumber:RowMappers.kt$4.5</ID>
     <ID>MagicNumber:SubscriptionRepository.kt$SubscriptionRepository$3</ID>
     <ID>MagicNumber:SystemStaffRepository.kt$SystemStaffRepository$24</ID>
     <ID>MagicNumber:TelegramAuthService.kt$TelegramAuthService$5</ID>

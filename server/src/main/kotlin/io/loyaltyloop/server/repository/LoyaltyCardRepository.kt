@@ -25,6 +25,10 @@ class LoyaltyCardRepository(
     private val exchangeRateService: ExchangeRateService,
 ) {
 
+    private companion object {
+        const val INITIAL_TRUST_SCORE = 4.0
+    }
+
     suspend fun countByPartnerId(partnerId: String): Int = dbQuery {
         LoyaltyCardsTable
             .select { LoyaltyCardsTable.partner eq partnerId.toUUID() }
@@ -120,7 +124,7 @@ class LoyaltyCardRepository(
             it[totalSpent] = BigDecimal.ZERO
             it[tierLevel] = 1
             it[visitsCount] = 0
-            it[trustScore] = 4.0
+            it[trustScore] = INITIAL_TRUST_SCORE
             it[fraudFlag] = false
             it[lastActivityAt] = now
             it[createdAt] = now
