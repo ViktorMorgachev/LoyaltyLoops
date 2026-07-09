@@ -62,3 +62,5 @@ yarn-error.log*
 *.pem
 pepk.jar
 pepk_out.zip
+/claude-setup/
+/.claude/
