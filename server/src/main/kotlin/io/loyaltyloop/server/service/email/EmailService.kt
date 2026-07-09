@@ -26,7 +26,7 @@ class ConsoleEmailService(
     override suspend fun sendEmail(to: String, template: EmailTemplate, lang: String?) {
         val subject = templateService.buildSubject(template, lang)
         val body = templateService.buildBody(template, lang)
-        
+
         // In production, integrate with SendGrid, AWS SES, Mailgun, etc.
         logger.info(
             """=== EMAIL SENT to $to ===
@@ -36,7 +36,7 @@ class ConsoleEmailService(
             ==================
         """.trimIndent()
         )
-        
+
         if (template is EmailTemplate.PartnerPinResetRequested) {
              EmailDebugStore.capturePinReset(template.resetLink)
         }

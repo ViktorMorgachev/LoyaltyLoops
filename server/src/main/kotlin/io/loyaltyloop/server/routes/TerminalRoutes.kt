@@ -29,7 +29,7 @@ fun Route.terminalRoutes(
 ) {
     route("/terminal") {
         authenticate("auth-jwt") {
-            
+
             post("/scan") {
                 val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<ScanQrRequest>()
@@ -54,7 +54,7 @@ fun Route.terminalRoutes(
                     strategy = request.strategy,
                     estimatedCurrency = timezoneCurrency
                 )
-                
+
                 call.respond(result)
             }
 
@@ -73,10 +73,10 @@ fun Route.terminalRoutes(
                     strategy = request.strategy,
                     estimatedCurrency = timezoneCurrency
                 )
-                
+
                 call.respond(result)
             }
-            
+
             get("/stats") {
                 val cashierUserId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 val workspaceId = call.getWorkspaceIdOrThrow()

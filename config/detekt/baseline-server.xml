@@ -162,24 +162,7 @@
     <ID>TooManyFunctions:TradingPointRepository.kt$TradingPointRepository</ID>
     <ID>TooManyFunctions:TransactionService.kt$TransactionService</ID>
     <ID>TooManyFunctions:UserRepository.kt$UserRepository</ID>
-    <ID>TrailingWhitespace:AdminPlatformRoutes.kt$io.loyaltyloop.server.routes.AdminPlatformRoutes.kt</ID>
-    <ID>TrailingWhitespace:AdminRoutes.kt$io.loyaltyloop.server.routes.AdminRoutes.kt</ID>
-    <ID>TrailingWhitespace:AuthRoutes.kt$io.loyaltyloop.server.routes.AuthRoutes.kt</ID>
-    <ID>TrailingWhitespace:ClientRoutes.kt$io.loyaltyloop.server.routes.ClientRoutes.kt</ID>
-    <ID>TrailingWhitespace:ConfigRoutes.kt$io.loyaltyloop.server.routes.ConfigRoutes.kt</ID>
-    <ID>TrailingWhitespace:DeviceTokenRepository.kt$io.loyaltyloop.server.repository.DeviceTokenRepository.kt</ID>
-    <ID>TrailingWhitespace:EmailService.kt$io.loyaltyloop.server.service.email.EmailService.kt</ID>
-    <ID>TrailingWhitespace:LoyaltyCalculator.kt$io.loyaltyloop.server.service.LoyaltyCalculator.kt</ID>
-    <ID>TrailingWhitespace:PartnerRoutes.kt$io.loyaltyloop.server.routes.PartnerRoutes.kt</ID>
-    <ID>TrailingWhitespace:PartnerStaffRepository.kt$io.loyaltyloop.server.repository.PartnerStaffRepository.kt</ID>
-    <ID>TrailingWhitespace:PublicRoutes.kt$io.loyaltyloop.server.routes.PublicRoutes.kt</ID>
-    <ID>TrailingWhitespace:RatingRepository.kt$io.loyaltyloop.server.repository.RatingRepository.kt</ID>
-    <ID>TrailingWhitespace:RatingService.kt$io.loyaltyloop.server.service.RatingService.kt</ID>
-    <ID>TrailingWhitespace:RedisService.kt$io.loyaltyloop.server.service.RedisService.kt</ID>
-    <ID>TrailingWhitespace:TerminalRoutes.kt$io.loyaltyloop.server.routes.TerminalRoutes.kt</ID>
-    <ID>TrailingWhitespace:TransactionService.kt$io.loyaltyloop.server.service.TransactionService.kt</ID>
     <ID>UnusedPrivateMember:AuthTest.kt$AuthTest$private fun generateExpiredToken(userId: String): String</ID>
     <ID>UnusedPrivateProperty:PartnerConstraintsTest.kt$PartnerConstraintsTest$val owner = client.registerAndLogin()</ID>
-    <ID>UnusedPrivateProperty:SupportChatWebSocketHandler.kt$SupportChatWebSocketHandler$frame</ID>
   </CurrentIssues>
 </SmellBaseline>

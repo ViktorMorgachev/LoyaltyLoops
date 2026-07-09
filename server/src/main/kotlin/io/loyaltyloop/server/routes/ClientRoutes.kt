@@ -121,7 +121,7 @@ fun Route.clientRoutes(
 
             delete("/device-token") {
                 call.getUserIdOrRespond(accessControlService) ?: return@delete
-                
+
                 val token = try {
                     call.receive<DeleteDeviceTokenRequest>().token
                 } catch (_: Exception) {
@@ -132,7 +132,7 @@ fun Route.clientRoutes(
                         throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid body", e)
                     }
                 }
-                
+
                 deviceTokenRepository.deleteTokenExact(token)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }

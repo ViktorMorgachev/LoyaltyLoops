@@ -266,7 +266,7 @@ class PartnerStaffRepository {
             it[updatedAt] = nowUtc()
         }
     }
-    
+
     suspend fun isUserCashierAtPoint(userId: String, pointId: String): Boolean = dbQuery {
         val userUuid = userId.toUUID()
         val pointUuid = pointId.toUUID()

@@ -107,7 +107,7 @@ fun Route.partnerRoutes(
                 val from = call.request.queryParameters["from"]?.toLongOrNull()
                 val to = call.request.queryParameters["to"]?.toLongOrNull()
                 val pointId = call.request.queryParameters["pointId"]
-                
+
                 val data = ratingRepository.getAnalyticsData(workspaceId, from, to, pointId, timezone)
                 call.respond(data)
             }
@@ -123,15 +123,15 @@ fun Route.partnerRoutes(
                 val list = ratingRepository.getServiceReviews(workspaceId, limit, offset)
                 call.respond(list)
             }
-            
+
             get("/client-ratings") {
                 val workspaceId = call.getWorkspaceIdOrThrow()
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 accessControlService.requirePartnerAccess(userId,workspaceId, true)
-                
+
                 val limit = call.request.queryParameters["limit"]?.toIntOrNull() ?: 50
                 val offset = call.request.queryParameters["offset"]?.toLongOrNull() ?: 0L
-                
+
                 val list = ratingRepository.getClientRatings(workspaceId, limit, offset)
                 call.respond(list)
             }
@@ -161,12 +161,12 @@ fun Route.partnerRoutes(
                 val history = transactionService.getPartnerHistory(workspaceId)
                 call.respond(history)
             }
-            
+
             post("/create") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<CreatePartnerRequest>()
                 val timeZone = call.getTimezone()
-                
+
                 if (request.businessName.isBlank()) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
                 }
@@ -176,7 +176,7 @@ fun Route.partnerRoutes(
                 }
 
                 val partnerId = partnerRepository.createPartner(userId, timeZone, request)
-                
+
                 // Send Welcome Email
                 val user = userRepository.getUserById(userId)
                 user?.email?.let {
@@ -227,7 +227,7 @@ fun Route.partnerRoutes(
                     partnerId = partner.id,
                     payload = "Owner PIN updated"
                 )
-                
+
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "PIN updated"))
             }
 
@@ -242,7 +242,7 @@ fun Route.partnerRoutes(
                 }
                 partnerRepository.clearPartnerPin(workspaceId)
                 userRepository.setFrozenUntil(userId, nowUtc().plusHours(PIN_FREEZE_HOURS).toUtcMillis())
-                
+
                 eventLogger.log(
                     type = SystemEventType.PIN_RESET_SUCCESS,
                     userId = userId,
@@ -327,7 +327,7 @@ fun Route.partnerRoutes(
                 val pointId = call.parameters["pointId"]!!
 
                 val details = tradingPointRepository.getPointDetails(pointId, workspaceId)
-                
+
                 call.respond(details)
             }
 
@@ -358,14 +358,14 @@ fun Route.partnerRoutes(
                  tradingPointRepository.deleteTradingPoint(pointId)
                  call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }
-            
+
             get("/points/{pointId}/cashiers") {
                 val workspaceId = call.getWorkspaceIdOrThrow()
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 accessControlService.requirePartnerAccess(userId,workspaceId, true)
                 val pointId = call.parameters["pointId"]!!
 
-                
+
                 val list = partnerStaffRepository.getCashiersByPoint(pointId)
                 call.respond(list)
             }
@@ -382,7 +382,7 @@ fun Route.partnerRoutes(
                     call.respond(HttpStatusCode.NotFound, ApiMessage(AppErrorCode.USER_NOT_FOUND, "Cashier not found in your business"))
                     return@delete
                 }
-                
+
                 partnerStaffRepository.removeStaffMember(requesterUserId = userId,  partnerId = workspaceId, targetUserId = cashierId, targetPointId = pointId, targetRole = UserRole.CASHIER)
                 deviceTokenRepository.deleteToken(userId, DevicePlatform.ANDROID, UserRole.CASHIER, pointId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
@@ -405,7 +405,7 @@ fun Route.partnerRoutes(
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@put
                 accessControlService.requirePartnerAccess(userId,workspaceId, false)
                 val request = call.receive<UpdatePartnerRequest>()
-                
+
                 if (request.businessName.isBlank()) {
                     throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Business name cannot be empty")
                 }
@@ -458,22 +458,22 @@ fun Route.partnerRoutes(
                 accessControlService.requirePartnerAccess(userId,workspaceId, false)
 
                 val partner = partnerRepository.getPartnerByIdOrThrow(workspaceId, false)
-                
+
                 val code = partnerRepository.getManagerInvite(partner.ownerId)
                 call.respond(mapOf("inviteCode" to code))
             }
-            
+
             post("/managers/join") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
-                val request = call.receive<JoinTradingPointRequest>() 
-                
+                val request = call.receive<JoinTradingPointRequest>()
+
                 val partnerId = partnerRepository.findPartnerByManagerInvite(request.inviteCode)
                     ?: throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE)
 
                 partnerStaffRepository.addManager(userId, partnerId)
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Joined as Manager!"))
             }
-            
+
             get("/managers") {
                 val workspaceId = call.getWorkspaceIdOrThrow()
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
@@ -482,13 +482,13 @@ fun Route.partnerRoutes(
                 val list = partnerStaffRepository.getManagers(workspaceId)
                 call.respond(list)
             }
-            
+
             delete("/managers/{id}") {
                 val workspaceId = call.getWorkspaceIdOrThrow()
                  val userId = call.getUserIdOrRespond(accessControlService) ?: return@delete
                  accessControlService.requirePartnerAccess(userId,workspaceId, false)
                  val managerId = call.parameters["id"]!!
-                 
+
                  partnerStaffRepository.removeStaffMember(userId, workspaceId, managerId, UserRole.PARTNER_MANAGER)
                  call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS))
             }

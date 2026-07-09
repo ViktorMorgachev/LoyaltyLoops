@@ -28,7 +28,7 @@ fun Route.configRoutes(
     val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", 15000)
 
     get("/config") {
-        
+
         val features = FeatureToggleDto(
             pushEnabled = applicationConfig.bool("features.pushEnabled", true),
             enableTestSupport = applicationConfig.bool("features.enableTestSupport", false)

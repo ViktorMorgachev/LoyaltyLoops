@@ -241,7 +241,7 @@ fun Route.authRoutes(
                 val (access, refresh) = tokenService.generateTokens(user)
                 val expiresAt = System.currentTimeMillis() + tokenService.refreshLifetime
                 refreshTokenRepository.saveRefreshToken(refresh, user.id, expiresAt)
-                
+
                 eventLogger.log(
                     type = SystemEventType.LOGIN,
                     userId = user.id,

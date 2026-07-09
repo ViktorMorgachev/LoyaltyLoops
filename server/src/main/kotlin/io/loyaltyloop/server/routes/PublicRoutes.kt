@@ -30,14 +30,14 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
             }
 
             waitlistRepository.add(request.email)
-            
+
             call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Added to waitlist"))
         }
 
         get("/open-app") {
             val lang = call.request.queryParameters["lang"] ?: "en"
             val uuid = call.request.queryParameters["uuid"]
-            
+
             val titleMap = mapOf(
                 "en" to "Opening App...",
                 "ru" to "Открываем приложение...",
@@ -57,7 +57,7 @@ fun Route.publicRoutes(waitlistRepository: WaitlistRepository) {
 
             val title = titleMap[lang] ?: titleMap["en"]!!
             val btn = btnMap[lang] ?: btnMap["en"]!!
-            
+
             val appLink = if (uuid != null) "loyaltyloop://auth?uuid=$uuid" else "loyaltyloop://auth"
 
             val html = """

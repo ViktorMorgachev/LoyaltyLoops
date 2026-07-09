@@ -93,9 +93,9 @@ class RatingService(
 
         val lastRatings = ratingRepository.getLastRatingsForUser(dto.userId, partnerId, 20)
         val newScore = calculateTrustScore(lastRatings)
-        
+
         updateTrustScore(currentCard.id, newScore, fraudFlag)
-        
+
         val riskLevel = when {
             fraudFlag -> RiskLevel.BLACK
             newScore >= 4.5 -> RiskLevel.GREEN
@@ -103,13 +103,13 @@ class RatingService(
             newScore >= 2.0 -> RiskLevel.ORANGE
             else -> RiskLevel.RED
         }
-        
+
         return TrustScoreDto(newScore, riskLevel, fraudFlag)
     }
-    
+
     suspend fun rateService(userId: String, dto: CreateServiceReviewDto) {
         val partnerId = tradingPointRepository.getPartnerIdByPointId(dto.tradingPointId)
-        
+
         ratingRepository.createServiceReview(partnerId, userId, dto)
     }
 
@@ -126,9 +126,9 @@ class RatingService(
 
     private fun calculateTrustScore(ratings: List<RatingRepository.ClientRatingEntity>): Double {
         if (ratings.isEmpty()) return 4.0
-        
+
         var totalScore = 0.0
-        
+
         for (r in ratings) {
             var score = r.rating.toDouble()
             for (tag in r.tags) {
@@ -140,7 +140,7 @@ class RatingService(
             }
             totalScore += score
         }
-        
+
         val avg = totalScore / ratings.size
         return avg.coerceIn(0.0, 5.0)
     }

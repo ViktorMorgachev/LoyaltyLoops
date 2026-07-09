@@ -352,7 +352,7 @@ class TransactionService(
 
         val typeStr = if (isReward) "VISIT_REWARD" else "VISIT_PROGRESS"
         val successType = if (isReward) TransactionSuccessType.VISIT_REWARD else TransactionSuccessType.VISIT_PROGRESS
-        
+
         val successArgs = if (isReward) {
             loyaltyCardRepository.dropVisits(card.id, updatedAt)
             listOf(target.toString())
@@ -441,7 +441,7 @@ class TransactionService(
         var clientArgs: List<String>
 
         // 1. Формирование ответа для КАССИРА (Все в ЛОКАЛЬНОЙ валюте)
-        // Пример для кассира: 
+        // Пример для кассира:
         // 1. Списание + Начисление -> "Списано: 500, Начислено: 150" (В валюте точки, например, сомах)
         // 2. Только списание -> "Списано: 500"
         // 3. Только начисление -> "Начислено: 150"
@@ -464,7 +464,7 @@ class TransactionService(
         // Для простоты покажем Базовые баллы. Если есть разница курсов, можно добавить второй аргумент.
         // Но TransactionSuccessType имеет фиксированное кол-во аргументов для UI.
         // Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType, либо передавать "10 (~850 сом)" как один аргумент.
-        
+
         val showApprox = rate != 1.0 && rate > 0
 
         fun formatEarned(base: Double, local: Double): String {
@@ -476,10 +476,10 @@ class TransactionService(
         // 2. Только списание -> "Списано: 500" (Скидка всегда локальна)
         // 3. Только начисление -> "Начислено: 10 (~850 сом)" (Баллы клиента растут в базовой валюте)
         // 4. Инфо -> "Баланс: 150" (Общий баланс клиента в базовой валюте)
-        
+
         // Исправление: Клиенту показываем списание в БАЗОВОЙ валюте (баллах), так как это списание с его баланса.
         val spentBase = toBase(spentLocal)
-        
+
         if (spentLocal > 0 && earnedBase > 0) {
             clientSuccessType = TransactionSuccessType.POINTS_SPENT_EARNED
             // Списание показываем в баллах (spentBase), Начисление - в баллах (earnedBase)
@@ -502,7 +502,7 @@ class TransactionService(
              val moneyAddToLtv = if (mergeMoneyIntoSpend) moneyPaidBase else 0.0
 
             loyaltyCardRepository.addCashback(card.id, -spentBase, moneyAddToLtv, updatedAt)
-            
+
             historyRepository.recordTransaction(
                 userId = card.userId,
                 pointId = tradingPointId,

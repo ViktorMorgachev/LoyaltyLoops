@@ -112,7 +112,7 @@ class RedisService(config: ApplicationConfig) {
             jedis.del(key)
         }
     }
-    
+
     fun close() {
         pool.close()
     }

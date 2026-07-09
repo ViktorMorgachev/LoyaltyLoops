@@ -78,7 +78,7 @@ object LoyaltyCalculator {
         if (strategy == TransactionStrategy.SPEND) {
             // Лимит списания: (Сумма чека * MaxBurn%)
             val maxBurn = LoyaltyFormatter.round(safeAmount * (maxBurnPercentage / 100.0))
-            
+
             // Фактическое списание = Минимум(Баланс карты, Лимит списания)
             pointsToSpend = minOf(card.balance, maxBurn)
         }

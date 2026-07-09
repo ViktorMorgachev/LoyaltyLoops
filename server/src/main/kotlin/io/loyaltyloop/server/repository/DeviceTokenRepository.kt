@@ -90,7 +90,7 @@ class DeviceTokenRepository {
                     it[updatedAt] = timestamp
                 }
             } catch (_: Exception) {
-                // If insert failed (likely unique constraint violation due to race condition), 
+                // If insert failed (likely unique constraint violation due to race condition),
                 // try update one last time
                 DeviceTokensTable.update({ DeviceTokensTable.token eq token }) {
                     it[user] = userUuid
