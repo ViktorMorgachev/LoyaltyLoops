@@ -249,7 +249,7 @@ class RatingRepository {
         // 1. Настраиваем Таймзону (для графика по дням)
         val zoneId = try {
             java.time.ZoneId.of(timezone)
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             java.time.ZoneId.of("UTC")
         }
 

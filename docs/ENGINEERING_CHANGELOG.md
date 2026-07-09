@@ -15,6 +15,17 @@
 
 ---
 
+## 2026-07-07 — TD-020 (частично): проглоченные исключения и мёртвый код
+
+### Внедрено
+- `LoyaltyException` принимает `cause` — оригинальные исключения больше не теряются (`StringExt.toUUID`, `PartnerRepository`, `ClientRoutes`, `PartnerRoutes`).
+- Все 14 `SwallowedException` устранены: осознанные фоллбэки (ZoneId→UTC, UUID→null, WS-disconnect) помечены `catch (_: ...)` по конвенции detekt; в `MapsRoutes` тихое `emptyList` при ошибке БД теперь логируется `warn`.
+- Удалён мёртвый код: константы анти-абьюза в `RatingService` (логика давно в конфиге/репозитории), параметры `viewerIsPartner` (SupportChatRepository), `userId`/`role` в проверках SystemStaffRepository, `partnerRepository` в mapsRoutes, неиспользуемый логгер AuthSessionRepository.
+- Удалён дубль baseline (`server/detekt-baseline.xml`); действующий — `config/detekt/baseline-server.xml`.
+- Изменённые файлы: 12 файлов server (routes, repositories, services, utils), `Application.kt`.
+
+---
+
 ## 2026-07-07 — TD-017/TD-018: детерминированная Docker-сборка сервера
 
 ### Внедрено

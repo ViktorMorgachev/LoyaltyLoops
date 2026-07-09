@@ -12,14 +12,12 @@ import kotlinx.coroutines.Dispatchers
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.slf4j.LoggerFactory
 import java.sql.Connection
 import java.time.temporal.ChronoUnit
 
 // TODO checked
 class AuthSessionRepository {
 
-    private val logger = LoggerFactory.getLogger(AuthSessionRepository::class.java)
     suspend fun createSession(ttlMs: Long): String = dbQuery {
         val now = nowUtc()
         val expirationTime = now.plus(ttlMs, ChronoUnit.MILLIS)

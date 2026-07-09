@@ -39,7 +39,7 @@ class DeviceTokenRepository {
 
         if (!workspaceId.isNullOrBlank() && workspaceId != "platform") {
 
-            val wsUuid = try { UUID.fromString(workspaceId) } catch (e: Exception) { null }
+            val wsUuid = try { UUID.fromString(workspaceId) } catch (_: Exception) { null }
 
             if (wsUuid != null) {
                 when (role) {
@@ -89,7 +89,7 @@ class DeviceTokenRepository {
                     it[tradingPoint] = pointUuid
                     it[updatedAt] = timestamp
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 // If insert failed (likely unique constraint violation due to race condition), 
                 // try update one last time
                 DeviceTokensTable.update({ DeviceTokensTable.token eq token }) {
@@ -113,7 +113,7 @@ class DeviceTokenRepository {
         val userUuid = userId.toUUID()
 
         val wsUuid = workspaceId?.let {
-            try { UUID.fromString(it) } catch (e: Exception) { null }
+            try { UUID.fromString(it) } catch (_: Exception) { null }
         }
 
         DeviceTokensTable.deleteWhere {

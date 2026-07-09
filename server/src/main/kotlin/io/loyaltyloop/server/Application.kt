@@ -356,7 +356,6 @@ fun Application.module() {
 
             mapsRoutes(
                 applicationConfig = environment!!.config,
-                partnerRepository = partnerRepository,
                 userRepository = userRepository,
                 tradingPointRepository = tradingPointRepository,
                 mapRepository = mapRepository,

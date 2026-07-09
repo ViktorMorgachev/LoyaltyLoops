@@ -213,8 +213,9 @@
 - **Почему это техдолг:** нарушения реальные, просто отложенные. Приоритетные категории: `TooGenericExceptionCaught`/`SwallowedException` (~50 — проглоченные ошибки скрывают инциденты), подозрительные `UnusedParameter`/`UnusedPrivateProperty` (например, `SupportChatRepository.viewerIsPartner`, неиспользуемые константы анти-абьюза в `RatingService` — возможно, потерянная логика), сложность (`authRoutes` CC=38, `partnerRoutes` 366 строк), `WildcardImport` (~30 файлов), `MagicNumber` (шум, много в table objects).
 - **Риск:** baseline «замораживает» и настоящие баги (проглоченные исключения, мёртвые параметры).
 - **Приоритет:** 🟡 Medium (пункт про Swallowed/Unused — 🟠 High)
-- **Что нужно сделать:** выжигать по категориям, начиная со SwallowedException и Unused*; при каждом рефакторинге файла — чистить его из baseline; не добавлять новые записи в baseline без ревью.
-- **Когда делать:** инкрементально; Swallowed/Unused — отдельной задачей в ближайший спринт.
+- **Что нужно сделать:** выжигать по категориям; при каждом рефакторинге файла — чистить его из baseline; не добавлять новые записи в baseline без ревью.
+- **Когда делать:** инкрементально.
+- **Прогресс 2026-07-07:** ✅ SwallowedException (14/14): осознанные фоллбэки помечены `catch (_: ...)` (конвенция detekt), потеря исключений исправлена — `LoyaltyException` теперь принимает `cause`, в `MapsRoutes` добавлен `logger.warn` вместо тихого `emptyList`. ✅ Unused в main-коде (7): удалены мёртвые константы анти-абьюза в `RatingService`, неиспользуемые параметры `viewerIsPartner`, `checkForRolePermission(userId)`, `checkExistingRole(role)`, `mapsRoutes(partnerRepository)`, логгер в `AuthSessionRepository`. Удалён дубль `server/detekt-baseline.xml`. Остались: Unused в тестах (полудописанные проверки в `ValidationUtilsTest`/`AuthTest` — требуют дописывания, не удаления), сложность роутов, WildcardImport. Конфиг detekt перенастроен на значимое: MagicNumber игнорирует объявления свойств (varchar-длины и т.п.), MaxLineLength не проверяет `i18n/`, для exceptions-правил явно закреплена конвенция `ignored|expected|_`. После изменения конфига baseline перегенерировать.
 
 ---
 

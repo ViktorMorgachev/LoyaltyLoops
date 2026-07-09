@@ -31,9 +31,17 @@ output-reports:
 style:
   MagicNumber:
     active: true
+    # Числа в объявлениях свойств (varchar-длины в table objects, дефолты конфигов) — не магия
+    ignorePropertyDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+    ignoreEnums: true
+    ignoreRanges: true
+    ignoreNumbers: ['-1', '0', '1', '2', '100', '1000']
   MaxLineLength:
     active: true
     maxLineLength: 140
+    # Файлы локализаций — длинные строки переводов неизбежны
+    excludes: ['**/i18n/**']
   WildcardImport:
     active: true
   TrailingWhitespace:
@@ -46,6 +54,15 @@ complexity:
   LongMethod:
     active: true
     threshold: 120
+
+exceptions:
+  # Осознанное проглатывание — только с именем ignored/expected/_ (см. TD-020)
+  SwallowedException:
+    active: true
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
+  TooGenericExceptionCaught:
+    active: true
+    allowedExceptionNameRegex: '_|(ignore|expected).*'
 
 comments:
   UndocumentedPublicFunction:

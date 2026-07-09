@@ -125,7 +125,6 @@ class SupportChatRepository {
     }
 
     suspend fun getThreads(
-        viewerIsPartner: Boolean,
         partnerId: String? = null,
         limit: Int = 20,
         offset: Long = 0

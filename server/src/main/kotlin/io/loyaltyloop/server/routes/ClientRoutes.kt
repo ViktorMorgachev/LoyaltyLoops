@@ -120,12 +120,12 @@ fun Route.clientRoutes(
                 
                 val token = try {
                     call.receive<DeleteDeviceTokenRequest>().token
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Fallback for older clients sending DeviceTokenContext
                     try {
                          call.receive<DeviceTokenContext>().token
-                    } catch (e2: Exception) {
-                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid body")
+                    } catch (e: Exception) {
+                        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid body", e)
                     }
                 }
                 

@@ -17,7 +17,11 @@ import java.math.BigDecimal
 class PartnerRepository(private val subscriptionRepository: SubscriptionRepository) {
 
     suspend fun getPartnerByIdOrThrow(partnerId: String, loadOtherData: Boolean = true): PartnerEntity = dbQuery {
-        val uuid = try { partnerId.toUUID() } catch (e: Exception) { throw LoyaltyException(AppErrorCode.INVALID_REQUEST, message =  "PartnerId invalid") }
+        val uuid = try {
+            partnerId.toUUID()
+        } catch (e: LoyaltyException) {
+            throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "PartnerId invalid", e)
+        }
 
         val row = PartnersTable
             .selectAll()

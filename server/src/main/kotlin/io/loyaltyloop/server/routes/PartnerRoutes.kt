@@ -148,7 +148,7 @@ fun Route.partnerRoutes(
                 val period = try {
                     AnalyticsPeriod.valueOf(periodStr.uppercase())
                 } catch (e: IllegalArgumentException) {
-                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid period. Use WEEK, MONTH, SIX_MONTHS, YEAR")
+                    throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid period. Use WEEK, MONTH, SIX_MONTHS, YEAR", e)
                 }
 
                 val analytics = analyticsService.getAnalytics(workspaceId, period, timezone)

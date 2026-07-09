@@ -56,7 +56,7 @@ suspend fun ApplicationCall.getUserIdOrRespond(
 
     val userUuid = try {
         UUID.fromString(userId)
-    } catch (e: IllegalArgumentException) {
+    } catch (_: IllegalArgumentException) {
         respond(HttpStatusCode.Unauthorized, ApiMessage(AppErrorCode.UNAUTHORIZED, "Invalid User ID format"))
         return null
     }
@@ -108,7 +108,7 @@ fun ApplicationCall.getTimezone(): String {
     // лучше вернуть UTC, чем уронить сервер исключением Java Time.
     return try {
         ZoneId.of(timezoneId).id
-    } catch (e: Exception) {
+    } catch (_: Exception) {
         "UTC" // Фоллбэк только на случай некорректного формата, но не отсутствия хедера
     }
 }

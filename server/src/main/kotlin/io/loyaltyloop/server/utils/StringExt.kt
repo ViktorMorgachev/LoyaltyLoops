@@ -26,6 +26,6 @@ fun String.toUUID(): UUID {
     return try {
         UUID.fromString(this)
     } catch (e: IllegalArgumentException) {
-        throw LoyaltyException(code = AppErrorCode.INVALID_REQUEST, "Invalid UUID format: $this message = ${e.message}")
+        throw LoyaltyException(AppErrorCode.INVALID_REQUEST, "Invalid UUID format: $this", e)
     }
 }

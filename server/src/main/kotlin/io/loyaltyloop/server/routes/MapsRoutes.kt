@@ -10,7 +10,6 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 import io.loyaltyloop.server.repository.MapRepository
 import io.loyaltyloop.server.models.TradingPointSearchCriteria
-import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.service.AccessControlService
@@ -23,11 +22,13 @@ import io.loyaltyloop.shared.models.ApiMessage
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.TradingPointDto
 import io.loyaltyloop.shared.models.TradingPointType
+import org.slf4j.LoggerFactory
+
+private val logger = LoggerFactory.getLogger("MapsRoutes")
 
 // TODO checked
 fun Route.mapsRoutes(
     applicationConfig: ApplicationConfig,
-    partnerRepository: PartnerRepository,
     userRepository: UserRepository,
     tradingPointRepository: TradingPointRepository,
     mapRepository: MapRepository,
@@ -48,6 +49,7 @@ fun Route.mapsRoutes(
                     val points = tradingPointRepository.getPointsByPartnerId(workspaceId)
                     call.respond(points)
                 } catch (e: Exception) {
+                    logger.warn("Failed to load partner points for workspace", e)
                     call.respond(emptyList<TradingPointDto>())
                 }
             }

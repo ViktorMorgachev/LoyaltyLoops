@@ -53,8 +53,8 @@ class SupportChatWebSocketHandler(
 
         try {
             drainIncoming(session)
-        } catch (e: ClosedReceiveChannelException) {
-            // OK
+        } catch (_: ClosedReceiveChannelException) {
+            // Штатное закрытие соединения клиентом
         } finally {
             supportChatService.unregisterPartnerSession(targetPartnerId, session)
         }
@@ -81,8 +81,8 @@ class SupportChatWebSocketHandler(
         supportChatService.registerAdminSession(userId, session)
         try {
             drainIncoming(session)
-        } catch (e: ClosedReceiveChannelException) {
-            // OK
+        } catch (_: ClosedReceiveChannelException) {
+            // Штатное закрытие соединения клиентом
         } finally {
             supportChatService.unregisterAdminSession(userId, session)
         }

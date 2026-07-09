@@ -75,14 +75,14 @@ class SystemEventRepository {
         if (filter.userId != null) {
             try {
                 query.andWhere { SystemEventsTable.user eq filter.userId.toUUID() }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 query.andWhere { Op.FALSE }
             }
         }
         if (filter.partnerId != null) {
             try {
                 query.andWhere { SystemEventsTable.partner eq filter.partnerId.toUUID() }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 query.andWhere { Op.FALSE }
             }
         }

@@ -26,10 +26,6 @@ class RatingService(
 ) {
     private val logger = LoggerFactory.getLogger("RatingService")
 
-    // Configuration
-    private val MAX_RATINGS_FOR_AVERAGE = 10
-    private val RATING_RESET_VISITS = 20
-    private val ANTI_ABUSE_RATING_COOLDOWN_HOURS = 12 // 1 rating per cashier per client half day
 
     // Feature Flag
     private val enableCooldown: Boolean
