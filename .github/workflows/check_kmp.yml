@@ -23,7 +23,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew :composeApp:assembleDebug :composeApp:lintDebug --no-daemon
+        run: ./gradlew :composeApp:assembleDebug :composeApp:lintLoyaltyloopDebug --no-daemon
 
       - name: Detekt (server)
         run: ./gradlew :server:detekt --no-daemon
