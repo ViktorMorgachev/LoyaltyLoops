@@ -6,6 +6,7 @@ import io.loyaltyloop.server.repository.LoyaltyCardRepository
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PartnerStaffRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.repository.TransactionRecord
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
@@ -368,17 +369,19 @@ class TransactionService(
         }
 
         historyRepository.recordTransaction(
-            userId = card.userId,
-            pointId = tradingPointId,
-            cashierId = staffId,
-            type = typeStr,
-            amount = 0.0,
-            pointsDelta = 0.0,
-            visitsDelta = 1,
-            currency = currency,
-            exchangeRate = rate,
-            updatedAt = updatedAt,
-            pointsBaseValue = 0.0
+            TransactionRecord(
+                userId = card.userId,
+                pointId = tradingPointId,
+                cashierId = staffId,
+                type = typeStr,
+                amount = 0.0,
+                pointsDelta = 0.0,
+                visitsDelta = 1,
+                currency = currency,
+                exchangeRate = rate,
+                updatedAt = updatedAt,
+                pointsBaseValue = 0.0
+            )
         )
 
         eventLogger.log(
@@ -507,17 +510,19 @@ class TransactionService(
             loyaltyCardRepository.addCashback(card.id, -spentBase, moneyAddToLtv, updatedAt)
 
             historyRepository.recordTransaction(
-                userId = card.userId,
-                pointId = tradingPointId,
-                cashierId = staffId,
-                type = TransactionTypeHistory.POINTS_SPENT.name,
-                amount = moneyToRecordInSpend,
-                pointsDelta = -spentLocal,
-                visitsDelta = 0,
-                currency = currency,
-                exchangeRate = rate,
-                pointsBaseValue = -spentBase,
-                updatedAt = updatedAt
+                TransactionRecord(
+                    userId = card.userId,
+                    pointId = tradingPointId,
+                    cashierId = staffId,
+                    type = TransactionTypeHistory.POINTS_SPENT.name,
+                    amount = moneyToRecordInSpend,
+                    pointsDelta = -spentLocal,
+                    visitsDelta = 0,
+                    currency = currency,
+                    exchangeRate = rate,
+                    pointsBaseValue = -spentBase,
+                    updatedAt = updatedAt
+                )
             )
              eventLogger.log(
                 type = SystemEventType.REDEMPTION,
@@ -536,17 +541,19 @@ class TransactionService(
             loyaltyCardRepository.addCashback(card.id, earnedBaseVal, moneyAddToLtv, updatedAt)
 
             historyRepository.recordTransaction(
-                userId = card.userId,
-                pointId = tradingPointId,
-                cashierId = staffId,
-                type = TransactionTypeHistory.EARN.name,
-                amount = calc.moneyPaid,
-                pointsDelta = earnedLocal,
-                visitsDelta = 0,
-                currency = currency,
-                exchangeRate = rate,
-                pointsBaseValue = earnedBaseVal,
-                updatedAt = updatedAt
+                TransactionRecord(
+                    userId = card.userId,
+                    pointId = tradingPointId,
+                    cashierId = staffId,
+                    type = TransactionTypeHistory.EARN.name,
+                    amount = calc.moneyPaid,
+                    pointsDelta = earnedLocal,
+                    visitsDelta = 0,
+                    currency = currency,
+                    exchangeRate = rate,
+                    pointsBaseValue = earnedBaseVal,
+                    updatedAt = updatedAt
+                )
             )
              eventLogger.log(
                 type = SystemEventType.ACCRUAL,

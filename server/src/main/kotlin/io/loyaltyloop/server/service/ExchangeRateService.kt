@@ -149,8 +149,9 @@ class ExchangeRateService(
                 if (relevantRates.isNotEmpty()) {
                     saveRatesToDbAndCache(base, relevantRates)
                 }
+            } catch (e: kotlin.coroutines.cancellation.CancellationException) {
+                throw e
             } catch (e: Exception) {
-                if (e is kotlin.coroutines.cancellation.CancellationException) throw e
                 logger.error("❌ Failed to update rates for base $base", e)
             }
         }

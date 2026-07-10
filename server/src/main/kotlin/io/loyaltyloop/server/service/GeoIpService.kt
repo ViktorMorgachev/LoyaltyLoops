@@ -14,6 +14,10 @@ class GeoIpService(
 ) {
     private val logger = LoggerFactory.getLogger(GeoIpService::class.java)
 
+    private fun isLocalOrPrivateIp(ip: String): Boolean =
+        ip == "127.0.0.1" || ip == "0:0:0:0:0:0:0:1" ||
+            ip.startsWith("192.168.") || ip.startsWith("10.")
+
     @Serializable
     data class GeoResponse(
         val countryCode: String? = null, // e.g. "KG", "RU"
@@ -21,7 +25,7 @@ class GeoIpService(
     )
 
     suspend fun getCountryByIp(ip: String): CountryCode? = withContext(Dispatchers.IO) {
-        if (ip == "127.0.0.1" || ip == "0:0:0:0:0:0:0:1" || ip.startsWith("192.168.") || ip.startsWith("10.")) return@withContext null
+        if (isLocalOrPrivateIp(ip)) return@withContext null
 
         val url = "https://ip-api.com/json/$ip?fields=status,countryCode"
 
