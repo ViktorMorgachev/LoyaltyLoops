@@ -40,6 +40,11 @@ import java.util.UUID
 // TODO checked
 class RatingRepository {
 
+    private companion object {
+        const val NPS_PROMOTER_SCORE = 5
+        const val NPS_DETRACTOR_MAX = 3
+    }
+
     private val cashierUserTable = UsersTable.alias("cashier_users")
     suspend fun createClientRating(
         partnerId: String,
@@ -82,9 +87,10 @@ class RatingRepository {
 
     private fun updateTradingPointRating(pointUuid: UUID, newVote: Int) {
         TradingPointsTable.update({ TradingPointsTable.id eq pointUuid }) {
-            val totalScore = (rating.castTo<Double>(DoubleColumnType()) * ratingCount.castTo<Double>(DoubleColumnType())) + newVote.toDouble()
+            val totalScore =
+                (rating.castTo<Double>(DoubleColumnType()) * ratingCount.castTo<Double>(DoubleColumnType())) + newVote.toDouble()
             val newCount = ratingCount + 1
-            
+
             it[rating] = totalScore / newCount.castTo<Double>(DoubleColumnType())
             it[ratingCount] = newCount
         }
@@ -319,8 +325,8 @@ class RatingRepository {
 
         // NPS (Net Promoter Score)
         // 5 = Promoter, 4 = Passive, 1-3 = Detractor
-        val promoters = rows.count { it[ServiceReviewsTable.rating] == 5 }
-        val detractors = rows.count { it[ServiceReviewsTable.rating] <= 3 }
+        val promoters = rows.count { it[ServiceReviewsTable.rating] == NPS_PROMOTER_SCORE }
+        val detractors = rows.count { it[ServiceReviewsTable.rating] <= NPS_DETRACTOR_MAX }
         val nps = if (total > 0) ((promoters - detractors).toDouble() / total * 100).toInt() else 0
 
         // --- Б. ГРАФИК ПО ДНЯМ (С учетом Таймзоны) ---
@@ -335,8 +341,8 @@ class RatingRepository {
             .map { (date, dailyRows) ->
                 val ratings = dailyRows.map { it[ServiceReviewsTable.rating] }
                 val count = ratings.size
-                val promDay = ratings.count { it == 5 }
-                val detDay = ratings.count { it <= 3 }
+                val promDay = ratings.count { it == NPS_PROMOTER_SCORE }
+                val detDay = ratings.count { it <= NPS_DETRACTOR_MAX }
                 val npsDay = if (count > 0) ((promDay - detDay).toDouble() / count * 100).toInt() else 0
 
                 AnalyticsSeriesPointDto(

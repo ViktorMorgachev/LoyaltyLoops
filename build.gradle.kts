@@ -21,7 +21,17 @@ allprojects {
     // 2. ИСПОЛЬЗУЕМ ЯВНУЮ КОНФИГУРАЦИЮ
     extensions.configure<DetektExtension> {
         toolVersion = "1.23.6"
-        config.setFrom(files("$rootDir/config/detekt/detekt.yml"))
+        // Базовый конфиг для всех модулей; composeApp получает доп. слой с Compose-спецификой
+        config.setFrom(
+            if (project.name == "composeApp") {
+                files(
+                    "$rootDir/config/detekt/detekt.yml",
+                    "$rootDir/config/detekt/detekt-compose.yml"
+                )
+            } else {
+                files("$rootDir/config/detekt/detekt.yml")
+            }
+        )
         buildUponDefaultConfig = true
         // Легаси-замечания зафиксированы в baseline (генерация: ./gradlew detektBaseline).
         // Новый код обязан быть чистым — baseline не обновлять без ревью.

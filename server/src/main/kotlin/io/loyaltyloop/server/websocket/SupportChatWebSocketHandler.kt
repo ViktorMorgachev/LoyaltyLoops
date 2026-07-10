@@ -11,6 +11,7 @@ import io.loyaltyloop.server.service.SupportChatService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.shared.models.UserRole
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
+import kotlinx.coroutines.channels.consumeEach
 
 class SupportChatWebSocketHandler(
     private val tokenService: TokenService,
@@ -106,8 +107,7 @@ class SupportChatWebSocketHandler(
     }
 
     private suspend fun drainIncoming(session: DefaultWebSocketServerSession) {
-        for (frame in session.incoming) {
-            // Ignore incoming messages (Read-only stream)
-        }
+        // Read-only stream: consume and ignore inbound frames.
+        session.incoming.consumeEach { }
     }
 }

@@ -22,6 +22,14 @@ class AnalyticsService(
     private val loyaltyCardRepository: LoyaltyCardRepository,
     private val partnerRepository: PartnerRepository,
 ) {
+    private companion object {
+        const val DAY_MS = 24L * 3600 * 1000
+        const val WEEK_LOOKBACK_MS = 6 * DAY_MS
+        const val MONTH_LOOKBACK_MS = 29 * DAY_MS
+        const val SIX_MONTHS_LOOKBACK_MS = 180 * DAY_MS
+        const val YEAR_LOOKBACK_MS = 365 * DAY_MS
+    }
+
     suspend fun getAnalytics(
         partnerId: String,
         period: io.loyaltyloop.shared.models.AnalyticsPeriod,
@@ -36,10 +44,10 @@ class AnalyticsService(
 
         val now = System.currentTimeMillis()
         val (from, grouping) = when (period) {
-            io.loyaltyloop.shared.models.AnalyticsPeriod.WEEK -> (now - 6 * 24 * 3600 * 1000L) to GroupingType.DAY // 7 days including today
-            io.loyaltyloop.shared.models.AnalyticsPeriod.MONTH -> (now - 29 * 24 * 3600 * 1000L) to GroupingType.DAY // 30 days
-            io.loyaltyloop.shared.models.AnalyticsPeriod.SIX_MONTHS -> (now - 180L * 24 * 3600 * 1000L) to GroupingType.MONTH
-            io.loyaltyloop.shared.models.AnalyticsPeriod.YEAR -> (now - 365L * 24 * 3600 * 1000L) to GroupingType.MONTH
+            io.loyaltyloop.shared.models.AnalyticsPeriod.WEEK -> (now - WEEK_LOOKBACK_MS) to GroupingType.DAY
+            io.loyaltyloop.shared.models.AnalyticsPeriod.MONTH -> (now - MONTH_LOOKBACK_MS) to GroupingType.DAY
+            io.loyaltyloop.shared.models.AnalyticsPeriod.SIX_MONTHS -> (now - SIX_MONTHS_LOOKBACK_MS) to GroupingType.MONTH
+            io.loyaltyloop.shared.models.AnalyticsPeriod.YEAR -> (now - YEAR_LOOKBACK_MS) to GroupingType.MONTH
         }
 
         val transactions = historyRepository.getTransactionsForAnalytics(partner!!.id, from, now)

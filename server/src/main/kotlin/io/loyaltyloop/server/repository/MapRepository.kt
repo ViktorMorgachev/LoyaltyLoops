@@ -24,6 +24,8 @@ import kotlin.math.cos
 
 // TODO checked
 private const val DEFAULT_TIMEZONE = "Asia/Bishkek"
+private const val BBOX_PADDING_FACTOR = 1.1
+private const val MINUTES_PER_HOUR = 60
 class MapRepository {
 
     suspend fun searchPublicPoints(
@@ -31,11 +33,13 @@ class MapRepository {
         offset: Long = 0,
         timezone: String,
     ): TradingPointSearchResponse = dbQuery {
-        val latDelta = Math.toDegrees((criteria.radiusMeters / EARTH_RADIUS_METERS) * 1.1)
+        val latDelta = Math.toDegrees((criteria.radiusMeters / EARTH_RADIUS_METERS) * BBOX_PADDING_FACTOR)
         val minLat = criteria.latitude - latDelta
         val maxLat = criteria.latitude + latDelta
 
-        val lonDelta = Math.toDegrees((criteria.radiusMeters / EARTH_RADIUS_METERS) * 1.1 / cos(Math.toRadians(criteria.latitude)))
+        val lonDelta = Math.toDegrees(
+            (criteria.radiusMeters / EARTH_RADIUS_METERS) * BBOX_PADDING_FACTOR / cos(Math.toRadians(criteria.latitude))
+        )
         val minLon = criteria.longitude - lonDelta
         val maxLon = criteria.longitude + lonDelta
 
@@ -107,7 +111,7 @@ class MapRepository {
         val zoneId = zoneIdSafe(timezone)
         val zoned = at.atZone(zoneId)
         val weekDay = zoned.dayOfWeek.toWeekDay()
-        val minutes = zoned.hour * 60 + zoned.minute
+        val minutes = zoned.hour * MINUTES_PER_HOUR + zoned.minute
 
         // 1. Находим расписание для ТЕКУЩЕГО дня недели в часовом поясе точки
         val daySchedule = days.firstOrNull { it.day == weekDay } ?: return false
@@ -139,7 +143,7 @@ class MapRepository {
             .getOrElse { ZoneId.of(DEFAULT_TIMEZONE) }
 
     private fun String.toMinutes(): Int? =
-        runCatching { LocalTime.parse(this).run { hour * 60 + minute } }.getOrNull()
+        runCatching { LocalTime.parse(this).run { hour * MINUTES_PER_HOUR + minute } }.getOrNull()
 
     private fun DayOfWeek.toWeekDay(): WeekDay =
         when (this) {

@@ -30,6 +30,10 @@ import io.loyaltyloop.server.websocket.SupportChatWebSocketHandler
 import okhttp3.OkHttpClient
 import org.koin.dsl.module
 
+private const val SMS_DEFAULT_PER_HOUR = 5
+private const val SMS_DEFAULT_MAX_OTP_ATTEMPTS = 3
+private const val SMS_DEFAULT_BLOCK_DURATION_MS = 3_600_000L
+
 val serviceModule = module {
     single { RedisService(get()) }
     single {
@@ -75,9 +79,9 @@ val serviceModule = module {
         } else {
             val smsRateLimits = SmsRateLimits(
                 maxPerMinute = config.int("sms.limits.perMinute", 1),
-                maxPerHour = config.int("sms.limits.perHour", 5),
-                maxFailedAttempts = config.int("sms.limits.maxOtpAttempts", 3),
-                blockDurationMs = config.long("sms.limits.blockDurationMs", 3_600_000L)
+                maxPerHour = config.int("sms.limits.perHour", SMS_DEFAULT_PER_HOUR),
+                maxFailedAttempts = config.int("sms.limits.maxOtpAttempts", SMS_DEFAULT_MAX_OTP_ATTEMPTS),
+                blockDurationMs = config.long("sms.limits.blockDurationMs", SMS_DEFAULT_BLOCK_DURATION_MS)
             )
             ConsoleSmsService(
                 otpService = get(),

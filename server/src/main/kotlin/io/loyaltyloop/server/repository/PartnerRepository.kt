@@ -29,6 +29,10 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.update
 
 // TODO checked
+private const val DEFAULT_VISITS_TARGET = 10
+private const val INACTIVITY_THRESHOLD_MONTHS = 6L
+private const val PHONE_PIN_SUFFIX_LENGTH = 4
+
 class PartnerRepository(private val subscriptionRepository: SubscriptionRepository) {
 
     suspend fun getPartnerByIdOrThrow(partnerId: String, loadOtherData: Boolean = true): PartnerEntity = dbQuery {
@@ -179,7 +183,7 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
             it[baseCurrency] = request.baseCurrency
             it[status] = PartnerStatus.PENDING
             it[adminPinHash] = pinHash
-            it[defaultVisitsTarget] = 10
+            it[defaultVisitsTarget] = DEFAULT_VISITS_TARGET
             it[color] = request.color ?: "#4F46E5"
             it[logoUrl] = request.logoUrl
             it[timezone] = timeZone
@@ -217,7 +221,7 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
                 .count() > 0
 
             if (hasTradingPoints) {
-                val sixMonthsAgo = nowUtc().minusMonths(6)
+                val sixMonthsAgo = nowUtc().minusMonths(INACTIVITY_THRESHOLD_MONTHS)
                 val recentTx = TransactionsHistoryTable
                     .innerJoin(TradingPointsTable)
                     .select {
@@ -245,7 +249,9 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
 
         request.tiers?.let { newTiers ->
             newTiers.forEach { tier ->
-                LoyaltyTiersTable.update({ (LoyaltyTiersTable.partner eq partnerUuid) and (LoyaltyTiersTable.levelIndex eq tier.levelIndex) }) {
+                LoyaltyTiersTable.update({
+                    (LoyaltyTiersTable.partner eq partnerUuid) and (LoyaltyTiersTable.levelIndex eq tier.levelIndex)
+                }) {
                     it[threshold] = tier.threshold.toBigDecimal()
                     it[cashbackPercent] = tier.cashbackPercent.toBigDecimal()
                 }
@@ -317,7 +323,7 @@ class PartnerRepository(private val subscriptionRepository: SubscriptionReposito
             ?.get(UsersTable.phoneNumber)
             ?: return@dbQuery false
 
-        return@dbQuery pinInput == ownerPhone.takeLast(4)
+        return@dbQuery pinInput == ownerPhone.takeLast(PHONE_PIN_SUFFIX_LENGTH)
     }
 
     suspend fun updatePartnerPin(partnerId: String, newPin: String) = dbQuery {

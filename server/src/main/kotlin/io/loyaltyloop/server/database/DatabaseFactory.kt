@@ -63,17 +63,22 @@ object DatabaseFactory {
         LoyaltyCardsTable
     )
 
+    private const val POOL_IDLE_TIMEOUT_MS = 120_000L
+    private const val POOL_KEEPALIVE_MS = 30_000L
+    private const val POOL_MAX_LIFETIME_MS = 300_000L
+    private const val POOL_MAX_SIZE = 10
+
     private fun config(driver: String, url: String, user: String, pass: String): HikariConfig{
         return HikariConfig().apply {
             driverClassName = driver
             jdbcUrl = url
             username = user
             password = pass
-            idleTimeout = 120_000 // 2 минуты простоя
-            keepaliveTime = 30_000 // Пинг каждые 30 сек
+            idleTimeout = POOL_IDLE_TIMEOUT_MS
+            keepaliveTime = POOL_KEEPALIVE_MS
             minimumIdle = 2
-            maximumPoolSize = 10
-            maxLifetime = 300_000
+            maximumPoolSize = POOL_MAX_SIZE
+            maxLifetime = POOL_MAX_LIFETIME_MS
             isAutoCommit = false
             connectionInitSql = "SET TIME ZONE 'UTC'"
             transactionIsolation = "TRANSACTION_READ_COMMITTED"

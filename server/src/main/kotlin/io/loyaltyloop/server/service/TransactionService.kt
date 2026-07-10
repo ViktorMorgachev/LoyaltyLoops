@@ -6,6 +6,7 @@ import io.loyaltyloop.server.repository.LoyaltyCardRepository
 import io.loyaltyloop.server.repository.PartnerRepository
 import io.loyaltyloop.server.repository.PartnerStaffRepository
 import io.loyaltyloop.server.repository.TradingPointRepository
+import io.loyaltyloop.server.repository.TransactionRecord
 import io.loyaltyloop.server.repository.UserRepository
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.nowUtc
@@ -35,6 +36,8 @@ import java.time.LocalDateTime
 import kotlin.math.abs
 
 // TODO Checked
+private const val QR_PARTS_COUNT = 4
+
 class TransactionService(
     private val userRepository: UserRepository,
     private val partnerRepository: PartnerRepository,
@@ -352,7 +355,7 @@ class TransactionService(
 
         val typeStr = if (isReward) "VISIT_REWARD" else "VISIT_PROGRESS"
         val successType = if (isReward) TransactionSuccessType.VISIT_REWARD else TransactionSuccessType.VISIT_PROGRESS
-        
+
         val successArgs = if (isReward) {
             loyaltyCardRepository.dropVisits(card.id, updatedAt)
             listOf(target.toString())
@@ -366,17 +369,19 @@ class TransactionService(
         }
 
         historyRepository.recordTransaction(
-            userId = card.userId,
-            pointId = tradingPointId,
-            cashierId = staffId,
-            type = typeStr,
-            amount = 0.0,
-            pointsDelta = 0.0,
-            visitsDelta = 1,
-            currency = currency,
-            exchangeRate = rate,
-            updatedAt = updatedAt,
-            pointsBaseValue = 0.0
+            TransactionRecord(
+                userId = card.userId,
+                pointId = tradingPointId,
+                cashierId = staffId,
+                type = typeStr,
+                amount = 0.0,
+                pointsDelta = 0.0,
+                visitsDelta = 1,
+                currency = currency,
+                exchangeRate = rate,
+                updatedAt = updatedAt,
+                pointsBaseValue = 0.0
+            )
         )
 
         eventLogger.log(
@@ -441,7 +446,7 @@ class TransactionService(
         var clientArgs: List<String>
 
         // 1. Формирование ответа для КАССИРА (Все в ЛОКАЛЬНОЙ валюте)
-        // Пример для кассира: 
+        // Пример для кассира:
         // 1. Списание + Начисление -> "Списано: 500, Начислено: 150" (В валюте точки, например, сомах)
         // 2. Только списание -> "Списано: 500"
         // 3. Только начисление -> "Начислено: 150"
@@ -463,8 +468,9 @@ class TransactionService(
         // 2. Формирование ответа для КЛИЕНТА (Обычно в BASE валюте, но если currencies differ -> показываем approx)
         // Для простоты покажем Базовые баллы. Если есть разница курсов, можно добавить второй аргумент.
         // Но TransactionSuccessType имеет фиксированное кол-во аргументов для UI.
-        // Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType, либо передавать "10 (~850 сом)" как один аргумент.
-        
+        // Если мы хотим показать "Начислено 10 баллов (~850 сом)", нам нужно либо менять successType,
+        // либо передавать "10 (~850 сом)" как один аргумент.
+
         val showApprox = rate != 1.0 && rate > 0
 
         fun formatEarned(base: Double, local: Double): String {
@@ -476,10 +482,10 @@ class TransactionService(
         // 2. Только списание -> "Списано: 500" (Скидка всегда локальна)
         // 3. Только начисление -> "Начислено: 10 (~850 сом)" (Баллы клиента растут в базовой валюте)
         // 4. Инфо -> "Баланс: 150" (Общий баланс клиента в базовой валюте)
-        
+
         // Исправление: Клиенту показываем списание в БАЗОВОЙ валюте (баллах), так как это списание с его баланса.
         val spentBase = toBase(spentLocal)
-        
+
         if (spentLocal > 0 && earnedBase > 0) {
             clientSuccessType = TransactionSuccessType.POINTS_SPENT_EARNED
             // Списание показываем в баллах (spentBase), Начисление - в баллах (earnedBase)
@@ -502,19 +508,21 @@ class TransactionService(
              val moneyAddToLtv = if (mergeMoneyIntoSpend) moneyPaidBase else 0.0
 
             loyaltyCardRepository.addCashback(card.id, -spentBase, moneyAddToLtv, updatedAt)
-            
+
             historyRepository.recordTransaction(
-                userId = card.userId,
-                pointId = tradingPointId,
-                cashierId = staffId,
-                type = TransactionTypeHistory.POINTS_SPENT.name,
-                amount = moneyToRecordInSpend,
-                pointsDelta = -spentLocal,
-                visitsDelta = 0,
-                currency = currency,
-                exchangeRate = rate,
-                pointsBaseValue = -spentBase,
-                updatedAt = updatedAt
+                TransactionRecord(
+                    userId = card.userId,
+                    pointId = tradingPointId,
+                    cashierId = staffId,
+                    type = TransactionTypeHistory.POINTS_SPENT.name,
+                    amount = moneyToRecordInSpend,
+                    pointsDelta = -spentLocal,
+                    visitsDelta = 0,
+                    currency = currency,
+                    exchangeRate = rate,
+                    pointsBaseValue = -spentBase,
+                    updatedAt = updatedAt
+                )
             )
              eventLogger.log(
                 type = SystemEventType.REDEMPTION,
@@ -533,17 +541,19 @@ class TransactionService(
             loyaltyCardRepository.addCashback(card.id, earnedBaseVal, moneyAddToLtv, updatedAt)
 
             historyRepository.recordTransaction(
-                userId = card.userId,
-                pointId = tradingPointId,
-                cashierId = staffId,
-                type = TransactionTypeHistory.EARN.name,
-                amount = calc.moneyPaid,
-                pointsDelta = earnedLocal,
-                visitsDelta = 0,
-                currency = currency,
-                exchangeRate = rate,
-                pointsBaseValue = earnedBaseVal,
-                updatedAt = updatedAt
+                TransactionRecord(
+                    userId = card.userId,
+                    pointId = tradingPointId,
+                    cashierId = staffId,
+                    type = TransactionTypeHistory.EARN.name,
+                    amount = calc.moneyPaid,
+                    pointsDelta = earnedLocal,
+                    visitsDelta = 0,
+                    currency = currency,
+                    exchangeRate = rate,
+                    pointsBaseValue = earnedBaseVal,
+                    updatedAt = updatedAt
+                )
             )
              eventLogger.log(
                 type = SystemEventType.ACCRUAL,
@@ -626,7 +636,7 @@ class TransactionService(
 
     private fun parseQrCode(qrContent: String): QrData {
         val parts = qrContent.split(":")
-        if (parts.size != 4 || parts[0] != "loyalty_v1") {
+        if (parts.size != QR_PARTS_COUNT || parts[0] != "loyalty_v1") {
             throw LoyaltyException(AppErrorCode.INVALID_QR_SIGNATURE, "Invalid QR code format")
         }
         return QrData(

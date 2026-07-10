@@ -34,6 +34,8 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 // TODO checked
+private const val TRIAL_PERIOD_DAYS = 14L
+
 class PlatformRepository(val systemEventRepository: SystemEventRepository) {
 
     private val requesterStaff = SystemStaffTable.alias("req_staff")
@@ -226,7 +228,9 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
                 .single()[PartnersTable.status]
 
             if (type == PlatformRequestType.ACTIVATE_POINT) {
-                if (partnerStatus == PartnerStatus.PENDING) throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")
+                if (partnerStatus == PartnerStatus.PENDING) {
+                    throw LoyaltyException(AppErrorCode.PARTNER_ON_REVIEW, "Partner is under review")
+                }
                 if (partnerStatus == PartnerStatus.BLOCKED) throw LoyaltyException(AppErrorCode.PARTNER_BLOCKED, "Partner is blocked")
             }
 
@@ -252,7 +256,7 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
                     val isTrial = requestRow[PlatformRequestsTable.isTrial]
 
                     val endDate = if (isTrial) {
-                        effectiveStartDate.plusDays(14)
+                        effectiveStartDate.plusDays(TRIAL_PERIOD_DAYS)
                     } else {
                         val duration = requestRow[PlatformRequestsTable.duration]
                         calculateEndDate(effectiveStartDate, duration!!)

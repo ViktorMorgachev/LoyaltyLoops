@@ -66,9 +66,9 @@ fun Route.adminRoutes(
 
                 val partnerId = call.parameters["id"] ?: return@post
                 val request = call.receive<ChangePartnerStatusRequest>()
-                
+
                 platformRepository.updatePartnerStatus(partnerId, request.status)
-                
+
                 call.respond(HttpStatusCode.OK, ApiMessage(AppErrorCode.SUCCESS, "Status changed to ${request.status}"))
             }
 

@@ -26,7 +26,7 @@ class ConsoleEmailService(
     override suspend fun sendEmail(to: String, template: EmailTemplate, lang: String?) {
         val subject = templateService.buildSubject(template, lang)
         val body = templateService.buildBody(template, lang)
-        
+
         // In production, integrate with SendGrid, AWS SES, Mailgun, etc.
         logger.info(
             """=== EMAIL SENT to $to ===
@@ -36,7 +36,7 @@ class ConsoleEmailService(
             ==================
         """.trimIndent()
         )
-        
+
         if (template is EmailTemplate.PartnerPinResetRequested) {
              EmailDebugStore.capturePinReset(template.resetLink)
         }
@@ -86,7 +86,10 @@ class ResendEmailService(
                 } else eventLogger.log(type = SystemEventType.EMAIL_SEND_SUCCESS, payload = "📧 Email sent to  $to via Resend")
 
             } else {
-                eventLogger.log(type = SystemEventType.EMAIL_SEND_ERROR, payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}")
+                eventLogger.log(
+                    type = SystemEventType.EMAIL_SEND_ERROR,
+                    payload = "❌ Failed to send email to $to. Status: ${response.code}. Body: ${response.body?.string()}"
+                )
             }
             response.close()
         } catch (e: Exception) {

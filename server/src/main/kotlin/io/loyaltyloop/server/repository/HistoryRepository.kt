@@ -23,36 +23,34 @@ import java.math.BigDecimal
 import java.time.LocalDateTime
 
 // TODO checked
-class HistoryRepository {
-    suspend fun recordTransaction(
-        userId: String,
-        pointId: String,
-        cashierId: String,
-        type: String,
-        amount: Double,
-        pointsDelta: Double,
-        visitsDelta: Int,
-        currency: String,
-        exchangeRate: Double,
-        pointsBaseValue: Double,
-        updatedAt: LocalDateTime
-    ) = dbQuery {
-        val userUuid = userId.toUUID()
-        val pointUuid = pointId.toUUID()
-        val cashierUuid = cashierId.toUUID()
+data class TransactionRecord(
+    val userId: String,
+    val pointId: String,
+    val cashierId: String,
+    val type: String,
+    val amount: Double,
+    val pointsDelta: Double,
+    val visitsDelta: Int,
+    val currency: String,
+    val exchangeRate: Double,
+    val pointsBaseValue: Double,
+    val updatedAt: LocalDateTime
+)
 
+class HistoryRepository {
+    suspend fun recordTransaction(record: TransactionRecord) = dbQuery {
         TransactionsHistoryTable.insert {
-            it[this.user] = userUuid
-            it[this.tradingPoint] = pointUuid
-            it[this.cashier] = cashierUuid
-            it[this.type] = TransactionTypeHistory.valueOf(type)
-            it[this.amount] = BigDecimal.valueOf(amount)
-            it[this.pointsDelta] = BigDecimal.valueOf(pointsDelta)
-            it[this.visitsDelta] = visitsDelta
-            it[this.currency] = currency
-            it[this.createdAt] = updatedAt
-            it[this.exchangeRateSnapshot] = BigDecimal.valueOf(exchangeRate)
-            it[this.pointsBaseValue] = BigDecimal.valueOf(pointsBaseValue)
+            it[this.user] = record.userId.toUUID()
+            it[this.tradingPoint] = record.pointId.toUUID()
+            it[this.cashier] = record.cashierId.toUUID()
+            it[this.type] = TransactionTypeHistory.valueOf(record.type)
+            it[this.amount] = BigDecimal.valueOf(record.amount)
+            it[this.pointsDelta] = BigDecimal.valueOf(record.pointsDelta)
+            it[this.visitsDelta] = record.visitsDelta
+            it[this.currency] = record.currency
+            it[this.createdAt] = record.updatedAt
+            it[this.exchangeRateSnapshot] = BigDecimal.valueOf(record.exchangeRate)
+            it[this.pointsBaseValue] = BigDecimal.valueOf(record.pointsBaseValue)
         }
     }
 

@@ -39,7 +39,7 @@ git diff main...feature-branch  # diff ветки
 |---|---|
 | `server/routes/` | Тонкость handlers, access control, rate limit, `documentation.yaml` |
 | `server/service/` | Бизнес-логика, транзакции БД, блокировки при деньгах |
-| `server/database/` | Совместимость с `createMissingTablesAndColumns` (nullable/default!) |
+| `server/database/` | Изменение схемы имеет Flyway-миграцию `V{N}`; table object совпадает с ней |
 | `shared/` | Обратная совместимость DTO с мобильными клиентами |
 | `composeApp/` | Цвета из theme, строки из локалей, состояния экрана |
 | `web-admin/src/` | tsc чисто, нет новых `any`, тема MUI, i18n |
@@ -155,7 +155,7 @@ git commit -m "docs: add code review for {feature}"
 ## LoyaltyLoops-специфический чеклист
 
 - [ ] Новый API endpoint добавлен в `documentation.yaml`?
-- [ ] Изменение схемы БД совместимо с `createMissingTablesAndColumns` (nullable/default)?
+- [ ] Изменение схемы БД: есть миграция `V{N}__*.sql`, table object синхронизирован, миграция идемпотентна для отката вперёд?
 - [ ] Денежные/балансовые операции — в одной транзакции, с блокировкой строки?
 - [ ] Ошибки — через `LoyaltyException(AppErrorCode.*)`, маппинг в `ErrorHandler.kt` дополнен?
 - [ ] DTO в `shared` обратно совместимы (мобильные клиенты в проде!)?

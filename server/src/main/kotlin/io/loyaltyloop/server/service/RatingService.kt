@@ -30,6 +30,12 @@ class RatingService(
 ) {
     private val logger = LoggerFactory.getLogger("RatingService")
 
+    private companion object {
+        const val TRUST_SCORE_DEFAULT = 4.0
+        const val TRUST_SCORE_MAX = 5.0
+        const val RECENT_RATINGS_WINDOW = 20
+    }
+
 
     // Feature Flag
     private val enableCooldown: Boolean
@@ -64,7 +70,11 @@ class RatingService(
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Client card not found")
 
         var isIgnored = false
-        if (currentCard.trustScore >= 4.5 && currentCard.totalScore > 100 && dto.rating == 1 && !dto.tags.contains(ClientRatingTag.FRAUD)) {
+        val isAntiAbuseIgnored = currentCard.trustScore >= RiskLevel.GREEN_MIN_SCORE &&
+            currentCard.totalScore > 100 &&
+            dto.rating == 1 &&
+            !dto.tags.contains(ClientRatingTag.FRAUD)
+        if (isAntiAbuseIgnored) {
             isIgnored = true
             eventLogger.log(
                 type = SystemEventType.WARNING,
@@ -91,25 +101,19 @@ class RatingService(
             )
         }
 
-        val lastRatings = ratingRepository.getLastRatingsForUser(dto.userId, partnerId, 20)
+        val lastRatings = ratingRepository.getLastRatingsForUser(dto.userId, partnerId, RECENT_RATINGS_WINDOW)
         val newScore = calculateTrustScore(lastRatings)
-        
+
         updateTrustScore(currentCard.id, newScore, fraudFlag)
-        
-        val riskLevel = when {
-            fraudFlag -> RiskLevel.BLACK
-            newScore >= 4.5 -> RiskLevel.GREEN
-            newScore >= 3.5 -> RiskLevel.YELLOW
-            newScore >= 2.0 -> RiskLevel.ORANGE
-            else -> RiskLevel.RED
-        }
-        
+
+        val riskLevel = RiskLevel.fromScore(newScore, fraudFlag)
+
         return TrustScoreDto(newScore, riskLevel, fraudFlag)
     }
-    
+
     suspend fun rateService(userId: String, dto: CreateServiceReviewDto) {
         val partnerId = tradingPointRepository.getPartnerIdByPointId(dto.tradingPointId)
-        
+
         ratingRepository.createServiceReview(partnerId, userId, dto)
     }
 
@@ -125,10 +129,10 @@ class RatingService(
 
 
     private fun calculateTrustScore(ratings: List<RatingRepository.ClientRatingEntity>): Double {
-        if (ratings.isEmpty()) return 4.0
-        
+        if (ratings.isEmpty()) return TRUST_SCORE_DEFAULT
+
         var totalScore = 0.0
-        
+
         for (r in ratings) {
             var score = r.rating.toDouble()
             for (tag in r.tags) {
@@ -140,8 +144,8 @@ class RatingService(
             }
             totalScore += score
         }
-        
+
         val avg = totalScore / ratings.size
-        return avg.coerceIn(0.0, 5.0)
+        return avg.coerceIn(0.0, TRUST_SCORE_MAX)
     }
 }

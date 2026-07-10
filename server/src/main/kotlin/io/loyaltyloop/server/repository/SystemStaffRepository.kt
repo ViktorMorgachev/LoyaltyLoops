@@ -22,6 +22,8 @@ import org.jetbrains.exposed.sql.update
 import java.util.UUID
 
 // TODO checked
+private const val INVITE_EXPIRY_HOURS = 24L
+
 class SystemStaffRepository {
 
     // ==========================================
@@ -156,7 +158,7 @@ class SystemStaffRepository {
 
         // Устанавливаем срок жизни (например, 24 часа)
         val now = nowUtc()
-        val expirationDate = now.plusHours(24)
+        val expirationDate = now.plusHours(INVITE_EXPIRY_HOURS)
 
         PlatformInvitesTable.insert {
             it[code] = inviteCode
@@ -180,7 +182,8 @@ class SystemStaffRepository {
                         (expiresAt greater now)  // Срок не вышел
             }
             .singleOrNull()
-            ?.get(PlatformInvitesTable.role) ?:  throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE, "Invalid Invite Code") // Exposed сам вернет UserRole (Enum)
+            ?.get(PlatformInvitesTable.role)
+                ?: throw LoyaltyException(AppErrorCode.INVALID_INVITE_CODE, "Invalid Invite Code")
     }
 
     suspend fun acceptInvite(
@@ -228,7 +231,11 @@ class SystemStaffRepository {
                         (SystemStaffTable.isActive eq true)
             }
             .singleOrNull()
-            ?.get(SystemStaffTable.role) ?:  throw LoyaltyException(AppErrorCode.INTERNAL_ERROR, "Role in SystemStaffTable not found by user: $userId")
+            ?.get(SystemStaffTable.role)
+                ?: throw LoyaltyException(
+                    AppErrorCode.INTERNAL_ERROR,
+                    "Role in SystemStaffTable not found by user: $userId"
+                )
     }
 
     suspend fun getSystemRoleByStaffId(staffId: String): UserRole? = dbQuery {

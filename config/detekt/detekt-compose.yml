@@ -1,0 +1,12 @@
+# Оверлей поверх detekt.yml — только для модуля composeApp (Compose/Android-специфика).
+# Подключается вторым слоем в build.gradle.kts: базовый detekt.yml < этот файл.
+
+naming:
+  FunctionNaming:
+    # @Composable-функции именуются в PascalCase — это конвенция Compose, не нарушение
+    ignoreAnnotated: ['Composable']
+
+style:
+  MagicNumber:
+    # UI-константы (dp/sp/веса) в Composable и превью — не «магия»
+    ignoreAnnotated: ['Composable', 'Preview']

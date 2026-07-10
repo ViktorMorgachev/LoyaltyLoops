@@ -17,6 +17,7 @@ import io.loyaltyloop.server.repository.SystemEventRepository
 import io.loyaltyloop.server.service.email.EmailService
 import io.loyaltyloop.server.service.email.EmailTemplate
 import io.loyaltyloop.server.service.sms.SmsService
+import io.loyaltyloop.server.utils.SubscriptionPolicy
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.shared.models.TransactionTypeHistory
 import io.loyaltyloop.shared.models.UserRole
@@ -39,6 +40,8 @@ import java.util.UUID
 import kotlin.time.Duration.Companion.hours
 
 // TODO checked
+private const val WARMUP_DELAY_MS = 10_000L
+
 class LoyaltyEngineService(
     val smsService: SmsService,
     val emailService: EmailService,
@@ -52,7 +55,7 @@ class LoyaltyEngineService(
     fun start() {
         logger.info("Loyalty Engine started")
         scope.launch {
-            delay(10000) // Warmup
+            delay(WARMUP_DELAY_MS)
 
             while (isActive) {
                 try {
@@ -67,7 +70,7 @@ class LoyaltyEngineService(
 
         scope.launch {
 
-            delay(10000) // Warmup
+            delay(WARMUP_DELAY_MS)
 
             while (isActive) {
                 try {
@@ -81,7 +84,7 @@ class LoyaltyEngineService(
         }
 
         scope.launch {
-            delay(10000) // Warmup
+            delay(WARMUP_DELAY_MS)
             while (isActive) {
                 try {
                     runExpiredTokens()
@@ -245,7 +248,7 @@ class LoyaltyEngineService(
     suspend fun runSubscriptionCheck() = dbQuery {
         logger.info("Running subscription check...")
         val now = nowUtc()
-        val in3Days = now.plusDays(3)
+        val in3Days = now.plusDays(SubscriptionPolicy.EXPIRY_WARNING_DAYS)
         val in1Day = now.plusDays(1)
 
 

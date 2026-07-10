@@ -38,7 +38,7 @@ fun Route.adminPlatformRoutes(
             post("/join") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
                 val request = call.receive<JoinPlatformAdminRequest>()
-                
+
                 val role = systemStaffRepository.validateInvite(request.inviteCode)
                 systemStaffRepository.acceptInvite(code = request.inviteCode, userId, role)
                 call.respond(HttpStatusCode.OK)
@@ -65,7 +65,7 @@ fun Route.adminPlatformRoutes(
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@get
                 accessControlService.requireSystemRole(userId)
                 val role = systemStaffRepository.getSystemRole(userId)
-                
+
                 val status = call.request.queryParameters["status"]?.let { PlatformRequestStatus.valueOf(it) }
                 val filterRequesterId = call.request.queryParameters["requesterId"]
                 val targetPartnerId = call.request.queryParameters["targetPartnerId"]
@@ -108,7 +108,8 @@ fun Route.adminPlatformRoutes(
             post("/invite") {
                 val userId = call.getUserIdOrRespond(accessControlService) ?: return@post
 
-                val targetRoleStr = call.request.queryParameters["role"] ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")
+                val targetRoleStr = call.request.queryParameters["role"]
+                    ?: throw LoyaltyException(AppErrorCode.FORBIDDEN, "You cannot invite this role target role not found")
                 val targetRole = UserRole.valueOf(targetRoleStr)
 
                 val code = systemStaffRepository.generateInvite(targetRole, userId)

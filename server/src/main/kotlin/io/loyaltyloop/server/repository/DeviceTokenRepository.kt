@@ -90,7 +90,7 @@ class DeviceTokenRepository {
                     it[updatedAt] = timestamp
                 }
             } catch (_: Exception) {
-                // If insert failed (likely unique constraint violation due to race condition), 
+                // If insert failed (likely unique constraint violation due to race condition),
                 // try update one last time
                 DeviceTokensTable.update({ DeviceTokensTable.token eq token }) {
                     it[user] = userUuid
@@ -149,7 +149,10 @@ class DeviceTokenRepository {
             baseCondition and contextCondition
         }
     }
-    suspend fun deleteTokenExact(token: String) = newSuspendedTransaction(Dispatchers.IO, transactionIsolation = Connection.TRANSACTION_READ_COMMITTED) {
+    suspend fun deleteTokenExact(token: String) = newSuspendedTransaction(
+        Dispatchers.IO,
+        transactionIsolation = Connection.TRANSACTION_READ_COMMITTED
+    ) {
         DeviceTokensTable.deleteWhere { DeviceTokensTable.token eq token }
     }
 

@@ -111,6 +111,12 @@ fun main(args: Array<String>) {
 val startTime = System.currentTimeMillis()
 
 @Suppress("unused")
+private const val WS_PING_PERIOD_SECONDS = 30L
+private const val WS_TIMEOUT_SECONDS = 60L
+private const val RATE_LIMIT_REFILL_SECONDS = 60
+private const val HTTP_CLIENT_TIMEOUT_SECONDS = 10L
+private const val TELEGRAM_SESSION_CLEANUP_DEFAULT_MS = 60_000L
+
 fun Application.module() {
 
     install(XForwardedHeaders)
@@ -151,26 +157,26 @@ fun Application.module() {
 
 
     install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(30)
-        timeout = Duration.ofSeconds(60)
+        pingPeriod = Duration.ofSeconds(WS_PING_PERIOD_SECONDS)
+        timeout = Duration.ofSeconds(WS_TIMEOUT_SECONDS)
         maxFrameSize = Long.MAX_VALUE
         masking = false
     }
 
     install(RateLimit) {
         register {
-            rateLimiter(limit = 300, refillPeriod = 60.seconds)
+            rateLimiter(limit = 300, refillPeriod = RATE_LIMIT_REFILL_SECONDS.seconds)
         }
         register(RateLimitName("auth")) {
-            rateLimiter(limit = 200, refillPeriod = 60.seconds)
+            rateLimiter(limit = 200, refillPeriod = RATE_LIMIT_REFILL_SECONDS.seconds)
         }
     }
 
     // 1. Install Koin
     install(Koin) {
         val httpClient = OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(10, TimeUnit.SECONDS)
+            .connectTimeout(HTTP_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+            .readTimeout(HTTP_CLIENT_TIMEOUT_SECONDS, TimeUnit.SECONDS)
             .build()
 
         slf4jLogger()
@@ -227,7 +233,7 @@ fun Application.module() {
         webBaseUrl = "https://$webBaseUrl"
     }
 
-    val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", 60_000L)
+    val autoCleanupSession = envConfig.long("telegram.autoCleanupSessionInMillis", TELEGRAM_SESSION_CLEANUP_DEFAULT_MS)
 
     // Start services
     telegramAuthService.start(autoCleanupSession)
@@ -282,7 +288,9 @@ fun Application.module() {
             val path = call.request.uri
             val dateTime = java.time.Instant.now().toString()
             val duration = call.processingTimeMillis()
-            "Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | UA: $userAgent | TZ: $timeZone | Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
+            "Status: $status | Method: $httpMethod | Path: $path | Duration: ${duration}ms | " +
+                "UA: $userAgent | TZ: $timeZone | " +
+                "Device: [$devicePlatform | $deviceModel | $osVersion | $appVersion | ID:$deviceId] Datetime:$dateTime"
         }
     }
 
