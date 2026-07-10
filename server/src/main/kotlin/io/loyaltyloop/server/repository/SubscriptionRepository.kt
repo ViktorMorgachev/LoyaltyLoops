@@ -5,6 +5,7 @@ import io.loyaltyloop.server.database.tables.PartnersTable
 import io.loyaltyloop.server.database.tables.PlatformSubscriptionsTable
 import io.loyaltyloop.server.database.tables.TradingPointsTable
 import io.loyaltyloop.server.models.SubscriptionWarningDto
+import io.loyaltyloop.server.utils.SubscriptionPolicy
 import io.loyaltyloop.server.utils.nowUtc
 import io.loyaltyloop.server.utils.toUUID
 import io.loyaltyloop.server.utils.toUtcMillis
@@ -15,8 +16,6 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 // TODO checked
-private const val EXPIRY_WARNING_DAYS = 3L
-
 class SubscriptionRepository {
 
     data class ExpiringSubData(
@@ -30,7 +29,7 @@ class SubscriptionRepository {
     suspend fun getExpiringPointsForPartner(partnerId: String): List<ExpiringPointDto>? = dbQuery {
         val partnerUuid = partnerId.toUUID()
         val now = nowUtc()
-        val warningThreshold = now.plusDays(EXPIRY_WARNING_DAYS)
+        val warningThreshold = now.plusDays(SubscriptionPolicy.EXPIRY_WARNING_DAYS)
 
         val rows = PlatformSubscriptionsTable
             .innerJoin(TradingPointsTable)
@@ -84,7 +83,7 @@ class SubscriptionRepository {
 
     suspend fun getExpiringSubscriptions(): List<SubscriptionWarningDto> = dbQuery {
         val now = nowUtc() // LocalDateTime
-        val warningThreshold = now.plusDays(EXPIRY_WARNING_DAYS)
+        val warningThreshold = now.plusDays(SubscriptionPolicy.EXPIRY_WARNING_DAYS)
 
         val rows = PlatformSubscriptionsTable
             .innerJoin(TradingPointsTable)

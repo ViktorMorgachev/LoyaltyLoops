@@ -33,8 +33,6 @@ class RatingService(
     private companion object {
         const val TRUST_SCORE_DEFAULT = 4.0
         const val TRUST_SCORE_MAX = 5.0
-        const val RISK_GREEN_THRESHOLD = 4.5
-        const val RISK_YELLOW_THRESHOLD = 3.5
         const val RECENT_RATINGS_WINDOW = 20
     }
 
@@ -72,7 +70,7 @@ class RatingService(
             ?: throw LoyaltyException(AppErrorCode.CARD_NOT_FOUND, "Client card not found")
 
         var isIgnored = false
-        val isAntiAbuseIgnored = currentCard.trustScore >= RISK_GREEN_THRESHOLD &&
+        val isAntiAbuseIgnored = currentCard.trustScore >= RiskLevel.GREEN_MIN_SCORE &&
             currentCard.totalScore > 100 &&
             dto.rating == 1 &&
             !dto.tags.contains(ClientRatingTag.FRAUD)
@@ -108,13 +106,7 @@ class RatingService(
 
         updateTrustScore(currentCard.id, newScore, fraudFlag)
 
-        val riskLevel = when {
-            fraudFlag -> RiskLevel.BLACK
-            newScore >= RISK_GREEN_THRESHOLD -> RiskLevel.GREEN
-            newScore >= RISK_YELLOW_THRESHOLD -> RiskLevel.YELLOW
-            newScore >= 2.0 -> RiskLevel.ORANGE
-            else -> RiskLevel.RED
-        }
+        val riskLevel = RiskLevel.fromScore(newScore, fraudFlag)
 
         return TrustScoreDto(newScore, riskLevel, fraudFlag)
     }

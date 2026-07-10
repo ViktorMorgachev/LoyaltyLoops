@@ -24,9 +24,6 @@ import org.jetbrains.exposed.sql.ResultRow
 
 val json = Json { ignoreUnknownKeys = true }
 
-private const val RISK_GREEN_THRESHOLD = 4.5
-private const val RISK_YELLOW_THRESHOLD = 3.5
-
 // TODO checked
 fun ResultRow.toUserDto(): UserDto =
     UserDto(
@@ -153,13 +150,7 @@ fun ResultRow.toLoyaltyCardDto(estimatedCurrency: String, rate: Double): Loyalty
     val score = this[LoyaltyCardsTable.trustScore]
     val fraud = this[LoyaltyCardsTable.fraudFlag]
 
-    val risk = when {
-        fraud -> RiskLevel.BLACK
-        score >= RISK_GREEN_THRESHOLD -> RiskLevel.GREEN
-        score >= RISK_YELLOW_THRESHOLD -> RiskLevel.YELLOW
-        score >= 2.0 -> RiskLevel.ORANGE
-        else -> RiskLevel.RED
-    }
+    val risk = RiskLevel.fromScore(score, fraud)
 
     return LoyaltyCardDto(
         id = this[LoyaltyCardsTable.id].value.toString(),

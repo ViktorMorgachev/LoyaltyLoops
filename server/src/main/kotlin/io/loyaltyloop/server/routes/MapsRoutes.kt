@@ -26,9 +26,6 @@ import org.slf4j.LoggerFactory
 private val logger = LoggerFactory.getLogger("MapsRoutes")
 
 // TODO checked
-private const val MAP_MIN_RADIUS_M = 50
-private const val MAP_DEFAULT_RADIUS_M = 2000
-private const val MAP_MAX_RADIUS_M = 15000
 private const val DEFAULT_SEARCH_LIMIT = 50
 private const val MAX_RATING = 5.0
 
@@ -39,9 +36,9 @@ fun Route.mapsRoutes(
     mapRepository: MapRepository,
     accessControlService: AccessControlService,
 ) {
-    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", MAP_MIN_RADIUS_M)
-    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", MAP_DEFAULT_RADIUS_M)
-    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", MAP_MAX_RADIUS_M)
+    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", MapDefaults.MIN_RADIUS_M)
+    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", MapDefaults.DEFAULT_RADIUS_M)
+    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", MapDefaults.MAX_RADIUS_M)
 
     authenticate("auth-jwt") {
         route("/map") {

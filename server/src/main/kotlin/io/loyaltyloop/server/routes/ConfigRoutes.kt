@@ -20,9 +20,6 @@ import io.loyaltyloop.shared.models.RatingTagsDto
 import io.loyaltyloop.shared.models.ServiceReviewTag
 
 //TODO  Checked
-private const val MAP_MIN_RADIUS_M = 50
-private const val MAP_DEFAULT_RADIUS_M = 2000
-private const val MAP_MAX_RADIUS_M = 15000
 private const val MAP_CLUSTER_RADIUS_M = 80
 private const val MAP_SEARCH_DEBOUNCE_MS = 350L
 private const val KG_DEFAULT_LAT = 42.8746
@@ -31,9 +28,9 @@ private const val KG_DEFAULT_LNG = 74.5698
 fun Route.configRoutes(
     applicationConfig: ApplicationConfig,
 ) {
-    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", MAP_MIN_RADIUS_M)
-    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", MAP_DEFAULT_RADIUS_M)
-    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", MAP_MAX_RADIUS_M)
+    val mapMinRadius = applicationConfig.int("app.maps.minRadiusMeters", MapDefaults.MIN_RADIUS_M)
+    val mapDefaultRadius = applicationConfig.int("app.maps.defaultRadiusMeters", MapDefaults.DEFAULT_RADIUS_M)
+    val mapMaxRadius = applicationConfig.int("app.maps.maxRadiusMeters", MapDefaults.MAX_RADIUS_M)
 
     get("/config") {
 

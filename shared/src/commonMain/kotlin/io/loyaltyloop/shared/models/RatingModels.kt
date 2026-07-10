@@ -67,7 +67,21 @@ enum class RiskLevel {
     YELLOW,  // 3.5 - 4.4  (Normal)
     ORANGE,  // 2.0 - 3.4  (Warning)
     RED,     // < 2.0      (Toxic)
-    BLACK    // Fraud
+    BLACK;   // Fraud
+
+    companion object {
+        const val GREEN_MIN_SCORE = 4.5
+        const val YELLOW_MIN_SCORE = 3.5
+        const val ORANGE_MIN_SCORE = 2.0
+
+        fun fromScore(score: Double, fraud: Boolean): RiskLevel = when {
+            fraud -> BLACK
+            score >= GREEN_MIN_SCORE -> GREEN
+            score >= YELLOW_MIN_SCORE -> YELLOW
+            score >= ORANGE_MIN_SCORE -> ORANGE
+            else -> RED
+        }
+    }
 }
 
 // --- Reviews & Analytics DTOs ---
