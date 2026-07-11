@@ -32,9 +32,9 @@ cd "$(git rev-parse --show-toplevel)" && ./gradlew :composeApp:assembleDebug -Pe
 В файле `composeApp/build.gradle.kts` (блок `buildConfig`):
 ```kotlin
 val (serverUrl, webUrl) = when (activeEnv) {
-    "prod" -> "https://api.loyaltyloops.app" to "https://loyaltyloops.app"
-    "stage" -> "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
-    else ->  "https://server-loyalityloop-stage.up.railway.app" to "https://loyalityloop-beta.up.railway.app"
+    "prod" -> "https://" to "https://"
+    "stage" -> "https://" to ""
+    else ->  ""
 }
 ```
 
@@ -90,7 +90,7 @@ Railway автоматически собирает проект через `npm
 Vite "запекает" переменные в JS код во время сборки.
 
 Убедитесь, что на сервере сборки (Railway) задана переменная:
-`VITE_API_URL` = `https://api.loyaltyloops.app` (адрес вашего бэкенда)
+`VITE_API_URL` = `https:// (адрес вашего бэкенда)
 
 **Варианты деплоя:**
 1. **Вместе с бэкендом (Monolith)**: Сервер раздает статику из папки `web-admin/dist`. (Требует настройки Ktor).
