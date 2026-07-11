@@ -4,7 +4,7 @@
   <CurrentIssues>
     <ID>CyclomaticComplexMethod:AdminPlatformRoutes.kt$fun Route.adminPlatformRoutes( platformRepository: PlatformRepository, systemStaffRepository: SystemStaffRepository, accessControlService: AccessControlService, subscriptionRepository: SubscriptionRepository )</ID>
     <ID>CyclomaticComplexMethod:AdminRoutes.kt$fun Route.adminRoutes( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
-    <ID>CyclomaticComplexMethod:Application.kt$fun Application.module()</ID>
+    <ID>CyclomaticComplexMethod:Application.kt$@Suppress("unused") // вызывается по имени из application.conf (ktor.application.modules) fun Application.module()</ID>
     <ID>CyclomaticComplexMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
     <ID>CyclomaticComplexMethod:ClientRoutes.kt$@Suppress("ThrowsCount") fun Route.clientRoutes( userRepository: UserRepository, deviceTokenRepository: DeviceTokenRepository, ratingService: RatingService, loyaltyCardRepository: LoyaltyCardRepository, accessControlService: AccessControlService, )</ID>
     <ID>CyclomaticComplexMethod:EmailTemplate.kt$EmailTemplateService$fun buildBody(template: EmailTemplate, lang: String?): String</ID>
@@ -16,7 +16,7 @@
     <ID>CyclomaticComplexMethod:TimezoneUtils.kt$TimezoneUtils$fun getCurrencyForTimezone(timezoneId: String): String</ID>
     <ID>CyclomaticComplexMethod:TradingPointSearchCriteria.kt$fun TradingPointSearchCriteria.matches(point: TradingPointDto): Boolean</ID>
     <ID>CyclomaticComplexMethod:TransactionService.kt$TransactionService$private suspend fun processMoneyTransaction( card: LoyaltyCardDto, staffId: String, tradingPointId: String, currency: String, rate: Double, calc: TransactionCalculationDto, updatedAt: LocalDateTime ): Pair&lt;TransactionResult, CardRealtimePayload&gt;</ID>
-    <ID>LongMethod:Application.kt$fun Application.module()</ID>
+    <ID>LongMethod:Application.kt$@Suppress("unused") // вызывается по имени из application.conf (ktor.application.modules) fun Application.module()</ID>
     <ID>LongMethod:AuthRoutes.kt$fun Route.authRoutes( repository: UserRepository, tokenService: TokenService, smsService: SmsService, eventLogger: EventLogger, applicationConfig: ApplicationConfig, telegramAuthService: TelegramAuthService, authSessionRepository: AuthSessionRepository, refreshTokenRepository: RefreshTokenRepository, accessControlService: AccessControlService, geoIpService: GeoIpService, )</ID>
     <ID>LongMethod:PartnerRoutes.kt$fun Route.partnerRoutes( userRepository: UserRepository, partnerRepository: PartnerRepository, partnerStaffRepository: PartnerStaffRepository, tradingPointRepository: TradingPointRepository, transactionService: TransactionService, pinResetTokenRepository: PinResetTokenRepository, emailService: EmailService, webBaseUrl: String, supportChatService: SupportChatService, eventLogger: EventLogger, deviceTokenRepository: DeviceTokenRepository, ratingRepository: RatingRepository, accessControlService: AccessControlService, analyticsService: AnalyticsService, subscriptionRepository: SubscriptionRepository )</ID>
     <ID>LongParameterList:AdminRoutes.kt$( partnerRepository: PartnerRepository, supportChatService: SupportChatService, systemEventRepository: SystemEventRepository, accessControlService: AccessControlService, tradingPointRepository: TradingPointRepository, analyticsService: AnalyticsService, platformRepository: PlatformRepository )</ID>
@@ -69,9 +69,5 @@
     <ID>TooGenericExceptionCaught:PreludeSmsService.kt$PreludeSmsService$t: Throwable</ID>
     <ID>TooGenericExceptionCaught:TelegramAuthService.kt$TelegramAuthService$e: Exception</ID>
     <ID>TooManyFunctions:RouteUtils.kt$io.loyaltyloop.server.utils.RouteUtils.kt</ID>
-    <ID>UnusedPrivateMember:AuthTest.kt$AuthTest$private fun generateExpiredToken(userId: String): String</ID>
-    <ID>UnusedPrivateProperty:Application.kt$frame</ID>
-    <ID>UnusedPrivateProperty:Application.kt$val emailTemplatesService by inject&lt;EmailTemplateService&gt;()</ID>
-    <ID>UnusedPrivateProperty:PartnerConstraintsTest.kt$PartnerConstraintsTest$val owner = client.registerAndLogin()</ID>
   </CurrentIssues>
 </SmellBaseline>

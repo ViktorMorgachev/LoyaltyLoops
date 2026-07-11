@@ -77,7 +77,6 @@ import io.loyaltyloop.server.service.TelegramAuthService
 import io.loyaltyloop.server.service.TokenService
 import io.loyaltyloop.server.service.TransactionService
 import io.loyaltyloop.server.service.email.EmailService
-import io.loyaltyloop.server.service.email.EmailTemplateService
 import io.loyaltyloop.server.service.sms.SmsService
 import io.loyaltyloop.server.utils.LoyaltyException
 import io.loyaltyloop.server.utils.bool
@@ -110,13 +109,13 @@ fun main(args: Array<String>) {
 
 val startTime = System.currentTimeMillis()
 
-@Suppress("unused")
 private const val WS_PING_PERIOD_SECONDS = 30L
 private const val WS_TIMEOUT_SECONDS = 60L
 private const val RATE_LIMIT_REFILL_SECONDS = 60
 private const val HTTP_CLIENT_TIMEOUT_SECONDS = 10L
 private const val TELEGRAM_SESSION_CLEANUP_DEFAULT_MS = 60_000L
 
+@Suppress("unused") // вызывается по имени из application.conf (ktor.application.modules)
 fun Application.module() {
 
     install(XForwardedHeaders)
@@ -221,7 +220,6 @@ fun Application.module() {
     val authSessionRepository by inject<AuthSessionRepository>()
     val telegramAuthService by inject<TelegramAuthService>()
     val refreshTokenRepository by inject<RefreshTokenRepository>()
-    val emailTemplatesService by inject<EmailTemplateService>()
     val transactionService by inject<TransactionService>()
     val analyticsService by inject<AnalyticsService>()
     val loyaltyEngine by inject<LoyaltyEngineService>()
