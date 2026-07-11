@@ -51,15 +51,15 @@ val (serverUrl, webUrl) = when (activeEnv) {
 
 | Переменная | Описание | Пример значения |
 | :--- | :--- | :--- |
-| `PORT` | Порт запуска (Railway ставит сам) | `8080` |
-| `JDBC_DATABASE_URL` | URL подключения к БД | `jdbc:postgresql://host:5432/db` |
-| `JDBC_DATABASE_USERNAME` | Пользователь БД | `postgres` |
+| `PORT` | Порт запуска (Railway ставит сам) | `` |
+| `JDBC_DATABASE_URL` | URL подключения к БД | `` |
+| `JDBC_DATABASE_USERNAME` | Пользователь БД | `` |
 | `JDBC_DATABASE_PASSWORD` | Пароль БД | `secret` |
 | `JWT_SECRET` | **Секретный ключ** для токенов | `dlinnaya_strolka_simvolov_123` |
-| `JWT_ISSUER` | Ваш домен (кто выдал токен) | `https://api.loyaltyloops.app` |
-| `JWT_AUDIENCE` | Домен API | `https://api.loyaltyloops.app` |
-| `WEB_BASE_URL` | Ссылка на веб-админку (для писем) | `https://loyaltyloops.app` |
-| `CORS_ALLOWED_HOSTS` | Браузерные origin'ы через запятую (см. `cors.allowedHosts`) | `loyaltyloops.app,www.loyaltyloops.app,loyalityloop-beta.up.railway.app` |
+| `JWT_ISSUER` | Ваш домен (кто выдал токен) | `https://api.domain` |
+| `JWT_AUDIENCE` | Домен API | `https://api.domain` |
+| `WEB_BASE_URL` | Ссылка на веб-админку (для писем) | `https://domain` |
+| `CORS_ALLOWED_HOSTS` | Браузерные origin'ы через запятую (см. `cors.allowedHosts`) | `hosts` |
 | `ADMIN_DEFAULT_PIN` | PIN-код для супер-админа | `1111` |
 
 **Dockerfile**:
