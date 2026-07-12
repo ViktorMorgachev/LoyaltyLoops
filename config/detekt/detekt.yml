@@ -32,12 +32,14 @@ output-reports:
 style:
   MagicNumber:
     active: true
-    # Числа в объявлениях свойств (varchar-длины в table objects, дефолты конфигов) — не магия
+    # Числа в объявлениях свойств (varchar-длины в table objects, дефолты конфигов) — не магия.
+    # В Composable числа — это dp/sp/weight, их выносить в константы бессмысленно
     ignorePropertyDeclaration: true
     ignoreCompanionObjectPropertyDeclaration: true
     ignoreEnums: true
     ignoreRanges: true
     ignoreNumbers: ['-1', '0', '1', '2', '100', '1000']
+    ignoreAnnotated: ['Composable', 'Preview']
   MaxLineLength:
     active: true
     maxLineLength: 140
@@ -65,11 +67,21 @@ complexity:
   LongMethod:
     active: true
     threshold: 120
+    # Экраны Compose — декларативные деревья, длина не равна сложности
+    ignoreAnnotated: ['Composable']
   LongParameterList:
     active: true
     functionThreshold: 6
-    # DI-конструкторы (Koin composition root) собирают много зависимостей — осознанно
+    # DI-конструкторы (Koin composition root) собирают много зависимостей — осознанно.
+    # Composable принимают state+колбэки отдельными параметрами — это их API-стиль
     constructorThreshold: 10
+    ignoreAnnotated: ['Composable']
+
+naming:
+  FunctionNaming:
+    active: true
+    # Composable-функции именуются с большой буквы по конвенции Compose
+    ignoreAnnotated: ['Composable']
 
 exceptions:
   # Осознанное проглатывание — только с именем ignored/expected/_ (см. TD-020)

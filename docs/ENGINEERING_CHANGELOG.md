@@ -22,6 +22,7 @@
 - detekt-политика зафиксирована в конфиге: `ReturnCount`/`ThrowsCount` с `excludeGuardClauses` (ранние return/throw при валидации — идиома, не сложность); `LongParameterList.constructorThreshold: 10` (DI-конструкторы Koin); `@Suppress("MagicNumber")` на `calculateEndDate` (числа продублированы в именах enum: `MONTH_3 -> plusMonths(3)`).
 - `ErrorHandler` осознанно НЕ переведён на map: exhaustive `when` без `else` заставляет компилятор требовать HTTP-маппинг для каждого нового `AppErrorCode` — это защита, а не долг.
 - Обёрнуты 4 длинные строки в `TieredLoyaltyTest`.
+- Конфиг detekt подготовлен для composeApp: `ignoreAnnotated: [Composable]` для MagicNumber (dp/sp), LongMethod (декларативные деревья), LongParameterList (state+колбэки), FunctionNaming (PascalCase-конвенция Compose); `ThrowsCount` перенесён в правильный ruleset `style`.
 
 ---
 
