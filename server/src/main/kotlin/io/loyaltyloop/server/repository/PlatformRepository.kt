@@ -325,6 +325,7 @@ class PlatformRepository(val systemEventRepository: SystemEventRepository) {
         return true
     }
 
+    @Suppress("MagicNumber") // числа продублированы в именах enum-констант (MONTH_3 -> plusMonths(3))
     private fun calculateEndDate(start: LocalDateTime, duration: SubscriptionDuration): java.time.LocalDateTime {
         return when (duration) {
             SubscriptionDuration.MONTH_1 -> start.plusMonths(1)

@@ -33,7 +33,9 @@ class TieredLoyaltyTest {
 //        }
 //
 //        println("${testDescr}: Создание торговой точки")
-//        assertEquals(HttpStatusCode.Created.description,  client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point", currency = Currency.KGS, TradingPointType.SERVICE))
+//        assertEquals(HttpStatusCode.Created.description,
+//            client.createTradingPoint(ownerToken = owner.accessToken, name = "Tiered Point",
+//                currency = Currency.KGS, TradingPointType.SERVICE))
 //
 //        val points = client.get("/partners/points") {
 //            header("Authorization", "Bearer ${owner.accessToken}")
@@ -59,9 +61,12 @@ class TieredLoyaltyTest {
 //                    settings = UpdateLoyaltySettingsRequest(
 //                        programType = LoyaltyProgramType.TIERED_LTV,
 //                        tiers = listOf(
-//                            LoyaltyTierDto(levelIndex = 1, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Base, "Base"), threshold = 0.0, cashbackPercent = 1.0),
-//                            LoyaltyTierDto(levelIndex = 2, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Silver, "Silver"), threshold = 5_000.0, cashbackPercent = 7.0),
-//                            LoyaltyTierDto(levelIndex = 3, loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Gold, "Gold"), threshold = 20_000.0, cashbackPercent = 9.0)
+//                            LoyaltyTierDto(levelIndex = 1, threshold = 0.0, cashbackPercent = 1.0,
+//                                loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Base, "Base")),
+//                            LoyaltyTierDto(levelIndex = 2, threshold = 5_000.0, cashbackPercent = 7.0,
+//                                loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Silver, "Silver")),
+//                            LoyaltyTierDto(levelIndex = 3, threshold = 20_000.0, cashbackPercent = 9.0,
+//                                loyaltyTier = LoyaltyTierDto.LoyaltyTier(LoyaltyTierDto.LoyaltyLevel.Gold, "Gold"))
 //                        ),
 //                        visitsTarget = 10,
 //                        maxBurnPercentage = 100

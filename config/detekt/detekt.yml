@@ -47,6 +47,13 @@ style:
     active: true
   TrailingWhitespace:
     active: true
+  ReturnCount:
+    active: true
+    # Guard-клаузы (ранний return при невалидном входе) — идиома Kotlin, не сложность
+    excludeGuardClauses: true
+  ThrowsCount:
+    active: true
+    excludeGuardClauses: true
 
 complexity:
   TooManyFunctions:
@@ -58,6 +65,11 @@ complexity:
   LongMethod:
     active: true
     threshold: 120
+  LongParameterList:
+    active: true
+    functionThreshold: 6
+    # DI-конструкторы (Koin composition root) собирают много зависимостей — осознанно
+    constructorThreshold: 10
 
 exceptions:
   # Осознанное проглатывание — только с именем ignored/expected/_ (см. TD-020)

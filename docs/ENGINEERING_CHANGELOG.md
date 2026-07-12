@@ -15,6 +15,16 @@
 
 ---
 
+## 2026-07-09 — TD-020 pass 4: TimezoneUtils, guard-политика detekt
+
+### Внедрено
+- `TimezoneUtils` переписан с when-цепочек (CC 36/28 — два худших метода сервера) на таблицу префиксов зона→страна + мапу страна→валюта. Попутно исправлена рассинхронизация списков: `Europe/Volgograd`, `Europe/Kirov`, `Asia/Barnaul` и др. определялись как RU для страны, но валюта для них падала в фоллбэк `Europe/` → EUR или ошибку — теперь оба маппинга используют один список зон.
+- detekt-политика зафиксирована в конфиге: `ReturnCount`/`ThrowsCount` с `excludeGuardClauses` (ранние return/throw при валидации — идиома, не сложность); `LongParameterList.constructorThreshold: 10` (DI-конструкторы Koin); `@Suppress("MagicNumber")` на `calculateEndDate` (числа продублированы в именах enum: `MONTH_3 -> plusMonths(3)`).
+- `ErrorHandler` осознанно НЕ переведён на map: exhaustive `when` без `else` заставляет компилятор требовать HTTP-маппинг для каждого нового `AppErrorCode` — это защита, а не долг.
+- Обёрнуты 4 длинные строки в `TieredLoyaltyTest`.
+
+---
+
 ## 2026-07-09 — TD-020 pass 3: реанимация закомментированных тестов
 
 ### Внедрено

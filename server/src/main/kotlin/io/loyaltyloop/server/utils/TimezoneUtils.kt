@@ -3,8 +3,40 @@ package io.loyaltyloop.server.utils
 import io.loyaltyloop.shared.models.AppErrorCode
 import io.loyaltyloop.shared.models.CountryCode
 
-// TODO checked
 object TimezoneUtils {
+
+    // Порядок важен: специфичные зоны (Europe/Minsk) должны матчиться раньше общих фоллбэков (Europe/)
+    private val countryByZonePrefix: List<Pair<String, CountryCode>> = buildList {
+        add("Asia/Bishkek" to CountryCode.KG)
+
+        listOf(
+            "Asia/Almaty", "Asia/Qyzylorda", "Asia/Aqtobe",
+            "Asia/Aqtau", "Asia/Atyrau", "Asia/Oral"
+        ).forEach { add(it to CountryCode.KZ) }
+
+        listOf("Asia/Tashkent", "Asia/Samarkand").forEach { add(it to CountryCode.UZ) }
+
+        add("Europe/Minsk" to CountryCode.BY)
+
+        listOf(
+            // Европейская часть
+            "Europe/Moscow", "Europe/Kaliningrad", "Europe/Samara", "Europe/Volgograd",
+            "Europe/Kirov", "Europe/Astrakhan", "Europe/Saratov", "Europe/Ulyanovsk",
+            // Азиатская часть
+            "Asia/Yekaterinburg", "Asia/Omsk", "Asia/Novosibirsk", "Asia/Barnaul",
+            "Asia/Tomsk", "Asia/Novokuznetsk", "Asia/Krasnoyarsk", "Asia/Irkutsk",
+            "Asia/Chita", "Asia/Yakutsk", "Asia/Vladivostok", "Asia/Magadan",
+            "Asia/Sakhalin", "Asia/Kamchatka", "Asia/Anadyr"
+        ).forEach { add(it to CountryCode.RU) }
+    }
+
+    private val currencyByCountry = mapOf(
+        CountryCode.KG to "KGS",
+        CountryCode.KZ to "KZT",
+        CountryCode.UZ to "UZS",
+        CountryCode.BY to "BYN",
+        CountryCode.RU to "RUB"
+    )
 
     /**
      * Determines the CountryCode based on the provided timezone ID.
@@ -15,57 +47,10 @@ object TimezoneUtils {
             "Cannot determine country for empty timezone"
         )
 
-        return when {
-            // Kyrgyzstan
-            timezoneId == "Asia/Bishkek" -> CountryCode.KG
-
-            // Kazakhstan
-            timezoneId.startsWith("Asia/Almaty") ||
-                    timezoneId.startsWith("Asia/Qyzylorda") ||
-                    timezoneId.startsWith("Asia/Aqtobe") ||
-                    timezoneId.startsWith("Asia/Aqtau") ||
-                    timezoneId.startsWith("Asia/Atyrau") ||
-                    timezoneId.startsWith("Asia/Oral") -> CountryCode.KZ
-
-            // Uzbekistan
-            timezoneId == "Asia/Tashkent" ||
-                    timezoneId == "Asia/Samarkand" -> CountryCode.UZ
-
-            // Belarus
-            timezoneId == "Europe/Minsk" -> CountryCode.BY
-
-            // Russia (Expanded list to cover major timezones)
-            // Europe part
-            timezoneId.startsWith("Europe/Moscow") ||
-                    timezoneId.startsWith("Europe/Kaliningrad") ||
-                    timezoneId.startsWith("Europe/Samara") ||
-                    timezoneId.startsWith("Europe/Volgograd") ||
-                    timezoneId.startsWith("Europe/Kirov") ||
-                    timezoneId.startsWith("Europe/Astrakhan") ||
-                    timezoneId.startsWith("Europe/Saratov") ||
-                    timezoneId.startsWith("Europe/Ulyanovsk") ||
-                    // Asia part
-                    timezoneId.startsWith("Asia/Yekaterinburg") ||
-                    timezoneId.startsWith("Asia/Omsk") ||
-                    timezoneId.startsWith("Asia/Novosibirsk") ||
-                    timezoneId.startsWith("Asia/Barnaul") ||
-                    timezoneId.startsWith("Asia/Tomsk") ||
-                    timezoneId.startsWith("Asia/Novokuznetsk") ||
-                    timezoneId.startsWith("Asia/Krasnoyarsk") ||
-                    timezoneId.startsWith("Asia/Irkutsk") ||
-                    timezoneId.startsWith("Asia/Chita") ||
-                    timezoneId.startsWith("Asia/Yakutsk") ||
-                    timezoneId.startsWith("Asia/Vladivostok") ||
-                    timezoneId.startsWith("Asia/Magadan") ||
-                    timezoneId.startsWith("Asia/Sakhalin") ||
-                    timezoneId.startsWith("Asia/Kamchatka") ||
-                    timezoneId.startsWith("Asia/Anadyr") -> CountryCode.RU
-
-            else -> throw LoyaltyException(
-                AppErrorCode.INVALID_REQUEST,
-                "Unsupported country for timezone: $timezoneId"
-            )
-        }
+        return findCountry(timezoneId) ?: throw LoyaltyException(
+            AppErrorCode.INVALID_REQUEST,
+            "Unsupported country for timezone: $timezoneId"
+        )
     }
 
     /**
@@ -78,50 +63,20 @@ object TimezoneUtils {
             "Cannot determine currency for empty timezone: $timezoneId"
         )
 
-        val timezoneCurrency = when {
-            // Kyrgyzstan
-            timezoneId == "Asia/Bishkek" -> "KGS"
+        findCountry(timezoneId)?.let { country ->
+            currencyByCountry[country]?.let { return it }
+        }
 
-            // Kazakhstan
-            timezoneId.startsWith("Asia/Almaty") -> "KZT"
-            timezoneId.startsWith("Asia/Qyzylorda") -> "KZT"
-            timezoneId.startsWith("Asia/Aqtobe") -> "KZT"
-            timezoneId.startsWith("Asia/Aqtau") -> "KZT"
-            timezoneId.startsWith("Asia/Atyrau") -> "KZT"
-            timezoneId.startsWith("Asia/Oral") -> "KZT"
-
-            // Uzbekistan
-            timezoneId == "Asia/Tashkent" -> "UZS"
-            timezoneId == "Asia/Samarkand" -> "UZS"
-
-            // Belarus
-            timezoneId == "Europe/Minsk" -> "BYN"
-
-            timezoneId.startsWith("Europe/Kaliningrad") -> "RUB"
-            timezoneId.startsWith("Europe/Moscow") -> "RUB"
-            timezoneId.startsWith("Europe/Samara") -> "RUB"
-            timezoneId.startsWith("Asia/Yekaterinburg") -> "RUB"
-            timezoneId.startsWith("Asia/Omsk") -> "RUB"
-            timezoneId.startsWith("Asia/Novosibirsk") -> "RUB"
-            timezoneId.startsWith("Asia/Krasnoyarsk") -> "RUB"
-            timezoneId.startsWith("Asia/Irkutsk") -> "RUB"
-            timezoneId.startsWith("Asia/Yakutsk") -> "RUB"
-            timezoneId.startsWith("Asia/Vladivostok") -> "RUB"
-            timezoneId.startsWith("Asia/Magadan") -> "RUB"
-            timezoneId.startsWith("Asia/Kamchatka") -> "RUB"
-            timezoneId.startsWith("Asia/Anadyr") -> "RUB"
-
-            // USA (Example)
+        return when {
             timezoneId.startsWith("America/") -> "USD"
             timezoneId.startsWith("Europe/") -> "EUR"
-
             else -> throw LoyaltyException(
                 AppErrorCode.INVALID_REQUEST,
-                "Cannot determine currency for timezone: $timezoneId")
+                "Cannot determine currency for timezone: $timezoneId"
+            )
         }
-        return timezoneCurrency
     }
 
-
+    private fun findCountry(timezoneId: String): CountryCode? =
+        countryByZonePrefix.firstOrNull { (prefix, _) -> timezoneId.startsWith(prefix) }?.second
 }
-
